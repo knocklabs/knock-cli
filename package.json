@@ -59,6 +59,7 @@
     "format": "prettier \"src/**/*.+(ts|js|tsx)\"",
     "format.write": "yarn run format --write",
     "format.check": "yarn run format --check",
+    "type.check": "tsc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",
     "prepack": "yarn build && oclif manifest && oclif readme",

@@ -153,7 +153,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin 
+  $ knock plugins:install myplugin
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -213,7 +213,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin 
+  $ knock plugins:install myplugin
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
