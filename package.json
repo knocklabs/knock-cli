@@ -58,8 +58,8 @@
   },
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
-    "lint": "eslint . --ext .ts --config .eslintrc",
-    "format": "prettier \"src/**/*.+(ts|js|tsx)\"",
+    "lint": "eslint . --ext .ts --config .eslintrc.json",
+    "format": "prettier \"src/**/*.+(ts|js)\" \"test/**/*.+(ts|js)\"",
     "format.write": "yarn run format --write",
     "format.check": "yarn run format --check",
     "type.check": "tsc",
