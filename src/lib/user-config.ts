@@ -15,6 +15,9 @@ type UserConfig = yup.InferType<typeof userConfigSchema>;
 let USER_CONFIG: UserConfig;
 
 const maybeReadJsonConfig = async (configDir: string) => {
+  // Don't use a user config file in tests.
+  if (process.env.NODE_ENV === "test") return null;
+
   const pathToJsonConfig = path.join(configDir, "config.json");
 
   const exists = await fs.pathExists(pathToJsonConfig);

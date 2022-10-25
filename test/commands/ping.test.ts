@@ -2,16 +2,12 @@ import { expect, test } from "@oclif/test";
 
 describe("ping", () => {
   test
+    .nock("https://control.knock.app", (api) =>
+      api.get("/v1/ping").reply(200, "pong"),
+    )
     .stdout()
-    .command(["ping"])
-    .it("runs hello", (ctx) => {
-      expect(ctx.stdout).to.contain("hello world");
-    });
-
-  test
-    .stdout()
-    .command(["ping", "--name", "jeff"])
-    .it("runs hello --name jeff", (ctx) => {
-      expect(ctx.stdout).to.contain("hello jeff");
+    .command(["ping", "--service-token", "valid-token"])
+    .it("runs ping with a valid service token", (ctx) => {
+      expect(ctx.stdout).to.contain("pong");
     });
 });

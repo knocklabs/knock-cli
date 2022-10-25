@@ -6,6 +6,7 @@ export default class Ping extends BaseCommand {
   static examples = ["<%= config.bin %> <%= command.id %>"];
 
   public async run(): Promise<void> {
+    // TODO: Need to handle an error response.
     const resp = await this.apiV1.ping();
 
     this.log(resp.data);
