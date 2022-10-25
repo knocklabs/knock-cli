@@ -1,7 +1,7 @@
 /*
- * Module to load and get user configs from a config file.
+ * Module for loading and retrieving user configs from a knock config file.
  */
-import * as path from "path";
+import * as path from "node:path";
 import * as fs from "fs-extra";
 import * as yup from "yup";
 
@@ -19,7 +19,7 @@ const maybeReadJsonConfig = async (configDir: string) => {
   const exists = await fs.pathExists(pathToJsonConfig);
   if (!exists) return null;
 
-  return await fs.readJSON(pathToJsonConfig);
+  return fs.readJSON(pathToJsonConfig);
 };
 
 const load = async (configDir: string): Promise<UserConfig> => {

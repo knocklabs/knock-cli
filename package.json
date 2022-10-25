@@ -61,6 +61,7 @@
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts --config .eslintrc.json",
+    "lint.fix": "yarn run lint --fix",
     "format": "prettier \"src/**/*.+(ts|js)\" \"test/**/*.+(ts|js)\"",
     "format.write": "yarn run format --write",
     "format.check": "yarn run format --check",

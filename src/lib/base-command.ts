@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 
-import UserConfig from "./userConfig";
+import UserConfig from "./user-config";
 
 abstract class BaseCommand extends Command {
   public async init(): Promise<void> {
