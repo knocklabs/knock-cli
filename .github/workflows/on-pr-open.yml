@@ -1,0 +1,22 @@
+name: run code checks and unit tests
+on:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+
+jobs:
+  code-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: yarn
+      - run: yarn install
+      - run: yarn run type.check
+      - run: yarn run lint
+      - run: yarn run format.check
+
+  unit-tests:
+    uses: oclif/github-workflows/.github/workflows/unitTest.yml@main
