@@ -1,4 +1,4 @@
-import BaseCommand from "../lib/base-command";
+import BaseCommand from "@/lib/base-command";
 
 export default class Ping extends BaseCommand {
   static description = "Ping the Knock management API to verify access.";
