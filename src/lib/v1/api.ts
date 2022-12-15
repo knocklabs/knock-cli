@@ -2,9 +2,9 @@ import { Config, Interfaces } from "@oclif/core";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { pickBy, identity } from 'lodash'
 
-import { toPaginationParams } from "@/lib/v1/flag-helpers";
+import BaseCommand from "@/lib/base-command";
 
-import BaseCommand from "./base-command";
+import { toPaginationParams } from "./flag-helpers";
 
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
@@ -13,8 +13,6 @@ type GFlags = Interfaces.InferredFlags<typeof BaseCommand["globalFlags"]>;
 
 const prune = (params: Record<string, unknown>) =>
   pickBy(params, identity);
-
-// TODO: Move this to the /v1 directory.
 
 export default class ApiV1 {
   protected client!: AxiosInstance;
