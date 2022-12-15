@@ -1,41 +1,41 @@
-import { Flags, CliUx } from '@oclif/core'
+import { Flags, CliUx } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { paginationFlags } from "@/lib/v1/flag-helpers";
 
 export default class WorkflowList extends BaseCommand {
   static flags = {
-    environment: Flags.string({default: 'development'}),
+    environment: Flags.string({ default: "development" }),
     "hide-uncommitted-changes": Flags.boolean(),
-    ...paginationFlags
-  }
+    ...paginationFlags,
+  };
 
-  static enableJsonFlag = true
+  static enableJsonFlag = true;
 
   async run(): Promise<void> {
-    return this.handle()
+    return this.handle();
   }
 
   async handle(): Promise<void> {
     const { flags } = this.props;
 
     const resp = await this.apiV1.listWorkflows(this.props);
-    if (flags.json) return resp.data
+    if (flags.json) return resp.data;
 
     // TODO: Fully flesh the table out, and allow moving through pages.
     CliUx.ux.table(resp.data.entries, {
       key: {
-        header: 'Workflow key'
+        header: "Workflow key",
       },
       status: {
-        header: 'Status',
-        get: row => row.active ? "active" : "inactive"
+        header: "Status",
+        get: (row) => (row.active ? "active" : "inactive"),
       },
       categories: {
-        header: 'Categories',
+        header: "Categories",
         // TODO: Type this payload?
-        get: (row: any) => row.categories ? row.categories.join(", ") : ""
-      }
-    })
+        get: (row: any) => (row.categories ? row.categories.join(", ") : ""),
+      },
+    });
   }
 }

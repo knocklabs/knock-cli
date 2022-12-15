@@ -1,4 +1,4 @@
-import { Flags } from '@oclif/core'
+import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
@@ -6,11 +6,9 @@ import BaseCommand from "@/lib/base-command";
 export default class WorkflowPull extends BaseCommand {
   static flags = {
     "hide-uncommitted-changes": Flags.boolean(),
-  }
+  };
 
-  static args = [
-    { name: 'workflowKey', required: true }
-  ]
+  static args = [{ name: "workflowKey", required: true }];
 
   async run(): Promise<void> {
     const flags = { ...this.props.flags, annotate: true };
@@ -18,13 +16,13 @@ export default class WorkflowPull extends BaseCommand {
     const resp = await this.apiV1.getWorkflow({ ...this.props, flags });
 
     const { workflowKey } = this.props.args;
-    const workflowFilePath = `./${workflowKey}/workflow.json`
+    const workflowFilePath = `./${workflowKey}/workflow.json`;
 
     // XXX: Strip out annotations and extract out templates..
     try {
-      await fs.outputJson(workflowFilePath, resp.data, {spaces: "\t"})
+      await fs.outputJson(workflowFilePath, resp.data, { spaces: "\t" });
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
   }
 }

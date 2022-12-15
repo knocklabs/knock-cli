@@ -1,6 +1,6 @@
 import { Config, Interfaces } from "@oclif/core";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { pickBy, identity } from 'lodash'
+import { pickBy, identity } from "lodash";
 
 import BaseCommand from "@/lib/base-command";
 
@@ -11,8 +11,7 @@ const API_VERSION = "v1";
 
 type GFlags = Interfaces.InferredFlags<typeof BaseCommand["globalFlags"]>;
 
-const prune = (params: Record<string, unknown>) =>
-  pickBy(params, identity);
+const prune = (params: Record<string, unknown>) => pickBy(params, identity);
 
 export default class ApiV1 {
   protected client!: AxiosInstance;
@@ -35,25 +34,30 @@ export default class ApiV1 {
     return this.get("/ping");
   }
 
-  async listWorkflows({ flags }: Interfaces.ParserOutput): Promise<AxiosResponse> {
+  async listWorkflows({
+    flags,
+  }: Interfaces.ParserOutput): Promise<AxiosResponse> {
     const params = {
       environment: flags["environment"],
       annotate: flags["annotate"],
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       ...toPaginationParams(flags),
-    }
+    };
 
-    return this.get("/workflows", prune(params))
+    return this.get("/workflows", prune(params));
   }
 
-  async getWorkflow({ args, flags }: Interfaces.ParserOutput): Promise<AxiosResponse> {
+  async getWorkflow({
+    args,
+    flags,
+  }: Interfaces.ParserOutput): Promise<AxiosResponse> {
     const params = {
       environment: flags["environment"],
       annotate: flags["annotate"],
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
-    }
+    };
 
-    return this.get(`/workflows/${args.workflowKey}`, prune(params))
+    return this.get(`/workflows/${args.workflowKey}`, prune(params));
   }
 
   // By methods:
