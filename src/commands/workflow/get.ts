@@ -5,7 +5,6 @@ import BaseCommand from "@/lib/base-command";
 export default class WorkflowGet extends BaseCommand {
   static flags = {
     environment: Flags.string({default: 'development'}),
-    annotate: Flags.boolean({hidden: true}),
     "hide-uncommitted-changes": Flags.boolean(),
   }
 

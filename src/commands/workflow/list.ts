@@ -6,7 +6,6 @@ import { paginationFlags } from "@/lib/v1/flag-helpers";
 export default class WorkflowList extends BaseCommand {
   static flags = {
     environment: Flags.string({default: 'development'}),
-    annotate: Flags.boolean({hidden: true}),
     "hide-uncommitted-changes": Flags.boolean(),
     ...paginationFlags
   }
