@@ -39,6 +39,7 @@ abstract class BaseCommand extends Command {
       hidden: true,
       required: false,
       multiple: false,
+      default: async () => UserConfig.get().apiOrigin,
     }),
   };
 }

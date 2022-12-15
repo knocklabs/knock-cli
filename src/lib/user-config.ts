@@ -8,6 +8,7 @@ import * as yup from "yup";
 
 const userConfigSchema = yup.object({
   serviceToken: yup.string(),
+  apiOrigin: yup.string(),
 });
 
 type UserConfig = yup.InferType<typeof userConfigSchema>;
