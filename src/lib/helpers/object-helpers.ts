@@ -1,7 +1,7 @@
 import { omit, pick, isPlainObject } from "lodash";
 
 // Generic untyped object.
-export type Obj = {[k: string]: any};
+export type Obj = { [k: string]: any };
 
 /*
  * Split an object into two based on keys provided (similar to Map.split/2 in
@@ -20,24 +20,24 @@ export const split = (obj: Obj, paths: string | string[]): [Obj, Obj] => {
  * Implementation is loosely based on omit-deep-lodash, and typed:
  * https://github.com/odynvolk/omit-deep-lodash/blob/master/src/index.js
  */
-export const omitDeep = (input: any, keyOrKeys: string | string[]): any => {
+export const omitDeep = (input: any, paths: string | string[]): any => {
   function omitDeepOnOwnProps(item: any): any {
     if (Array.isArray(item)) {
       return item.map(omitDeepOnOwnProps);
     }
 
     if (isPlainObject(item)) {
-      const obj: Obj = omit(item, keyOrKeys);
+      const obj: Obj = omit(item, paths);
       for (const [k, v] of Object.entries(obj)) {
-        obj[k] = omitDeep(v, keyOrKeys);
+        obj[k] = omitDeep(v, paths);
       }
       return obj;
     }
 
-    return item
+    return item;
   }
 
   return Array.isArray(input)
     ? input.map(omitDeepOnOwnProps)
-    : omitDeepOnOwnProps(input)
+    : omitDeepOnOwnProps(input);
 };
