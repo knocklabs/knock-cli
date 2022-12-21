@@ -3,8 +3,10 @@ import { Command, Flags, Interfaces } from "@oclif/core";
 import KnockApiV1 from "./v1/api";
 import UserConfig from "./user-config";
 
+export type Props = Interfaces.ParserOutput;
+
 abstract class BaseCommand extends Command {
-  protected props!: Interfaces.ParserOutput;
+  protected props!: Props;
   protected apiV1!: KnockApiV1;
 
   public async init(): Promise<void> {

@@ -1,17 +1,17 @@
-import { Config, Interfaces } from "@oclif/core";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { pickBy, identity } from "lodash";
+import { Config, Interfaces } from "@oclif/core";
+import { omitBy, isNil } from "lodash";
 
-import BaseCommand from "@/lib/base-command";
-
-import { toPaginationParams } from "./flag-helpers";
+import BaseCommand, { Props } from "@/lib/base-command";
+import * as Workflow from "@/lib/marshal/workflow";
+import { toPaginationParams, Paginated } from "@/lib/helpers/pagination-helpers";
 
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
 
 type GFlags = Interfaces.InferredFlags<typeof BaseCommand["globalFlags"]>;
 
-const prune = (params: Record<string, unknown>) => pickBy(params, identity);
+const prune = (params: Record<string, unknown>) => omitBy(params, isNil);
 
 export default class ApiV1 {
   protected client!: AxiosInstance;
@@ -39,7 +39,7 @@ export default class ApiV1 {
 
   async listWorkflows({
     flags,
-  }: Interfaces.ParserOutput): Promise<AxiosResponse> {
+  }: Props): Promise<AxiosResponse<Paginated<Workflow.WorkflowPayload>>> {
     const params = {
       environment: flags["environment"],
       annotate: flags["annotate"],
@@ -53,7 +53,7 @@ export default class ApiV1 {
   async getWorkflow({
     args,
     flags,
-  }: Interfaces.ParserOutput): Promise<AxiosResponse> {
+  }: Props): Promise<AxiosResponse<Workflow.WorkflowPayload>> {
     const params = {
       environment: flags["environment"],
       annotate: flags["annotate"],
