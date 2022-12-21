@@ -1,13 +1,15 @@
 import { omit, pick, isPlainObject } from "lodash";
 
-// Generic untyped object.
-export type Obj = { [k: string]: any };
+/*
+ * A plain object containing zero or more key-value pairs.
+ */
+export type PlainObj = { [key: string]: any };
 
 /*
  * Split an object into two based on keys provided (similar to Map.split/2 in
  * Elixir)
  */
-export const split = (obj: Obj, paths: string | string[]): [Obj, Obj] => {
+export const split = (obj: PlainObj, paths: string | string[]): [PlainObj, PlainObj] => {
   const picked = pick(obj, paths);
   const remainder = omit(obj, paths);
 
@@ -27,7 +29,7 @@ export const omitDeep = (input: any, paths: string | string[]): any => {
     }
 
     if (isPlainObject(item)) {
-      const obj: Obj = omit(item, paths);
+      const obj: PlainObj = omit(item, paths);
       for (const [k, v] of Object.entries(obj)) {
         obj[k] = omitDeep(v, paths);
       }
