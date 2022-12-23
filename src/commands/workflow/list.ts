@@ -40,7 +40,7 @@ export default class WorkflowList extends BaseCommand {
     return resp;
   }
 
-  async display(data: Paginated<Workflow.WorkflowPayload>): Promise<void> {
+  async display(data: Paginated<Workflow.WorkflowPayload>) {
     const { environment: env } = this.props.flags;
     const { entries, page_info } = data;
 
@@ -83,12 +83,14 @@ export default class WorkflowList extends BaseCommand {
 
     if (validAction === PageAction.Previous) {
       const resp = await this.request({ before: page_info.before });
-      return this.display(resp.data);
+      this.display(resp.data);
+      return;
     }
 
     if (validAction === PageAction.Next) {
       const resp = await this.request({ after: page_info.after });
-      return this.display(resp.data);
+      this.display(resp.data);
+      return;
     }
   }
 }
