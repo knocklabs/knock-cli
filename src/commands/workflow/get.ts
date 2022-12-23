@@ -2,7 +2,7 @@ import { Flags, CliUx } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import * as Workflow from "@/lib/marshal/workflow";
-import { formatDateTime } from "@/lib/helpers/date-helpers";
+import { formatDateTime } from "@/lib/helpers/date";
 
 export default class WorkflowGet extends BaseCommand {
   static flags = {

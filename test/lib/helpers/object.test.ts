@@ -1,6 +1,6 @@
 import { expect } from "@oclif/test";
 
-import { split, omitDeep } from "@/lib/helpers/object-helpers";
+import { split, omitDeep } from "@/lib/helpers/object";
 
 describe("object-helpers", () => {
   describe("split", () => {

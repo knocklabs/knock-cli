@@ -8,8 +8,8 @@ import {
   PageAction,
   formatPageActionPrompt,
   validatePageActionInput,
-} from "@/lib/helpers/pagination-helpers";
-import { formatDate } from "@/lib/helpers/date-helpers";
+} from "@/lib/helpers/pagination";
+import { formatDate } from "@/lib/helpers/date";
 
 export default class WorkflowList extends BaseCommand {
   static flags = {

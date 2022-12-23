@@ -1,6 +1,6 @@
 import { expect } from "@oclif/test";
 
-import { formatDate, formatDateTime } from "@/lib/helpers/date-helpers";
+import { formatDate, formatDateTime } from "@/lib/helpers/date";
 
 describe("date-helpers", () => {
   describe("formatDate", () => {
