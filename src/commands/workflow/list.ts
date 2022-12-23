@@ -68,6 +68,8 @@ export default class WorkflowList extends BaseCommand {
       },
     });
 
+    // If we can move to a next or previous page, display a prompt to take a
+    // user input.
     const prompt = formatPageActionPrompt(page_info);
     if (!prompt) return;
 
@@ -76,6 +78,8 @@ export default class WorkflowList extends BaseCommand {
     if (!validAction) return;
 
     this.log("\n");
+
+    // For a valid action, make a request for either previous or next page data.
 
     if (validAction === PageAction.Previous) {
       const resp = await this.request({ before: page_info.before });
