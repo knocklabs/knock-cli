@@ -1,7 +1,15 @@
 import { Flags, CliUx } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
-import { paginationFlags } from "@/lib/v1/flag-helpers";
+import * as Workflow from "@/lib/marshal/workflow";
+import {
+  paginationFlags,
+  Paginated,
+  PageAction,
+  formatPageActionPrompt,
+  validatePageActionInput,
+} from "@/lib/helpers/pagination-helpers";
+import { formatDate } from "@/lib/helpers/date-helpers";
 
 export default class WorkflowList extends BaseCommand {
   static flags = {
@@ -12,30 +20,71 @@ export default class WorkflowList extends BaseCommand {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<void> {
-    return this.handle();
-  }
-
-  async handle(): Promise<void> {
+  async run(): Promise<Paginated<Workflow.WorkflowPayload> | void> {
     const { flags } = this.props;
 
-    const resp = await this.apiV1.listWorkflows(this.props);
+    const resp = await this.request();
     if (flags.json) return resp.data;
 
-    // TODO: Fully flesh the table out, and allow moving through pages.
-    CliUx.ux.table(resp.data.entries, {
+    this.display(resp.data);
+  }
+
+  async request(extraFlags = {}) {
+    const flags = { ...this.props.flags, ...extraFlags };
+    const props = { ...this.props, flags };
+
+    CliUx.ux.action.start("‣ Loading");
+    const resp = await this.apiV1.listWorkflows(props);
+
+    CliUx.ux.action.stop();
+    return resp;
+  }
+
+  async display(data: Paginated<Workflow.WorkflowPayload>): Promise<void> {
+    const { environment: env } = this.props.flags;
+    const { entries, page_info } = data;
+
+    this.log(`‣ Showing ${entries.length} workflows in ${env} environment\n`);
+
+    CliUx.ux.table(entries, {
+      name: {
+        header: "Name",
+        minWidth: 24,
+      },
       key: {
-        header: "Workflow key",
+        header: "Key",
       },
       status: {
         header: "Status",
-        get: (row) => (row.active ? "active" : "inactive"),
+        get: (entry) => (entry.active ? "active" : "inactive"),
       },
       categories: {
         header: "Categories",
-        // TODO: Type this payload?
-        get: (row: any) => (row.categories ? row.categories.join(", ") : ""),
+        get: (entry) => Workflow.displayCategories(entry, { truncateAfter: 3 }),
+      },
+      updated_at: {
+        header: "Updated at",
+        get: (entry) => formatDate(entry.updated_at),
       },
     });
+
+    const prompt = formatPageActionPrompt(page_info);
+    if (!prompt) return;
+
+    const input = await CliUx.ux.prompt(`? ${prompt}`, { required: false });
+    const validAction = validatePageActionInput(input, page_info);
+    if (!validAction) return;
+
+    this.log("\n");
+
+    if (validAction === PageAction.Previous) {
+      const resp = await this.request({ before: page_info.before });
+      return this.display(resp.data);
+    }
+
+    if (validAction === PageAction.Next) {
+      const resp = await this.request({ after: page_info.after });
+      return this.display(resp.data);
+    }
   }
 }
