@@ -4,7 +4,10 @@ import { omitBy, isNil } from "lodash";
 
 import BaseCommand, { Props } from "@/lib/base-command";
 import * as Workflow from "@/lib/marshal/workflow";
-import { toPaginationParams, Paginated } from "@/lib/helpers/pagination-helpers";
+import {
+  toPaginationParams,
+  Paginated,
+} from "@/lib/helpers/pagination-helpers";
 
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";

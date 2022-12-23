@@ -9,7 +9,10 @@ export type PlainObj = { [key: string]: any };
  * Split an object into two based on keys provided (similar to Map.split/2 in
  * Elixir)
  */
-export const split = (obj: PlainObj, paths: string | string[]): [PlainObj, PlainObj] => {
+export const split = (
+  obj: PlainObj,
+  paths: string | string[],
+): [PlainObj, PlainObj] => {
   const picked = pick(obj, paths);
   const remainder = omit(obj, paths);
 

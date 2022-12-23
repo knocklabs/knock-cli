@@ -82,4 +82,4 @@ describe("object-helpers", () => {
       });
     });
   });
-})
+});
