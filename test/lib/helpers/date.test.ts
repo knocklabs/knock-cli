@@ -2,7 +2,7 @@ import { expect } from "@oclif/test";
 
 import { formatDate, formatDateTime } from "@/lib/helpers/date";
 
-describe("date-helpers", () => {
+describe("lib/helpers/date", () => {
   describe("formatDate", () => {
     describe("given a iso 8601 datetime string", () => {
       it("returns a human readable date string in MMM d, yyyy format", () => {

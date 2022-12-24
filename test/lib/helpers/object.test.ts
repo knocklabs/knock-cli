@@ -2,7 +2,7 @@ import { expect } from "@oclif/test";
 
 import { split, omitDeep } from "@/lib/helpers/object";
 
-describe("object-helpers", () => {
+describe("lib/helpers/object", () => {
   describe("split", () => {
     describe("given a key to extract from an object", () => {
       it("returns a tuple with a new extracted object plus the old object with a removed key", () => {
