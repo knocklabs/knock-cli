@@ -20,7 +20,7 @@ export default class WorkflowList extends BaseCommand {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<Paginated<Workflow.WorkflowPayload> | void> {
+  async run(): Promise<Paginated<Workflow.WorkflowData> | void> {
     const { flags } = this.props;
 
     const resp = await this.request();
@@ -40,11 +40,12 @@ export default class WorkflowList extends BaseCommand {
     return resp;
   }
 
-  async display(data: Paginated<Workflow.WorkflowPayload>) {
-    const { environment: env } = this.props.flags;
+  async display(data: Paginated<Workflow.WorkflowData>) {
+    this.logDisplayHeader(data);
+
     const { entries, page_info } = data;
 
-    this.log(`‣ Showing ${entries.length} workflows in ${env} environment\n`);
+    // Workflows list table
 
     CliUx.ux.table(entries, {
       name: {
@@ -60,7 +61,11 @@ export default class WorkflowList extends BaseCommand {
       },
       categories: {
         header: "Categories",
-        get: (entry) => Workflow.displayCategories(entry, { truncateAfter: 3 }),
+        get: (entry) => Workflow.formatCategories(entry, { truncateAfter: 3 }),
+      },
+      steps: {
+        header: "Steps",
+        get: (entry) => entry.steps.length || "-",
       },
       updated_at: {
         header: "Updated at",
@@ -92,5 +97,19 @@ export default class WorkflowList extends BaseCommand {
       this.display(resp.data);
       return;
     }
+  }
+
+  logDisplayHeader(data: Paginated<Workflow.WorkflowData>) {
+    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
+      this.props.flags;
+
+    const { entries } = data;
+
+    const qualifier =
+      env === "development" && !commitedOnly ? "(including uncommitted)" : "";
+
+    this.log(
+      `‣ Showing ${entries.length} workflows in \`${env}\` environment ${qualifier}\n`,
+    );
   }
 }

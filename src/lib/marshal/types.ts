@@ -1,16 +1,25 @@
+export type KeyValueBlock = {
+  key: string;
+  value: string;
+};
 
-// export type TypedWorkflow = {
-//   active: boolean;
-//   name: string;
-//   description?: string;
-//   key: string;
-//   categories?: string[]
-// }
+export type Duration = {
+  unit: string;
+  value: number;
+};
 
-// export type Workflow = Obj & {
-//   active: boolean;
-//   name: string;
-//   description?: string;
-//   key: string;
-//   categories?: string[]
-// }
+type SchemaAnnotation = {
+  readonly_fields: string[];
+  extractable_fields: {
+    [field: string]: {
+      default: boolean;
+      file_ext: string;
+    };
+  };
+};
+
+export type WithAnnotation = {
+  __annotation: SchemaAnnotation | null;
+};
+
+export type MaybeWithAnnotation = WithAnnotation | unknown;

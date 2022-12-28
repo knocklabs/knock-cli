@@ -4,10 +4,8 @@ import { omitBy, isNil } from "lodash";
 
 import BaseCommand, { Props } from "@/lib/base-command";
 import * as Workflow from "@/lib/marshal/workflow";
-import {
-  toPaginationParams,
-  Paginated,
-} from "@/lib/helpers/pagination-helpers";
+import { MaybeWithAnnotation } from "@/lib/marshal/types";
+import { toPaginationParams, Paginated } from "@/lib/helpers/pagination";
 
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
@@ -31,6 +29,8 @@ export default class ApiV1 {
         // Reference: https://github.com/axios/axios/issues/5346#issuecomment-1340241163
         "Accept-Encoding": "gzip,deflate,compress",
       },
+      // Only throw for 5xx responses.
+      validateStatus: (status) => status < 500,
     });
   }
 
@@ -40,9 +40,9 @@ export default class ApiV1 {
     return this.get("/ping");
   }
 
-  async listWorkflows({
+  async listWorkflows<A extends MaybeWithAnnotation>({
     flags,
-  }: Props): Promise<AxiosResponse<Paginated<Workflow.WorkflowPayload>>> {
+  }: Props): Promise<AxiosResponse<Paginated<Workflow.WorkflowData<A>>>> {
     const params = {
       environment: flags["environment"],
       annotate: flags["annotate"],
@@ -53,10 +53,10 @@ export default class ApiV1 {
     return this.get("/workflows", prune(params));
   }
 
-  async getWorkflow({
+  async getWorkflow<A extends MaybeWithAnnotation>({
     args,
     flags,
-  }: Props): Promise<AxiosResponse<Workflow.WorkflowPayload>> {
+  }: Props): Promise<AxiosResponse<Workflow.WorkflowData<A>>> {
     const params = {
       environment: flags["environment"],
       annotate: flags["annotate"],
