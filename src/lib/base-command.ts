@@ -1,6 +1,6 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
 
-import KnockApiV1 from "./v1/api";
+import KnockApiV1 from "./api-v1";
 import UserConfig from "./user-config";
 
 export type Props = Interfaces.ParserOutput;

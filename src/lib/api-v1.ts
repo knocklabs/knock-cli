@@ -67,7 +67,6 @@ export default class ApiV1 {
   }
 
   // By methods:
-  // TODO: Need to handle an error response.
 
   async get(subpath: string, params?: any): Promise<AxiosResponse> {
     return this.client.get(`/${API_VERSION}` + subpath, { params });

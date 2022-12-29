@@ -10,6 +10,7 @@ import {
   validatePageActionInput,
 } from "@/lib/helpers/pagination";
 import { formatDate } from "@/lib/helpers/date";
+import { isErrorResp, logErrorResp } from "@/lib/helpers/error";
 
 export default class WorkflowList extends BaseCommand {
   static flags = {
@@ -24,6 +25,7 @@ export default class WorkflowList extends BaseCommand {
     const { flags } = this.props;
 
     const resp = await this.request();
+    if (isErrorResp(resp)) return logErrorResp(resp);
     if (flags.json) return resp.data;
 
     this.display(resp.data);
