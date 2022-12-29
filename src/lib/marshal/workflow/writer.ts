@@ -20,6 +20,11 @@ const buildTemplateFilePath = (
   fileExt: string,
 ) => `${stepRef}/${templateVariantRef}.${fileName}.${fileExt}`.toLowerCase();
 
+/*
+ * Sanitize the workflow content into a format that's appropriate for reading
+ * and writing, by stripping out any annotation fields and handling readonly
+ * fields.
+ */
 const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
   // Move read only fields of a workflow under the dedicated field "__readonly".
   const readonlyFields = workflow.__annotation?.readonly_fields || [];
@@ -31,6 +36,12 @@ const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
   return omitDeep(worklfowJson, ["__annotation"]);
 };
 
+/*
+ * Parse a given workflow payload, and extract out any template contents where
+ * necessary and mutate the workflow data accordingly so we end up with a
+ * mapping of file contents by its relative path (aka workflow dir bundle) that
+ * can be written into a file system as individual files.
+ */
 const buildWorkflowDirBundle = (
   workflow: WorkflowData<WithAnnotation>,
 ): WorkflowDirBundle => {
