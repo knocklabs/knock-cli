@@ -1,10 +1,10 @@
-import { get, set, unset, cloneDeep } from "lodash";
 import * as fs from "fs-extra";
+import { cloneDeep, get, set, unset } from "lodash";
 
+import { omitDeep, PlainObj, split } from "@/lib/helpers/object";
 import { WithAnnotation } from "@/lib/marshal/types";
-import { split, omitDeep, PlainObj } from "@/lib/helpers/object";
 
-import { WorkflowData, StepType } from "./types";
+import { StepType, WorkflowData } from "./types";
 
 const WORKFLOW_JSON = "workflow.json";
 const FILEPATH_MARKER = "@";
@@ -35,44 +35,45 @@ const buildWorkflowDirBundle = (
   workflow: WorkflowData<WithAnnotation>,
 ): WorkflowDirBundle => {
   const bundle: WorkflowDirBundle = {};
-  let mutWorkflow = cloneDeep(workflow);
+  const mutWorkflow = cloneDeep(workflow);
 
   // For each channel step, extract out any template content into seperate
   // template files where appropriate.
-  mutWorkflow.steps.forEach((step) => {
-    if (step.type !== StepType.Channel) return;
-    if (!step.template) return;
+  for (const step of mutWorkflow.steps) {
+    if (step.type !== StepType.Channel) continue;
+    if (!step.template) continue;
 
-    Object.entries(step.template).forEach(
-      ([templateVariantRef, templateVariant]) => {
-        const extractableFields =
-          templateVariant.__annotation?.extractable_fields || {};
+    for (const [templateVariantRef, templateVariant] of Object.entries(
+      step.template,
+    )) {
+      const extractableFields =
+        templateVariant.__annotation?.extractable_fields || {};
 
-        Object.entries(extractableFields).forEach(
-          ([fieldName, { default: extractByDefault, file_ext: fileExt }]) => {
-            if (!(fieldName in templateVariant)) return;
-            if (!extractByDefault) return;
+      for (const [
+        fieldName,
+        { default: extractByDefault, file_ext: fileExt },
+      ] of Object.entries(extractableFields)) {
+        if (!(fieldName in templateVariant)) continue;
+        if (!extractByDefault) continue;
 
-            // Add the template content being extracted and its relative file
-            // path within the workflow directory to the bundle.
-            const relpath = buildTemplateFilePath(
-              step.ref,
-              templateVariantRef,
-              fieldName,
-              fileExt,
-            );
-            const fieldContent = get(templateVariant, fieldName);
-            set(bundle, [relpath], fieldContent);
-
-            // Replace the extracted field content with the file path, and
-            // append the @ suffix to the field name to mark it as such.
-            set(templateVariant, [`${fieldName}${FILEPATH_MARKER}`], relpath);
-            unset(templateVariant, fieldName);
-          },
+        // Add the template content being extracted and its relative file
+        // path within the workflow directory to the bundle.
+        const relpath = buildTemplateFilePath(
+          step.ref,
+          templateVariantRef,
+          fieldName,
+          fileExt,
         );
-      },
-    );
-  });
+        const fieldContent = get(templateVariant, fieldName);
+        set(bundle, [relpath], fieldContent);
+
+        // Replace the extracted field content with the file path, and
+        // append the @ suffix to the field name to mark it as such.
+        set(templateVariant, [`${fieldName}${FILEPATH_MARKER}`], relpath);
+        unset(templateVariant, fieldName);
+      }
+    }
+  }
 
   // Finally, prepare the workflow data to be written into a workflow json file.
   return set(bundle, [WORKFLOW_JSON], toWorkflowJson(mutWorkflow));
@@ -83,7 +84,7 @@ export const writeWorkflowDir = async (
 ) => {
   const bundle = buildWorkflowDirBundle(workflow);
 
-  Object.entries(bundle).forEach(([relpath, fileContent]) => {
+  for (const [relpath, fileContent] of Object.entries(bundle)) {
     const filePath = `./${workflow.key}/${relpath}`.toLowerCase();
 
     if (relpath === WORKFLOW_JSON) {
@@ -91,5 +92,5 @@ export const writeWorkflowDir = async (
     } else {
       fs.outputFile(filePath, fileContent);
     }
-  });
+  }
 };
