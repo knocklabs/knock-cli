@@ -1,15 +1,17 @@
 import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
+class APIError extends Error {}
+
 const isSuccessResp = (resp: AxiosResponse) =>
   resp.status >= 200 && resp.status < 300;
 
-class APIError extends Error {}
-
 /*
- * Helper function that wraps the underlying request function and handles:
- *  1) Starting a spinner before the request, and stopping it after the response
- *  2) Printing an APIError if an error response was received
+ * Helper function that wraps the underlying request function and handles
+ * certain boilerplate operations around a req/resp cycle:
+ *
+ * 1) Starting a spinner before the request, and stopping it after the response
+ * 2) Turning an error response into an APIError
  */
 type WithSpinnerOpts = {
   action?: string;
@@ -25,6 +27,7 @@ export const withSpinner = async <T>(
   CliUx.ux.action.start(action);
   const resp = await requestFn();
 
+  // Error out before the action stop so the spinner can update accordingly.
   if (ensureSuccess && !isSuccessResp(resp)) {
     const { message, code } = resp.data;
     CliUx.ux.error(new APIError(message), { code });

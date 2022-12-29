@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { isNil, omitBy } from "lodash";
 
 import BaseCommand, { Props } from "@/lib/base-command";
-import { Paginated, toPaginationParams } from "@/lib/helpers/pagination";
+import { Paginated, toPageParams } from "@/lib/helpers/pagination";
 import { MaybeWithAnnotation } from "@/lib/marshal/types";
 import * as Workflow from "@/lib/marshal/workflow";
 
@@ -47,7 +47,7 @@ export default class ApiV1 {
       environment: flags.environment,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
-      ...toPaginationParams(flags),
+      ...toPageParams(flags),
     };
 
     return this.get("/workflows", prune(params));

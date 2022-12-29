@@ -4,11 +4,9 @@ import { AxiosResponse } from "axios";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
 import {
-  formatPageActionPrompt,
-  PageAction,
+  handlePageActionPrompt,
   Paginated,
   paginationFlags,
-  validatePageActionInput,
 } from "@/lib/helpers/pagination";
 import { withSpinner } from "@/lib/helpers/request";
 import { WorkflowData } from "@/lib/marshal/workflow";
@@ -33,9 +31,9 @@ export default class WorkflowList extends BaseCommand {
   }
 
   async request(
-    extraFlags = {},
+    pageParams = {},
   ): Promise<AxiosResponse<Paginated<WorkflowData>>> {
-    const flags = { ...this.props.flags, ...extraFlags };
+    const flags = { ...this.props.flags, ...pageParams };
     const props = { ...this.props, flags };
 
     return withSpinner<Paginated<WorkflowData>>(() =>
@@ -44,7 +42,7 @@ export default class WorkflowList extends BaseCommand {
   }
 
   async display(data: Paginated<WorkflowData>): Promise<void> {
-    const { entries } = data;
+    const { entries, page_info } = data;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
 
@@ -60,12 +58,11 @@ export default class WorkflowList extends BaseCommand {
      */
 
     CliUx.ux.table(entries, {
-      name: {
-        header: "Name",
-        minWidth: 24,
-      },
       key: {
         header: "Key",
+      },
+      name: {
+        header: "Name",
       },
       status: {
         header: "Status",
@@ -77,7 +74,7 @@ export default class WorkflowList extends BaseCommand {
       },
       steps: {
         header: "Steps",
-        get: (entry) => entry.steps.length > 0 || "-",
+        get: (entry) => (entry.steps.length > 0 ? entry.steps.length : "-"),
       },
       updated_at: {
         header: "Updated at",
@@ -85,32 +82,11 @@ export default class WorkflowList extends BaseCommand {
       },
     });
 
-    this.handlePageActionPrompt(data);
-  }
+    const pageParams = await handlePageActionPrompt(page_info);
+    if (pageParams) {
+      this.log("\n");
 
-  async handlePageActionPrompt(data: Paginated<WorkflowData>): Promise<void> {
-    const { page_info } = data;
-
-    // If next or prev page is available, display a prompt to take a user input.
-    const prompt = formatPageActionPrompt(page_info);
-    if (!prompt) return;
-
-    const input = await CliUx.ux.prompt(`? ${prompt}`, { required: false });
-    const validAction = validatePageActionInput(input, page_info);
-    if (!validAction) return;
-
-    this.log("\n");
-
-    // For a valid action, make a request for either previous or next page data.
-
-    if (validAction === PageAction.Previous) {
-      const resp = await this.request({ before: page_info.before });
-      this.display(resp.data);
-      return;
-    }
-
-    if (validAction === PageAction.Next) {
-      const resp = await this.request({ after: page_info.after });
+      const resp = await this.request(pageParams);
       this.display(resp.data);
     }
   }
