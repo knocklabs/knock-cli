@@ -39,9 +39,7 @@ export enum PageAction {
  * Format a prompt text to show available page actions.
  * e.g. [p: preview, n: next]
  */
-export const formatPageActionPrompt = (
-  pageInfo: PageInfo,
-): string | undefined => {
+const formatPageActionPrompt = (pageInfo: PageInfo): string | undefined => {
   const options = [
     pageInfo.before && `${PageAction.Previous}: previous`,
     pageInfo.after && `${PageAction.Next}: next`,
@@ -54,7 +52,7 @@ export const formatPageActionPrompt = (
  * Validate a prompt input for a page action based on available options and
  * return if valid.
  */
-export const validatePageActionInput = (
+const validatePageActionInput = (
   input: string,
   pageInfo: PageInfo,
 ): PageAction | undefined => {
@@ -93,3 +91,6 @@ export const handlePageActionPrompt = async (
     default:
   }
 };
+
+// Exported for tests.
+export { formatPageActionPrompt, validatePageActionInput };

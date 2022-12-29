@@ -7,7 +7,7 @@ import {
 
 describe("lib/helpers/pagination", () => {
   describe("formatPageActionPrompt", () => {
-    describe("given a page info for a first page", () => {
+    describe("given a page info for the first page", () => {
       it("returns a prompt with a next page action", () => {
         const pageInfo = {
           after: "foo",
@@ -19,7 +19,7 @@ describe("lib/helpers/pagination", () => {
       });
     });
 
-    describe("given a page info for a last page", () => {
+    describe("given a page info for the last page", () => {
       it("returns a prompt with a previous page action", () => {
         const pageInfo = {
           after: null,
@@ -45,7 +45,7 @@ describe("lib/helpers/pagination", () => {
   });
 
   describe("validatePageActionInput", () => {
-    describe("given an input from a first page", () => {
+    describe("given an input from the first page", () => {
       it("validates the input for a next page action", () => {
         const pageInfo = {
           after: "foo",
@@ -63,7 +63,7 @@ describe("lib/helpers/pagination", () => {
       });
     });
 
-    describe("given an input from a middle page", () => {
+    describe("given an input from the middle page", () => {
       it("validates the input for next or previous page actions", () => {
         const pageInfo = {
           after: "foo",
@@ -81,7 +81,7 @@ describe("lib/helpers/pagination", () => {
       });
     });
 
-    describe("given an input from a last page", () => {
+    describe("given an input from the last page", () => {
       it("validates the input for a previous page action", () => {
         const pageInfo = {
           after: null,
