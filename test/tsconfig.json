@@ -2,7 +2,11 @@
   "extends": "../tsconfig",
   "compilerOptions": {
     "noEmit": true,
-    "baseUrl": "../src"
+    "baseUrl": "../src",
+    "paths": {
+      "@/*": ["./*"],
+      "test/support": ["../test/support"]
+    }
   },
   "references": [
     {"path": ".."}
