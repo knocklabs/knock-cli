@@ -1,6 +1,6 @@
 {
   "require": [
-    "test/helpers/init.js",
+    "test/init.js",
     "ts-node/register",
     "tsconfig-paths/register"
   ],
