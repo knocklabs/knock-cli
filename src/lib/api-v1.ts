@@ -68,7 +68,7 @@ export default class ApiV1 {
 
   // By methods:
 
-  async get(subpath: string, params?: any): Promise<AxiosResponse> {
+  async get(subpath: string, params?: unknown): Promise<AxiosResponse> {
     return this.client.get(`/${API_VERSION}` + subpath, { params });
   }
 }

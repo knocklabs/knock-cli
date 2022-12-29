@@ -1,5 +1,7 @@
-import { Flags, Interfaces } from "@oclif/core";
+import { Flags } from "@oclif/core";
 import { pick } from "lodash";
+
+import { AnyObj } from "@/lib/helpers/object";
 
 export type PageInfo = {
   after: string | null;
@@ -18,9 +20,15 @@ export const paginationFlags = {
   limit: Flags.integer({ max: 100 }),
 };
 
+type PaginationParams = {
+  after: string;
+  before: string;
+  limit: number;
+};
+
 export const toPaginationParams = (
-  flags: Pick<Interfaces.ParserOutput, "flags">,
-) => {
+  flags: AnyObj,
+): Partial<PaginationParams> => {
   return pick(flags, Object.keys(paginationFlags));
 };
 
@@ -29,7 +37,9 @@ export enum PageAction {
   Next = "n",
 }
 
-export const formatPageActionPrompt = (pageInfo: PageInfo) => {
+export const formatPageActionPrompt = (
+  pageInfo: PageInfo,
+): string | undefined => {
   const options = [
     pageInfo.before && `${PageAction.Previous}: previous`,
     pageInfo.after && `${PageAction.Next}: next`,
@@ -38,7 +48,10 @@ export const formatPageActionPrompt = (pageInfo: PageInfo) => {
   return options.length > 0 ? `[${options.join(", ")}]` : undefined;
 };
 
-export const validatePageActionInput = (input: string, pageInfo: PageInfo) => {
+export const validatePageActionInput = (
+  input: string,
+  pageInfo: PageInfo,
+): string | undefined => {
   const val = input.toLowerCase().trim();
 
   if (pageInfo.after && val === PageAction.Next) {

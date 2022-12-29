@@ -83,13 +83,13 @@ type HttpFetchStepData<A extends MaybeWithAnnotation> = A &
     settings: HttpFetchStepSettings;
   };
 
-export type WorkflowStepData<A extends MaybeWithAnnotation = {}> =
+export type WorkflowStepData<A extends MaybeWithAnnotation = unknown> =
   | ChannelStepData<A>
   | BatchStepData<A>
   | DelayStepData<A>
   | HttpFetchStepData<A>;
 
-export type WorkflowData<A extends MaybeWithAnnotation = {}> = A & {
+export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {
   key: string;
   name: string;
   active: boolean;

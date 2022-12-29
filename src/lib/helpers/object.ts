@@ -1,18 +1,15 @@
 import { isPlainObject, omit, pick } from "lodash";
 
-/*
- * A plain object containing zero or more key-value pairs.
- */
-export type PlainObj = { [key: string]: any };
+export type AnyObj = Record<string, unknown>;
 
 /*
  * Split an object into two based on keys provided (similar to Map.split/2 in
  * Elixir)
  */
 export const split = (
-  obj: PlainObj,
+  obj: AnyObj,
   paths: string | string[],
-): [PlainObj, PlainObj] => {
+): [AnyObj, AnyObj] => {
   const picked = pick(obj, paths);
   const remainder = omit(obj, paths);
 
@@ -25,14 +22,14 @@ export const split = (
  * Implementation is loosely based on omit-deep-lodash, and typed:
  * https://github.com/odynvolk/omit-deep-lodash/blob/master/src/index.js
  */
-export const omitDeep = (input: any, paths: string | string[]): any => {
-  function omitDeepOnOwnProps(item: any): any {
+export const omitDeep = (input: unknown, paths: string | string[]): any => {
+  const omitDeepOnOwnProps = (item: any): any => {
     if (Array.isArray(item)) {
-      return item.map(omitDeepOnOwnProps);
+      return item.map((i) => omitDeepOnOwnProps(i));
     }
 
     if (isPlainObject(item)) {
-      const obj: PlainObj = omit(item, paths);
+      const obj: AnyObj = omit(item, paths);
       for (const [k, v] of Object.entries(obj)) {
         obj[k] = omitDeep(v, paths);
       }
@@ -41,9 +38,9 @@ export const omitDeep = (input: any, paths: string | string[]): any => {
     }
 
     return item;
-  }
+  };
 
   return Array.isArray(input)
-    ? input.map(omitDeepOnOwnProps)
+    ? input.map((i) => omitDeepOnOwnProps(i))
     : omitDeepOnOwnProps(input);
 };

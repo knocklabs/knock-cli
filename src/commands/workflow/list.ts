@@ -1,4 +1,5 @@
 import { CliUx, Flags } from "@oclif/core";
+import { AxiosResponse } from "axios";
 
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
@@ -31,7 +32,9 @@ export default class WorkflowList extends BaseCommand {
     this.display(resp.data);
   }
 
-  async request(extraFlags = {}) {
+  async request(
+    extraFlags = {},
+  ): Promise<AxiosResponse<Paginated<WorkflowData>>> {
     const flags = { ...this.props.flags, ...extraFlags };
     const props = { ...this.props, flags };
 
@@ -40,8 +43,8 @@ export default class WorkflowList extends BaseCommand {
     );
   }
 
-  async display(data: Paginated<WorkflowData>) {
-    const { entries, page_info } = data;
+  async display(data: Paginated<WorkflowData>): Promise<void> {
+    const { entries } = data;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
 
@@ -74,7 +77,7 @@ export default class WorkflowList extends BaseCommand {
       },
       steps: {
         header: "Steps",
-        get: (entry) => entry.steps.length || "-",
+        get: (entry) => entry.steps.length > 0 || "-",
       },
       updated_at: {
         header: "Updated at",
@@ -82,8 +85,13 @@ export default class WorkflowList extends BaseCommand {
       },
     });
 
-    // If next or prev page is available, display a prompt to take a user input.
+    this.handlePageActionPrompt(data);
+  }
 
+  async handlePageActionPrompt(data: Paginated<WorkflowData>): Promise<void> {
+    const { page_info } = data;
+
+    // If next or prev page is available, display a prompt to take a user input.
     const prompt = formatPageActionPrompt(page_info);
     if (!prompt) return;
 

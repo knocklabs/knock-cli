@@ -4,11 +4,7 @@ import { AxiosResponse } from "axios";
 const isSuccessResp = (resp: AxiosResponse) =>
   resp.status >= 200 && resp.status < 300;
 
-class APIError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+class APIError extends Error {}
 
 /*
  * Helper function that wraps the underlying request function and handles:

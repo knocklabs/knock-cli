@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import { cloneDeep, get, set, unset } from "lodash";
 
-import { omitDeep, PlainObj, split } from "@/lib/helpers/object";
+import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { WithAnnotation } from "@/lib/marshal/types";
 
 import { StepType, WorkflowData } from "./types";
@@ -20,7 +20,7 @@ const buildTemplateFilePath = (
   fileExt: string,
 ) => `${stepRef}/${templateVariantRef}.${fileName}.${fileExt}`.toLowerCase();
 
-const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): PlainObj => {
+const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
   // Move read only fields of a workflow under the dedicated field "__readonly".
   const readonlyFields = workflow.__annotation?.readonly_fields || [];
   const [readonly, remainder] = split(workflow, readonlyFields);
@@ -81,7 +81,7 @@ const buildWorkflowDirBundle = (
 
 export const writeWorkflowDir = async (
   workflow: WorkflowData<WithAnnotation>,
-) => {
+): Promise<void> => {
   const bundle = buildWorkflowDirBundle(workflow);
 
   for (const [relpath, fileContent] of Object.entries(bundle)) {

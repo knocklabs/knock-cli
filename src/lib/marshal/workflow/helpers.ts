@@ -75,8 +75,8 @@ const httpFetchStepSummaryLines = (step: WorkflowStepData) => {
   return [
     `Method: ${method.toUpperCase()}`,
     `URL: ${url}`,
-    reqHeaders.length && `Headers: \n\t${reqHeaders.join("\n\t")}`,
-    params.length && `Params: \n\t${params.join("\n\t")}`,
+    reqHeaders.length > 0 && `Headers: \n\t${reqHeaders.join("\n\t")}`,
+    params.length > 0 && `Params: \n\t${params.join("\n\t")}`,
     body && `Body: \n${body}`,
   ];
 };

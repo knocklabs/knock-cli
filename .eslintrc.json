@@ -10,6 +10,7 @@
   "rules": {
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
+    "node/no-missing-import": "off",
     "camelcase": "off"
   }
 }
