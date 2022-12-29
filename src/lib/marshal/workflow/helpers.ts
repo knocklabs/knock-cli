@@ -1,6 +1,6 @@
 import { take } from "lodash";
 
-import { WorkflowData, WorkflowStepData, StepType } from "./types";
+import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 type FormatCategoriesOpts = {
   truncateAfter?: number;

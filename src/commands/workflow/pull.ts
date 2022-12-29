@@ -1,8 +1,8 @@
 import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
-import * as Workflow from "@/lib/marshal/workflow";
 import { WithAnnotation } from "@/lib/marshal/types";
+import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowPull extends BaseCommand {
   static flags = {
@@ -23,8 +23,8 @@ export default class WorkflowPull extends BaseCommand {
 
     try {
       await Workflow.writeWorkflowDir(resp.data);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     }
   }
 }

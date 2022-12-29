@@ -35,7 +35,7 @@ export const formatPageActionPrompt = (pageInfo: PageInfo) => {
     pageInfo.after && `${PageAction.Next}: next`,
   ].filter((x) => x);
 
-  return options.length ? `[${options.join(", ")}]` : undefined;
+  return options.length > 0 ? `[${options.join(", ")}]` : undefined;
 };
 
 export const validatePageActionInput = (input: string, pageInfo: PageInfo) => {

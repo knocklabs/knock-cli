@@ -1,6 +1,6 @@
 import { expect, test } from "@oclif/test";
 
-describe("ping", () => {
+describe("commands/ping", () => {
   test
     .nock("https://control.knock.app", (api) =>
       api.get("/v1/ping").reply(200, "pong"),

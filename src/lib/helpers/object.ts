@@ -1,4 +1,4 @@
-import { omit, pick, isPlainObject } from "lodash";
+import { isPlainObject, omit, pick } from "lodash";
 
 /*
  * A plain object containing zero or more key-value pairs.
@@ -36,6 +36,7 @@ export const omitDeep = (input: any, paths: string | string[]): any => {
       for (const [k, v] of Object.entries(obj)) {
         obj[k] = omitDeep(v, paths);
       }
+
       return obj;
     }
 

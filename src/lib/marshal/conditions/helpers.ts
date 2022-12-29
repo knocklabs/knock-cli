@@ -3,7 +3,7 @@ import { Condition, Conditions, NestedConditions } from "./types";
 const formatConditionsList = (
   conditions: Condition[],
   joinedBy: "or" | "and",
-  appendedBy: string = "",
+  appendedBy = "",
 ): string =>
   conditions
     .map((c) => `"${c.variable}" ${c.operator} "${c.argument}"`)
@@ -12,7 +12,7 @@ const formatConditionsList = (
 const formatNestedConditions = (
   nestedConds: NestedConditions[],
   joinedBy: "or" | "and",
-  appendedBy: string = "",
+  appendedBy = "",
 ): string =>
   nestedConds
     .map(({ any, all }) => {

@@ -1,11 +1,11 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { Config, Interfaces } from "@oclif/core";
-import { omitBy, isNil } from "lodash";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+import { isNil, omitBy } from "lodash";
 
 import BaseCommand, { Props } from "@/lib/base-command";
-import * as Workflow from "@/lib/marshal/workflow";
+import { Paginated, toPaginationParams } from "@/lib/helpers/pagination";
 import { MaybeWithAnnotation } from "@/lib/marshal/types";
-import { toPaginationParams, Paginated } from "@/lib/helpers/pagination";
+import * as Workflow from "@/lib/marshal/workflow";
 
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
@@ -29,8 +29,8 @@ export default class ApiV1 {
         // Reference: https://github.com/axios/axios/issues/5346#issuecomment-1340241163
         "Accept-Encoding": "gzip,deflate,compress",
       },
-      // Only throw for 5xx responses.
-      validateStatus: (status) => status < 500,
+      // Don't reject the promise based on a response status code.
+      validateStatus: null,
     });
   }
 
@@ -44,8 +44,8 @@ export default class ApiV1 {
     flags,
   }: Props): Promise<AxiosResponse<Paginated<Workflow.WorkflowData<A>>>> {
     const params = {
-      environment: flags["environment"],
-      annotate: flags["annotate"],
+      environment: flags.environment,
+      annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       ...toPaginationParams(flags),
     };
@@ -58,8 +58,8 @@ export default class ApiV1 {
     flags,
   }: Props): Promise<AxiosResponse<Workflow.WorkflowData<A>>> {
     const params = {
-      environment: flags["environment"],
-      annotate: flags["annotate"],
+      environment: flags.environment,
+      annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     };
 

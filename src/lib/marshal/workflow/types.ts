@@ -1,9 +1,9 @@
+import type { Conditions } from "@/lib/marshal/conditions";
 import {
   Duration,
   KeyValueBlock,
   MaybeWithAnnotation,
 } from "@/lib/marshal/types";
-import type { Conditions } from "@/lib/marshal/conditions";
 
 export enum StepType {
   Channel = "channel",
