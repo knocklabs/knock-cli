@@ -1,16 +1,17 @@
-import { Flags, CliUx } from "@oclif/core";
+import { CliUx, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
-import * as Workflow from "@/lib/marshal/workflow";
+import { formatDate } from "@/lib/helpers/date";
 import {
-  paginationFlags,
-  Paginated,
-  PageAction,
   formatPageActionPrompt,
+  PageAction,
+  Paginated,
+  paginationFlags,
   validatePageActionInput,
 } from "@/lib/helpers/pagination";
-import { formatDate } from "@/lib/helpers/date";
-import { isErrorResp, logErrorResp } from "@/lib/helpers/error";
+import { withSpinner } from "@/lib/helpers/request";
+import { WorkflowData } from "@/lib/marshal/workflow";
+import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowList extends BaseCommand {
   static flags = {
@@ -21,11 +22,10 @@ export default class WorkflowList extends BaseCommand {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<Paginated<Workflow.WorkflowData> | void> {
-    const { flags } = this.props;
-
+  async run(): Promise<Paginated<WorkflowData> | void> {
     const resp = await this.request();
-    if (isErrorResp(resp)) return logErrorResp(resp);
+
+    const { flags } = this.props;
     if (flags.json) return resp.data;
 
     this.display(resp.data);
@@ -35,19 +35,26 @@ export default class WorkflowList extends BaseCommand {
     const flags = { ...this.props.flags, ...extraFlags };
     const props = { ...this.props, flags };
 
-    CliUx.ux.action.start("‣ Loading");
-    const resp = await this.apiV1.listWorkflows(props);
-
-    CliUx.ux.action.stop();
-    return resp;
+    return withSpinner<Paginated<WorkflowData>>(() =>
+      this.apiV1.listWorkflows(props),
+    );
   }
 
-  async display(data: Paginated<Workflow.WorkflowData>) {
-    this.logDisplayHeader(data);
-
+  async display(data: Paginated<WorkflowData>) {
     const { entries, page_info } = data;
+    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
+      this.props.flags;
 
-    // Workflows list table
+    const qualifier =
+      env === "development" && !commitedOnly ? "(including uncommitted)" : "";
+
+    this.log(
+      `‣ Showing ${entries.length} workflows in \`${env}\` environment ${qualifier}\n`,
+    );
+
+    /*
+     * Workflows list table
+     */
 
     CliUx.ux.table(entries, {
       name: {
@@ -75,8 +82,8 @@ export default class WorkflowList extends BaseCommand {
       },
     });
 
-    // If we can move to a next or previous page, display a prompt to take a
-    // user input.
+    // If next or prev page is available, display a prompt to take a user input.
+
     const prompt = formatPageActionPrompt(page_info);
     if (!prompt) return;
 
@@ -97,21 +104,6 @@ export default class WorkflowList extends BaseCommand {
     if (validAction === PageAction.Next) {
       const resp = await this.request({ after: page_info.after });
       this.display(resp.data);
-      return;
     }
-  }
-
-  logDisplayHeader(data: Paginated<Workflow.WorkflowData>) {
-    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
-      this.props.flags;
-
-    const { entries } = data;
-
-    const qualifier =
-      env === "development" && !commitedOnly ? "(including uncommitted)" : "";
-
-    this.log(
-      `‣ Showing ${entries.length} workflows in \`${env}\` environment ${qualifier}\n`,
-    );
   }
 }

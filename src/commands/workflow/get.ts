@@ -1,10 +1,11 @@
-import { Flags, CliUx } from "@oclif/core";
+import { CliUx, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
-import * as Workflow from "@/lib/marshal/workflow";
-import * as Conditions from "@/lib/marshal/conditions";
 import { formatDateTime } from "@/lib/helpers/date";
-import { isErrorResp, logErrorResp } from "@/lib/helpers/error";
+import { withSpinner } from "@/lib/helpers/request";
+import * as Conditions from "@/lib/marshal/conditions";
+import { WorkflowData } from "@/lib/marshal/workflow";
+import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowGet extends BaseCommand {
   static flags = {
@@ -16,28 +17,32 @@ export default class WorkflowGet extends BaseCommand {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<Workflow.WorkflowData | void> {
-    const { flags } = this.props;
+  async run(): Promise<WorkflowData | void> {
+    const resp = await withSpinner<WorkflowData>(() =>
+      this.apiV1.getWorkflow(this.props),
+    );
 
-    const resp = await this.request();
-    if (isErrorResp(resp)) return logErrorResp(resp);
+    const { flags } = this.props;
     if (flags.json) return resp.data;
 
     this.display(resp.data);
   }
 
-  async request() {
-    CliUx.ux.action.start("‣ Loading");
-    const resp = await this.apiV1.getWorkflow(this.props);
+  display(workflow: WorkflowData) {
+    const { workflowKey } = this.props.args;
+    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
+      this.props.flags;
 
-    CliUx.ux.action.stop();
-    return resp;
-  }
+    const qualifier =
+      env === "development" && !commitedOnly ? "(including uncommitted)" : "";
 
-  display(workflow: Workflow.WorkflowData) {
-    this.logDisplayHeader();
+    this.log(
+      `‣ Showing workflow \`${workflowKey}\` in \`${env}\` environment ${qualifier}\n`,
+    );
 
-    // Workflow table
+    /*
+     * Workflow table
+     */
 
     const rows = [
       {
@@ -83,11 +88,13 @@ export default class WorkflowGet extends BaseCommand {
 
     this.log("");
 
-    if (!workflow.steps.length) {
+    if (workflow.steps.length === 0) {
       return CliUx.ux.log(" This workflow has no steps to display.");
     }
 
-    // Workflow steps table
+    /*
+     * Workflow steps table
+     */
 
     const steps = workflow.steps.map((step, index) => ({ ...step, index }));
 
@@ -114,19 +121,5 @@ export default class WorkflowGet extends BaseCommand {
           step.conditions ? Conditions.formatConditions(step.conditions) : "-",
       },
     });
-  }
-
-  logDisplayHeader() {
-    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
-      this.props.flags;
-
-    const { workflowKey } = this.props.args;
-
-    const qualifier =
-      env === "development" && !commitedOnly ? "(including uncommitted)" : "";
-
-    this.log(
-      `‣ Showing workflow \`${workflowKey}\` in \`${env}\` environment ${qualifier}\n`,
-    );
   }
 }
