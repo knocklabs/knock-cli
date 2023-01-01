@@ -1,7 +1,7 @@
 import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
-import { WithAnnotation } from "@/lib/marshal/types";
+import { WithAnnotation } from "@/lib/marshal/shared/types";
 import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowPull extends BaseCommand {

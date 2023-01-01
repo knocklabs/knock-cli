@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import { cloneDeep, get, set, unset } from "lodash";
 
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
-import { WithAnnotation } from "@/lib/marshal/types";
+import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { StepType, WorkflowData } from "./types";
 

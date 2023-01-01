@@ -3,7 +3,7 @@ import {
   Duration,
   KeyValueBlock,
   MaybeWithAnnotation,
-} from "@/lib/marshal/types";
+} from "@/lib/marshal/shared/types";
 
 export enum StepType {
   Channel = "channel",
