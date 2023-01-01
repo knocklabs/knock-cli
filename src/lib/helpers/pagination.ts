@@ -3,7 +3,7 @@ import { pick } from "lodash";
 
 import { AnyObj } from "@/lib/helpers/object";
 
-type PageInfo = {
+export type PageInfo = {
   after: string | null;
   before: string | null;
   page_size: number;

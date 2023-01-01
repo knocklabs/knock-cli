@@ -1,14 +1,13 @@
 import { expect } from "@oclif/test";
 
+import { factory } from "@/../test/support";
 import { formatCategories } from "@/lib/marshal/workflow/helpers";
 
 describe("lib/marshal/workflow/helpers", () => {
   describe("formatCategories", () => {
     describe("given a workflow with no categories", () => {
       it("returns an empty display string, default or configured", () => {
-        const workflow = {
-          name: "Foo",
-        } as any;
+        const workflow = factory.workflow({ categories: undefined });
 
         expect(formatCategories(workflow)).to.equal("");
         expect(formatCategories(workflow, { emptyDisplay: "-" })).to.equal("-");
@@ -17,10 +16,7 @@ describe("lib/marshal/workflow/helpers", () => {
 
     describe("given a workflow with categories without truncating", () => {
       it("returns a string of categories joined by commas", () => {
-        const workflow = {
-          name: "Foo",
-          categories: ["a", "b", "c"],
-        } as any;
+        const workflow = factory.workflow({ categories: ["a", "b", "c"] });
 
         expect(formatCategories(workflow)).to.equal("a, b, c");
       });
@@ -28,10 +24,7 @@ describe("lib/marshal/workflow/helpers", () => {
 
     describe("given a workflow with categories within a truncate threshold", () => {
       it("returns a string of categories joined by commas", () => {
-        const workflow = {
-          name: "Foo",
-          categories: ["a", "b", "c"],
-        } as any;
+        const workflow = factory.workflow({ categories: ["a", "b", "c"] });
 
         const result = formatCategories(workflow, { truncateAfter: 3 });
         expect(result).to.equal("a, b, c");
@@ -40,10 +33,7 @@ describe("lib/marshal/workflow/helpers", () => {
 
     describe("given a workflow with categories above a truncate threshold", () => {
       it("returns a string of categories joined by commas, plus the remaining count", () => {
-        const workflow = {
-          name: "Foo",
-          categories: ["a", "b", "c", "d"],
-        } as any;
+        const workflow = factory.workflow({ categories: ["a", "b", "c", "d"] });
 
         const result = formatCategories(workflow, { truncateAfter: 2 });
         expect(result).to.equal("a, b (+ 2 more)");

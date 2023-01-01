@@ -1,6 +1,8 @@
 import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
+import { isTestEnv } from "./env";
+
 class APIError extends Error {}
 
 const isSuccessResp = (resp: AxiosResponse) =>
@@ -24,13 +26,14 @@ export const withSpinner = async <T>(
 ): Promise<AxiosResponse<T>> => {
   const { action = "‣ Loading", ensureSuccess = true } = opts;
 
-  CliUx.ux.action.start(action);
+  // Suppress printing the spinner in tests, oclif doesn't for some reasons.
+  if (!isTestEnv) CliUx.ux.action.start(action);
   const resp = await requestFn();
 
   // Error out before the action stop so the spinner can update accordingly.
   if (ensureSuccess && !isSuccessResp(resp)) {
-    const { message, code } = resp.data;
-    CliUx.ux.error(new APIError(message), { code });
+    const { message } = resp.data;
+    CliUx.ux.error(new APIError(message));
   }
 
   CliUx.ux.action.stop();

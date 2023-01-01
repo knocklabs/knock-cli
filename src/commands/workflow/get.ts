@@ -4,7 +4,6 @@ import BaseCommand from "@/lib/base-command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
 import * as Conditions from "@/lib/marshal/conditions";
-import { WorkflowData } from "@/lib/marshal/workflow";
 import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowGet extends BaseCommand {
@@ -17,8 +16,8 @@ export default class WorkflowGet extends BaseCommand {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<WorkflowData | void> {
-    const resp = await withSpinner<WorkflowData>(() =>
+  async run(): Promise<Workflow.WorkflowData | void> {
+    const resp = await withSpinner<Workflow.WorkflowData>(() =>
       this.apiV1.getWorkflow(this.props),
     );
 
@@ -28,7 +27,7 @@ export default class WorkflowGet extends BaseCommand {
     this.display(resp.data);
   }
 
-  display(workflow: WorkflowData): void {
+  display(workflow: Workflow.WorkflowData): void {
     const { workflowKey } = this.props.args;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;

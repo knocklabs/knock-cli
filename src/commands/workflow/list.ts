@@ -9,7 +9,6 @@ import {
   paginationFlags,
 } from "@/lib/helpers/pagination";
 import { withSpinner } from "@/lib/helpers/request";
-import { WorkflowData } from "@/lib/marshal/workflow";
 import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowList extends BaseCommand {
@@ -21,7 +20,7 @@ export default class WorkflowList extends BaseCommand {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<Paginated<WorkflowData> | void> {
+  async run(): Promise<Paginated<Workflow.WorkflowData> | void> {
     const resp = await this.request();
 
     const { flags } = this.props;
@@ -32,16 +31,16 @@ export default class WorkflowList extends BaseCommand {
 
   async request(
     pageParams = {},
-  ): Promise<AxiosResponse<Paginated<WorkflowData>>> {
+  ): Promise<AxiosResponse<Paginated<Workflow.WorkflowData>>> {
     const flags = { ...this.props.flags, ...pageParams };
     const props = { ...this.props, flags };
 
-    return withSpinner<Paginated<WorkflowData>>(() =>
+    return withSpinner<Paginated<Workflow.WorkflowData>>(() =>
       this.apiV1.listWorkflows(props),
     );
   }
 
-  async display(data: Paginated<WorkflowData>): Promise<void> {
+  async display(data: Paginated<Workflow.WorkflowData>): Promise<void> {
     const { entries, page_info } = data;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;

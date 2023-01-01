@@ -10,12 +10,14 @@ import * as Workflow from "@/lib/marshal/workflow";
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
 
-type GFlags = Interfaces.InferredFlags<typeof BaseCommand["globalFlags"]>;
+export type GFlags = Interfaces.InferredFlags<
+  typeof BaseCommand["globalFlags"]
+>;
 
 const prune = (params: Record<string, unknown>) => omitBy(params, isNil);
 
 export default class ApiV1 {
-  protected client!: AxiosInstance;
+  client!: AxiosInstance;
 
   constructor(flags: GFlags, config: Config) {
     const baseURL = flags["api-origin"] || DEFAULT_ORIGIN;

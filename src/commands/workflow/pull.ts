@@ -12,7 +12,6 @@ export default class WorkflowPull extends BaseCommand {
   static args = [{ name: "workflowKey", required: true }];
 
   // XXX: Test annotate param
-  // knockrc.json
 
   async run(): Promise<void> {
     const flags = { ...this.props.flags, annotate: true };
@@ -21,8 +20,6 @@ export default class WorkflowPull extends BaseCommand {
       ...this.props,
       flags,
     });
-
-    // XXX: async vs sync..?
 
     try {
       await Workflow.writeWorkflowDir(resp.data);
