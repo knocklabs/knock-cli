@@ -1,13 +1,13 @@
 import { expect, test } from "@oclif/test";
 
+import { factory } from "@/../test/support";
+import KnockApiV1 from "@/lib/api-v1";
 import UserConfig from "@/lib/user-config";
 
 describe("commands/ping", () => {
   describe("given a valid service token via flag", () => {
     test
-      .nock("https://control.knock.app", (api) =>
-        api.get("/v1/ping").reply(200, "pong"),
-      )
+      .stub(KnockApiV1.prototype, "ping", () => factory.resp({ data: "pong" }))
       .stdout()
       .command(["ping", "--service-token", "valid-token"])
       .it("runs the command to make a ping request", (ctx) => {
@@ -18,9 +18,7 @@ describe("commands/ping", () => {
   describe("given a valid service token via env var", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .nock("https://control.knock.app", (api) =>
-        api.get("/v1/ping").reply(200, "pong"),
-      )
+      .stub(KnockApiV1.prototype, "ping", () => factory.resp({ data: "pong" }))
       .stdout()
       .command(["ping"])
       .it("runs the command to make a ping request", (ctx) => {
@@ -33,9 +31,7 @@ describe("commands/ping", () => {
       .stub(UserConfig, "get", () => ({
         serviceToken: "valid-token",
       }))
-      .nock("https://control.knock.app", (api) =>
-        api.get("/v1/ping").reply(200, "pong"),
-      )
+      .stub(KnockApiV1.prototype, "ping", () => factory.resp({ data: "pong" }))
       .stdout()
       .command(["ping"])
       .it("runs the command to make a ping request", (ctx) => {
