@@ -107,6 +107,6 @@ describe("commands/workflow/get", () => {
       .stdout()
       .command(["workflow get", "foo"])
       .catch("The resource you requested does not exist")
-      .it("throws a resource not found error message");
+      .it("throws an error for resource not found");
   });
 });

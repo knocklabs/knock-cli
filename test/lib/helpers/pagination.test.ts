@@ -15,7 +15,7 @@ describe("lib/helpers/pagination", () => {
           page_size: 10,
         };
         const result = formatPageActionPrompt(pageInfo);
-        expect(result).to.equal("[n: next]");
+        expect(result).to.equal("[n: next page]");
       });
     });
 
@@ -27,7 +27,7 @@ describe("lib/helpers/pagination", () => {
           page_size: 10,
         };
         const result = formatPageActionPrompt(pageInfo);
-        expect(result).to.equal("[p: previous]");
+        expect(result).to.equal("[p: previous page]");
       });
     });
 
@@ -39,7 +39,7 @@ describe("lib/helpers/pagination", () => {
           page_size: 10,
         };
         const result = formatPageActionPrompt(pageInfo);
-        expect(result).to.equal("[p: previous, n: next]");
+        expect(result).to.equal("[p: previous page, n: next page]");
       });
     });
   });

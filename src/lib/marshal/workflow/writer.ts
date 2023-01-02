@@ -1,6 +1,7 @@
 import * as fs from "fs-extra";
 import { cloneDeep, get, set, unset } from "lodash";
 
+import { isTestEnv, sandboxDir } from "@/lib/helpers/env";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
@@ -90,18 +91,27 @@ const buildWorkflowDirBundle = (
   return set(bundle, [WORKFLOW_JSON], toWorkflowJson(mutWorkflow));
 };
 
-export const writeWorkflowDir = async (
+export const writeWorkflowDir = (
   workflow: WorkflowData<WithAnnotation>,
-): Promise<void> => {
+): void => {
   const bundle = buildWorkflowDirBundle(workflow);
 
-  for (const [relpath, fileContent] of Object.entries(bundle)) {
-    const filePath = `./${workflow.key}/${relpath}`.toLowerCase();
+  // TODO: Need to be aware of the cwd context of a workflow, or a project etc.
+  const cwd = isTestEnv ? sandboxDir : ".";
+  const workflowDir = `${cwd}/${workflow.key}`;
 
-    if (relpath === WORKFLOW_JSON) {
-      fs.outputJson(filePath, fileContent, { spaces: "\t" });
-    } else {
-      fs.outputFile(filePath, fileContent);
+  try {
+    for (const [relpath, fileContent] of Object.entries(bundle)) {
+      const filePath = `${workflowDir}/${relpath}`;
+
+      if (relpath === WORKFLOW_JSON) {
+        fs.outputJsonSync(filePath, fileContent, { spaces: "\t" });
+      } else {
+        fs.outputFileSync(filePath, fileContent);
+      }
     }
+  } catch (error) {
+    fs.removeSync(workflowDir);
+    throw error;
   }
 };

@@ -7,12 +7,11 @@ import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowPull extends BaseCommand {
   static flags = {
+    environment: Flags.string({ default: "development" }),
     "hide-uncommitted-changes": Flags.boolean(),
   };
 
   static args = [{ name: "workflowKey", required: true }];
-
-  // XXX: Test annotate param
 
   async run(): Promise<void> {
     const flags = { ...this.props.flags, annotate: true };
@@ -21,6 +20,6 @@ export default class WorkflowPull extends BaseCommand {
       this.apiV1.getWorkflow({ ...this.props, flags }),
     );
 
-    await Workflow.writeWorkflowDir(resp.data);
+    return Workflow.writeWorkflowDir(resp.data);
   }
 }
