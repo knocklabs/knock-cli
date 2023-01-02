@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import { cloneDeep, get, set, unset } from "lodash";
 
-import { isTestEnv, sandboxDir } from "@/lib/helpers/env";
+import { isTestEnv, sandboxDir } from "@/lib/helpers/sandbox";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
