@@ -21,7 +21,7 @@
   "dependencies": {
     "@oclif/core": "^1.23.0",
     "@oclif/plugin-help": "^5",
-    "@oclif/plugin-plugins": "^2.1.8",
+    "@oclif/plugin-plugins": "^2.1.12",
     "axios": "1.2.1",
     "fs-extra": "^10.1.0",
     "yup": "^0.32.11"
