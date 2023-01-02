@@ -24,10 +24,10 @@ export default class WorkflowGet extends BaseCommand {
     const { flags } = this.props;
     if (flags.json) return resp.data;
 
-    this.display(resp.data);
+    this.render(resp.data);
   }
 
-  display(workflow: Workflow.WorkflowData): void {
+  render(workflow: Workflow.WorkflowData): void {
     const { workflowKey } = this.props.args;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;

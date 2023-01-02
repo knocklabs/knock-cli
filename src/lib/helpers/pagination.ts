@@ -42,8 +42,8 @@ export enum PageAction {
  */
 const formatPageActionPrompt = (pageInfo: PageInfo): string | undefined => {
   const options = [
-    pageInfo.before && `${PageAction.Previous}: previous`,
-    pageInfo.after && `${PageAction.Next}: next`,
+    pageInfo.before && `${PageAction.Previous}: previous page`,
+    pageInfo.after && `${PageAction.Next}: next page`,
   ].filter((x) => x);
 
   return options.length > 0 ? `[${options.join(", ")}]` : undefined;

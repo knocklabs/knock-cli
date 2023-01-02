@@ -27,22 +27,21 @@ export default class WorkflowList extends BaseCommand {
     const { flags } = this.props;
     if (flags.json) return resp.data;
 
-    this.display(resp.data);
+    this.render(resp.data);
   }
 
   async request(
     pageParams = {},
   ): Promise<AxiosResponse<Paginated<Workflow.WorkflowData>>> {
     const flags = { ...this.props.flags, ...pageParams };
-    const props = { ...this.props, flags };
 
     return withSpinner<Paginated<Workflow.WorkflowData>>(() =>
-      this.apiV1.listWorkflows(props),
+      this.apiV1.listWorkflows({ ...this.props, flags }),
     );
   }
 
-  async display(data: Paginated<Workflow.WorkflowData>): Promise<void> {
-    const { entries, page_info } = data;
+  async render(data: Paginated<Workflow.WorkflowData>): Promise<void> {
+    const { entries } = data;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
 
@@ -82,6 +81,12 @@ export default class WorkflowList extends BaseCommand {
       },
     });
 
+    return this.prompt(data);
+  }
+
+  async prompt(data: Paginated<Workflow.WorkflowData>): Promise<void> {
+    const { page_info } = data;
+
     const pageAction = await maybePromptPageAction(page_info);
     const pageParams = pageAction && paramsForPageAction(pageAction, page_info);
 
@@ -89,7 +94,7 @@ export default class WorkflowList extends BaseCommand {
       this.log("\n");
 
       const resp = await this.request(pageParams);
-      return this.display(resp.data);
+      return this.render(resp.data);
     }
   }
 }
