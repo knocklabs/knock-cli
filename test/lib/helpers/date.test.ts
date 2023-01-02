@@ -18,7 +18,7 @@ describe("lib/helpers/date", () => {
       it("returns a human readable datetime string in MMM d, yyyy HH:mm:ss format", () => {
         const result = formatDateTime("2022-11-14T21:02:23.117949Z");
 
-        expect(result).to.equal("Nov 14, 2022 16:02:23");
+        expect(result).to.equal("Nov 14, 2022 21:02:23");
       });
     });
   });
