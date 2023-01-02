@@ -4,9 +4,10 @@ import { AxiosResponse } from "axios";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
 import {
-  handlePageActionPrompt,
+  maybePromptPageAction,
   Paginated,
   paginationFlags,
+  paramsForPageAction,
 } from "@/lib/helpers/pagination";
 import { withSpinner } from "@/lib/helpers/request";
 import * as Workflow from "@/lib/marshal/workflow";
@@ -81,12 +82,14 @@ export default class WorkflowList extends BaseCommand {
       },
     });
 
-    const pageParams = await handlePageActionPrompt(page_info);
+    const pageAction = await maybePromptPageAction(page_info);
+    const pageParams = pageAction && paramsForPageAction(pageAction, page_info);
+
     if (pageParams) {
       this.log("\n");
 
       const resp = await this.request(pageParams);
-      this.display(resp.data);
+      return this.display(resp.data);
     }
   }
 }

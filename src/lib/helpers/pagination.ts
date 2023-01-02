@@ -1,4 +1,5 @@
-import { CliUx, Flags } from "@oclif/core";
+import { Flags } from "@oclif/core";
+import enquirer from "enquirer";
 import { pick } from "lodash";
 
 import { AnyObj } from "@/lib/helpers/object";
@@ -68,20 +69,37 @@ const validatePageActionInput = (
 };
 
 /*
- * Present a page action prompt if available, validate the prompt input,
- * and return the corresponding page params based on the valid page action.
+ * Presents a page action prompt if available, and returns a valid page action
+ * from the input.
  */
-export const handlePageActionPrompt = async (
+export const maybePromptPageAction = async (
   pageInfo: PageInfo,
-): Promise<PageParams | undefined> => {
-  // If there is a next or prev page, display a prompt to take a user input.
-  const prompt = formatPageActionPrompt(pageInfo);
-  if (!prompt) return;
+): Promise<PageAction | undefined> => {
+  const message = formatPageActionPrompt(pageInfo);
+  if (!message) return;
 
-  const input = await CliUx.ux.prompt(`? ${prompt}`, { required: false });
-  const validAction = validatePageActionInput(input, pageInfo);
+  try {
+    const answer = await enquirer.prompt<{ input: string }>({
+      type: "input",
+      name: "input",
+      message,
+    });
 
-  switch (validAction) {
+    return validatePageActionInput(answer.input, pageInfo);
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
+};
+
+/*
+ * Returns a page params object based on the page action and page info.
+ */
+export const paramsForPageAction = (
+  pageAction: PageAction,
+  pageInfo: PageInfo,
+): PageParams | undefined => {
+  switch (pageAction) {
     case PageAction.Previous:
       return { before: pageInfo.before! };
 
