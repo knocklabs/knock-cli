@@ -29,7 +29,7 @@ const maybeReadJsonConfig = async (configDir: string) => {
   return fs.readJSON(pathToJsonConfig);
 };
 
-const load = async (configDir: string): Promise<UserConfig> => {
+export const load = async (configDir: string): Promise<UserConfig> => {
   const readConfig = await maybeReadJsonConfig(configDir);
   const validConfig = await userConfigSchema.validate(readConfig || {});
 
@@ -39,12 +39,10 @@ const load = async (configDir: string): Promise<UserConfig> => {
   return USER_CONFIG;
 };
 
-const get = (): UserConfig => {
+export const get = (): UserConfig => {
   if (!USER_CONFIG) {
     throw new Error("User config must be loaded first.");
   }
 
   return USER_CONFIG;
 };
-
-export default { load, get };

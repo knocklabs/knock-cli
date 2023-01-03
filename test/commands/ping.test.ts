@@ -2,7 +2,7 @@ import { expect, test } from "@oclif/test";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
-import UserConfig from "@/lib/user-config";
+import * as UserConfig from "@/lib/user-config";
 
 describe("commands/ping", () => {
   describe("given a valid service token via flag", () => {
