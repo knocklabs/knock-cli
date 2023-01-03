@@ -2,7 +2,7 @@ import { expect, test } from "@oclif/test";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
-import * as UserConfig from "@/lib/user-config";
+import UserConfig from "@/lib/user-config";
 
 describe("commands/ping", () => {
   describe("given a valid service token via flag", () => {
@@ -28,9 +28,7 @@ describe("commands/ping", () => {
 
   describe("given a valid service token via user config", () => {
     test
-      .stub(UserConfig, "get", () => ({
-        serviceToken: "valid-token",
-      }))
+      .stub(UserConfig, "get", () => ({ serviceToken: "valid-token" }))
       .stub(KnockApiV1.prototype, "ping", () => factory.resp({ data: "pong" }))
       .stdout()
       .command(["ping"])
