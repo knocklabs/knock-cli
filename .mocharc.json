@@ -1,8 +1,8 @@
 {
   "require": [
     "test/init.js",
-    // Allow resolving imports based on tsconfig `baseUrl` and `paths`.
     "ts-node/register",
+    // Allow resolving imports based on tsconfig `baseUrl` and `paths` in tests.
     "tsconfig-paths/register"
   ],
   "recursive": true,

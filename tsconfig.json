@@ -18,6 +18,7 @@
     "src/**/*"
   ],
   "ts-node": {
+    "swc": true,
     "require": ["tsconfig-paths/register"]
   }
 }

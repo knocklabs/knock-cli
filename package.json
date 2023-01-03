@@ -29,6 +29,9 @@
   },
   "devDependencies": {
     "@oclif/test": "^2.2.13",
+    "@swc/cli": "^0.1.59",
+    "@swc/core": "^1.3.24",
+    "@swc/helpers": "^0.4.14",
     "@types/chai": "^4",
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "^9.0.0",
@@ -67,7 +70,7 @@
     }
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && swc src -d dist",
     "lint": "eslint . --ext .ts --config .eslintrc.json",
     "lint.fix": "yarn run lint --fix",
     "format": "prettier \"src/**/*.+(ts|js)\" \"test/**/*.+(ts|js)\"",
