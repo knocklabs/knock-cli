@@ -104,9 +104,9 @@ export const writeWorkflowDir = async (
     for (const [relpath, fileContent] of Object.entries(bundle)) {
       const filePath = `${workflowDir}/${relpath}`;
 
-      await (relpath === WORKFLOW_JSON
+      relpath === WORKFLOW_JSON
         ? fs.outputJson(filePath, fileContent, { spaces: "\t" })
-        : fs.outputFile(filePath, fileContent));
+        : fs.outputFile(filePath, fileContent);
     }
   } catch (error) {
     await fs.remove(workflowDir);
