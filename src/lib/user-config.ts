@@ -6,7 +6,7 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import * as yup from "yup";
 
-import { isTestEnv } from "@/lib/helpers/sandbox";
+import { isTestEnv } from "@/lib/helpers/env";
 
 const userConfigSchema = yup.object({
   serviceToken: yup.string(),

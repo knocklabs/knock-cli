@@ -1,7 +1,7 @@
 import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
-import { isTestEnv } from "./sandbox";
+import { isTestEnv } from "./env";
 
 class APIError extends Error {}
 
