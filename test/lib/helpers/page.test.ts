@@ -3,9 +3,9 @@ import { expect } from "@oclif/test";
 import {
   formatPageActionPrompt,
   validatePageActionInput,
-} from "@/lib/helpers/pagination";
+} from "@/lib/helpers/page";
 
-describe("lib/helpers/pagination", () => {
+describe("lib/helpers/page", () => {
   describe("formatPageActionPrompt", () => {
     describe("given a page info for the first page", () => {
       it("returns a prompt with a next page action", () => {

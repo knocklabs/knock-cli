@@ -2,7 +2,7 @@ import { AxiosResponse } from "axios";
 
 import { GFlags } from "@/lib/api-v1";
 import { Props } from "@/lib/base-command";
-import { PageInfo } from "@/lib/helpers/pagination";
+import { PageInfo } from "@/lib/helpers/page";
 import { WorkflowData } from "@/lib/marshal/workflow";
 
 export const gFlags = (attrs: Partial<GFlags> = {}): GFlags => {

@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { isNil, omitBy } from "lodash";
 
 import BaseCommand, { Props } from "@/lib/base-command";
-import { Paginated, toPageParams } from "@/lib/helpers/pagination";
+import { Paginated, toPageParams } from "@/lib/helpers/page";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Workflow from "@/lib/marshal/workflow";
 

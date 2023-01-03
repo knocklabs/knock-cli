@@ -5,10 +5,10 @@ import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
 import {
   maybePromptPageAction,
+  pageFlags,
   Paginated,
-  paginationFlags,
   paramsForPageAction,
-} from "@/lib/helpers/pagination";
+} from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
 import * as Workflow from "@/lib/marshal/workflow";
 
@@ -16,7 +16,7 @@ export default class WorkflowList extends BaseCommand {
   static flags = {
     environment: Flags.string({ default: "development" }),
     "hide-uncommitted-changes": Flags.boolean(),
-    ...paginationFlags,
+    ...pageFlags,
   };
 
   static enableJsonFlag = true;

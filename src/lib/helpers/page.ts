@@ -15,7 +15,7 @@ export type Paginated<T = any> = {
   page_info: PageInfo;
 };
 
-export const paginationFlags = {
+export const pageFlags = {
   after: Flags.string(),
   before: Flags.string(),
   limit: Flags.integer({ max: 100 }),
@@ -28,7 +28,7 @@ type PageParams = {
 };
 
 export const toPageParams = (flags: AnyObj): PageParams => {
-  return pick(flags, Object.keys(paginationFlags));
+  return pick(flags, Object.keys(pageFlags));
 };
 
 export enum PageAction {
