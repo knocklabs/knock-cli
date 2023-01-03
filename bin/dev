@@ -5,20 +5,10 @@ const oclif = require('@oclif/core')
 const path = require('path')
 const project = path.join(__dirname, '..', 'tsconfig.json')
 
-// Respect the tsconfig settings for baseUrl and paths.
-// Reference: https://github.com/oclif/oclif/issues/288#issuecomment-1117064483
-const tsConfig = require('../tsconfig.json');
-const tsConfigPaths = require('tsconfig-paths');
-
-tsConfigPaths.register({
-  baseUrl: tsConfig.compilerOptions.baseUrl,
-  paths: tsConfig.compilerOptions.paths,
-});
+require('ts-node').register({project})
 
 // In dev mode -> use ts-node and dev plugins
 process.env.NODE_ENV = 'development'
-
-require('ts-node').register({project})
 
 // In dev mode, always show stack traces
 oclif.settings.debug = true;
