@@ -2,12 +2,14 @@ import { Command, Flags, Interfaces } from "@oclif/core";
 
 import KnockApiV1 from "./api-v1";
 import UserConfig from "./user-config";
+import * as RunContext from "./run-context";
 
 export type Props = Interfaces.ParserOutput;
 
 abstract class BaseCommand extends Command {
   protected props!: Props;
   protected apiV1!: KnockApiV1;
+  protected runContext!: RunContext.T;
 
   public async init(): Promise<void> {
     await super.init();
@@ -20,6 +22,9 @@ abstract class BaseCommand extends Command {
 
     // 3. Instantiate a knock api client.
     this.apiV1 = new KnockApiV1(this.props.flags, this.config);
+
+    // 4. Load the run context of the invoked command.
+    this.runContext = RunContext.load();
   }
 
   // Global flags are inherited by any command that extends BaseCommand.
