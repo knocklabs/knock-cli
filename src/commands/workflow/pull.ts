@@ -13,12 +13,12 @@ const promptToConfirm = async ({
   key,
 }: WorkflowDirContext): Promise<string | undefined> => {
   try {
-    const { answer } = await enquirer.prompt<{ answer: string }>({
+    const { input } = await enquirer.prompt<{ input: string }>({
       type: "confirm",
-      name: "answer",
+      name: "input",
       message: `Create a new workflow directory at ./${key}?`,
     });
-    return answer;
+    return input;
   } catch (error) {
     console.log(error);
   }
@@ -41,8 +41,8 @@ export default class WorkflowPull extends BaseCommand {
         `‣ Found \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}`,
       );
     } else {
-      const answer = await promptToConfirm(workflowDirCtx);
-      if (!answer) return;
+      const input = await promptToConfirm(workflowDirCtx);
+      if (!input) return;
     }
 
     // 2. Fetch the workflow with annotations.

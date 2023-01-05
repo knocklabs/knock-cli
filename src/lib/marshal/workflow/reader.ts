@@ -31,5 +31,6 @@ export const readWorkflowDir = async (dirPath: string): Promise<AnyObj> => {
   // such as compiling template files in the workflow directory, and validating
   // the file content etc.
 
+  // XXX: Handle invalid json.
   return fs.readJson(workflowJsonPath);
 };

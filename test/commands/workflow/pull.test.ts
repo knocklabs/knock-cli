@@ -1,4 +1,5 @@
 import { expect, test } from "@oclif/test";
+import enquirer from "enquirer";
 import * as fs from "fs-extra";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
@@ -8,15 +9,22 @@ import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/env";
 
 const setupWithStub = (workflowAtts = {}) =>
-  test.env({ KNOCK_SERVICE_TOKEN: "valid-token" }).stub(
-    KnockApiV1.prototype,
-    "getWorkflow",
-    sinon.stub().resolves(
-      factory.resp({
-        data: factory.workflow(workflowAtts),
-      }),
-    ),
-  );
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(
+      KnockApiV1.prototype,
+      "getWorkflow",
+      sinon.stub().resolves(
+        factory.resp({
+          data: factory.workflow(workflowAtts),
+        }),
+      ),
+    )
+    .stub(
+      enquirer.prototype,
+      "prompt",
+      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    );
 
 describe("commands/workflow/pull", () => {
   before(() => fs.removeSync(sandboxDir));
