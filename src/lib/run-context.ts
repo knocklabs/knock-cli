@@ -41,7 +41,7 @@ const evaluateRecursively = async (
   }
 
   // If we've identified the resource context, no need to go further.
-  // TODO: Also check for the knock project dir context.
+  // TODO: In the future also check for knock project dir context.
   if (ctx.resourceDir) return ctx;
 
   const parentDir = path.resolve(currDir, "..");
@@ -58,8 +58,3 @@ export const load = async (): Promise<RunContext> => {
 
   return evaluateRecursively(ctx, ctx.cwd);
 };
-
-export const workflowDirContext = (
-  ctx: RunContext,
-): WorkflowDirContext | undefined =>
-  ctx.resourceDir?.type === "workflow" ? ctx.resourceDir : undefined;

@@ -7,7 +7,7 @@ import BaseCommand from "@/lib/base-command";
 import { withSpinner } from "@/lib/helpers/request";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import * as Workflow from "@/lib/marshal/workflow";
-import { WorkflowDirContext, workflowDirContext } from "@/lib/run-context";
+import { WorkflowDirContext } from "@/lib/run-context";
 
 const promptToConfirm = async ({
   key,
@@ -64,7 +64,12 @@ export default class WorkflowPull extends BaseCommand {
 
   async getWorkflowDirContext(): Promise<WorkflowDirContext> {
     const { workflowKey } = this.props.args;
-    const workflowDirCtx = workflowDirContext(this.runContext);
+
+    const {
+      // TODO: In the future this might be a different resource dir like layout.
+      resourceDir: workflowDirCtx,
+      cwd: runCwd,
+    } = this.runContext;
 
     if (workflowDirCtx) {
       // The command was invoked somewhere inside the existing workflow dir.
@@ -81,7 +86,6 @@ export default class WorkflowPull extends BaseCommand {
         return workflowDirCtx;
       }
 
-      console.log(workflowDirCtx);
       // The workflow key arg provided conflicts with the current workflow
       // directory context, so return an error instead of creating a nested
       // workflow directory.
@@ -98,7 +102,7 @@ export default class WorkflowPull extends BaseCommand {
 
     // Not inside any existing workflow directory, which means we either create
     // a new worfklow directory in the cwd, or update it if there is one already.
-    const dirPath = path.resolve(this.runContext.cwd, workflowKey);
+    const dirPath = path.resolve(runCwd, workflowKey);
     const exists = await Workflow.isWorkflowDir(dirPath);
 
     return {
