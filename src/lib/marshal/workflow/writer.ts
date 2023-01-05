@@ -1,18 +1,18 @@
+import * as path from "node:path";
+
 import * as fs from "fs-extra";
-import { cloneDeep, get, set, unset } from "lodash";
+import { cloneDeep, get, keyBy, set, unset } from "lodash";
 
 import { isTestEnv, sandboxDir } from "@/lib/helpers/env";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
+import { WorkflowDirContext } from "@/lib/run-context";
 
+import { WORKFLOW_JSON } from "./helpers";
+import { readWorkflowDir, validateTemplateFilePath } from "./reader";
 import { StepType, WorkflowData } from "./types";
 
-const WORKFLOW_JSON = "workflow.json";
 const FILEPATH_MARKER = "@";
-
-type WorkflowDirBundle = {
-  [relpath: string]: string;
-};
 
 const buildTemplateFilePath = (
   stepRef: string,
@@ -20,6 +20,12 @@ const buildTemplateFilePath = (
   fileName: string,
   fileExt: string,
 ) => `${stepRef}/${templateVariantRef}.${fileName}.${fileExt}`.toLowerCase();
+
+const buildObjPathToExtractableField = (
+  stepRef: string,
+  templateVariantRef: string,
+  fieldName: string,
+) => `${stepRef}.template.${templateVariantRef}.${fieldName}${FILEPATH_MARKER}`;
 
 /*
  * Sanitize the workflow content into a format that's appropriate for reading
@@ -43,11 +49,19 @@ const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
  * mapping of file contents by its relative path (aka workflow dir bundle) that
  * can be written into a file system as individual files.
  */
+type WorkflowDirBundle = {
+  [relpath: string]: string;
+};
+
 const buildWorkflowDirBundle = (
-  workflow: WorkflowData<WithAnnotation>,
+  remoteWorkflow: WorkflowData<WithAnnotation>,
+  localWorkflow: AnyObj,
+  workflowDirCtx: WorkflowDirContext,
 ): WorkflowDirBundle => {
   const bundle: WorkflowDirBundle = {};
-  const mutWorkflow = cloneDeep(workflow);
+  const mutWorkflow = cloneDeep(remoteWorkflow);
+
+  const localWorkflowStepsByRef = keyBy(localWorkflow.steps || [], "ref");
 
   // For each channel step, extract out any template content into seperate
   // template files where appropriate.
@@ -65,17 +79,35 @@ const buildWorkflowDirBundle = (
         fieldName,
         { default: extractByDefault, file_ext: fileExt },
       ] of Object.entries(extractableFields)) {
+        // If this template variant doesn't have this field, then it's not
+        // relevant so nothing more to do here.
         if (!(fieldName in templateVariant)) continue;
-        if (!extractByDefault) continue;
+
+        // If this field is extracted in the local workflow, then always extract;
+        // otherwise extract based on the field settings default.
+        const extractedTemplateFilePath = get(
+          localWorkflowStepsByRef,
+          buildObjPathToExtractableField(
+            step.ref,
+            templateVariantRef,
+            fieldName,
+          ),
+        );
+        const isValidTemplateFilePath =
+          Boolean(extractedTemplateFilePath) &&
+          validateTemplateFilePath(extractedTemplateFilePath, workflowDirCtx);
+        if (!isValidTemplateFilePath && !extractByDefault) continue;
 
         // Add the template content being extracted and its relative file
         // path within the workflow directory to the bundle.
-        const relpath = buildTemplateFilePath(
-          step.ref,
-          templateVariantRef,
-          fieldName,
-          fileExt,
-        );
+        const relpath =
+          extractedTemplateFilePath ||
+          buildTemplateFilePath(
+            step.ref,
+            templateVariantRef,
+            fieldName,
+            fileExt,
+          );
         const fieldContent = get(templateVariant, fieldName);
         set(bundle, [relpath], fieldContent);
 
@@ -92,24 +124,34 @@ const buildWorkflowDirBundle = (
 };
 
 export const writeWorkflowDir = async (
-  workflow: WorkflowData<WithAnnotation>,
+  remoteWorkflow: WorkflowData<WithAnnotation>,
+  workflowDirCtx: WorkflowDirContext,
 ): Promise<void> => {
-  const bundle = buildWorkflowDirBundle(workflow);
-
-  // TODO: Need to be aware of the cwd context of a workflow, or a project etc.
-  const cwd = isTestEnv ? sandboxDir : ".";
-  const workflowDir = `${cwd}/${workflow.key}`;
+  const workflowDirPath = isTestEnv
+    ? path.join(sandboxDir, remoteWorkflow.key)
+    : workflowDirCtx.abspath;
 
   try {
-    for (const [relpath, fileContent] of Object.entries(bundle)) {
-      const filePath = `${workflowDir}/${relpath}`;
+    const localWorkflow = workflowDirCtx.exists
+      ? await readWorkflowDir(workflowDirPath)
+      : {};
 
-      relpath === WORKFLOW_JSON
+    const bundle = buildWorkflowDirBundle(
+      remoteWorkflow,
+      localWorkflow,
+      workflowDirCtx,
+    );
+
+    const promises = Object.entries(bundle).map(([relpath, fileContent]) => {
+      const filePath = path.join(workflowDirPath, relpath);
+
+      return relpath === WORKFLOW_JSON
         ? fs.outputJson(filePath, fileContent, { spaces: "\t" })
         : fs.outputFile(filePath, fileContent);
-    }
+    });
+    await Promise.all(promises);
   } catch (error) {
-    await fs.remove(workflowDir);
+    await fs.remove(workflowDirPath);
     throw error;
   }
 };

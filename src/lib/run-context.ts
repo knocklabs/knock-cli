@@ -5,39 +5,61 @@
  */
 import * as path from "node:path";
 
-import * as fs from "fs-extra";
+import * as Workflow from "@/lib/marshal/workflow";
 
-type WorkflowContext = {
+export type WorkflowDirContext = {
   type: "workflow";
   key: string;
-  root: string;
+  abspath: string;
+  exists: boolean;
 };
 
 export type RunContext = {
   cwd: string;
-  resource?: WorkflowContext;
+  resourceDir?: WorkflowDirContext;
 };
 
-const evaluateRecursively = (ctx: RunContext, currDir: string): RunContext => {
-  if (currDir === "/") return ctx;
-  if (ctx.resource) return ctx;
+export type T = RunContext;
 
-  if (fs.existsSync(`${currDir}/workflow.json`)) {
-    ctx.resource = {
+const evaluateRecursively = async (
+  ctx: RunContext,
+  currDir: string,
+): Promise<RunContext> => {
+  // If we reached the root of the filesystem, nothing more to do.
+  const { root } = path.parse(currDir);
+  if (currDir === root) return ctx;
+
+  // Check if we are inside a workflow directory, and if so update the context.
+  const isWorkflowDir = await Workflow.isWorkflowDir(currDir);
+  if (!ctx.resourceDir && isWorkflowDir) {
+    ctx.resourceDir = {
       type: "workflow",
       key: path.basename(currDir),
-      root: currDir,
+      abspath: currDir,
+      exists: true,
     };
   }
 
-  const parentDir = path.resolve(currDir, "../");
+  // If we've identified the resource context, no need to go further.
+  // TODO: Also check for the knock project dir context.
+  if (ctx.resourceDir) return ctx;
+
+  const parentDir = path.resolve(currDir, "..");
   return evaluateRecursively(ctx, parentDir);
 };
 
-export const load = (): RunContext => {
+/*
+ * Initialize the run context with the cwd location of where the cli command
+ * was invoked, then recursively walk up the dir tree as we gather any resource
+ * or project context for the command.
+ */
+export const load = async (): Promise<RunContext> => {
   const ctx = { cwd: process.cwd() };
 
   return evaluateRecursively(ctx, ctx.cwd);
 };
 
-export type T = RunContext;
+export const workflowDirContext = (
+  ctx: RunContext,
+): WorkflowDirContext | undefined =>
+  ctx.resourceDir?.type === "workflow" ? ctx.resourceDir : undefined;
