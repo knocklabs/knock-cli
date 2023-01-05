@@ -51,12 +51,12 @@ describe("commands/workflow/pull", () => {
       );
     });
 
-  setupWithStub({ key: "workflow-z" })
+  setupWithStub({ key: "workflow-y" })
     .stdout()
-    .command(["workflow pull", "workflow-z"])
+    .command(["workflow pull", "workflow-y"])
     .it("writes a workflow dir to the file system", () => {
       const exists = fs.pathExistsSync(
-        `${sandboxDir}/workflow-z/workflow.json`,
+        `${sandboxDir}/workflow-y/workflow.json`,
       );
 
       expect(exists).to.equal(true);

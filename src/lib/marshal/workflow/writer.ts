@@ -9,10 +9,13 @@ import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { WorkflowDirContext } from "@/lib/run-context";
 
 import { WORKFLOW_JSON } from "./helpers";
-import { readWorkflowDir, validateTemplateFilePath } from "./reader";
+import { readWorkflowDir, validateTemplateFilePathFormat } from "./reader";
 import { StepType, WorkflowData } from "./types";
 
 const FILEPATH_MARKER = "@";
+
+// Use double spaces instead of a tabs, so jsonlint error messages print nicely.
+const DOUBLE_SPACES = "  ";
 
 const buildTemplateFilePath = (
   stepRef: string,
@@ -95,7 +98,11 @@ const buildWorkflowDirBundle = (
         );
         const isValidTemplateFilePath =
           Boolean(extractedTemplateFilePath) &&
-          validateTemplateFilePath(extractedTemplateFilePath, workflowDirCtx);
+          validateTemplateFilePathFormat(
+            extractedTemplateFilePath,
+            workflowDirCtx,
+          );
+
         if (!isValidTemplateFilePath && !extractByDefault) continue;
 
         // Add the template content being extracted and its relative file
@@ -123,6 +130,12 @@ const buildWorkflowDirBundle = (
   return set(bundle, [WORKFLOW_JSON], toWorkflowJson(mutWorkflow));
 };
 
+/*
+ * The main write function that takes the latest workflow from Knock (remote
+ * workflow), and the same workflow from the local file system (local workflow,
+ * if available), then writes the remote workflow into a workflow directory
+ * with a reference of the local workflow.
+ */
 export const writeWorkflowDir = async (
   remoteWorkflow: WorkflowData<WithAnnotation>,
   workflowDirCtx: WorkflowDirContext,
@@ -132,9 +145,11 @@ export const writeWorkflowDir = async (
     : workflowDirCtx.abspath;
 
   try {
-    const localWorkflow = workflowDirCtx.exists
+    // If the workflow directory exists on the file system (i.e. previously
+    // pulled before), then read the workflow file to use as a reference.
+    const [localWorkflow = {}] = workflowDirCtx.exists
       ? await readWorkflowDir(workflowDirPath)
-      : {};
+      : [];
 
     const bundle = buildWorkflowDirBundle(
       remoteWorkflow,
@@ -146,7 +161,7 @@ export const writeWorkflowDir = async (
       const filePath = path.join(workflowDirPath, relpath);
 
       return relpath === WORKFLOW_JSON
-        ? fs.outputJson(filePath, fileContent, { spaces: "\t" })
+        ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
         : fs.outputFile(filePath, fileContent);
     });
     await Promise.all(promises);

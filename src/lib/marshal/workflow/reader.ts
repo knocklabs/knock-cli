@@ -2,12 +2,32 @@ import * as path from "node:path";
 
 import * as fs from "fs-extra";
 
-import { AnyObj } from "@/lib/helpers/object";
+import { readJson, ReadJsonResult } from "@/lib/helpers/json";
 import { WorkflowDirContext } from "@/lib/run-context";
 
 import { lsWorkflowJson } from "./helpers";
 
-export const validateTemplateFilePath = (
+/*
+ * Validate the file path format of an extracted template field. The file path
+ * must be:
+ *
+ * 1) Expressed as a relative path.
+ *
+ *    For exmaple:
+ *      subject@: "email_1/subject.html"              // GOOD
+ *      subject@: "./email_1/subject.html"            // GOOD
+ *      subject@: "/workflow-x/email_1/subject.html"  // BAD
+ *
+ * 2) The resolved path must be contained inside the workflow directory
+ *    (assuming workflow-y is a different workflow dir)
+ *
+ *    For exmaple:
+ *      subject@: "./email_1/subject.html"              // GOOD
+ *      subject@: "../workflow-y/email_1/subject.html"  // BAD
+ *
+ * Note: does not validate the presence nor the uniqueness file path.
+ */
+export const validateTemplateFilePathFormat = (
   relpath: string,
   workflowDirCtx: WorkflowDirContext,
 ): boolean => {
@@ -19,7 +39,13 @@ export const validateTemplateFilePath = (
   return !pathDiff.startsWith("..");
 };
 
-export const readWorkflowDir = async (dirPath: string): Promise<AnyObj> => {
+/*
+ * The main read function that takes the path to a workflow directory, then
+ * reads from the file system.
+ */
+export const readWorkflowDir = async (
+  dirPath: string,
+): Promise<ReadJsonResult> => {
   const dirExists = await fs.pathExists(dirPath);
   if (!dirExists) throw new Error(`${dirPath} does not exist`);
 
@@ -27,10 +53,10 @@ export const readWorkflowDir = async (dirPath: string): Promise<AnyObj> => {
   if (!workflowJsonPath)
     throw new Error(`${dirPath} is not a workflow directory`);
 
-  // TODO: In the future, will want to have options to dictate the read behavior,
-  // such as compiling template files in the workflow directory, and validating
-  // the file content etc.
+  const result = await readJson(workflowJsonPath);
 
-  // XXX: Handle invalid json.
-  return fs.readJson(workflowJsonPath);
+  // TODO: For push, will need to compile and stitch together template files
+  // with workflow, then validate the workflow and template content.
+
+  return result;
 };
