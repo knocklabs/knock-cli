@@ -174,3 +174,6 @@ export const writeWorkflowDir = async (
     throw error;
   }
 };
+
+// Exported for tests.
+export { toWorkflowJson };

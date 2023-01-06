@@ -1,7 +1,8 @@
 import * as fs from "fs-extra";
 import * as jsonlint from "jsonlint";
 
-import { DataError } from "./error";
+import { DataError } from "@/lib/types";
+
 import { AnyObj } from "./object";
 
 // Use double spaces (instead of tabs) when writing a json file, this matches
@@ -18,7 +19,7 @@ export const DOUBLE_SPACES = "  ";
  *  For example, instead of this error:
  *    SyntaxError: ...: Unexpected token } in JSON at position 972
  *
- *  We get a more friendly error with a line number, like this:
+ *  Return a more friendly error with a line number, like this:
  *    Error: Parse error on line 39:
  *    ...type": "channel",    }
  *    ------------------------^
@@ -37,7 +38,11 @@ export const readJson = async (filePath: string): Promise<ReadJsonResult> => {
     payload = jsonlint.parse(json);
   } catch (error) {
     if (!(error instanceof Error)) throw error;
-    errors.push({ name: error.name, message: error.message });
+
+    errors.push({
+      name: error.name,
+      message: error.message,
+    });
   }
 
   return [payload, errors];
