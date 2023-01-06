@@ -4,6 +4,7 @@ import * as fs from "fs-extra";
 import { cloneDeep, get, keyBy, set, unset } from "lodash";
 
 import { isTestEnv, sandboxDir } from "@/lib/helpers/env";
+import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { WorkflowDirContext } from "@/lib/run-context";
@@ -12,19 +13,31 @@ import { WORKFLOW_JSON } from "./helpers";
 import { readWorkflowDir, validateTemplateFilePathFormat } from "./reader";
 import { StepType, WorkflowData } from "./types";
 
+// Mark any template fields we are extracting out with this suffix as a rule,
+// so we can reliably interpret the field value.
 const FILEPATH_MARKER = "@";
 
-// Use double spaces instead of a tabs, so jsonlint error messages print nicely.
-const DOUBLE_SPACES = "  ";
-
-const buildTemplateFilePath = (
+/*
+ * For a given workflow step, a template variant, and a template field, return
+ * the template file path we can extract out the content to.
+ *
+ * Note, this is a default "recommended" convention but the template file can
+ * be located at any arbitrary path (as long as it is a relative path that is
+ * inside the workflow directory and unique to the field)
+ */
+const newTemplateFilePath = (
   stepRef: string,
   templateVariantRef: string,
   fileName: string,
   fileExt: string,
 ) => `${stepRef}/${templateVariantRef}.${fileName}.${fileExt}`.toLowerCase();
 
-const buildObjPathToExtractableField = (
+/*
+ * For a given workflow step, a template variant, and a template field, return
+ * the path of object which we can use to check whether the field has been
+ * extracted (hence, with the filepath marker).
+ */
+const objPathToExtractableField = (
   stepRef: string,
   templateVariantRef: string,
   fieldName: string,
@@ -90,11 +103,7 @@ const buildWorkflowDirBundle = (
         // otherwise extract based on the field settings default.
         const extractedTemplateFilePath = get(
           localWorkflowStepsByRef,
-          buildObjPathToExtractableField(
-            step.ref,
-            templateVariantRef,
-            fieldName,
-          ),
+          objPathToExtractableField(step.ref, templateVariantRef, fieldName),
         );
         const isValidTemplateFilePath =
           Boolean(extractedTemplateFilePath) &&
@@ -109,12 +118,7 @@ const buildWorkflowDirBundle = (
         // path within the workflow directory to the bundle.
         const relpath =
           extractedTemplateFilePath ||
-          buildTemplateFilePath(
-            step.ref,
-            templateVariantRef,
-            fieldName,
-            fileExt,
-          );
+          newTemplateFilePath(step.ref, templateVariantRef, fieldName, fileExt);
         const fieldContent = get(templateVariant, fieldName);
         set(bundle, [relpath], fieldContent);
 
@@ -134,7 +138,7 @@ const buildWorkflowDirBundle = (
  * The main write function that takes the latest workflow from Knock (remote
  * workflow), and the same workflow from the local file system (local workflow,
  * if available), then writes the remote workflow into a workflow directory
- * with a reference of the local workflow.
+ * with the local workflow as a reference.
  */
 export const writeWorkflowDir = async (
   remoteWorkflow: WorkflowData<WithAnnotation>,

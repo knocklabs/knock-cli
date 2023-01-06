@@ -4,6 +4,11 @@ import * as jsonlint from "jsonlint";
 import { DataError } from "./error";
 import { AnyObj } from "./object";
 
+// Use double spaces (instead of tabs) when writing a json file, this matches
+// how jsonlint parses and prints out human readable error messages in the
+// `readJson` function below.
+export const DOUBLE_SPACES = "  ";
+
 /*
  * Reads a JSON file and then parses it into an object.
  *

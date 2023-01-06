@@ -25,7 +25,8 @@ import { lsWorkflowJson } from "./helpers";
  *      subject@: "./email_1/subject.html"              // GOOD
  *      subject@: "../workflow-y/email_1/subject.html"  // BAD
  *
- * Note: does not validate the presence nor the uniqueness file path.
+ * Note: does not validate the presence of the file nor the uniqueness of the
+ * file path.
  */
 export const validateTemplateFilePathFormat = (
   relpath: string,
@@ -55,8 +56,9 @@ export const readWorkflowDir = async (
 
   const result = await readJson(workflowJsonPath);
 
-  // TODO: For push, will need to compile and stitch together template files
-  // with workflow, then validate the workflow and template content.
+  // TODO: For worklow push command, will need to compile and stitch together
+  // template files with workflow, then validate the workflow and template
+  // content.
 
   return result;
 };
