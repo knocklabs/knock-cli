@@ -19,9 +19,8 @@ import { lsWorkflowJson } from "./helpers";
  *      subject@: "/workflow-x/email_1/subject.html"  // BAD
  *
  * 2) The resolved path must be contained inside the workflow directory
- *    (assuming workflow-y is a different workflow dir)
  *
- *    For exmaple:
+ *    For exmaple (workflow-y is a different workflow dir in this example):
  *      subject@: "./email_1/subject.html"              // GOOD
  *      subject@: "../workflow-y/email_1/subject.html"  // BAD
  *
