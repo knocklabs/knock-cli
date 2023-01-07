@@ -28,7 +28,6 @@ export default class WorkflowGet extends BaseCommand {
   }
 
   render(workflow: Workflow.WorkflowData): void {
-    const { workflowKey } = this.props.args;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
 
@@ -36,7 +35,7 @@ export default class WorkflowGet extends BaseCommand {
       env === "development" && !commitedOnly ? "(including uncommitted)" : "";
 
     this.log(
-      `‣ Showing workflow \`${workflowKey}\` in \`${env}\` environment ${qualifier}\n`,
+      `‣ Showing workflow \`${workflow.key}\` in \`${env}\` environment ${qualifier}\n`,
     );
 
     /*
