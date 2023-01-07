@@ -16,7 +16,7 @@ const promptToConfirm = async ({
     const { input } = await enquirer.prompt<{ input: string }>({
       type: "confirm",
       name: "input",
-      message: `Create a new workflow directory at ./${key}?`,
+      message: `Create a new workflow directory \`${path.join(key, "/")}\`?`,
     });
     return input;
   } catch (error) {

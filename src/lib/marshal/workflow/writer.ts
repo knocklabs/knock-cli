@@ -30,7 +30,10 @@ const newTemplateFilePath = (
   templateVariantRef: string,
   fileName: string,
   fileExt: string,
-) => `${stepRef}/${templateVariantRef}.${fileName}.${fileExt}`.toLowerCase();
+) =>
+  path
+    .join(stepRef, `${templateVariantRef}.${fileName}.${fileExt}`)
+    .toLowerCase();
 
 /*
  * For a given workflow step, a template variant, and a template field, return

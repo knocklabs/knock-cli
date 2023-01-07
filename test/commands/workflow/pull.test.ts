@@ -1,3 +1,5 @@
+import * as path from "node:path";
+
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
@@ -56,7 +58,7 @@ describe("commands/workflow/pull", () => {
     .command(["workflow pull", "workflow-y"])
     .it("writes a workflow dir to the file system", () => {
       const exists = fs.pathExistsSync(
-        `${sandboxDir}/workflow-y/workflow.json`,
+        path.resolve(sandboxDir, "workflow-y", "workflow.json"),
       );
 
       expect(exists).to.equal(true);

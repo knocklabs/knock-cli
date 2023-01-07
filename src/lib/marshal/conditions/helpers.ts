@@ -22,6 +22,11 @@ const formatNestedConditions = (
     })
     .join(`\n ${joinedBy.toUpperCase()}\n`) + appendedBy;
 
+/*
+ * Returns a formatted string of conditions.
+ *
+ * Supports up to 1 nested conditions (i.e. 2 levels of conditions max).
+ */
 export const formatConditions = (conditions: Conditions): string => {
   const { any, all } = conditions;
 
