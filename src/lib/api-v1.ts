@@ -27,9 +27,6 @@ export default class ApiV1 {
       headers: {
         Authorization: `Bearer ${flags["service-token"]}`,
         "User-Agent": `${config.userAgent}`,
-        // Remove once the Z_BUF_ERROR error bug from 1.2.1 is fixed.
-        // Reference: https://github.com/axios/axios/issues/5346#issuecomment-1340241163
-        "Accept-Encoding": "gzip,deflate,compress",
       },
       // Don't reject the promise based on a response status code.
       validateStatus: null,
