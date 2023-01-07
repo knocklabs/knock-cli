@@ -1,8 +1,7 @@
 import * as fs from "fs-extra";
 import * as jsonlint from "jsonlint";
 
-import { DataError } from "@/lib/types";
-
+import { DataError } from "./error";
 import { AnyObj } from "./object";
 
 // Use double spaces (instead of tabs) when writing a json file, this matches

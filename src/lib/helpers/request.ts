@@ -1,9 +1,8 @@
 import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
-import { APIError } from "@/lib/types";
-
 import { isTestEnv } from "./env";
+import { APIError } from "./error";
 
 const isSuccessResp = (resp: AxiosResponse) =>
   resp.status >= 200 && resp.status < 300;
