@@ -16,18 +16,22 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "//": "TODO: Pin axios to 1.1.0 until export bug is fixed",
-  "//": "https://github.com/axios/axios/issues/5082#issuecomment-1288122457",
   "dependencies": {
     "@oclif/core": "^1.23.0",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.1.12",
-    "axios": "1.2.1",
+    "axios": "^1.2.1",
+    "date-fns": "^2.29.3",
+    "enquirer": "^2.3.6",
     "fs-extra": "^10.1.0",
+    "lodash": "^4.17.21",
     "yup": "^0.32.11"
   },
   "devDependencies": {
     "@oclif/test": "^2.2.13",
+    "@swc/cli": "^0.1.59",
+    "@swc/core": "^1.3.24",
+    "@swc/helpers": "^0.4.14",
     "@types/chai": "^4",
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "^9.0.0",
@@ -44,7 +48,9 @@
     "oclif": "^3",
     "prettier": "2.8.1",
     "shx": "^0.3.4",
+    "sinon": "^15.0.1",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.1",
     "tslib": "^2.3.1",
     "typescript": "^4.9.4"
   },
@@ -64,7 +70,7 @@
     }
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && swc src -d dist",
     "lint": "eslint . --ext .ts --config .eslintrc.json",
     "lint.fix": "yarn run lint --fix",
     "format": "prettier \"src/**/*.+(ts|js)\" \"test/**/*.+(ts|js)\"",

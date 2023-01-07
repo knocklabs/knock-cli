@@ -9,6 +9,10 @@
   ],
   "rules": {
     "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    "simple-import-sort/exports": "error",
+    "max-nested-callbacks": ["warn", {"max": 5}],
+    "node/no-missing-import": "off",
+    "no-warning-comments": "off",
+    "camelcase": "off"
   }
 }
