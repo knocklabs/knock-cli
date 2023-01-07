@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -x
+
+abort() {
+  printf "%s\n" "$@" >&2
+  exit 1
+}
+
+cd "$(git rev-parse --show-toplevel)"
+npx oclif pack tarballs -t darwin-arm64 --no-xz
+
+GZ_FILE=$(ls -1 dist/*.gz | head -n 1)
+
+if test -z "$GZ_FILE"; then
+  abort "No tarball was generated in /dist, aborting."
+fi
+
+VENDORS_DIR="$HOME/vendors"
+
+mkdir $VENDORS_DIR
+tar -xzf "$GZ_FILE" -C $VENDORS_DIR
+
+set +x
+
+if ! command -v knock &> /dev/null; then
+  export PATH="$VENDORS_DIR/knock/bin:$PATH"
+fi
