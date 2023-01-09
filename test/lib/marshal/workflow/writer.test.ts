@@ -1,6 +1,7 @@
 import { expect } from "@oclif/test";
 import { get } from "lodash";
 
+import { xpath } from "@/../test/support";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { StepType, WorkflowData } from "@/lib/marshal/workflow";
 import {
@@ -145,7 +146,7 @@ describe("lib/marshal/workflow/writer", () => {
         const workflowDirCtx: WorkflowDirContext = {
           type: "workflow",
           key: "new-comment",
-          abspath: "/my/workflows/new-comment",
+          abspath: xpath("/my/workflows/new-comment"),
           exists: false,
         };
 
@@ -162,11 +163,11 @@ describe("lib/marshal/workflow/writer", () => {
                 template: {
                   default: {
                     name: "Default",
-                    "text_body@": "sms_1/default.text_body.txt",
+                    "text_body@": xpath("sms_1/default.text_body.txt"),
                   },
                   it: {
                     name: "Default",
-                    "text_body@": "sms_1/it.text_body.txt",
+                    "text_body@": xpath("sms_1/it.text_body.txt"),
                   },
                 },
               },
@@ -188,7 +189,7 @@ describe("lib/marshal/workflow/writer", () => {
                   default: {
                     name: "Default",
                     subject: "New activity",
-                    "html_body@": "email_1/default.html_body.html",
+                    "html_body@": xpath("email_1/default.html_body.html"),
                     layout_key: "default",
                   },
                 },
@@ -202,9 +203,9 @@ describe("lib/marshal/workflow/writer", () => {
               updated_at: "2022-12-31T12:00:00.000000Z",
             },
           },
-          "sms_1/default.text_body.txt": "Hi {{ recipient.name }}.",
-          "sms_1/it.text_body.txt": "Ciao {{ recipient.name }}.",
-          "email_1/default.html_body.html":
+          [xpath("sms_1/default.text_body.txt")]: "Hi {{ recipient.name }}.",
+          [xpath("sms_1/it.text_body.txt")]: "Ciao {{ recipient.name }}.",
+          [xpath("email_1/default.html_body.html")]:
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
         });
       });
@@ -223,9 +224,9 @@ describe("lib/marshal/workflow/writer", () => {
                 default: {
                   name: "Default",
                   // Extracted out to a template file (not by default)
-                  "subject@": "email_1/default/subject.txt",
+                  "subject@": xpath("email_1/default/subject.txt"),
                   // Extracted out to a different path (than the default)
-                  "html_body@": "email_1/default/body.html",
+                  "html_body@": xpath("email_1/default/body.html"),
                   layout_key: "default",
                 },
               },
@@ -242,7 +243,7 @@ describe("lib/marshal/workflow/writer", () => {
         const workflowDirCtx: WorkflowDirContext = {
           type: "workflow",
           key: "new-comment",
-          abspath: "/my/workflows/new-comment",
+          abspath: xpath("/my/workflows/new-comment"),
           exists: true,
         };
 
@@ -263,11 +264,11 @@ describe("lib/marshal/workflow/writer", () => {
                 template: {
                   default: {
                     name: "Default",
-                    "text_body@": "sms_1/default.text_body.txt",
+                    "text_body@": xpath("sms_1/default.text_body.txt"),
                   },
                   it: {
                     name: "Default",
-                    "text_body@": "sms_1/it.text_body.txt",
+                    "text_body@": xpath("sms_1/it.text_body.txt"),
                   },
                 },
               },
@@ -289,8 +290,8 @@ describe("lib/marshal/workflow/writer", () => {
                   default: {
                     name: "Default",
                     // Note here..
-                    "subject@": "email_1/default/subject.txt",
-                    "html_body@": "email_1/default/body.html",
+                    "subject@": xpath("email_1/default/subject.txt"),
+                    "html_body@": xpath("email_1/default/body.html"),
                     layout_key: "default",
                   },
                 },
@@ -304,11 +305,11 @@ describe("lib/marshal/workflow/writer", () => {
               updated_at: "2022-12-31T12:00:00.000000Z",
             },
           },
-          "sms_1/default.text_body.txt": "Hi {{ recipient.name }}.",
-          "sms_1/it.text_body.txt": "Ciao {{ recipient.name }}.",
+          [xpath("sms_1/default.text_body.txt")]: "Hi {{ recipient.name }}.",
+          [xpath("sms_1/it.text_body.txt")]: "Ciao {{ recipient.name }}.",
           // And here..
-          "email_1/default/subject.txt": "New activity",
-          "email_1/default/body.html":
+          [xpath("email_1/default/subject.txt")]: "New activity",
+          [xpath("email_1/default/body.html")]:
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
         });
       });
