@@ -1,8 +1,9 @@
+import * as jsonlint from "@prantlf/jsonlint";
 import * as fs from "fs-extra";
-import * as jsonlint from "jsonlint";
+
+import { AnyObj } from "@/lib/helpers/object";
 
 import { DataError } from "./error";
-import { AnyObj } from "./object";
 
 // Use double spaces (instead of tabs) when writing a json file, this matches
 // how jsonlint parses and prints out human readable error messages in the
@@ -34,11 +35,9 @@ export const readJson = async (filePath: string): Promise<ReadJsonResult> => {
   const errors: DataError[] = [];
 
   try {
-    // TODO: Maybe swap out jsonlint with one of the forks because the project
-    // seems dormant now.
-    payload = jsonlint.parse(json);
+    payload = jsonlint.parse(json) as AnyObj;
   } catch (error) {
-    if (!(error instanceof Error)) throw error;
+    if (!(error instanceof SyntaxError)) throw error;
 
     errors.push({
       name: error.name,
