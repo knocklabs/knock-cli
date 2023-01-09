@@ -1,6 +1,10 @@
 import os from "node:os";
 import * as path from "node:path";
 
+import * as fs from "fs-extra";
+
 export const isTestEnv = process.env.NODE_ENV === "test";
 
-export const sandboxDir = path.resolve(os.tmpdir(), ".knock");
+// Note, need to wrap os.tmpdir() with fs.realpathSync() for macos because it's
+// a symlink. (https://github.com/nodejs/node/issues/11422)
+export const sandboxDir = path.resolve(fs.realpathSync(os.tmpdir()), ".knock");

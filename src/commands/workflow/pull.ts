@@ -63,6 +63,7 @@ export default class WorkflowPull extends BaseCommand {
   }
 
   async getWorkflowDirContext(): Promise<WorkflowDirContext> {
+    // TODO: Abstract it out to be used in different commands.
     const { workflowKey } = this.props.args;
 
     const {
