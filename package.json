@@ -20,6 +20,7 @@
     "@oclif/core": "^1.23.0",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.1.12",
+    "@prantlf/jsonlint": "^11.7.0",
     "axios": "^1.2.2",
     "date-fns": "^2.29.3",
     "enquirer": "^2.3.6",
