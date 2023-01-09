@@ -34,6 +34,8 @@ export const readJson = async (filePath: string): Promise<ReadJsonResult> => {
   const errors: DataError[] = [];
 
   try {
+    // TODO: Maybe swap out jsonlint with one of the forks because the project
+    // seems dormant now.
     payload = jsonlint.parse(json);
   } catch (error) {
     if (!(error instanceof Error)) throw error;

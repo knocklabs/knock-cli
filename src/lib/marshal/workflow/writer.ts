@@ -71,11 +71,10 @@ const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
 type WorkflowDirBundle = {
   [relpath: string]: string;
 };
-
 const buildWorkflowDirBundle = (
-  remoteWorkflow: WorkflowData<WithAnnotation>,
-  localWorkflow: AnyObj,
   workflowDirCtx: WorkflowDirContext,
+  remoteWorkflow: WorkflowData<WithAnnotation>,
+  localWorkflow: AnyObj = {},
 ): WorkflowDirBundle => {
   const bundle: WorkflowDirBundle = {};
   const mutWorkflow = cloneDeep(remoteWorkflow);
@@ -154,14 +153,14 @@ export const writeWorkflowDir = async (
   try {
     // If the workflow directory exists on the file system (i.e. previously
     // pulled before), then read the workflow file to use as a reference.
-    const [localWorkflow = {}] = workflowDirCtx.exists
+    const [localWorkflow] = workflowDirCtx.exists
       ? await readWorkflowDir(workflowDirPath)
       : [];
 
     const bundle = buildWorkflowDirBundle(
+      workflowDirCtx,
       remoteWorkflow,
       localWorkflow,
-      workflowDirCtx,
     );
 
     const promises = Object.entries(bundle).map(([relpath, fileContent]) => {
@@ -179,4 +178,4 @@ export const writeWorkflowDir = async (
 };
 
 // Exported for tests.
-export { toWorkflowJson };
+export { buildWorkflowDirBundle, toWorkflowJson };
