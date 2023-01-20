@@ -11,7 +11,7 @@ const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
 
 export type GFlags = Interfaces.InferredFlags<
-  typeof BaseCommand["globalFlags"]
+  (typeof BaseCommand)["globalFlags"]
 >;
 
 const prune = (params: Record<string, unknown>) => omitBy(params, isNil);
