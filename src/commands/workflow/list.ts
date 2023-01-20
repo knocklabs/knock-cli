@@ -1,12 +1,13 @@
 import { CliUx, Flags } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
+import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
+import { merge } from "@/lib/helpers/object";
 import {
   maybePromptPageAction,
   pageFlags,
-  Paginated,
   paramsForPageAction,
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
@@ -21,7 +22,7 @@ export default class WorkflowList extends BaseCommand {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<Paginated<Workflow.WorkflowData> | void> {
+  async run(): Promise<ApiV1.ListWorkflowResp | void> {
     const resp = await this.request();
 
     const { flags } = this.props;
@@ -32,15 +33,15 @@ export default class WorkflowList extends BaseCommand {
 
   async request(
     pageParams = {},
-  ): Promise<AxiosResponse<Paginated<Workflow.WorkflowData>>> {
-    const flags = { ...this.props.flags, ...pageParams };
+  ): Promise<AxiosResponse<ApiV1.ListWorkflowResp>> {
+    const props = merge(this.props, { flags: { ...pageParams } });
 
-    return withSpinner<Paginated<Workflow.WorkflowData>>(() =>
-      this.apiV1.listWorkflows({ ...this.props, flags }),
+    return withSpinner<ApiV1.ListWorkflowResp>(() =>
+      this.apiV1.listWorkflows(props),
     );
   }
 
-  async render(data: Paginated<Workflow.WorkflowData>): Promise<void> {
+  async render(data: ApiV1.ListWorkflowResp): Promise<void> {
     const { entries } = data;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
@@ -84,7 +85,7 @@ export default class WorkflowList extends BaseCommand {
     return this.prompt(data);
   }
 
-  async prompt(data: Paginated<Workflow.WorkflowData>): Promise<void> {
+  async prompt(data: ApiV1.ListWorkflowResp): Promise<void> {
     const { page_info } = data;
 
     const pageAction = await maybePromptPageAction(page_info);
