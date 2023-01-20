@@ -3,11 +3,17 @@ import * as path from "node:path";
 import { Flags } from "@oclif/core";
 import enquirer from "enquirer";
 
+import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import {
+  ensureResourceDirForTarget,
+  ResourceTarget,
+  WorkflowDirContext,
+} from "@/lib/helpers/dir-context";
+import { merge } from "@/lib/helpers/object";
 import { withSpinner } from "@/lib/helpers/request";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import * as Workflow from "@/lib/marshal/workflow";
-import { WorkflowDirContext } from "@/lib/run-context";
 
 const promptToConfirm = async ({
   key,
@@ -34,83 +40,67 @@ export default class WorkflowPull extends BaseCommand {
 
   async run(): Promise<void> {
     // 1. Retrieve or build a new workflow directory context.
-    const workflowDirCtx = await this.getWorkflowDirContext();
+    const dirContext = await this.getWorkflowDirContext();
 
-    if (workflowDirCtx.exists) {
-      this.log(
-        `‣ Found \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}`,
-      );
+    if (dirContext.exists) {
+      this.log(`‣ Found \`${dirContext.key}\` at ${dirContext.abspath}`);
     } else {
-      const input = await promptToConfirm(workflowDirCtx);
+      const input = await promptToConfirm(dirContext);
       if (!input) return;
     }
 
     // 2. Fetch the workflow with annotations.
-    const resp = await withSpinner<Workflow.WorkflowData<WithAnnotation>>(
+    const resp = await withSpinner<ApiV1.GetWorkflowResp<WithAnnotation>>(
       () => {
-        const flags = { ...this.props.flags, annotate: true };
-        return this.apiV1.getWorkflow({ ...this.props, flags });
+        const props = merge(this.props, {
+          args: { workflowKey: dirContext.key },
+          flags: { annotate: true },
+        });
+
+        return this.apiV1.getWorkflow(props);
       },
     );
 
     // 3. Write the workflow with the workflow directory context.
-    await Workflow.writeWorkflowDir(resp.data, workflowDirCtx);
+    await Workflow.writeWorkflowDir(resp.data, dirContext);
 
-    const action = workflowDirCtx.exists ? "Updated" : "Created";
-    this.log(
-      `‣ ${action} \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}`,
-    );
+    const action = dirContext.exists ? "Updated" : "Created";
+    this.log(`‣ ${action} \`${dirContext.key}\` at ${dirContext.abspath}`);
   }
 
   async getWorkflowDirContext(): Promise<WorkflowDirContext> {
-    // TODO: Abstract it out to be used in different commands.
     const { workflowKey } = this.props.args;
+    const { resourceDir, cwd: runCwd } = this.runContext;
 
-    const {
-      // TODO: In the future this might be a different resource dir like layout.
-      resourceDir: workflowDirCtx,
-      cwd: runCwd,
-    } = this.runContext;
+    // Inside an existing resource dir, use it if valid for the target workflow.
+    if (resourceDir) {
+      const target: ResourceTarget = {
+        commandId: BaseCommand.id,
+        type: "workflow",
+        key: workflowKey,
+      };
 
-    if (workflowDirCtx) {
-      // The command was invoked somewhere inside the existing workflow dir.
-
-      if (!workflowKey) {
-        // Workflow key arg was not provided with the command, but we can infer
-        // from the current workflow directory context.
-        return workflowDirCtx;
-      }
-
-      if (workflowKey === workflowDirCtx.key) {
-        // Workflow key arg was provided and matches the current workflow
-        // directory context.
-        return workflowDirCtx;
-      }
-
-      // The workflow key arg provided conflicts with the current workflow
-      // directory context, so return an error instead of creating a nested
-      // workflow directory.
-      return this.error(
-        `Cannot pull \`${workflowKey}\` inside another workflow directory:\n${workflowDirCtx.key}`,
-      );
+      return ensureResourceDirForTarget(
+        resourceDir,
+        target,
+      ) as WorkflowDirContext;
     }
 
-    if (!workflowKey) {
-      // Not in any workflow directory context, which means a workflow key arg
-      // must be provided, so return an error.
-      return this.error("Missing 1 required arg:\nworkflowKey");
+    // Not inside any existing workflow directory, which means either create a
+    // new worfklow directory in the cwd, or update it if there is one already.
+    if (workflowKey) {
+      const dirPath = path.resolve(runCwd, workflowKey);
+      const exists = await Workflow.isWorkflowDir(dirPath);
+
+      return {
+        type: "workflow",
+        key: workflowKey,
+        abspath: dirPath,
+        exists,
+      };
     }
 
-    // Not inside any existing workflow directory, which means we either create
-    // a new worfklow directory in the cwd, or update it if there is one already.
-    const dirPath = path.resolve(runCwd, workflowKey);
-    const exists = await Workflow.isWorkflowDir(dirPath);
-
-    return {
-      type: "workflow",
-      key: workflowKey,
-      abspath: dirPath,
-      exists,
-    };
+    // Not in any workflow directory, nor a workflow key arg was given so error.
+    return this.error("Missing 1 required arg:\nworkflowKey");
   }
 }
