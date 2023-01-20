@@ -2,7 +2,7 @@ import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import { isTestEnv } from "./env";
-import { APIError } from "./error";
+import { ApiError } from "./error";
 
 const isSuccessResp = (resp: AxiosResponse) =>
   resp.status >= 200 && resp.status < 300;
@@ -12,7 +12,7 @@ const isSuccessResp = (resp: AxiosResponse) =>
  * certain boilerplate operations around a req/resp cycle:
  *
  * 1) Starting a spinner before the request, and stopping it after the response
- * 2) Turning an error response into an APIError
+ * 2) Turning an error response into an ApiError
  */
 type WithSpinnerOpts = {
   action?: string;
@@ -32,7 +32,7 @@ export const withSpinner = async <T>(
   // Error out before the action stop so the spinner can update accordingly.
   if (ensureSuccess && !isSuccessResp(resp)) {
     const { message } = resp.data;
-    CliUx.ux.error(new APIError(message));
+    CliUx.ux.error(new ApiError(message));
   }
 
   CliUx.ux.action.stop();
