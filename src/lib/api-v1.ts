@@ -1,9 +1,10 @@
 import { Config, Interfaces } from "@oclif/core";
-import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { isNil, omitBy } from "lodash";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import BaseCommand, { Props } from "@/lib/base-command";
-import { Paginated, toPageParams } from "@/lib/helpers/page";
+import { JsonError } from "@/lib/helpers/error";
+import { AnyObj, prune } from "@/lib/helpers/object";
+import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Workflow from "@/lib/marshal/workflow";
 
@@ -14,8 +15,9 @@ export type GFlags = Interfaces.InferredFlags<
   typeof BaseCommand["globalFlags"]
 >;
 
-const prune = (params: Record<string, unknown>) => omitBy(params, isNil);
-
+/*
+ * API v1 client
+ */
 export default class ApiV1 {
   client!: AxiosInstance;
 
@@ -41,33 +43,71 @@ export default class ApiV1 {
 
   async listWorkflows<A extends MaybeWithAnnotation>({
     flags,
-  }: Props): Promise<AxiosResponse<Paginated<Workflow.WorkflowData<A>>>> {
-    const params = {
+  }: Props): Promise<AxiosResponse<ListWorkflowResp<A>>> {
+    const params = prune({
       environment: flags.environment,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       ...toPageParams(flags),
-    };
+    });
 
-    return this.get("/workflows", prune(params));
+    return this.get("/workflows", { params });
   }
 
   async getWorkflow<A extends MaybeWithAnnotation>({
     args,
     flags,
-  }: Props): Promise<AxiosResponse<Workflow.WorkflowData<A>>> {
-    const params = {
+  }: Props): Promise<AxiosResponse<GetWorkflowResp<A>>> {
+    const params = prune({
       environment: flags.environment,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
-    };
+    });
 
-    return this.get(`/workflows/${args.workflowKey}`, prune(params));
+    return this.get(`/workflows/${args.workflowKey}`, { params });
+  }
+
+  async upsertWorkflow<A extends MaybeWithAnnotation>(
+    { args, flags }: Props,
+    workflow: AnyObj,
+  ): Promise<AxiosResponse<UpsertWorkflowResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+    });
+    const data = { workflow };
+
+    return this.put(`/workflows/${args.workflowKey}`, data, { params });
   }
 
   // By methods:
 
-  async get(subpath: string, params?: unknown): Promise<AxiosResponse> {
-    return this.client.get(`/${API_VERSION}` + subpath, { params });
+  async get(
+    subpath: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.get(`/${API_VERSION}` + subpath, config);
+  }
+
+  async put(
+    subpath: string,
+    data?: unknown,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.put(`/${API_VERSION}` + subpath, data, config);
   }
 }
+
+/*
+ * API v1 response types:
+ */
+export type ListWorkflowResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Workflow.WorkflowData<A>>;
+
+export type GetWorkflowResp<A extends MaybeWithAnnotation = unknown> =
+  Workflow.WorkflowData<A>;
+
+export type UpsertWorkflowResp<A extends MaybeWithAnnotation = unknown> = {
+  workflow?: Workflow.WorkflowData<A>;
+  errors?: JsonError[];
+};
