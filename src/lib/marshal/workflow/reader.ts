@@ -138,9 +138,7 @@ const compileTemplateFiles = async (
     objPath.reset(pathToSteps).push(stepIdx);
 
     if (!isPlainObject(step)) {
-      errors.push(
-        new JsonError("must be a workflow step object", objPath.str),
-      );
+      errors.push(new JsonError("must be a workflow step object", objPath.str));
       continue;
     }
 
