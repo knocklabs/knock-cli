@@ -3,19 +3,15 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import { cloneDeep, get, keyBy, set, unset } from "lodash";
 
+import { WorkflowDirContext } from "@/lib/helpers/dir-context";
 import { isTestEnv, sandboxDir } from "@/lib/helpers/env";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
-import { WorkflowDirContext } from "@/lib/run-context";
 
-import { WORKFLOW_JSON } from "./helpers";
+import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
 import { readWorkflowDir, validateTemplateFilePathFormat } from "./reader";
 import { StepType, WorkflowData } from "./types";
-
-// Mark any template fields we are extracting out with this suffix as a rule,
-// so we can reliably interpret the field value.
-const FILEPATH_MARKER = "@";
 
 /*
  * For a given workflow step, a template variant, and a template field, return
@@ -146,23 +142,23 @@ export const writeWorkflowDir = async (
   remoteWorkflow: WorkflowData<WithAnnotation>,
   workflowDirCtx: WorkflowDirContext,
 ): Promise<void> => {
+  // If the workflow directory exists on the file system (i.e. previously
+  // pulled before), then read the workflow file to use as a reference.
+  const [localWorkflow] = workflowDirCtx.exists
+    ? await readWorkflowDir(workflowDirCtx)
+    : [];
+
+  const bundle = buildWorkflowDirBundle(
+    workflowDirCtx,
+    remoteWorkflow,
+    localWorkflow,
+  );
+
   const workflowDirPath = isTestEnv
     ? path.join(sandboxDir, remoteWorkflow.key)
     : workflowDirCtx.abspath;
 
   try {
-    // If the workflow directory exists on the file system (i.e. previously
-    // pulled before), then read the workflow file to use as a reference.
-    const [localWorkflow] = workflowDirCtx.exists
-      ? await readWorkflowDir(workflowDirPath)
-      : [];
-
-    const bundle = buildWorkflowDirBundle(
-      workflowDirCtx,
-      remoteWorkflow,
-      localWorkflow,
-    );
-
     const promises = Object.entries(bundle).map(([relpath, fileContent]) => {
       const filePath = path.join(workflowDirPath, relpath);
 
@@ -171,6 +167,9 @@ export const writeWorkflowDir = async (
         : fs.outputFile(filePath, fileContent);
     });
     await Promise.all(promises);
+
+    // TODO(KNO-2794): Probably need to clean up any orphaned template files
+    // after successfully writing the workflow directory?
   } catch (error) {
     await fs.remove(workflowDirPath);
     throw error;
