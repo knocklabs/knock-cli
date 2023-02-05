@@ -47,8 +47,8 @@ const formatError = (error: HandledError): string => {
       const e = error as JsonError;
 
       return e.path === ""
-        ? `${e.name}: JSON ${e.message}`
-        : `${e.name}: JSON at "${e.path}" ${e.message}`;
+        ? `${e.name}: ${e.message}`
+        : `${e.name}: data at "${e.path}" ${e.message}`;
     }
 
     default:
