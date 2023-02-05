@@ -2,10 +2,34 @@ import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import { isTestEnv } from "./env";
-import { ApiError } from "./error";
+import { ApiError, formatErrors, JsonError } from "./error";
 
 const isSuccessResp = (resp: AxiosResponse) =>
   resp.status >= 200 && resp.status < 300;
+
+type ValidationError = {
+  path: string;
+  message: string;
+};
+
+const formatErrorMessage = (resp: AxiosResponse): string => {
+  switch (resp.status) {
+    case 422:
+      const { message, errors = [] } = resp.data;
+      const errs = errors.map(
+        (e: ValidationError) => new JsonError(e.message, e.path),
+      );
+      return errs.length === 0
+        ? message
+        : message + "\n\n" + formatErrors(errs);
+
+    case 500:
+      return "An internal server error occurred";
+
+    default:
+      return resp.data.message;
+  }
+};
 
 /*
  * Helper function that wraps the underlying request function and handles
@@ -31,7 +55,7 @@ export const withSpinner = async <T>(
 
   // Error out before the action stop so the spinner can update accordingly.
   if (ensureSuccess && !isSuccessResp(resp)) {
-    const { message } = resp.data;
+    const message = formatErrorMessage(resp);
     CliUx.ux.error(new ApiError(message));
   }
 
