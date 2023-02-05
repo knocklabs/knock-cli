@@ -64,8 +64,10 @@ export default class WorkflowPull extends BaseCommand {
     // 3. Write the workflow with the workflow directory context.
     await Workflow.writeWorkflowDir(resp.data, dirContext);
 
-    const action = dirContext.exists ? "Updated" : "Created";
-    this.log(`‣ ${action} \`${dirContext.key}\` at ${dirContext.abspath}`);
+    const action = dirContext.exists ? "updated" : "created";
+    this.log(
+      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath}`,
+    );
   }
 
   async getWorkflowDirContext(): Promise<WorkflowDirContext> {

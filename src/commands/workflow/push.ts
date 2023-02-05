@@ -22,17 +22,18 @@ export default class WorkflowPush extends BaseCommand {
       default: "development",
       options: ["development"],
     }),
+    "pull-to-refresh": Flags.boolean({ default: false }),
   };
 
   static args = [{ name: "workflowKey", required: false }];
 
-  static enableJsonFlag = true;
-
   async run(): Promise<ApiV1.UpsertWorkflowResp | void> {
+    // 1. Retrieve the target workflow directory context.
     const dirContext = await this.getWorkflowDirContext();
 
     this.log(`‣ Reading \`${dirContext.key}\` at ${dirContext.abspath}`);
 
+    // 2. Read the workflow.json with its template files.
     const [workflow, errors] = await Workflow.readWorkflowDir(dirContext, {
       withTemplateFiles: true,
     });
@@ -43,6 +44,7 @@ export default class WorkflowPush extends BaseCommand {
       );
     }
 
+    // 3. Push up the compiled workflow data.
     const resp = await withSpinner<ApiV1.UpsertWorkflowResp<WithAnnotation>>(
       () => {
         const props = merge(this.props, {
@@ -54,8 +56,16 @@ export default class WorkflowPush extends BaseCommand {
       },
     );
 
-    const { flags } = this.props;
-    if (flags.json) return resp.data;
+    // 4. Write to refresh the workflow directory with the successfully pushed
+    // workflow payload from the server, if the option was given.
+    const { "pull-to-refresh": pullToRefresh } = this.props.flags;
+
+    if (pullToRefresh) {
+      await Workflow.writeWorkflowDir(resp.data.workflow!, dirContext);
+    }
+
+    const action = pullToRefresh ? `, and refreshed ${dirContext.abspath}` : "";
+    this.log(`‣ Successfully pushed \`${dirContext.key}\`` + action);
   }
 
   async getWorkflowDirContext(): Promise<WorkflowDirContext> {
@@ -86,7 +96,9 @@ export default class WorkflowPush extends BaseCommand {
             abspath: dirPath,
             exists,
           }
-        : this.error(`Cannot locate the workflow \`${workflowKey}\``);
+        : this.error(
+            `Cannot locate a workflow directory for \`${workflowKey}\``,
+          );
     }
 
     return this.error("Missing 1 required arg:\nworkflowKey");
