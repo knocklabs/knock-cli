@@ -1,21 +1,21 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
-import { cloneDeep, get, keyBy, set, unset } from "lodash";
+import { cloneDeep, get, has, keyBy, set, unset } from "lodash";
 
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";
 import { isTestEnv, sandboxDir } from "@/lib/helpers/env";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
-import { WithAnnotation } from "@/lib/marshal/shared/types";
+import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
 import { readWorkflowDir, validateTemplateFilePathFormat } from "./reader";
-import { StepType, WorkflowData } from "./types";
+import { StepType, TemplateData, WorkflowData } from "./types";
 
 /*
- * For a given workflow step, a template variant, and a template field, return
- * the template file path we can extract out the content to.
+ * For a given workflow step and a template field, return the template file path
+ * we can extract out the content to.
  *
  * Note, this is a default "recommended" convention but the template file can
  * be located at any arbitrary path (as long as it is a relative path that is
@@ -23,24 +23,19 @@ import { StepType, WorkflowData } from "./types";
  */
 const newTemplateFilePath = (
   stepRef: string,
-  templateVariantRef: string,
   fileName: string,
   fileExt: string,
-) =>
-  path
-    .join(stepRef, `${templateVariantRef}.${fileName}.${fileExt}`)
-    .toLowerCase();
+) => path.join(stepRef, `${fileName}.${fileExt}`).toLowerCase();
 
 /*
- * For a given workflow step, a template variant, and a template field, return
- * the path of object which we can use to check whether the field has been
- * extracted (hence, with the filepath marker).
+ * For a given workflow step and a template field, return the path of object
+ * which we can use to check whether the field has been extracted (hence, with
+ * the filepath marker).
  */
 const objPathToExtractableField = (
   stepRef: string,
-  templateVariantRef: string,
-  fieldName: string,
-) => `${stepRef}.template.${templateVariantRef}.${fieldName}${FILEPATH_MARKER}`;
+  pathToFieldInTemplate: string,
+) => `${stepRef}.template.${pathToFieldInTemplate}${FILEPATH_MARKER}`;
 
 /*
  * Sanitize the workflow content into a format that's appropriate for reading
@@ -56,6 +51,31 @@ const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
 
   // Strip out all schema annotations, so not to expose them to end users.
   return omitDeep(worklfowJson, ["__annotation"]);
+};
+
+/*
+ * Compile and return extractable fields settings from the template and its
+ * template settings if present.
+ */
+const collateExtractableFields = (
+  template: TemplateData<WithAnnotation>,
+): Record<string, ExtractionSettings> => {
+  const extractableFields = template.__annotation?.extractable_fields || {};
+  if (!template.settings) return extractableFields;
+
+  // If the template has template settings, then merge in the extractable fields
+  // for the template settings (with the field names prefixed with "settings.")
+  let settingsExtractableFields =
+    template.settings.__annotation?.extractable_fields || {};
+
+  settingsExtractableFields = Object.fromEntries(
+    Object.entries(settingsExtractableFields).map(([key, val]) => [
+      `settings.${key}`,
+      val,
+    ]),
+  );
+
+  return { ...extractableFields, ...settingsExtractableFields };
 };
 
 /*
@@ -83,48 +103,45 @@ const buildWorkflowDirBundle = (
     if (step.type !== StepType.Channel) continue;
     if (!step.template) continue;
 
-    for (const [templateVariantRef, templateVariant] of Object.entries(
-      step.template,
-    )) {
-      const extractableFields =
-        templateVariant.__annotation?.extractable_fields || {};
+    const template = step.template;
+    const extractableFields = collateExtractableFields(template);
 
-      for (const [
-        fieldName,
-        { default: extractByDefault, file_ext: fileExt },
-      ] of Object.entries(extractableFields)) {
-        // If this template variant doesn't have this field, then it's not
-        // relevant so nothing more to do here.
-        if (!(fieldName in templateVariant)) continue;
+    for (const [
+      pathToField,
+      { default: extractByDefault, file_ext: fileExt },
+    ] of Object.entries(extractableFields)) {
+      // If this template doesn't have this path, then it's not relevant so
+      // nothing more to do here.
+      if (!has(template, pathToField)) continue;
 
-        // If this field is extracted in the local workflow, then always extract;
-        // otherwise extract based on the field settings default.
-        const extractedTemplateFilePath = get(
-          localWorkflowStepsByRef,
-          objPathToExtractableField(step.ref, templateVariantRef, fieldName),
+      // If the field at this path is extracted in the local workflow, then
+      // always extract; otherwise extract based on the field settings default.
+      const extractedTemplateFilePath = get(
+        localWorkflowStepsByRef,
+        objPathToExtractableField(step.ref, pathToField),
+      );
+
+      const isValidTemplateFilePath =
+        Boolean(extractedTemplateFilePath) &&
+        validateTemplateFilePathFormat(
+          extractedTemplateFilePath,
+          workflowDirCtx,
         );
-        const isValidTemplateFilePath =
-          Boolean(extractedTemplateFilePath) &&
-          validateTemplateFilePathFormat(
-            extractedTemplateFilePath,
-            workflowDirCtx,
-          );
 
-        if (!isValidTemplateFilePath && !extractByDefault) continue;
+      if (!isValidTemplateFilePath && !extractByDefault) continue;
 
-        // Add the template content being extracted and its relative file
-        // path within the workflow directory to the bundle.
-        const relpath =
-          extractedTemplateFilePath ||
-          newTemplateFilePath(step.ref, templateVariantRef, fieldName, fileExt);
-        const fieldContent = get(templateVariant, fieldName);
-        set(bundle, [relpath], fieldContent);
+      // Add the template content being extracted and its relative file path
+      // within the workflow directory to the bundle.
+      const relpath =
+        extractedTemplateFilePath ||
+        newTemplateFilePath(step.ref, pathToField, fileExt);
 
-        // Replace the extracted field content with the file path, and
-        // append the @ suffix to the field name to mark it as such.
-        set(templateVariant, [`${fieldName}${FILEPATH_MARKER}`], relpath);
-        unset(templateVariant, fieldName);
-      }
+      set(bundle, [relpath], get(template, pathToField));
+
+      // Replace the extracted field content with the file path, and
+      // append the @ suffix to the field name to mark it as such.
+      set(template, [`${pathToField}${FILEPATH_MARKER}`], relpath);
+      unset(template, pathToField);
     }
   }
 
@@ -159,6 +176,10 @@ export const writeWorkflowDir = async (
     : workflowDirCtx.abspath;
 
   try {
+    // TODO(KNO-2794): Should rather clean up any orphaned template files
+    // individually after successfully writing the workflow directory.
+    await fs.remove(workflowDirPath);
+
     const promises = Object.entries(bundle).map(([relpath, fileContent]) => {
       const filePath = path.join(workflowDirPath, relpath);
 
@@ -167,9 +188,6 @@ export const writeWorkflowDir = async (
         : fs.outputFile(filePath, fileContent);
     });
     await Promise.all(promises);
-
-    // TODO(KNO-2794): Probably need to clean up any orphaned template files
-    // after successfully writing the workflow directory?
   } catch (error) {
     await fs.remove(workflowDirPath);
     throw error;

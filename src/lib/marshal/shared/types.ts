@@ -8,13 +8,15 @@ export type Duration = {
   value: number;
 };
 
+export type ExtractionSettings = {
+  default: boolean;
+  file_ext: string;
+};
+
 type SchemaAnnotation = {
   readonly_fields: string[];
   extractable_fields: {
-    [field: string]: {
-      default: boolean;
-      file_ext: string;
-    };
+    [field: string]: ExtractionSettings;
   };
 };
 

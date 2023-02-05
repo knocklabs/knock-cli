@@ -61,13 +61,11 @@ export const formatCategories = (
 const channelStepSummaryLines = (step: WorkflowStepData) => {
   if (step.type !== StepType.Channel) return [];
 
-  const { channel_key, channel_group_key, template } = step;
-  const variants = Object.entries(template).map(([_, variant]) => variant);
+  const { channel_key, channel_group_key } = step;
 
   return [
     channel_key && `Channel: ${channel_key}`,
     channel_group_key && `Channel group: ${channel_group_key}`,
-    `Template: ${variants.length} variant(s)`,
   ].filter((x) => x);
 };
 

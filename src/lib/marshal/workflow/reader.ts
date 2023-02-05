@@ -85,6 +85,63 @@ const readTemplateFile = async (
 };
 
 /*
+ * Validates that a given value is a valid template file path and the file
+ * actually exists, before reading the file content.
+ */
+const maybeReadTemplateFile = async (
+  val: unknown,
+  workflowDirCtx: WorkflowDirContext,
+  extractedFilePaths: Record<string, boolean>,
+  pathToFieldStr: string,
+): Promise<[undefined, JsonError] | [string, undefined]> => {
+  // Validate the file path format, and that it is unique per workflow.
+  if (
+    !validateTemplateFilePathFormat(val, workflowDirCtx) ||
+    typeof val !== "string" ||
+    val in extractedFilePaths
+  ) {
+    const error = new JsonError(
+      "must be a relative path string to a unique file within the directory",
+      pathToFieldStr,
+    );
+    return [undefined, error];
+  }
+
+  // Keep track of all the extracted file paths that have been seen, so we
+  // can validate each file path's uniqueness as we traverse.
+  extractedFilePaths[val] = true;
+
+  // Check a file actually exists at the given file path.
+  // eslint-disable-next-line no-await-in-loop
+  const exists = await validateTemplateFileExists(val, workflowDirCtx);
+  if (!exists) {
+    const error = new JsonError(
+      "must be a relative path string to a file that exists",
+      pathToFieldStr,
+    );
+    return [undefined, error];
+  }
+
+  // Read the template file and inline the content into the workflow json
+  // under the same field name but without the @ filepath marker.
+  // eslint-disable-next-line no-await-in-loop
+  const [content, contentErrors] = await readTemplateFile(val, workflowDirCtx);
+  if (contentErrors.length > 0) {
+    const error = new JsonError(
+      `points to a file with invalid content (${val})\n\n` +
+        formatErrors(contentErrors),
+      pathToFieldStr,
+    );
+
+    return [undefined, error];
+  }
+
+  // TODO: maybe validate liquid content here.
+
+  return [content as string, undefined];
+};
+
+/*
  * Given a workflow json object, compiles all referenced template files in it
  * and returns the updated object with templates content pulled in and inlined.
  *
@@ -109,13 +166,6 @@ const compileTemplateFiles = async (
 
   // 1. Make sure we have a list of steps to look through.
   if (workflowJson.steps === undefined) {
-    errors.push(
-      new JsonError(
-        "must have a `steps` field containing workflow steps",
-        objPath.str,
-      ),
-    );
-
     return [workflowJson, errors];
   }
 
@@ -152,9 +202,6 @@ const compileTemplateFiles = async (
       continue;
     }
 
-    // TODO: Will need to change below once we update the template data object
-    // to include template settings and template variants under variants key.
-
     if (step.template === undefined) {
       errors.push(
         new JsonError(
@@ -172,86 +219,56 @@ const compileTemplateFiles = async (
       continue;
     }
 
-    // 3. For each template variant, look for any extracted template content,
-    // read the extracted template files, then inline the content.
-    const variants = Object.entries(step.template);
-    const pathToTemplate = objPath.push("template").checkout();
+    // 3. For a given template, look for any extracted template content, read
+    // the extracted template files, then inline the content.
+    objPath.push("template");
 
-    for (const [templateVariantRef, templateVariant] of variants) {
-      objPath.reset(pathToTemplate).push(templateVariantRef);
+    for (const [field, val] of Object.entries(step.template)) {
+      if (field.startsWith("settings")) continue;
+      if (!FILEPATH_MARKED_RE.test(field)) continue;
 
-      if (!isPlainObject(templateVariant)) {
-        errors.push(
-          new JsonError("must be a template variant object", objPath.str),
-        );
+      const pathToFieldStr = objPath.to(field).str;
+
+      const [content, error] = await maybeReadTemplateFile(
+        val,
+        workflowDirCtx,
+        extractedFilePaths,
+        pathToFieldStr,
+      );
+      if (error) {
+        errors.push(error);
         continue;
       }
 
-      // No need to push a new path part, since we aren't going any deeper now.
-      for (const [fieldName, val] of Object.entries(templateVariant)) {
-        // If the field is not marked as having a file path then, nothing more
-        // to do here.
-        if (!FILEPATH_MARKED_RE.test(fieldName)) continue;
+      const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
+      set(workflowJson, inlinePathStr, content);
+    }
 
-        const pathToFieldStr = objPath.to(fieldName).str;
+    if (!step.template.settings) continue;
+    objPath.push("settings");
 
-        // Validate the file path format, and that it is unique per workflow.
-        if (
-          !validateTemplateFilePathFormat(val, workflowDirCtx) ||
-          typeof val !== "string" ||
-          val in extractedFilePaths
-        ) {
-          errors.push(
-            new JsonError(
-              "must be a relative path string to a unique file within the directory",
-              pathToFieldStr,
-            ),
-          );
-          continue;
-        }
+    for (const [field, val] of Object.entries(step.template.settings)) {
+      if (!FILEPATH_MARKED_RE.test(field)) continue;
 
-        // Keep track of all the extracted file paths that have been seen, so we
-        // can validate each file path's uniqueness as we traverse.
-        extractedFilePaths[val] = true;
+      const pathToFieldStr = objPath.to(field).str;
 
-        // Check a file actually exists at the given file path.
-        // eslint-disable-next-line no-await-in-loop
-        const exists = await validateTemplateFileExists(val, workflowDirCtx);
-        if (!exists) {
-          errors.push(
-            new JsonError(
-              "must be a relative path string to a file that exists",
-              pathToFieldStr,
-            ),
-          );
-          continue;
-        }
-
-        // Read the template file and inline the content into the workflow json
-        // under the same field name but without the @ filepath marker.
-        // eslint-disable-next-line no-await-in-loop
-        const [content, contentErrors] = await readTemplateFile(
-          val,
-          workflowDirCtx,
-        );
-        if (contentErrors.length > 0) {
-          errors.push(
-            new JsonError(
-              `points to a file with invalid content (${val})\n\n` +
-                formatErrors(contentErrors),
-              pathToFieldStr,
-            ),
-          );
-          continue;
-        }
-
-        const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
-        set(workflowJson, inlinePathStr, content);
-
-        // TODO: Consider validating content for liquid syntax too maybe?
+      const [content, error] = await maybeReadTemplateFile(
+        val,
+        workflowDirCtx,
+        extractedFilePaths,
+        pathToFieldStr,
+      );
+      if (error) {
+        errors.push(error);
+        continue;
       }
+
+      const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
+      set(workflowJson, inlinePathStr, content);
     }
   }
+
+  // TODO: Consider validating content for liquid syntax too maybe?
 
   return [workflowJson, errors];
 };
@@ -263,6 +280,8 @@ const compileTemplateFiles = async (
  *
  * By default, it will look for any extracted template files referenced in the
  * workflow json and compile them into the workflow data.
+ *
+ * TODO: Maybe nice to validate all keys are snake_case.
  */
 type ReadWorkflowDirOpts = {
   withTemplateFiles?: boolean;
