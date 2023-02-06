@@ -1,5 +1,6 @@
 import { CliUx, Flags } from "@oclif/core";
 
+import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
@@ -16,8 +17,8 @@ export default class WorkflowGet extends BaseCommand {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<Workflow.WorkflowData | void> {
-    const resp = await withSpinner<Workflow.WorkflowData>(() =>
+  async run(): Promise<ApiV1.GetWorkflowResp | void> {
+    const resp = await withSpinner<ApiV1.GetWorkflowResp>(() =>
       this.apiV1.getWorkflow(this.props),
     );
 
@@ -27,7 +28,7 @@ export default class WorkflowGet extends BaseCommand {
     this.render(resp.data);
   }
 
-  render(workflow: Workflow.WorkflowData): void {
+  render(workflow: ApiV1.GetWorkflowResp): void {
     const { workflowKey } = this.props.args;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;

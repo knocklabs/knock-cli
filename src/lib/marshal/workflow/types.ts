@@ -25,22 +25,19 @@ type WorkflowStepBase = {
 
 /* Channel step */
 
-type TemplateVariantData<A extends MaybeWithAnnotation = unknown> = A &
-  AnyObj & {
-    name?: string;
-    conditions?: Conditions;
-  };
+type TemplateSettings<A extends MaybeWithAnnotation> = A & AnyObj;
 
-export type TemplateVariantByRef<A extends MaybeWithAnnotation = unknown> = {
-  [ref: string]: TemplateVariantData<A>;
-};
+export type TemplateData<A extends MaybeWithAnnotation = unknown> = A &
+  AnyObj & {
+    settings?: TemplateSettings<A>;
+  };
 
 export type ChannelStepData<A extends MaybeWithAnnotation = unknown> =
   WorkflowStepBase & {
     type: StepType.Channel;
     channel_key?: string;
     channel_group_key?: string;
-    template: TemplateVariantByRef<A>;
+    template: TemplateData<A>;
   };
 
 /* Batch step */

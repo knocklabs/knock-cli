@@ -1,7 +1,7 @@
 import { expect } from "@oclif/test";
 
+import { WorkflowDirContext } from "@/lib/helpers/dir-context";
 import { validateTemplateFilePathFormat } from "@/lib/marshal/workflow/reader";
-import { WorkflowDirContext } from "@/lib/run-context";
 
 describe("lib/marshal/workflow/reader", () => {
   describe("validateTemplateFilePathFormat", () => {

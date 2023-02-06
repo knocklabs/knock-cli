@@ -7,6 +7,12 @@ import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export const WORKFLOW_JSON = "workflow.json";
 
+// Mark any template fields we are extracting out with this suffix as a rule,
+// so we can reliably interpret the field value.
+// TODO: Move this up to a top level directory when re-used for other resources.
+export const FILEPATH_MARKER = "@";
+export const FILEPATH_MARKED_RE = new RegExp(`${FILEPATH_MARKER}$`);
+
 /*
  * Check for workflow.json file and return the file path if present.
  */
@@ -55,13 +61,11 @@ export const formatCategories = (
 const channelStepSummaryLines = (step: WorkflowStepData) => {
   if (step.type !== StepType.Channel) return [];
 
-  const { channel_key, channel_group_key, template } = step;
-  const variants = Object.entries(template).map(([_, variant]) => variant);
+  const { channel_key, channel_group_key } = step;
 
   return [
     channel_key && `Channel: ${channel_key}`,
     channel_group_key && `Channel group: ${channel_group_key}`,
-    `Template: ${variants.length} variant(s)`,
   ].filter((x) => x);
 };
 

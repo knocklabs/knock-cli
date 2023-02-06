@@ -10,7 +10,7 @@ export type PageInfo = {
   page_size: number;
 };
 
-export type Paginated<T = any> = {
+export type PaginatedResp<T = any> = {
   entries: T[];
   page_info: PageInfo;
 };
