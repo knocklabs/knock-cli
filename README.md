@@ -1,20 +1,17 @@
-oclif-hello-world
-=================
+# @knocklabs/cli
 
-oclif example Hello World CLI
-
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/oclif-hello-world.svg)](https://npmjs.org/package/oclif-hello-world)
-[![CircleCI](https://circleci.com/gh/oclif/hello-world/tree/main.svg?style=shield)](https://circleci.com/gh/oclif/hello-world/tree/main)
-[![Downloads/week](https://img.shields.io/npm/dw/oclif-hello-world.svg)](https://npmjs.org/package/oclif-hello-world)
-[![License](https://img.shields.io/npm/l/oclif-hello-world.svg)](https://github.com/oclif/hello-world/blob/main/package.json)
+A command-line interface for interacting with [Knock](https://knock.app).
 
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
+
+- [Usage](#usage)
+- [Commands](#commands)
 <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @knocklabs/cli
 $ knock COMMAND
@@ -26,23 +23,28 @@ USAGE
   $ knock COMMAND
 ...
 ```
+
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
-* [`knock help [COMMANDS]`](#knock-help-commands)
-* [`knock ping`](#knock-ping)
-* [`knock plugins`](#knock-plugins)
-* [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin)
-* [`knock plugins:inspect PLUGIN...`](#knock-pluginsinspect-plugin)
-* [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin-1)
-* [`knock plugins:link PLUGIN`](#knock-pluginslink-plugin)
-* [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin)
-* [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-1)
-* [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-2)
-* [`knock plugins update`](#knock-plugins-update)
-* [`knock workflow get WORKFLOWKEY`](#knock-workflow-get-workflowkey)
-* [`knock workflow list`](#knock-workflow-list)
-* [`knock workflow pull [WORKFLOWKEY]`](#knock-workflow-pull-workflowkey)
+
+- [`knock help [COMMANDS]`](#knock-help-commands)
+- [`knock ping`](#knock-ping)
+- [`knock plugins`](#knock-plugins)
+- [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin)
+- [`knock plugins:inspect PLUGIN...`](#knock-pluginsinspect-plugin)
+- [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin-1)
+- [`knock plugins:link PLUGIN`](#knock-pluginslink-plugin)
+- [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin)
+- [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-1)
+- [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-2)
+- [`knock plugins update`](#knock-plugins-update)
+- [`knock workflow get WORKFLOWKEY`](#knock-workflow-get-workflowkey)
+- [`knock workflow list`](#knock-workflow-list)
+- [`knock workflow pull [WORKFLOWKEY]`](#knock-workflow-pull-workflowkey)
+- [`knock workflow push [WORKFLOWKEY]`](#knock-workflow-push-workflowkey)
 
 ## `knock help [COMMANDS]`
 
@@ -135,7 +137,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin 
+  $ knock plugins:install myplugin
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -198,7 +200,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin 
+  $ knock plugins:install myplugin
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -363,4 +365,17 @@ FLAGS
   --hide-uncommitted-changes
   --service-token=<value>     (required) service token to authenticate with
 ```
+
+## `knock workflow push [WORKFLOWKEY]`
+
+```
+USAGE
+  $ knock workflow push [WORKFLOWKEY] --service-token <value> [--environment development]
+
+FLAGS
+  --environment=<option>   [default: development]
+                           <options: development>
+  --service-token=<value>  (required) service token to authenticate with
+```
+
 <!-- commandsstop -->
