@@ -56,6 +56,46 @@ const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
 /*
  * Compile and return extractable fields settings from the template and its
  * template settings if present.
+ *
+ * For example, for a channel step like this:
+ *   {
+ *     ref: "email_1",
+ *     type: "channel",
+ *     channel_key: "email-provider",
+ *     template: {
+ *       settings: {
+ *         layout_key: "default",
+ *         __annotation: {
+ *           extractable_fields: {
+ *             pre_content: { default: true, file_ext: "txt" },
+ *           },
+ *           readonly_fields: [],
+ *         },
+ *       },
+ *       subject: "New activity",
+ *       html_body: "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
+ *       __annotation: {
+ *         extractable_fields: {
+ *           subject: { default: false, file_ext: "txt" },
+ *           json_body: { default: true, file_ext: "json" },
+ *           html_body: { default: true, file_ext: "html" },
+ *           text_body: { default: true, file_ext: "txt" },
+ *         },
+ *         readonly_fields: [],
+ *       },
+ *     },
+ *   }
+ *
+ * Takes the template data and returns a merged map of extractable fields like
+ * this:
+ *
+ *   {
+ *     subject: { default: false, file_ext: "txt" },
+ *     json_body: { default: true, file_ext: "json" },
+ *     html_body: { default: true, file_ext: "html" },
+ *     text_body: { default: true, file_ext: "txt" },
+ *     settings.pre_content: { default: true, file_ext: "txt" },
+ *   }
  */
 const collateExtractableFields = (
   template: TemplateData<WithAnnotation>,

@@ -134,8 +134,6 @@ const maybeReadTemplateFile = async (
     return [undefined, error];
   }
 
-  // TODO: maybe validate liquid content here.
-
   return [content as string, undefined];
 };
 

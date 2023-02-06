@@ -1,5 +1,11 @@
 import { indentString } from "@/lib/helpers/string";
 
+// Individual changeset errors from the server side.
+export type InputError = {
+  field: string;
+  message: string;
+};
+
 // Extends the built-in Error class while maintaining a prototype chain, to
 // provide a base class for creating custom error classes.
 // Reference: https://stackoverflow.com/a/58417721/3479934

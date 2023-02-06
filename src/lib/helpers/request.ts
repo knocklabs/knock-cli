@@ -2,7 +2,7 @@ import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import { isTestEnv } from "./env";
-import { ApiError, formatErrors, JsonError } from "./error";
+import { ApiError, formatErrors, InputError, JsonError } from "./error";
 
 const isSuccessResp = (resp: AxiosResponse) =>
   resp.status >= 200 && resp.status < 300;
@@ -10,19 +10,13 @@ const isSuccessResp = (resp: AxiosResponse) =>
 /*
  * Returns a formatted error message from an error response based on status code.
  */
-type ValidationError = {
-  path: string;
-  message: string;
-};
-
 const formatErrorRespMessage = (resp: AxiosResponse): string => {
   const { message, errors = [] } = resp.data;
 
   switch (resp.status) {
     case 422: {
-      // Changeset errors
       const errs = errors.map(
-        (e: ValidationError) => new JsonError(e.message, e.path),
+        (e: InputError) => new JsonError(e.message, e.field),
       );
       return errs.length === 0
         ? message

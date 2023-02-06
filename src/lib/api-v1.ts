@@ -2,7 +2,7 @@ import { Config, Interfaces } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import BaseCommand, { Props } from "@/lib/base-command";
-import { JsonError } from "@/lib/helpers/error";
+import { InputError } from "@/lib/helpers/error";
 import { AnyObj, prune } from "@/lib/helpers/object";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
@@ -109,5 +109,5 @@ export type GetWorkflowResp<A extends MaybeWithAnnotation = unknown> =
 
 export type UpsertWorkflowResp<A extends MaybeWithAnnotation = unknown> = {
   workflow?: Workflow.WorkflowData<A>;
-  errors?: JsonError[];
+  errors?: InputError[];
 };
