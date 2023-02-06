@@ -22,7 +22,6 @@ export default class WorkflowPush extends BaseCommand {
       default: "development",
       options: ["development"],
     }),
-    "pull-to-refresh": Flags.boolean({ default: false }),
   };
 
   static args = [{ name: "workflowKey", required: false }];
@@ -56,16 +55,12 @@ export default class WorkflowPush extends BaseCommand {
       },
     );
 
-    // 4. Write to refresh the workflow directory with the successfully pushed
-    // workflow payload from the server, if the option was given.
-    const { "pull-to-refresh": pullToRefresh } = this.props.flags;
-
-    if (pullToRefresh) {
-      await Workflow.writeWorkflowDir(resp.data.workflow!, dirContext);
-    }
-
-    const action = pullToRefresh ? `, and refreshed ${dirContext.abspath}` : "";
-    this.log(`‣ Successfully pushed \`${dirContext.key}\`` + action);
+    // 4. Update the workflow directory with the successfully pushed workflow
+    // payload from the server.
+    await Workflow.writeWorkflowDir(resp.data.workflow!, dirContext);
+    this.log(
+      `‣ Successfully pushed \`${dirContext.key}\`, and updated ${dirContext.abspath}`,
+    );
   }
 
   async getWorkflowDirContext(): Promise<WorkflowDirContext> {

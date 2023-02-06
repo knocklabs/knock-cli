@@ -10,27 +10,21 @@ const isSuccessResp = (resp: AxiosResponse) =>
 /*
  * Returns a formatted error message from an error response based on status code.
  */
-const formatErrorRespMessage = (resp: AxiosResponse): string => {
-  const { message, errors = [] } = resp.data;
-
-  switch (resp.status) {
-    case 422: {
-      const errs = errors.map(
-        (e: InputError) => new JsonError(e.message, e.field),
-      );
-      return errs.length === 0
-        ? message
-        : message + "\n\n" + formatErrors(errs);
-    }
-
-    case 500: {
-      return "An internal server error occurred";
-    }
-
-    default: {
-      return message;
-    }
+const formatErrorRespMessage = ({ status, data }: AxiosResponse): string => {
+  if (status === 500) {
+    return "An internal server error occurred";
   }
+
+  const { message, errors = [] } = data;
+
+  if (status >= 400) {
+    const errs = errors.map(
+      (e: InputError) => new JsonError(e.message, e.field),
+    );
+    return errs.length === 0 ? message : message + "\n\n" + formatErrors(errs);
+  }
+
+  return message;
 };
 
 /*
