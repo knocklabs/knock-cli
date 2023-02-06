@@ -21,25 +21,12 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
       type: "channel" as StepType.Channel,
       channel_key: "sms-provider",
       template: {
-        default: {
-          name: "Default",
-          text_body: "Hi {{ recipient.name }}.",
-          __annotation: {
-            extractable_fields: {
-              text_body: { default: true, file_ext: "txt" },
-            },
-            readonly_fields: [],
+        text_body: "Hi {{ recipient.name }}.",
+        __annotation: {
+          extractable_fields: {
+            text_body: { default: true, file_ext: "txt" },
           },
-        },
-        it: {
-          name: "Default",
-          text_body: "Ciao {{ recipient.name }}.",
-          __annotation: {
-            extractable_fields: {
-              text_body: { default: true, file_ext: "txt" },
-            },
-            readonly_fields: [],
-          },
+          readonly_fields: [],
         },
       },
     },
@@ -58,21 +45,25 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
       type: "channel" as StepType.Channel,
       channel_key: "email-provider",
       template: {
-        default: {
-          name: "Default",
-          subject: "New activity",
-          html_body: "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
+        settings: {
           layout_key: "default",
           __annotation: {
             extractable_fields: {
-              subject: { default: false, file_ext: "txt" },
-              json_body: { default: true, file_ext: "json" },
-              html_body: { default: true, file_ext: "html" },
-              text_body: { default: true, file_ext: "txt" },
               pre_content: { default: true, file_ext: "txt" },
             },
             readonly_fields: [],
           },
+        },
+        subject: "New activity",
+        html_body: "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
+        __annotation: {
+          extractable_fields: {
+            subject: { default: false, file_ext: "txt" },
+            json_body: { default: true, file_ext: "json" },
+            html_body: { default: true, file_ext: "html" },
+            text_body: { default: true, file_ext: "txt" },
+          },
+          readonly_fields: [],
         },
       },
     },
@@ -118,24 +109,18 @@ describe("lib/marshal/workflow/writer", () => {
 
       expect(get(workflowJson, "__annotation")).to.equal(undefined);
 
-      const template1 = get(workflowJson, "steps[0].template.default");
+      const template1 = get(workflowJson, "steps[0].template");
       expect(template1).to.eql({
-        name: "Default",
         text_body: "Hi {{ recipient.name }}.",
       });
 
-      const template2 = get(workflowJson, "steps[0].template.it");
+      const template2 = get(workflowJson, "steps[2].template");
       expect(template2).to.eql({
-        name: "Default",
-        text_body: "Ciao {{ recipient.name }}.",
-      });
-
-      const template3 = get(workflowJson, "steps[2].template.default");
-      expect(template3).to.eql({
-        name: "Default",
+        settings: {
+          layout_key: "default",
+        },
         subject: "New activity",
         html_body: "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
-        layout_key: "default",
       });
     });
   });
@@ -161,14 +146,7 @@ describe("lib/marshal/workflow/writer", () => {
                 type: "channel",
                 channel_key: "sms-provider",
                 template: {
-                  default: {
-                    name: "Default",
-                    "text_body@": xpath("sms_1/default.text_body.txt"),
-                  },
-                  it: {
-                    name: "Default",
-                    "text_body@": xpath("sms_1/it.text_body.txt"),
-                  },
+                  "text_body@": xpath("sms_1/text_body.txt"),
                 },
               },
               {
@@ -186,12 +164,11 @@ describe("lib/marshal/workflow/writer", () => {
                 type: "channel",
                 channel_key: "email-provider",
                 template: {
-                  default: {
-                    name: "Default",
-                    subject: "New activity",
-                    "html_body@": xpath("email_1/default.html_body.html"),
+                  settings: {
                     layout_key: "default",
                   },
+                  subject: "New activity",
+                  "html_body@": xpath("email_1/html_body.html"),
                 },
               },
             ],
@@ -203,16 +180,15 @@ describe("lib/marshal/workflow/writer", () => {
               updated_at: "2022-12-31T12:00:00.000000Z",
             },
           },
-          [xpath("sms_1/default.text_body.txt")]: "Hi {{ recipient.name }}.",
-          [xpath("sms_1/it.text_body.txt")]: "Ciao {{ recipient.name }}.",
-          [xpath("email_1/default.html_body.html")]:
+          [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
+          [xpath("email_1/html_body.html")]:
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
         });
       });
     });
 
     describe("given a fetched workflow with a local version available", () => {
-      it("returns a dir bundle based on default extract settings", () => {
+      it("returns a dir bundle based on a local version and default extract settings", () => {
         const localWorkflow = {
           name: "New comment",
           steps: [
@@ -221,14 +197,13 @@ describe("lib/marshal/workflow/writer", () => {
               ref: "email_1",
               channel_key: "email-provider",
               template: {
-                default: {
-                  name: "Default",
-                  // Extracted out to a template file (not by default)
-                  "subject@": xpath("email_1/default/subject.txt"),
-                  // Extracted out to a different path (than the default)
-                  "html_body@": xpath("email_1/default/body.html"),
+                settings: {
                   layout_key: "default",
                 },
+                // Extracted out to a template file (not by default)
+                "subject@": xpath("email_1/default/subject.txt"),
+                // Extracted out to a different path (than the default)
+                "html_body@": xpath("email_1/default/body.html"),
               },
             },
           ],
@@ -262,14 +237,7 @@ describe("lib/marshal/workflow/writer", () => {
                 type: "channel",
                 channel_key: "sms-provider",
                 template: {
-                  default: {
-                    name: "Default",
-                    "text_body@": xpath("sms_1/default.text_body.txt"),
-                  },
-                  it: {
-                    name: "Default",
-                    "text_body@": xpath("sms_1/it.text_body.txt"),
-                  },
+                  "text_body@": xpath("sms_1/text_body.txt"),
                 },
               },
               {
@@ -287,13 +255,12 @@ describe("lib/marshal/workflow/writer", () => {
                 type: "channel",
                 channel_key: "email-provider",
                 template: {
-                  default: {
-                    name: "Default",
-                    // Note here..
-                    "subject@": xpath("email_1/default/subject.txt"),
-                    "html_body@": xpath("email_1/default/body.html"),
+                  settings: {
                     layout_key: "default",
                   },
+                  // Note here..
+                  "subject@": xpath("email_1/default/subject.txt"),
+                  "html_body@": xpath("email_1/default/body.html"),
                 },
               },
             ],
@@ -305,8 +272,7 @@ describe("lib/marshal/workflow/writer", () => {
               updated_at: "2022-12-31T12:00:00.000000Z",
             },
           },
-          [xpath("sms_1/default.text_body.txt")]: "Hi {{ recipient.name }}.",
-          [xpath("sms_1/it.text_body.txt")]: "Ciao {{ recipient.name }}.",
+          [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
           // And here..
           [xpath("email_1/default/subject.txt")]: "New activity",
           [xpath("email_1/default/body.html")]:

@@ -25,9 +25,7 @@ type WorkflowStepBase = {
 
 /* Channel step */
 
-type TemplateSettings<A extends MaybeWithAnnotation> = A & {
-  [ref: string]: string;
-};
+type TemplateSettings<A extends MaybeWithAnnotation> = A & AnyObj;
 
 export type TemplateData<A extends MaybeWithAnnotation = unknown> = A &
   AnyObj & {
