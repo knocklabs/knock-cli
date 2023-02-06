@@ -7,27 +7,35 @@ import { ApiError, formatErrors, JsonError } from "./error";
 const isSuccessResp = (resp: AxiosResponse) =>
   resp.status >= 200 && resp.status < 300;
 
+/*
+ * Returns a formatted error message from an error response based on status code.
+ */
 type ValidationError = {
   path: string;
   message: string;
 };
 
-const formatErrorMessage = (resp: AxiosResponse): string => {
+const formatErrorRespMessage = (resp: AxiosResponse): string => {
+  const { message, errors = [] } = resp.data;
+
   switch (resp.status) {
-    case 422:
-      const { message, errors = [] } = resp.data;
+    case 422: {
+      // Changeset errors
       const errs = errors.map(
         (e: ValidationError) => new JsonError(e.message, e.path),
       );
       return errs.length === 0
         ? message
         : message + "\n\n" + formatErrors(errs);
+    }
 
-    case 500:
+    case 500: {
       return "An internal server error occurred";
+    }
 
-    default:
-      return resp.data.message;
+    default: {
+      return message;
+    }
   }
 };
 
@@ -55,7 +63,7 @@ export const withSpinner = async <T>(
 
   // Error out before the action stop so the spinner can update accordingly.
   if (ensureSuccess && !isSuccessResp(resp)) {
-    const message = formatErrorMessage(resp);
+    const message = formatErrorRespMessage(resp);
     CliUx.ux.error(new ApiError(message));
   }
 

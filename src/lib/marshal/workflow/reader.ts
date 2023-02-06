@@ -112,7 +112,6 @@ const maybeReadTemplateFile = async (
   extractedFilePaths[val] = true;
 
   // Check a file actually exists at the given file path.
-  // eslint-disable-next-line no-await-in-loop
   const exists = await validateTemplateFileExists(val, workflowDirCtx);
   if (!exists) {
     const error = new JsonError(
@@ -124,7 +123,6 @@ const maybeReadTemplateFile = async (
 
   // Read the template file and inline the content into the workflow json
   // under the same field name but without the @ filepath marker.
-  // eslint-disable-next-line no-await-in-loop
   const [content, contentErrors] = await readTemplateFile(val, workflowDirCtx);
   if (contentErrors.length > 0) {
     const error = new JsonError(
@@ -229,6 +227,7 @@ const compileTemplateFiles = async (
 
       const pathToFieldStr = objPath.to(field).str;
 
+      // eslint-disable-next-line no-await-in-loop
       const [content, error] = await maybeReadTemplateFile(
         val,
         workflowDirCtx,
@@ -252,6 +251,7 @@ const compileTemplateFiles = async (
 
       const pathToFieldStr = objPath.to(field).str;
 
+      // eslint-disable-next-line no-await-in-loop
       const [content, error] = await maybeReadTemplateFile(
         val,
         workflowDirCtx,
