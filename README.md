@@ -20,7 +20,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.0.0-pre.0 darwin-arm64 node-v16.4.0
+@knocklabs/cli/0.1.0-rc.0 darwin-arm64 node-v16.4.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -82,7 +82,7 @@ EXAMPLES
   $ knock ping
 ```
 
-_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.0.0-pre.0/dist/commands/ping.ts)_
+_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.0/dist/commands/ping.ts)_
 
 ## `knock plugins`
 
