@@ -16,11 +16,11 @@ oclif example Hello World CLI
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g knock-cli
+$ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-knock-cli/0.0.0 darwin-arm64 node-v16.4.0
+@knocklabs/cli/0.0.0-pre.0 darwin-arm64 node-v16.4.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -29,9 +29,8 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`knock hello PERSON`](#knock-hello-person)
-* [`knock hello world`](#knock-hello-world)
-* [`knock help [COMMAND]`](#knock-help-command)
+* [`knock help [COMMANDS]`](#knock-help-commands)
+* [`knock ping`](#knock-ping)
 * [`knock plugins`](#knock-plugins)
 * [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin)
 * [`knock plugins:inspect PLUGIN...`](#knock-pluginsinspect-plugin)
@@ -41,57 +40,20 @@ USAGE
 * [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-1)
 * [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-2)
 * [`knock plugins update`](#knock-plugins-update)
+* [`knock workflow get WORKFLOWKEY`](#knock-workflow-get-workflowkey)
+* [`knock workflow list`](#knock-workflow-list)
+* [`knock workflow pull [WORKFLOWKEY]`](#knock-workflow-pull-workflowkey)
 
-## `knock hello PERSON`
-
-Say hello
-
-```
-USAGE
-  $ knock hello [PERSON] -f <value>
-
-ARGUMENTS
-  PERSON  Person to say hello to
-
-FLAGS
-  -f, --from=<value>  (required) Who is saying hello
-
-DESCRIPTION
-  Say hello
-
-EXAMPLES
-  $ oex hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
-```
-
-_See code: [dist/commands/hello/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.0.0/dist/commands/hello/index.ts)_
-
-## `knock hello world`
-
-Say hello world
-
-```
-USAGE
-  $ knock hello world
-
-DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ knock hello world
-  hello world! (./src/commands/hello/world.ts)
-```
-
-## `knock help [COMMAND]`
+## `knock help [COMMANDS]`
 
 Display help for knock.
 
 ```
 USAGE
-  $ knock help [COMMAND] [-n]
+  $ knock help [COMMANDS] [-n]
 
 ARGUMENTS
-  COMMAND  Command to show help for.
+  COMMANDS  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
@@ -100,7 +62,27 @@ DESCRIPTION
   Display help for knock.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.15/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.2/src/commands/help.ts)_
+
+## `knock ping`
+
+Ping the Knock management API to verify access.
+
+```
+USAGE
+  $ knock ping --service-token <value>
+
+FLAGS
+  --service-token=<value>  (required) service token to authenticate with
+
+DESCRIPTION
+  Ping the Knock management API to verify access.
+
+EXAMPLES
+  $ knock ping
+```
+
+_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.0.0-pre.0/dist/commands/ping.ts)_
 
 ## `knock plugins`
 
@@ -120,7 +102,7 @@ EXAMPLES
   $ knock plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.2/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.3.0/src/commands/plugins/index.ts)_
 
 ## `knock plugins:install PLUGIN...`
 
@@ -153,7 +135,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin
+  $ knock plugins:install myplugin 
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -174,6 +156,9 @@ ARGUMENTS
 FLAGS
   -h, --help     Show CLI help.
   -v, --verbose
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Displays installation properties of a plugin.
@@ -213,7 +198,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin
+  $ knock plugins:install myplugin 
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -330,5 +315,52 @@ FLAGS
 
 DESCRIPTION
   Update installed plugins.
+```
+
+## `knock workflow get WORKFLOWKEY`
+
+```
+USAGE
+  $ knock workflow get [WORKFLOWKEY] --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
+    [--json]
+
+FLAGS
+  --environment=<value>       [default: development]
+  --hide-uncommitted-changes
+  --service-token=<value>     (required) service token to authenticate with
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+## `knock workflow list`
+
+```
+USAGE
+  $ knock workflow list --service-token <value> [--environment <value>] [--hide-uncommitted-changes] [--after
+    <value>] [--before <value>] [--limit <value>] [--json]
+
+FLAGS
+  --after=<value>
+  --before=<value>
+  --environment=<value>       [default: development]
+  --hide-uncommitted-changes
+  --limit=<value>
+  --service-token=<value>     (required) service token to authenticate with
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+## `knock workflow pull [WORKFLOWKEY]`
+
+```
+USAGE
+  $ knock workflow pull [WORKFLOWKEY] --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
+
+FLAGS
+  --environment=<value>       [default: development]
+  --hide-uncommitted-changes
+  --service-token=<value>     (required) service token to authenticate with
 ```
 <!-- commandsstop -->
