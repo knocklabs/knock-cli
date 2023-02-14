@@ -33,7 +33,7 @@ export default class WorkflowNew extends BaseCommand {
       );
     }
 
-    // 3. Ensure the new workflow directory doesn't exist.
+    // 3. Ensure not to overwrite any existing path.
     const newWorkflowDirPath = path.join(cwd, args.workflowKey);
     const exists = await fs.pathExists(newWorkflowDirPath);
     if (exists) {
@@ -55,10 +55,7 @@ export default class WorkflowNew extends BaseCommand {
       abspath: newWorkflowDirPath,
       exists: false,
     };
-    const attrs = {
-      name: flags.name || args.workflowKey,
-      steps,
-    };
+    const attrs = { name: flags.name || args.workflowKey, steps };
 
     await Workflow.generateWorkflowDir(dirContext, attrs);
     this.log(
