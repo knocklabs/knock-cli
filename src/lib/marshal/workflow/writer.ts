@@ -13,6 +13,10 @@ import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
 import { readWorkflowDir, validateTemplateFilePathFormat } from "./reader";
 import { StepType, TemplateData, WorkflowData } from "./types";
 
+export type WorkflowDirBundle = {
+  [relpath: string]: string;
+};
+
 /*
  * For a given workflow step and a template field, return the template file path
  * we can extract out the content to.
@@ -21,7 +25,7 @@ import { StepType, TemplateData, WorkflowData } from "./types";
  * be located at any arbitrary path (as long as it is a relative path that is
  * inside the workflow directory and unique to the field)
  */
-const newTemplateFilePath = (
+export const newTemplateFilePath = (
   stepRef: string,
   fileName: string,
   fileExt: string,
@@ -124,9 +128,6 @@ const collateExtractableFields = (
  * mapping of file contents by its relative path (aka workflow dir bundle) that
  * can be written into a file system as individual files.
  */
-type WorkflowDirBundle = {
-  [relpath: string]: string;
-};
 const buildWorkflowDirBundle = (
   workflowDirCtx: WorkflowDirContext,
   remoteWorkflow: WorkflowData<WithAnnotation>,
@@ -190,14 +191,14 @@ const buildWorkflowDirBundle = (
 };
 
 /*
- * The main write function that takes the latest workflow from Knock (remote
- * workflow), and the same workflow from the local file system (local workflow,
- * if available), then writes the remote workflow into a workflow directory
- * with the local workflow as a reference.
+ * The main write function that takes the fetched workflow data from Knock API
+ * (remote workflow), and the same workflow from the local file system (local
+ * workflow, if available), then writes the remote workflow into a workflow
+ * directory with the local workflow as a reference.
  */
 export const writeWorkflowDir = async (
-  remoteWorkflow: WorkflowData<WithAnnotation>,
   workflowDirCtx: WorkflowDirContext,
+  remoteWorkflow: WorkflowData<WithAnnotation>,
 ): Promise<void> => {
   // If the workflow directory exists on the file system (i.e. previously
   // pulled before), then read the workflow file to use as a reference.
@@ -211,8 +212,23 @@ export const writeWorkflowDir = async (
     localWorkflow,
   );
 
+  return writeWorkflowDirWithBundle(workflowDirCtx, bundle);
+};
+
+/*
+ * A lower level write function that takes a constructed workflow dir bundle
+ * and writes it into a workflow directory on a local file system.
+ *
+ * It does not make any assumptions about how the workflow directory bundle was
+ * built; for example, it can be from parsing the workflow data fetched from
+ * the Knock API, or built manually for scaffolding purposes.
+ */
+export const writeWorkflowDirWithBundle = async (
+  workflowDirCtx: WorkflowDirContext,
+  workflowDirBundle: WorkflowDirBundle,
+) => {
   const workflowDirPath = isTestEnv
-    ? path.join(sandboxDir, remoteWorkflow.key)
+    ? path.join(sandboxDir, workflowDirCtx.key)
     : workflowDirCtx.abspath;
 
   try {
@@ -220,13 +236,15 @@ export const writeWorkflowDir = async (
     // individually after successfully writing the workflow directory.
     await fs.remove(workflowDirPath);
 
-    const promises = Object.entries(bundle).map(([relpath, fileContent]) => {
-      const filePath = path.join(workflowDirPath, relpath);
+    const promises = Object.entries(workflowDirBundle).map(
+      ([relpath, fileContent]) => {
+        const filePath = path.join(workflowDirPath, relpath);
 
-      return relpath === WORKFLOW_JSON
-        ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
-        : fs.outputFile(filePath, fileContent);
-    });
+        return relpath === WORKFLOW_JSON
+          ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
+          : fs.outputFile(filePath, fileContent);
+      },
+    );
     await Promise.all(promises);
   } catch (error) {
     await fs.remove(workflowDirPath);

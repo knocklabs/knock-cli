@@ -35,14 +35,6 @@ export const ensureResourceDirForTarget = (
   resourceDirCtx: ResourceDirContext,
   target: ResourceTarget,
 ): ResourceDirContext => {
-  switch (target.commandId) {
-    case "workflow:pull":
-      break;
-
-    default:
-      throw new Error(`Unhandled commandId: ${target.commandId}`);
-  }
-
   // If the target resource is a different type than the current resource dir
   // type, error out.
   if (resourceDirCtx.type !== target.type) {
@@ -51,7 +43,7 @@ export const ensureResourceDirForTarget = (
     );
   }
 
-  // If the resource key was not procided with the command, then infer from the
+  // If the resource key was not provided with the command, then infer from the
   // current resource directory context.
   if (!target.key) {
     return resourceDirCtx;

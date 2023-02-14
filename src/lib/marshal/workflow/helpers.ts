@@ -3,6 +3,8 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import { take } from "lodash";
 
+import { checkSlugifiedFormat } from "@/lib/helpers/string";
+
 import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export const WORKFLOW_JSON = "workflow.json";
@@ -12,6 +14,18 @@ export const WORKFLOW_JSON = "workflow.json";
 // TODO: Move this up to a top level directory when re-used for other resources.
 export const FILEPATH_MARKER = "@";
 export const FILEPATH_MARKED_RE = new RegExp(`${FILEPATH_MARKER}$`);
+
+/*
+ * Validates a string input for a workflow key, and returns an error reason
+ * if invalid.
+ */
+export const validateWorkflowKey = (input: string): string | undefined => {
+  if (!checkSlugifiedFormat(input, { lowercase: true })) {
+    return "must include only lowercase alphanumeric, dash, or underscore characters";
+  }
+
+  return undefined;
+};
 
 /*
  * Check for workflow.json file and return the file path if present.
