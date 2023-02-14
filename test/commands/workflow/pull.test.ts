@@ -10,6 +10,8 @@ import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/env";
 
+const currCwd = process.cwd();
+
 const setupWithStub = (workflowAtts = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
@@ -29,8 +31,15 @@ const setupWithStub = (workflowAtts = {}) =>
     );
 
 describe("commands/workflow/pull", () => {
-  before(() => fs.removeSync(sandboxDir));
-  afterEach(() => fs.removeSync(sandboxDir));
+  beforeEach(() => {
+    fs.removeSync(sandboxDir);
+    fs.ensureDirSync(sandboxDir);
+    process.chdir(sandboxDir);
+  });
+  afterEach(() => {
+    process.chdir(currCwd);
+    fs.removeSync(sandboxDir);
+  });
 
   setupWithStub({ key: "workflow-x" })
     .stdout()

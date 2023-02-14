@@ -20,7 +20,7 @@ export const FILEPATH_MARKED_RE = new RegExp(`${FILEPATH_MARKER}$`);
  * if invalid.
  */
 export const validateWorkflowKey = (input: string): string | undefined => {
-  if (!checkSlugifiedFormat(input, { lowercase: true })) {
+  if (!checkSlugifiedFormat(input, { onlyLowerCase: true })) {
     return "must include only lowercase alphanumeric, dash, or underscore characters";
   }
 

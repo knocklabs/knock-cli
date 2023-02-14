@@ -4,7 +4,6 @@ import * as fs from "fs-extra";
 import { cloneDeep, get, has, keyBy, set, unset } from "lodash";
 
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";
-import { isTestEnv, sandboxDir } from "@/lib/helpers/env";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
@@ -227,18 +226,14 @@ export const writeWorkflowDirWithBundle = async (
   workflowDirCtx: WorkflowDirContext,
   workflowDirBundle: WorkflowDirBundle,
 ): Promise<void> => {
-  const workflowDirPath = isTestEnv
-    ? path.join(sandboxDir, workflowDirCtx.key)
-    : workflowDirCtx.abspath;
-
   try {
     // TODO(KNO-2794): Should rather clean up any orphaned template files
     // individually after successfully writing the workflow directory.
-    await fs.remove(workflowDirPath);
+    await fs.remove(workflowDirCtx.abspath);
 
     const promises = Object.entries(workflowDirBundle).map(
       ([relpath, fileContent]) => {
-        const filePath = path.join(workflowDirPath, relpath);
+        const filePath = path.join(workflowDirCtx.abspath, relpath);
 
         return relpath === WORKFLOW_JSON
           ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
@@ -247,7 +242,7 @@ export const writeWorkflowDirWithBundle = async (
     );
     await Promise.all(promises);
   } catch (error) {
-    await fs.remove(workflowDirPath);
+    await fs.remove(workflowDirCtx.abspath);
     throw error;
   }
 };

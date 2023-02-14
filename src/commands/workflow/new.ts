@@ -21,7 +21,7 @@ export default class WorkflowNew extends BaseCommand {
     // context and if we are in /workflows directory.
     if (resourceDir) {
       return this.error(
-        `Cannot run ${BaseCommand.id} inside another ${resourceDir.type} directory`,
+        `Cannot generate inside an existing ${resourceDir.type} directory`,
       );
     }
 
