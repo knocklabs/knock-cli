@@ -29,7 +29,7 @@ export const newTemplateFilePath = (
   stepRef: string,
   fileName: string,
   fileExt: string,
-) => path.join(stepRef, `${fileName}.${fileExt}`).toLowerCase();
+): string => path.join(stepRef, `${fileName}.${fileExt}`).toLowerCase();
 
 /*
  * For a given workflow step and a template field, return the path of object
@@ -39,7 +39,7 @@ export const newTemplateFilePath = (
 const objPathToExtractableField = (
   stepRef: string,
   pathToFieldInTemplate: string,
-) => `${stepRef}.template.${pathToFieldInTemplate}${FILEPATH_MARKER}`;
+): string => `${stepRef}.template.${pathToFieldInTemplate}${FILEPATH_MARKER}`;
 
 /*
  * Sanitize the workflow content into a format that's appropriate for reading
@@ -226,7 +226,7 @@ export const writeWorkflowDir = async (
 export const writeWorkflowDirWithBundle = async (
   workflowDirCtx: WorkflowDirContext,
   workflowDirBundle: WorkflowDirBundle,
-) => {
+): Promise<void> => {
   const workflowDirPath = isTestEnv
     ? path.join(sandboxDir, workflowDirCtx.key)
     : workflowDirCtx.abspath;

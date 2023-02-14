@@ -1,8 +1,8 @@
 /*
  * Checks if a given string is in a slugified format.
  */
-const SLUG_FORMAT_RE = new RegExp("^[a-zA-Z0-9_-]+$");
-const SLUG_LOWERCASE_FORMAT_RE = new RegExp("^[a-z0-9_-]+$");
+const SLUG_FORMAT_RE = /^[\w-]+$/;
+const SLUG_LOWERCASE_FORMAT_RE = /^[\d_a-z-]+$/;
 
 type CheckSlugifiedFormatOpts = {
   lowercase?: boolean;

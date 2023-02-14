@@ -1,7 +1,7 @@
 import * as path from "node:path";
 
-import * as fs from "fs-extra";
 import { Flags } from "@oclif/core";
+import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";

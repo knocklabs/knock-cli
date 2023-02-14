@@ -2,13 +2,13 @@ import { assign, get, zip } from "lodash";
 
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";
 
+import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
 import { StepType, WorkflowStepData } from "./types";
 import {
   newTemplateFilePath,
   WorkflowDirBundle,
   writeWorkflowDirWithBundle,
 } from "./writer";
-import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
 
 /*
  * Step scaffold functions for each step and channel type.
@@ -236,7 +236,7 @@ type NewWorkflowAttrs = {
 export const generateWorkflowDir = async (
   workflowDirCtx: WorkflowDirContext,
   attrs: NewWorkflowAttrs,
-) => {
+): Promise<void> => {
   // A map of 1-based counters to track the number of each step tag seen, used
   // for formatting step refs.
   const stepCountByTag = assign({}, ...STEP_TAGS.map((tag) => ({ [tag]: 0 })));
