@@ -195,7 +195,7 @@ const buildWorkflowDirBundle = (
  * workflow, if available), then writes the remote workflow into a workflow
  * directory with the local workflow as a reference.
  */
-export const writeWorkflowDir = async (
+export const writeWorkflowDirFromData = async (
   workflowDirCtx: WorkflowDirContext,
   remoteWorkflow: WorkflowData<WithAnnotation>,
 ): Promise<void> => {
@@ -211,7 +211,7 @@ export const writeWorkflowDir = async (
     localWorkflow,
   );
 
-  return writeWorkflowDirWithBundle(workflowDirCtx, bundle);
+  return writeWorkflowDirFromBundle(workflowDirCtx, bundle);
 };
 
 /*
@@ -222,7 +222,7 @@ export const writeWorkflowDir = async (
  * built; for example, it can be from parsing the workflow data fetched from
  * the Knock API, or built manually for scaffolding purposes.
  */
-export const writeWorkflowDirWithBundle = async (
+export const writeWorkflowDirFromBundle = async (
   workflowDirCtx: WorkflowDirContext,
   workflowDirBundle: WorkflowDirBundle,
 ): Promise<void> => {

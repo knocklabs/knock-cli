@@ -62,7 +62,7 @@ export default class WorkflowPull extends BaseCommand {
     );
 
     // 3. Write the fetched workflow to create or update the workflow directory.
-    await Workflow.writeWorkflowDir(dirContext, resp.data);
+    await Workflow.writeWorkflowDirFromData(dirContext, resp.data);
 
     const action = dirContext.exists ? "updated" : "created";
     this.log(

@@ -55,7 +55,7 @@ export default class WorkflowNew extends BaseCommand {
       abspath: newWorkflowDirPath,
       exists: false,
     };
-    const attrs = { name: flags.name || args.workflowKey, steps };
+    const attrs = { name: args.workflowKey, steps };
 
     await Workflow.generateWorkflowDir(dirContext, attrs);
     this.log(

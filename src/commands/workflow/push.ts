@@ -57,7 +57,7 @@ export default class WorkflowPush extends BaseCommand {
 
     // 4. Update the workflow directory with the successfully pushed workflow
     // payload from the server.
-    await Workflow.writeWorkflowDir(dirContext, resp.data.workflow!);
+    await Workflow.writeWorkflowDirFromData(dirContext, resp.data.workflow!);
     this.log(
       `‣ Successfully pushed \`${dirContext.key}\`, and updated ${dirContext.abspath}`,
     );

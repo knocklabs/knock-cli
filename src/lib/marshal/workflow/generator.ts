@@ -7,7 +7,7 @@ import { StepType, WorkflowStepData } from "./types";
 import {
   newTemplateFilePath,
   WorkflowDirBundle,
-  writeWorkflowDirWithBundle,
+  writeWorkflowDirFromBundle,
 } from "./writer";
 
 /*
@@ -54,7 +54,7 @@ const scaffoldHttpFetchStep = (refSuffix: number): StepScaffoldFuncRet => {
     ref: `${StepType.HttpFetch}_${refSuffix}`,
     type: StepType.HttpFetch,
     settings: {
-      method: "post",
+      method: "get",
       url: "https://example.com",
     },
   };
@@ -74,7 +74,7 @@ const scaffoldEmailChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
       settings: {
         layout_key: "default",
       },
-      subject: "You've got mail",
+      subject: "You've got mail!",
       ["html_body" + FILEPATH_MARKER]: templateFilePath,
     },
   };
@@ -118,9 +118,6 @@ const scaffoldSmsChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
     type: StepType.Channel,
     channel_key: "<SMS CHANNEL KEY>",
     template: {
-      settings: {
-        delivery_type: "content",
-      },
       ["text_body" + FILEPATH_MARKER]: templateFilePath,
     },
   };
@@ -225,18 +222,17 @@ export const parseStepsInput = (input: string): ParseStepsInputResult => {
 };
 
 /*
- * Generates a new workflow directory with a scaffolded workflow.json file,
- * based on workflow attrs. Assumes the given workflow directory context is
- * valid and correct.
+ * Generates a new workflow directory with a scaffolded workflow.json file.
+ * Assumes the given workflow directory context is valid and correct.
  */
 type NewWorkflowAttrs = {
   name: string;
   steps?: StepTag[] | undefined;
 };
-export const generateWorkflowDir = async (
-  workflowDirCtx: WorkflowDirContext,
+
+const scaffoldWorkflowDirBundle = (
   attrs: NewWorkflowAttrs,
-): Promise<void> => {
+): WorkflowDirBundle => {
   // A map of 1-based counters to track the number of each step tag seen, used
   // for formatting step refs.
   const stepCountByTag = assign({}, ...STEP_TAGS.map((tag) => ({ [tag]: 0 })));
@@ -252,8 +248,17 @@ export const generateWorkflowDir = async (
   // Build a workflow directory bundle with scaffolded steps data, plus other
   // workflow attributes.
   const workflowJson = { ...attrs, steps: scaffoldedSteps };
-  const bundle = assign({ [WORKFLOW_JSON]: workflowJson }, ...bundleFragments);
-
-  // Write a new workflow directory.
-  return writeWorkflowDirWithBundle(workflowDirCtx, bundle);
+  return assign({ [WORKFLOW_JSON]: workflowJson }, ...bundleFragments);
 };
+
+export const generateWorkflowDir = async (
+  workflowDirCtx: WorkflowDirContext,
+  attrs: NewWorkflowAttrs,
+): Promise<void> => {
+  const bundle = scaffoldWorkflowDirBundle(attrs);
+
+  return writeWorkflowDirFromBundle(workflowDirCtx, bundle);
+};
+
+// XXX: Exported for tests.
+export { scaffoldWorkflowDirBundle };
