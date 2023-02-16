@@ -1,5 +1,6 @@
 import { expect } from "@oclif/test";
 
+import { xpath } from "@/../test/support";
 import { scaffoldWorkflowDirBundle } from "@/lib/marshal/workflow/generator";
 
 describe("lib/marshal/workflow/generator", () => {
@@ -58,12 +59,12 @@ describe("lib/marshal/workflow/generator", () => {
                 type: "channel",
                 channel_key: "<SMS CHANNEL KEY>",
                 template: {
-                  "text_body@": "sms_1/text_body.txt",
+                  "text_body@": xpath("sms_1/text_body.txt"),
                 },
               },
             ],
           },
-          "sms_1/text_body.txt": "Hello, {{ recipient.name }}!",
+          [xpath("sms_1/text_body.txt")]: "Hello, {{ recipient.name }}!",
         });
       });
     });
@@ -98,7 +99,7 @@ describe("lib/marshal/workflow/generator", () => {
                     layout_key: "default",
                   },
                   subject: "You've got mail!",
-                  "html_body@": "email_1/html_body.html",
+                  "html_body@": xpath("email_1/html_body.html"),
                 },
               },
               {
@@ -106,7 +107,7 @@ describe("lib/marshal/workflow/generator", () => {
                 type: "channel",
                 channel_key: "<SMS CHANNEL KEY>",
                 template: {
-                  "text_body@": "sms_1/text_body.txt",
+                  "text_body@": xpath("sms_1/text_body.txt"),
                 },
               },
               {
@@ -127,7 +128,7 @@ describe("lib/marshal/workflow/generator", () => {
                   settings: {
                     delivery_type: "content",
                   },
-                  "text_body@": "push_1/text_body.txt",
+                  "text_body@": xpath("push_1/text_body.txt"),
                 },
               },
               {
@@ -154,7 +155,7 @@ describe("lib/marshal/workflow/generator", () => {
                 type: "channel",
                 channel_key: "<CHAT CHANNEL KEY>",
                 template: {
-                  "markdown_body@": "chat_1/markdown_body.md",
+                  "markdown_body@": xpath("chat_1/markdown_body.md"),
                 },
               },
               {
@@ -162,7 +163,7 @@ describe("lib/marshal/workflow/generator", () => {
                 type: "channel",
                 channel_key: "<IN-APP-FEED CHANNEL KEY>",
                 template: {
-                  "markdown_body@": "in_app_feed_1/markdown_body.md",
+                  "markdown_body@": xpath("in_app_feed_1/markdown_body.md"),
                   action_url: "{{ vars.app_url }}",
                 },
               },
@@ -172,18 +173,20 @@ describe("lib/marshal/workflow/generator", () => {
                 type: "channel",
                 channel_key: "<SMS CHANNEL KEY>",
                 template: {
-                  "text_body@": "sms_2/text_body.txt",
+                  "text_body@": xpath("sms_2/text_body.txt"),
                 },
               },
             ],
           },
-          "email_1/html_body.html":
+          [xpath("email_1/html_body.html")]:
             "<p>Hello, <strong>{{ recipient.name }}</strong>!</p>",
-          "sms_1/text_body.txt": "Hello, {{ recipient.name }}!",
-          "push_1/text_body.txt": "Hello, {{ recipient.name }}!",
-          "chat_1/markdown_body.md": "Hello, **{{ recipient.name }}**!",
-          "in_app_feed_1/markdown_body.md": "Hello, **{{ recipient.name }}**!",
-          "sms_2/text_body.txt": "Hello, {{ recipient.name }}!",
+          [xpath("sms_1/text_body.txt")]: "Hello, {{ recipient.name }}!",
+          [xpath("push_1/text_body.txt")]: "Hello, {{ recipient.name }}!",
+          [xpath("chat_1/markdown_body.md")]:
+            "Hello, **{{ recipient.name }}**!",
+          [xpath("in_app_feed_1/markdown_body.md")]:
+            "Hello, **{{ recipient.name }}**!",
+          [xpath("sms_2/text_body.txt")]: "Hello, {{ recipient.name }}!",
         });
       });
     });

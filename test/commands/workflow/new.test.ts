@@ -107,19 +107,6 @@ describe("commands/workflow/new", () => {
       .it("throws an error");
   });
 
-  describe("given a workflow key that already exists in knock", () => {
-    const workflow = factory.workflow({ key: "my-new-workflow" });
-
-    setupWithStub(workflow)
-      .command(["workflow new", workflow.key])
-      .catch((error) =>
-        expect(error.message).to.match(
-          /^Workflow `my-new-workflow` already exists/,
-        ),
-      )
-      .it("throws an error");
-  });
-
   describe("given a valid workflow key and a steps flag", () => {
     setupWithStub()
       .do(() => {

@@ -5,15 +5,14 @@ import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";
-import { ApiError } from "@/lib/helpers/error";
-import { formatErrorRespMessage } from "@/lib/helpers/request";
+import { merge } from "@/lib/helpers/object";
 import * as spinner from "@/lib/helpers/spinner";
 import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowNew extends BaseCommand {
   static flags = {
     steps: Flags.string({ aliases: ["step"] }),
-    overwrite: Flags.boolean(),
+    force: Flags.boolean(),
   };
 
   static args = [{ name: "workflowKey", required: true }];
@@ -50,62 +49,44 @@ export default class WorkflowNew extends BaseCommand {
     // 4. Ensure not to overwrite any existing path accidentally.
     const newWorkflowDirPath = path.resolve(cwd, args.workflowKey);
     const pathExists = await fs.pathExists(newWorkflowDirPath);
-    if (pathExists && !flags.overwrite) {
+    if (pathExists && !flags.force) {
       return this.error(
         `Cannot overwrite an existing path at ${newWorkflowDirPath}` +
-          " (use --overwrite flag to force)",
+          " (use --force to overwrite)",
       );
     }
 
-    // 5-A. If we are overwriting an existing workflow directory, proceed.
-    const isWorkflowDir = await Workflow.isWorkflowDir(newWorkflowDirPath);
-    if (isWorkflowDir && flags.overwrite) {
-      return this.generateWorkflowDir(
-        args.workflowKey,
-        steps!,
-        newWorkflowDirPath,
-      );
-    }
-
-    // 5-B. Otherwise ensure this workflow does not exist in Knock already.
-    const resp = await this.apiV1.getWorkflow(this.props);
-    if (resp.status === 200) {
-      return this.error(
-        `Workflow \`${args.workflowKey}\` already exists in \`development\` environment` +
-          ` (\`workflow pull ${args.workflowKey}\` first instead)`,
-      );
-    }
-
-    if (resp.status !== 404) {
-      const message = formatErrorRespMessage(resp);
-      return this.error(new ApiError(message));
-    }
-
-    return this.generateWorkflowDir(
-      args.workflowKey,
-      steps!,
-      newWorkflowDirPath,
-    );
-  }
-
-  async generateWorkflowDir(
-    workflowKey: string,
-    steps: Workflow.StepTag[],
-    newWorkflowDirPath: string,
-  ): Promise<void> {
     spinner.stop();
 
+    // 5-A. We are good to generate a new workflow directory.
     const dirContext: WorkflowDirContext = {
       type: "workflow",
-      key: workflowKey,
+      key: args.workflowKey,
       abspath: newWorkflowDirPath,
-      exists: false,
+      exists: await Workflow.isWorkflowDir(newWorkflowDirPath),
     };
-    const attrs = { name: workflowKey, steps };
+    const attrs = { name: args.workflowKey, steps };
 
     await Workflow.generateWorkflowDir(dirContext, attrs);
     this.log(
       `‣ Successfully generated a workflow directory at ${dirContext.abspath}`,
     );
+
+    // 5-B. Lastly warn if this workflow already exists in Knock.
+    const isExistingWorkflow = await this.checkExistingWorkflow();
+    if (isExistingWorkflow) {
+      this.warn(
+        `Workflow \`${args.workflowKey}\` already exists in \`development\` environment`,
+      );
+    }
+  }
+
+  async checkExistingWorkflow(): Promise<boolean | undefined> {
+    const props = merge(this.props, { flags: { environment: "development" } });
+
+    try {
+      const resp = await this.apiV1.getWorkflow(props);
+      return resp.status === 200;
+    } catch {}
   }
 }

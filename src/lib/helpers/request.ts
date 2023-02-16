@@ -10,10 +10,7 @@ const isSuccessResp = (resp: AxiosResponse) =>
 /*
  * Returns a formatted error message from an error response based on status code.
  */
-export const formatErrorRespMessage = ({
-  status,
-  data,
-}: AxiosResponse): string => {
+const formatErrorRespMessage = ({ status, data }: AxiosResponse): string => {
   if (status === 500) {
     return "An internal server error occurred";
   }
