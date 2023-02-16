@@ -1,8 +1,8 @@
 import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
-import { isTestEnv } from "./env";
 import { ApiError, formatErrors, InputError, JsonError } from "./error";
+import * as spinner from "./spinner";
 
 const isSuccessResp = (resp: AxiosResponse) =>
   resp.status >= 200 && resp.status < 300;
@@ -10,7 +10,10 @@ const isSuccessResp = (resp: AxiosResponse) =>
 /*
  * Returns a formatted error message from an error response based on status code.
  */
-const formatErrorRespMessage = ({ status, data }: AxiosResponse): string => {
+export const formatErrorRespMessage = ({
+  status,
+  data,
+}: AxiosResponse): string => {
   if (status === 500) {
     return "An internal server error occurred";
   }
@@ -46,7 +49,7 @@ export const withSpinner = async <T>(
   const { action = "‣ Loading", ensureSuccess = true } = opts;
 
   // Suppress printing the spinner in tests, oclif doesn't for some reasons.
-  if (!isTestEnv) CliUx.ux.action.start(action);
+  spinner.start(action);
   const resp = await requestFn();
 
   // Error out before the action stop so the spinner can update accordingly.
@@ -55,6 +58,6 @@ export const withSpinner = async <T>(
     CliUx.ux.error(new ApiError(message));
   }
 
-  CliUx.ux.action.stop();
+  spinner.stop();
   return resp;
 };

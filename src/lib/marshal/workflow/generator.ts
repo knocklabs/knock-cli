@@ -183,7 +183,7 @@ const STEP_TAGS = [
   "chat",
 ] as const;
 
-type StepTag = (typeof STEP_TAGS)[number];
+export type StepTag = (typeof STEP_TAGS)[number];
 type StepScaffoldFunc = (refSuffix: number) => StepScaffoldFuncRet;
 
 const stepScaffoldFuncs: Record<StepTag, StepScaffoldFunc> = {

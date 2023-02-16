@@ -1,5 +1,4 @@
 import { AxiosResponse } from "axios";
-import { get, set } from "lodash";
 
 import { GFlags } from "@/lib/api-v1";
 import { Props } from "@/lib/base-command";
@@ -8,7 +7,6 @@ import {
   ChannelStepData,
   ChannelType,
   StepType,
-  TemplateVariantByRef,
   WorkflowData,
 } from "@/lib/marshal/workflow";
 
@@ -67,35 +65,34 @@ export const workflow = (attrs: Partial<WorkflowData> = {}): WorkflowData => {
   };
 };
 
-const templateDefaultVariant = (type: ChannelType) => {
+const defaultTemplate = (type: ChannelType) => {
   switch (type) {
     case "chat":
       return {
-        name: "Default",
         markdown_body: "Hi **{{ recipient.name }}**.",
       };
     case "email":
       return {
-        name: "Default",
+        settings: {
+          layout_key: "default",
+        },
         subject: "New activity",
         html_body: "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
-        layout_key: "default",
       };
     case "in_app_feed":
       return {
-        name: "Default",
         markdown_body: "Hi **{{ recipient.name }}**.",
         action_url: "{{ vars.app_url }}",
       };
     case "sms":
       return {
-        name: "Default",
         text_body: "Hi {{ recipient.name }}.",
       };
     case "push":
       return {
-        name: "Default",
-        delivery_type: "content",
+        settings: {
+          delivery_type: "content",
+        },
         title: "New activity",
         text_body: "Hi {{ recipient.name }}.",
       };
@@ -104,32 +101,18 @@ const templateDefaultVariant = (type: ChannelType) => {
   }
 };
 
-const templateVariantPath = (variantRef: string): string =>
-  `template.${variantRef}`;
-
 export const channelStep = (
   type: ChannelType,
   attrs: Partial<ChannelStepData> = {},
-  templateVariantsByRef: TemplateVariantByRef = {},
 ): ChannelStepData => {
   const step = {
     ref: sequence(`${type}_`),
     channel_key: sequence("provider-"),
-    template: {},
+    template: defaultTemplate(type),
     ...attrs,
 
     type: "channel" as StepType.Channel,
   };
-
-  for (const [variantRef, templateVariant] of Object.entries(
-    templateVariantsByRef,
-  )) {
-    set(step, templateVariantPath(variantRef), templateVariant);
-  }
-
-  if (!get(step, templateVariantPath("default"))) {
-    set(step, templateVariantPath("default"), templateDefaultVariant(type));
-  }
 
   return step;
 };

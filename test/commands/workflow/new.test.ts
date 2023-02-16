@@ -2,11 +2,30 @@ import * as path from "node:path";
 
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
+import * as sinon from "sinon";
 
+import { factory } from "@/../test/support";
+import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/env";
 
 const files = ["a/b/workflow.json", "a/b/c/foo.txt"];
 const currCwd = process.cwd();
+
+const setupWithStub = (workflow?: any) =>
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stdout()
+    .stub(
+      KnockApiV1.prototype,
+      "getWorkflow",
+      sinon
+        .stub()
+        .resolves(
+          workflow
+            ? factory.resp({ status: 200, data: workflow })
+            : factory.resp({ status: 404 }),
+        ),
+    );
 
 describe("commands/workflow/new", () => {
   before(() => {
@@ -26,9 +45,7 @@ describe("commands/workflow/new", () => {
   });
 
   describe("if invoked inside another workflow directory", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
+    setupWithStub()
       .do(() => {
         const newCwd = path.resolve(sandboxDir, "a", "b");
         process.chdir(newCwd);
@@ -39,9 +56,7 @@ describe("commands/workflow/new", () => {
   });
 
   describe("given no workflow key arg", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
+    setupWithStub()
       .command(["workflow new"])
       .catch((error) =>
         expect(error.message).to.match(/^Missing 1 required arg:\nworkflowKey/),
@@ -50,36 +65,28 @@ describe("commands/workflow/new", () => {
   });
 
   describe("given an invalid workflow key, with uppercase chars", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
+    setupWithStub()
       .command(["workflow new", "My-New-Workflow"])
       .catch((error) => expect(error.message).to.match(/^Invalid workflow key/))
       .it("throws an error");
   });
 
   describe("given an invalid workflow key, with whitespaces", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
+    setupWithStub()
       .command(["workflow new", "My New Workflow"])
       .catch((error) => expect(error.message).to.match(/^Invalid workflow key/))
       .it("throws an error");
   });
 
   describe("given an invalid workflow key, with special chars", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
+    setupWithStub()
       .command(["workflow new", "my-new-workflow/foo"])
       .catch((error) => expect(error.message).to.match(/^Invalid workflow key/))
       .it("throws an error");
   });
 
   describe("given a workflow key for an existing directory", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
+    setupWithStub()
       .do(() => {
         const newCwd = path.resolve(sandboxDir, "a");
         process.chdir(newCwd);
@@ -92,18 +99,29 @@ describe("commands/workflow/new", () => {
   });
 
   describe("given an invalid steps flag, with a nonexistent step tag", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
+    setupWithStub()
       .command(["workflow new", "my-new-workflow", "--steps", "blah"])
-      .catch((error) => expect(error.message).to.match(/^Invalid steps `blah`/))
+      .catch((error) =>
+        expect(error.message).to.match(/^Invalid --steps `blah`/),
+      )
+      .it("throws an error");
+  });
+
+  describe("given a workflow key that already exists in knock", () => {
+    const workflow = factory.workflow({ key: "my-new-workflow" });
+
+    setupWithStub(workflow)
+      .command(["workflow new", workflow.key])
+      .catch((error) =>
+        expect(error.message).to.match(
+          /^Workflow `my-new-workflow` already exists/,
+        ),
+      )
       .it("throws an error");
   });
 
   describe("given a valid workflow key and a steps flag", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
+    setupWithStub()
       .do(() => {
         const newCwd = path.resolve(sandboxDir, "a");
         process.chdir(newCwd);
