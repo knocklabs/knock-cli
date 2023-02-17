@@ -201,8 +201,9 @@ export const writeWorkflowDirFromData = async (
 ): Promise<void> => {
   // If the workflow directory exists on the file system (i.e. previously
   // pulled before), then read the workflow file to use as a reference.
+  // Note, we do not need to compile or validate template files for this.
   const [localWorkflow] = workflowDirCtx.exists
-    ? await readWorkflowDir(workflowDirCtx)
+    ? await readWorkflowDir(workflowDirCtx, { withTemplateFiles: false })
     : [];
 
   const bundle = buildWorkflowDirBundle(
