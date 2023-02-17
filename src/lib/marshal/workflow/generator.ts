@@ -260,5 +260,5 @@ export const generateWorkflowDir = async (
   return writeWorkflowDirFromBundle(workflowDirCtx, bundle);
 };
 
-// XXX: Exported for tests.
+// Exported for tests.
 export { scaffoldWorkflowDirBundle };

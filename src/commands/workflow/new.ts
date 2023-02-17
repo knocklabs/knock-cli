@@ -75,6 +75,7 @@ export default class WorkflowNew extends BaseCommand {
     // 5-B. Lastly warn if this workflow already exists in Knock.
     const isExistingWorkflow = await this.checkExistingWorkflow();
     if (isExistingWorkflow) {
+      this.log("");
       this.warn(
         `Workflow \`${args.workflowKey}\` already exists in \`development\` environment`,
       );
