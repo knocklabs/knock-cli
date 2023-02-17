@@ -1,6 +1,6 @@
 import { expect } from "@oclif/test";
-import { LiquidParseError } from "@/lib/helpers/error";
 
+import { LiquidParseError } from "@/lib/helpers/error";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 
 describe("lib/helpers/liquid", () => {
