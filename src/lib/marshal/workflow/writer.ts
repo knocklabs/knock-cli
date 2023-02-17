@@ -233,7 +233,7 @@ export const writeWorkflowDirFromBundle = async (
 
     const promises = Object.entries(workflowDirBundle).map(
       ([relpath, fileContent]) => {
-        const filePath = path.join(workflowDirCtx.abspath, relpath);
+        const filePath = path.resolve(workflowDirCtx.abspath, relpath);
 
         return relpath === WORKFLOW_JSON
           ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })

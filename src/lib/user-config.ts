@@ -21,7 +21,7 @@ const maybeReadJsonConfig = async (configDir: string) => {
   // Don't use a user config file in tests.
   if (isTestEnv) return null;
 
-  const pathToJsonConfig = path.join(configDir, "config.json");
+  const pathToJsonConfig = path.resolve(configDir, "config.json");
 
   const exists = await fs.pathExists(pathToJsonConfig);
   if (!exists) return null;

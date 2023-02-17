@@ -1,6 +1,7 @@
 import * as jsonlint from "@prantlf/jsonlint";
 import * as fs from "fs-extra";
 
+import { JsonSyntaxError } from "@/lib/helpers/error";
 import { AnyObj } from "@/lib/helpers/object";
 
 // Use double spaces (instead of tabs) when writing a json file, this matches
@@ -22,17 +23,15 @@ export const DOUBLE_SPACES = "  ";
  *    ...type": "channel",    }
  *    ------------------------^
  *    Expecting 'STRING', got '}'
- *
- *  TODO: Maybe consider returning a custom error rather than SyntaxError.
  */
 type MaybeParsedPayload = AnyObj | undefined;
-export type ReadJsonResult = [MaybeParsedPayload, SyntaxError[]];
+export type ReadJsonResult = [MaybeParsedPayload, JsonSyntaxError[]];
 
 export const readJson = async (filePath: string): Promise<ReadJsonResult> => {
   const json = await fs.readFile(filePath, "utf8");
 
   let payload: MaybeParsedPayload;
-  const errors: SyntaxError[] = [];
+  const errors: JsonSyntaxError[] = [];
 
   try {
     payload = jsonlint.parse(json) as AnyObj;
@@ -40,7 +39,7 @@ export const readJson = async (filePath: string): Promise<ReadJsonResult> => {
     // https://github.com/prantlf/jsonlint#error-handling
     if (!(error instanceof SyntaxError)) throw error;
 
-    errors.push(error);
+    errors.push(new JsonSyntaxError(error.message));
   }
 
   return [payload, errors];
