@@ -1,3 +1,5 @@
+import { LiquidError } from "liquidjs";
+
 import { indentString } from "@/lib/helpers/string";
 
 // Individual changeset errors from the server side.
@@ -27,6 +29,7 @@ export class ApiError extends CustomError {}
 // Error describing where and what in the json data is wrong.
 export class JsonError extends CustomError {
   path: string;
+  // file: string;
 
   constructor(message: string, path: string) {
     super(message);
@@ -35,7 +38,7 @@ export class JsonError extends CustomError {
 }
 
 // Possible errors we want to handle.
-type HandledError = ApiError | SyntaxError | JsonError;
+type HandledError = ApiError | SyntaxError | JsonError | LiquidError;
 
 /*
  * Returns a formatted error message string from a single error instance.
@@ -51,10 +54,14 @@ const formatError = (error: HandledError): string => {
 
     case error instanceof JsonError: {
       const e = error as JsonError;
-
       return e.path === ""
         ? `${e.name}: ${e.message}`
         : `${e.name}: data at "${e.path}" ${e.message}`;
+    }
+
+    case error instanceof LiquidError: {
+      const e = error as LiquidError;
+      return `LiquidError: ${e.message + "\n" + e.context}`;
     }
 
     default:

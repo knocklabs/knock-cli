@@ -1,11 +1,13 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
+import { LiquidError } from "liquidjs";
 import { isPlainObject, set } from "lodash";
 
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";
 import { formatErrors, JsonError } from "@/lib/helpers/error";
 import { readJson, ReadJsonResult } from "@/lib/helpers/json";
+import { validateLiquid } from "@/lib/helpers/liquid";
 import { AnyObj, ObjPath, omitDeep } from "@/lib/helpers/object";
 
 import { FILEPATH_MARKED_RE, lsWorkflowJson } from "./helpers";
@@ -88,12 +90,14 @@ const readTemplateFile = async (
  * Validates that a given value is a valid template file path and the file
  * actually exists, before reading the file content.
  */
+type ReadTemplateFileError = JsonError | LiquidError;
+
 const maybeReadTemplateFile = async (
   val: unknown,
   workflowDirCtx: WorkflowDirContext,
   extractedFilePaths: Record<string, boolean>,
   pathToFieldStr: string,
-): Promise<[undefined, JsonError] | [string, undefined]> => {
+): Promise<[undefined, ReadTemplateFileError] | [string, undefined]> => {
   // Validate the file path format, and that it is unique per workflow.
   if (
     !validateTemplateFilePathFormat(val, workflowDirCtx) ||
@@ -134,7 +138,13 @@ const maybeReadTemplateFile = async (
     return [undefined, error];
   }
 
-  return [content as string, undefined];
+  // Check for valid liquid given it is supported in all message templates.
+  const liquidError = validateLiquid(content!);
+  if (liquidError) {
+    return [undefined, liquidError];
+  }
+
+  return [content!, undefined];
 };
 
 /*
@@ -150,13 +160,13 @@ const maybeReadTemplateFile = async (
  *
  * TODO: Include links to docs in the error message when ready.
  */
-type CompileTemplateFilesResult = [AnyObj, JsonError[]];
+type CompileTemplateFilesResult = [AnyObj, ReadTemplateFileError[]];
 
 const compileTemplateFiles = async (
   workflowDirCtx: WorkflowDirContext,
   workflowJson: AnyObj,
 ): Promise<CompileTemplateFilesResult> => {
-  const errors: JsonError[] = [];
+  const errors: ReadTemplateFileError[] = [];
   const extractedFilePaths: Record<string, boolean> = {};
   const objPath = new ObjPath();
 
@@ -265,8 +275,6 @@ const compileTemplateFiles = async (
       set(workflowJson, inlinePathStr, content);
     }
   }
-
-  // TODO: Consider validating content for liquid syntax too maybe?
 
   return [workflowJson, errors];
 };
