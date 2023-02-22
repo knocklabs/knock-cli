@@ -1,6 +1,6 @@
 import { CliUx } from "@oclif/core";
 
-import { isTestEnv } from "./env";
+import { isTestEnv } from "./const";
 
 export const start = (action: string): void => {
   if (!isTestEnv) CliUx.ux.action.start(action);

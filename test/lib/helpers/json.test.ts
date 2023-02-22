@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { expect } from "@oclif/test";
 import * as fs from "fs-extra";
 
-import { sandboxDir } from "@/lib/helpers/env";
+import { sandboxDir } from "@/lib/helpers/const";
 import { readJson } from "@/lib/helpers/json";
 
 describe("lib/helpers/json", () => {

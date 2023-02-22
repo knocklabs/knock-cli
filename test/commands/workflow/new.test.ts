@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
-import { sandboxDir } from "@/lib/helpers/env";
+import { sandboxDir } from "@/lib/helpers/const";
 
 const files = ["a/b/workflow.json", "a/b/c/foo.txt"];
 const currCwd = process.cwd();
