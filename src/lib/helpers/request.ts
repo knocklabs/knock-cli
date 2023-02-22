@@ -1,7 +1,7 @@
 import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
-import { ApiError, formatErrors, InputError, JsonError } from "./error";
+import { ApiError, formatErrors, InputError, JsonDataError } from "./error";
 import * as spinner from "./spinner";
 
 const isSuccessResp = (resp: AxiosResponse) =>
@@ -19,7 +19,7 @@ const formatErrorRespMessage = ({ status, data }: AxiosResponse): string => {
 
   if (status >= 400) {
     const errs = errors.map(
-      (e: InputError) => new JsonError(e.message, e.field),
+      (e: InputError) => new JsonDataError(e.message, e.field),
     );
     return errs.length === 0 ? message : message + "\n\n" + formatErrors(errs);
   }

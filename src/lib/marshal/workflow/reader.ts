@@ -1,11 +1,13 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
+import { LiquidError } from "liquidjs";
 import { isPlainObject, set } from "lodash";
 
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";
-import { formatErrors, JsonError } from "@/lib/helpers/error";
+import { formatErrors, JsonDataError } from "@/lib/helpers/error";
 import { readJson, ReadJsonResult } from "@/lib/helpers/json";
+import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 import { AnyObj, ObjPath, omitDeep } from "@/lib/helpers/object";
 
 import { FILEPATH_MARKED_RE, lsWorkflowJson } from "./helpers";
@@ -60,9 +62,13 @@ const validateTemplateFileExists = async (
  * Read a template file at the given path, validate the content as applicable,
  * return the content string or an error.
  */
-type TemplateFileContent = string;
-type MaybeTemplateFileContent = TemplateFileContent | undefined;
-type ReadTemplateFileResult = [MaybeTemplateFileContent, SyntaxError[]];
+type TemplateContent = string;
+type TemplateContentError = SyntaxError | LiquidError;
+type MaybeTemplateFileContent = TemplateContent | undefined;
+type ReadTemplateFileResult = [
+  MaybeTemplateFileContent,
+  TemplateContentError[],
+];
 
 const readTemplateFile = async (
   relpath: string,
@@ -70,18 +76,21 @@ const readTemplateFile = async (
 ): Promise<ReadTemplateFileResult> => {
   const abspath = path.resolve(workflowDirCtx.abspath, relpath);
 
-  switch (true) {
-    case abspath.toLowerCase().endsWith(".json"): {
-      const [obj, errors] = await readJson(abspath);
-      const content = obj && JSON.stringify(obj);
-      return [content, errors];
-    }
+  // First read all template files as text content and check for valid liquid
+  // syntax given it is supported across all message templates and formats.
+  const content = await fs.readFile(abspath, "utf8");
 
-    default: {
-      const content = await fs.readFile(abspath, "utf8");
-      return [content, []];
-    }
-  }
+  const liquidError = validateLiquidSyntax(content);
+  if (liquidError) return [undefined, [liquidError]];
+
+  // If not a json file, we can just return the file content.
+  const isJsonFile = abspath.toLowerCase().endsWith(".json");
+  if (!isJsonFile) return [content, []];
+
+  // If json, parse it as json and validate it as such.
+  const [obj, errors] = await readJson(abspath);
+  const json = obj && JSON.stringify(obj);
+  return [json, errors];
 };
 
 /*
@@ -93,14 +102,14 @@ const maybeReadTemplateFile = async (
   workflowDirCtx: WorkflowDirContext,
   extractedFilePaths: Record<string, boolean>,
   pathToFieldStr: string,
-): Promise<[undefined, JsonError] | [string, undefined]> => {
+): Promise<[undefined, JsonDataError] | [string, undefined]> => {
   // Validate the file path format, and that it is unique per workflow.
   if (
     !validateTemplateFilePathFormat(val, workflowDirCtx) ||
     typeof val !== "string" ||
     val in extractedFilePaths
   ) {
-    const error = new JsonError(
+    const error = new JsonDataError(
       "must be a relative path string to a unique file within the directory",
       pathToFieldStr,
     );
@@ -114,7 +123,7 @@ const maybeReadTemplateFile = async (
   // Check a file actually exists at the given file path.
   const exists = await validateTemplateFileExists(val, workflowDirCtx);
   if (!exists) {
-    const error = new JsonError(
+    const error = new JsonDataError(
       "must be a relative path string to a file that exists",
       pathToFieldStr,
     );
@@ -125,16 +134,16 @@ const maybeReadTemplateFile = async (
   // under the same field name but without the @ filepath marker.
   const [content, contentErrors] = await readTemplateFile(val, workflowDirCtx);
   if (contentErrors.length > 0) {
-    const error = new JsonError(
+    const error = new JsonDataError(
       `points to a file with invalid content (${val})\n\n` +
-        formatErrors(contentErrors),
+        formatErrors(contentErrors, { indentBy: 2 }),
       pathToFieldStr,
     );
 
     return [undefined, error];
   }
 
-  return [content as string, undefined];
+  return [content!, undefined];
 };
 
 /*
@@ -150,13 +159,13 @@ const maybeReadTemplateFile = async (
  *
  * TODO: Include links to docs in the error message when ready.
  */
-type CompileTemplateFilesResult = [AnyObj, JsonError[]];
+type CompileTemplateFilesResult = [AnyObj, JsonDataError[]];
 
 const compileTemplateFiles = async (
   workflowDirCtx: WorkflowDirContext,
   workflowJson: AnyObj,
 ): Promise<CompileTemplateFilesResult> => {
-  const errors: JsonError[] = [];
+  const errors: JsonDataError[] = [];
   const extractedFilePaths: Record<string, boolean> = {};
   const objPath = new ObjPath();
 
@@ -167,7 +176,7 @@ const compileTemplateFiles = async (
 
   if (!Array.isArray(workflowJson.steps)) {
     errors.push(
-      new JsonError(
+      new JsonDataError(
         "must be an array of workflow steps",
         objPath.to("steps").str,
       ),
@@ -184,12 +193,14 @@ const compileTemplateFiles = async (
     objPath.reset(pathToSteps).push(stepIdx);
 
     if (!isPlainObject(step)) {
-      errors.push(new JsonError("must be a workflow step object", objPath.str));
+      errors.push(
+        new JsonDataError("must be a workflow step object", objPath.str),
+      );
       continue;
     }
 
     if (step.type === undefined) {
-      errors.push(new JsonError("must have a `type` field", objPath.str));
+      errors.push(new JsonDataError("must have a `type` field", objPath.str));
       continue;
     }
 
@@ -200,7 +211,7 @@ const compileTemplateFiles = async (
 
     if (step.template === undefined) {
       errors.push(
-        new JsonError(
+        new JsonDataError(
           "must have a `template` field containing a template object",
           objPath.str,
         ),
@@ -210,7 +221,10 @@ const compileTemplateFiles = async (
 
     if (!isPlainObject(step.template)) {
       errors.push(
-        new JsonError("must be a template object", objPath.to("template").str),
+        new JsonDataError(
+          "must be a template object",
+          objPath.to("template").str,
+        ),
       );
       continue;
     }
@@ -265,8 +279,6 @@ const compileTemplateFiles = async (
       set(workflowJson, inlinePathStr, content);
     }
   }
-
-  // TODO: Consider validating content for liquid syntax too maybe?
 
   return [workflowJson, errors];
 };
