@@ -17,6 +17,9 @@ export default class WorkflowNew extends BaseCommand {
 
   static args = [{ name: "workflowKey", required: true }];
 
+  // TODO(KNO-3072): Unhide after we move the generator logic to the backend.
+  static hidden = true;
+
   async run(): Promise<void> {
     const { args, flags } = this.props;
     const { cwd, resourceDir } = this.runContext;
