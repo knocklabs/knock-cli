@@ -1,4 +1,25 @@
 /*
+ * Checks if a given string is in a slugified format.
+ */
+const SLUG_FORMAT_RE = /^[\w-]+$/;
+const SLUG_LOWERCASE_FORMAT_RE = /^[\d_a-z-]+$/;
+
+type CheckSlugifiedFormatOpts = {
+  onlyLowerCase?: boolean;
+};
+
+export const checkSlugifiedFormat = (
+  input: string,
+  opts: CheckSlugifiedFormatOpts = {},
+): boolean => {
+  const { onlyLowerCase = true } = opts;
+
+  return onlyLowerCase
+    ? SLUG_LOWERCASE_FORMAT_RE.test(input)
+    : SLUG_FORMAT_RE.test(input);
+};
+
+/*
  * Indent each line in a string, useful when printing out nested errors.
  *
  * NOTE: Copied over from https://github.com/sindresorhus/indent-string for now,
