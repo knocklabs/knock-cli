@@ -96,6 +96,18 @@ export default class ApiV1 {
     });
   }
 
+  async activateWorkflow({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ActivateWorkflowResp>> {
+    const params = prune({
+      environment: flags.environment,
+      status: flags.status,
+    });
+
+    return this.put(`/workflows/${args.workflowKey}/activate`, {}, { params });
+  }
+
   // By methods:
 
   async get(
@@ -129,6 +141,11 @@ export type UpsertWorkflowResp<A extends MaybeWithAnnotation = unknown> = {
 };
 
 export type ValidateWorkflowResp = {
+  workflow?: Workflow.WorkflowData;
+  errors?: InputError[];
+};
+
+export type ActivateWorkflowResp = {
   workflow?: Workflow.WorkflowData;
   errors?: InputError[];
 };
