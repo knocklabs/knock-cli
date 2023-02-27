@@ -41,13 +41,13 @@ export default class WorkflowActivate extends BaseCommand {
   async run(): Promise<void> {
     const { args, flags } = this.props;
 
-    // Confirm before activating or deactivating the workflow, unless forced.
+    // 1. Confirm before activating or deactivating the workflow, unless forced.
     if (!flags.force) {
       const input = await promptToConfirm(this.props);
       if (!input) return;
     }
 
-    // Proceed to make a request to set the workflow status.
+    // 2. Proceed to make a request to set the workflow status.
     const actioning = flags.status ? "Activating" : "Deactivating";
     await withSpinner<ApiV1.ActivateWorkflowResp>(
       () => {
