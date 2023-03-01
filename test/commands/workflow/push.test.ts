@@ -75,9 +75,9 @@ describe("commands/workflow/push", () => {
               isEqual(flags, {
                 "service-token": "valid-token",
                 "api-origin": undefined,
+                environment: "development",
                 // Internally set flags
                 annotate: true,
-                environment: "development",
               }),
           ),
         );
@@ -101,12 +101,12 @@ describe("commands/workflow/push", () => {
               isEqual(flags, {
                 "service-token": "valid-token",
                 "api-origin": undefined,
+                environment: "development",
                 // Commit flags
                 commit: true,
                 commit_message: "this is a commit comment!",
                 // Internally set flags
                 annotate: true,
-                environment: "development",
               }),
           ),
         );

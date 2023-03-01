@@ -18,6 +18,12 @@ import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowPush extends BaseCommand {
   static flags = {
+    environment: Flags.string({
+      summary:
+        "Pushing a workflow is only allowed in the Development environment",
+      default: KnockEnv.Development,
+      options: [KnockEnv.Development],
+    }),
     commit: Flags.boolean({
       summary: "Push and commit the workflow(s) at the same time",
     }),
@@ -52,7 +58,7 @@ export default class WorkflowPush extends BaseCommand {
       () => {
         const props = merge(this.props, {
           args: { workflowKey: dirContext.key },
-          flags: { annotate: true, environment: KnockEnv.Development },
+          flags: { annotate: true },
         });
 
         return this.apiV1.upsertWorkflow(props, workflow as AnyObj);
