@@ -35,7 +35,7 @@ export default class ApiV1 {
     });
   }
 
-  // By resources:
+  // By resources: Workflows
 
   async ping(): Promise<AxiosResponse> {
     return this.get("/ping");
@@ -108,6 +108,29 @@ export default class ApiV1 {
     return this.put(`/workflows/${args.workflowKey}/activate`, {}, { params });
   }
 
+  // By resources: Commits
+
+  async commitAllChanges({
+    flags,
+  }: Props): Promise<AxiosResponse<CommitAllChangesResp>> {
+    const params = prune({
+      environment: flags.environment,
+      commit_message: flags.commit_message,
+    });
+
+    return this.put(`/commits`, {}, { params });
+  }
+
+  async promoteAllChanges({
+    flags,
+  }: Props): Promise<AxiosResponse<PromoteAllChangesResp>> {
+    const params = prune({
+      to_environment: flags.to,
+    });
+
+    return this.put(`/commits/promote`, {}, { params });
+  }
+
   // By methods:
 
   async get(
@@ -147,5 +170,15 @@ export type ValidateWorkflowResp = {
 
 export type ActivateWorkflowResp = {
   workflow?: Workflow.WorkflowData;
+  errors?: InputError[];
+};
+
+export type CommitAllChangesResp = {
+  result?: "success";
+  errors?: InputError[];
+};
+
+export type PromoteAllChangesResp = {
+  result?: "success";
   errors?: InputError[];
 };
