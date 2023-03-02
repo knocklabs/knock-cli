@@ -28,7 +28,7 @@ describe("commands/commit/index", () => {
             "service-token": "valid-token",
             "api-origin": undefined,
             environment: "development",
-            commit_message: "commit all the changes!",
+            "commit-message": "commit all the changes!",
           }),
         ),
       );

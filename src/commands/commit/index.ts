@@ -28,7 +28,7 @@ export default class Commit extends BaseCommand {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
-    commit_message: Flags.string({
+    "commit-message": Flags.string({
       summary: "Use the given value as the commit message",
       char: "m",
     }),
