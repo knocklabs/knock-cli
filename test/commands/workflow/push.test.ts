@@ -104,7 +104,7 @@ describe("commands/workflow/push", () => {
                 environment: "development",
                 // Commit flags
                 commit: true,
-                commit_message: "this is a commit comment!",
+                "commit-message": "this is a commit comment!",
                 // Internally set flags
                 annotate: true,
               }),
