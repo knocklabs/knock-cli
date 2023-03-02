@@ -66,7 +66,7 @@ describe("commands/workflow/push", () => {
     setupWithStub({ data: { workflow: mockWorkflowData } })
       .stdout()
       .command(["workflow push", "new-comment"])
-      .it("calls apiV1 upsertWorkflow with correct inner flags", () => {
+      .it("calls apiV1 upsertWorkflow with expected props", () => {
         sinon.assert.calledWith(
           KnockApiV1.prototype.upsertWorkflow as any,
           sinon.match(
@@ -184,5 +184,13 @@ describe("commands/workflow/push", () => {
         expect(error.message).to.match(/^Cannot locate a workflow directory/),
       )
       .it("throws an error");
+  });
+
+  describe("given no workflow key arg", () => {
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push"])
+      .exit(2)
+      .it("exists with status 2");
   });
 });
