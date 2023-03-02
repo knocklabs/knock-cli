@@ -27,7 +27,7 @@ export default class WorkflowPush extends BaseCommand {
     commit: Flags.boolean({
       summary: "Push and commit the workflow(s) at the same time",
     }),
-    commit_message: Flags.string({
+    "commit-message": Flags.string({
       summary: "Use the given value as the commit message",
       char: "m",
       dependsOn: ["commit"],

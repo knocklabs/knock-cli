@@ -75,7 +75,7 @@ export default class ApiV1 {
       environment: flags.environment,
       annotate: flags.annotate,
       commit: flags.commit,
-      commit_message: flags.commit_message,
+      commit_message: flags["commit-message"],
     });
     const data = { workflow };
 
