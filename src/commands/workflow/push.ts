@@ -20,7 +20,7 @@ export default class WorkflowPush extends BaseCommand {
   static flags = {
     environment: Flags.string({
       summary:
-        "Pushing a workflow is only allowed in the Development environment",
+        "Pushing a workflow is only allowed in the development environment",
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
