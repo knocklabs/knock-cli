@@ -82,6 +82,32 @@ export default class ApiV1 {
     return this.put(`/workflows/${args.workflowKey}`, data, { params });
   }
 
+  async validateWorkflow(
+    { args, flags }: Props,
+    workflow: AnyObj,
+  ): Promise<AxiosResponse<ValidateWorkflowResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+    const data = { workflow };
+
+    return this.put(`/workflows/${args.workflowKey}/validate`, data, {
+      params,
+    });
+  }
+
+  async activateWorkflow({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ActivateWorkflowResp>> {
+    const params = prune({
+      environment: flags.environment,
+      status: flags.status,
+    });
+
+    return this.put(`/workflows/${args.workflowKey}/activate`, {}, { params });
+  }
+
   // By methods:
 
   async get(
@@ -111,5 +137,15 @@ export type GetWorkflowResp<A extends MaybeWithAnnotation = unknown> =
 
 export type UpsertWorkflowResp<A extends MaybeWithAnnotation = unknown> = {
   workflow?: Workflow.WorkflowData<A>;
+  errors?: InputError[];
+};
+
+export type ValidateWorkflowResp = {
+  workflow?: Workflow.WorkflowData;
+  errors?: InputError[];
+};
+
+export type ActivateWorkflowResp = {
+  workflow?: Workflow.WorkflowData;
   errors?: InputError[];
 };
