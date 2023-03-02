@@ -3,48 +3,78 @@
 A command-line interface for interacting with [Knock](https://knock.app).
 
 <!-- toc -->
-
-- [Usage](#usage)
-- [Commands](#commands)
+* [@knocklabs/cli](#knocklabscli)
+* [Usage](#usage)
+* [Commands](#commands)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.0-rc.0 darwin-arm64 node-v16.4.0
+@knocklabs/cli/0.1.0-rc.1 darwin-arm64 node-v16.14.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
+* [`knock commit`](#knock-commit)
+* [`knock commit promote`](#knock-commit-promote)
+* [`knock help [COMMANDS]`](#knock-help-commands)
+* [`knock ping`](#knock-ping)
+* [`knock plugins`](#knock-plugins)
+* [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin)
+* [`knock plugins:inspect PLUGIN...`](#knock-pluginsinspect-plugin)
+* [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin-1)
+* [`knock plugins:link PLUGIN`](#knock-pluginslink-plugin)
+* [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin)
+* [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-1)
+* [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-2)
+* [`knock plugins update`](#knock-plugins-update)
+* [`knock workflow activate WORKFLOWKEY`](#knock-workflow-activate-workflowkey)
+* [`knock workflow get WORKFLOWKEY`](#knock-workflow-get-workflowkey)
+* [`knock workflow list`](#knock-workflow-list)
+* [`knock workflow pull [WORKFLOWKEY]`](#knock-workflow-pull-workflowkey)
+* [`knock workflow push [WORKFLOWKEY]`](#knock-workflow-push-workflowkey)
+* [`knock workflow validate [WORKFLOWKEY]`](#knock-workflow-validate-workflowkey)
 
-- [`knock help [COMMANDS]`](#knock-help-commands)
-- [`knock ping`](#knock-ping)
-- [`knock plugins`](#knock-plugins)
-- [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin)
-- [`knock plugins:inspect PLUGIN...`](#knock-pluginsinspect-plugin)
-- [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin-1)
-- [`knock plugins:link PLUGIN`](#knock-pluginslink-plugin)
-- [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin)
-- [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-1)
-- [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-2)
-- [`knock plugins update`](#knock-plugins-update)
-- [`knock workflow get WORKFLOWKEY`](#knock-workflow-get-workflowkey)
-- [`knock workflow list`](#knock-workflow-list)
-- [`knock workflow pull [WORKFLOWKEY]`](#knock-workflow-pull-workflowkey)
-- [`knock workflow push [WORKFLOWKEY]`](#knock-workflow-push-workflowkey)
+## `knock commit`
+
+```
+USAGE
+  $ knock commit --service-token <value> [--environment development] [-m <value>] [--force]
+
+FLAGS
+  -m, --commit-message=<value>  Use the given value as the commit message
+  --environment=<option>        [default: development] Committing changes applies to the development environment only,
+                                use `commit promote` to promote changes to a later environment
+                                <options: development>
+  --force
+  --service-token=<value>       (required) The service token to authenticate with
+```
+
+_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.1/dist/commands/commit/index.ts)_
+
+## `knock commit promote`
+
+```
+USAGE
+  $ knock commit promote --service-token <value> --to <value> [--force]
+
+FLAGS
+  --force
+  --service-token=<value>  (required) The service token to authenticate with
+  --to=<value>             (required) The destination environment to promote changes from the preceding environment
+```
 
 ## `knock help [COMMANDS]`
 
@@ -64,7 +94,7 @@ DESCRIPTION
   Display help for knock.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.2/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.4/src/commands/help.ts)_
 
 ## `knock ping`
 
@@ -75,7 +105,7 @@ USAGE
   $ knock ping --service-token <value>
 
 FLAGS
-  --service-token=<value>  (required) service token to authenticate with
+  --service-token=<value>  (required) The service token to authenticate with
 
 DESCRIPTION
   Ping the Knock management API to verify access.
@@ -84,7 +114,7 @@ EXAMPLES
   $ knock ping
 ```
 
-_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.0/dist/commands/ping.ts)_
+_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.1/dist/commands/ping.ts)_
 
 ## `knock plugins`
 
@@ -137,7 +167,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin
+  $ knock plugins:install myplugin 
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -200,7 +230,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin
+  $ knock plugins:install myplugin 
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -319,6 +349,20 @@ DESCRIPTION
   Update installed plugins.
 ```
 
+## `knock workflow activate WORKFLOWKEY`
+
+```
+USAGE
+  $ knock workflow activate [WORKFLOWKEY] --service-token <value> --environment <value> [--status true|false] [--force]
+
+FLAGS
+  --environment=<value>    (required)
+  --force
+  --service-token=<value>  (required) The service token to authenticate with
+  --status=<option>        [default: true]
+                           <options: true|false>
+```
+
 ## `knock workflow get WORKFLOWKEY`
 
 ```
@@ -329,7 +373,7 @@ USAGE
 FLAGS
   --environment=<value>       [default: development]
   --hide-uncommitted-changes
-  --service-token=<value>     (required) service token to authenticate with
+  --service-token=<value>     (required) The service token to authenticate with
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -348,7 +392,7 @@ FLAGS
   --environment=<value>       [default: development]
   --hide-uncommitted-changes
   --limit=<value>
-  --service-token=<value>     (required) service token to authenticate with
+  --service-token=<value>     (required) The service token to authenticate with
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -363,19 +407,32 @@ USAGE
 FLAGS
   --environment=<value>       [default: development]
   --hide-uncommitted-changes
-  --service-token=<value>     (required) service token to authenticate with
+  --service-token=<value>     (required) The service token to authenticate with
 ```
 
 ## `knock workflow push [WORKFLOWKEY]`
 
 ```
 USAGE
-  $ knock workflow push [WORKFLOWKEY] --service-token <value> [--environment development]
+  $ knock workflow push [WORKFLOWKEY] --service-token <value> [--environment development] [-m <value> --commit]
 
 FLAGS
-  --environment=<option>   [default: development]
-                           <options: development>
-  --service-token=<value>  (required) service token to authenticate with
+  -m, --commit-message=<value>  Use the given value as the commit message
+  --commit                      Push and commit the workflow(s) at the same time
+  --environment=<option>        [default: development] Pushing a workflow is only allowed in the development environment
+                                <options: development>
+  --service-token=<value>       (required) The service token to authenticate with
 ```
 
+## `knock workflow validate [WORKFLOWKEY]`
+
+```
+USAGE
+  $ knock workflow validate [WORKFLOWKEY] --service-token <value> [--environment development]
+
+FLAGS
+  --environment=<option>   [default: development] Validating a workflow is only done in the development environment
+                           <options: development>
+  --service-token=<value>  (required) The service token to authenticate with
+```
 <!-- commandsstop -->
