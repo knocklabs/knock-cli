@@ -1,4 +1,4 @@
-import { AxiosResponse } from "axios";
+import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 import { GFlags } from "@/lib/api-v1";
 import { Props } from "@/lib/base-command";
@@ -38,7 +38,7 @@ export const resp = (attrs: Partial<AxiosResponse> = {}): AxiosResponse => {
     status: 200,
     statusText: "OK",
     headers: {},
-    config: {},
+    config: {} as InternalAxiosRequestConfig,
     ...attrs,
   };
 };

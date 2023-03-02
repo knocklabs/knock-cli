@@ -34,7 +34,7 @@ abstract class BaseCommand extends Command {
     // - if not provided, fall back to env variable
     // - if not available, fall back to user config
     "service-token": Flags.string({
-      summary: "service token to authenticate with",
+      summary: "The service token to authenticate with",
       required: true,
       multiple: false,
       env: "KNOCK_SERVICE_TOKEN",

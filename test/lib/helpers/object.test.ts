@@ -1,6 +1,6 @@
 import { expect } from "@oclif/test";
 
-import { omitDeep, split } from "@/lib/helpers/object";
+import { merge, ObjPath, omitDeep, prune, split } from "@/lib/helpers/object";
 
 describe("lib/helpers/object", () => {
   describe("split", () => {
@@ -80,6 +80,118 @@ describe("lib/helpers/object", () => {
         expect(omitDeep(1, "foo")).to.equal(1);
         expect(omitDeep("hey", "foo")).to.equal("hey");
       });
+    });
+  });
+
+  describe("prune", () => {
+    describe("given an object", () => {
+      it("returns an object without any keys that have null or undefined", () => {
+        const obj = {
+          a: 0,
+          b: null,
+          c: undefined,
+          d: "",
+        };
+
+        expect(prune(obj)).to.eql({
+          a: 0,
+          d: "",
+        });
+      });
+    });
+  });
+
+  describe("merge", () => {
+    describe("given one or more objects", () => {
+      it("returns a single object with all input objects merged", () => {
+        const obj1 = {
+          a: 0,
+          b: 1,
+        };
+
+        const obj2 = {
+          b: ["b-1", "b-2"],
+          c: {
+            d: 2,
+          },
+        };
+
+        const obj3 = {
+          b: ["b-3"],
+          c: {
+            e: 3,
+          },
+        };
+
+        expect(merge(obj1, obj2, obj3)).to.eql({
+          a: 0,
+          b: ["b-3", "b-2"],
+          c: {
+            d: 2,
+            e: 3,
+          },
+        });
+      });
+    });
+  });
+
+  describe("ObjPath", () => {
+    it("can format given path parts into an obj path str", () => {
+      const objPath = new ObjPath(["one", "two", 3, 4, "five"]);
+
+      expect(objPath.str).to.equal("one.two[3][4].five");
+    });
+
+    it("can track additional path parts, then format an obj path str", () => {
+      const objPath = new ObjPath(["one", "two", 3, 4, "five"]);
+
+      objPath.pop();
+      objPath.pop();
+      objPath.pop();
+      objPath.push("three");
+
+      // ESLint gets confused for some reason and thinks we are calling
+      // Array#push() here, so tries to auto format into one mangled line below.
+      // eslint-disable-next-line unicorn/no-array-push-push
+      objPath.push(4);
+      // eslint-disable-next-line unicorn/no-array-push-push
+      objPath.push(5);
+
+      expect(objPath.str).to.equal("one.two.three[4][5]");
+    });
+
+    it("can take one forward path part, then format an obj path str", () => {
+      const objPath = new ObjPath(["one", "two", 3, 4, "five"]);
+
+      expect(objPath.to("hey").str).to.equal("one.two[3][4].five.hey");
+
+      // Should not mutate the inner state.
+      expect(objPath.checkout()).to.eql(["one", "two", 3, 4, "five"]);
+    });
+
+    it("can take multiple forward path parts, then format an obj path str", () => {
+      const objPath = new ObjPath(["one", "two", 3, 4, "five"]);
+
+      expect(objPath.to(["hey", 7]).str).to.equal("one.two[3][4].five.hey[7]");
+
+      // Should not mutate the inner state.
+      expect(objPath.checkout()).to.eql(["one", "two", 3, 4, "five"]);
+    });
+
+    it("can track path parts, then reset to a given state", () => {
+      const objPath = new ObjPath([1, "two", 3, 4, "five"]);
+
+      objPath.pop();
+      objPath.pop();
+
+      const bookmarked = objPath.checkout();
+      expect(bookmarked).to.eql([1, "two", 3]);
+
+      objPath.push("foo");
+      expect(objPath.str).to.eql("[1].two[3].foo");
+
+      objPath.reset(bookmarked);
+      expect(objPath.str).to.eql("[1].two[3]");
     });
   });
 });

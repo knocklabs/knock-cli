@@ -4,6 +4,7 @@ import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { KnockEnv } from "@/lib/helpers/const";
 import {
   ensureResourceDirForTarget,
   ResourceTarget,
@@ -17,10 +18,19 @@ import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowPush extends BaseCommand {
   static flags = {
-    // TODO: Maybe make environments into an enum.
     environment: Flags.string({
-      default: "development",
-      options: ["development"],
+      summary:
+        "Pushing a workflow is only allowed in the Development environment",
+      default: KnockEnv.Development,
+      options: [KnockEnv.Development],
+    }),
+    commit: Flags.boolean({
+      summary: "Push and commit the workflow(s) at the same time",
+    }),
+    "commit-message": Flags.string({
+      summary: "Use the given value as the commit message",
+      char: "m",
+      dependsOn: ["commit"],
     }),
   };
 
