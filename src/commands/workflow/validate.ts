@@ -1,5 +1,7 @@
 import * as path from "node:path";
 
+import { Flags } from "@oclif/core";
+
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
@@ -14,6 +16,15 @@ import { withSpinner } from "@/lib/helpers/request";
 import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowValidate extends BaseCommand {
+  static flags = {
+    environment: Flags.string({
+      summary:
+        "Validating a workflow is only done in the development environment",
+      default: KnockEnv.Development,
+      options: [KnockEnv.Development],
+    }),
+  };
+
   static args = [{ name: "workflowKey", required: false }];
 
   async run(): Promise<ApiV1.ValidateWorkflowResp | void> {
@@ -38,7 +49,6 @@ export default class WorkflowValidate extends BaseCommand {
       () => {
         const props = merge(this.props, {
           args: { workflowKey: dirContext.key },
-          flags: { environment: KnockEnv.Development },
         });
 
         return this.apiV1.validateWorkflow(props, workflow as AnyObj);
