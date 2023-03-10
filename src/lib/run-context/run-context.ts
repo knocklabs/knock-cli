@@ -7,7 +7,7 @@ import * as path from "node:path";
 
 import * as Workflow from "@/lib/marshal/workflow";
 
-import { ResourceDirContext } from "./helpers/dir-context";
+import { ResourceDirContext } from "./dir-context";
 
 export type RunContext = {
   cwd: string;

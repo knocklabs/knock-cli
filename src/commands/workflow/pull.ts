@@ -9,7 +9,7 @@ import {
   ensureResourceDirForTarget,
   ResourceTarget,
   WorkflowDirContext,
-} from "@/lib/helpers/dir-context";
+} from "@/lib/run-context";
 import { merge } from "@/lib/helpers/object";
 import { withSpinner } from "@/lib/helpers/request";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
