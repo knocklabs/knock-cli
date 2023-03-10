@@ -1,6 +1,6 @@
 import { assign, get, zip } from "lodash";
 
-import { WorkflowDirContext } from "@/lib/helpers/dir-context";
+import { WorkflowDirContext } from "@/lib/run-context";
 
 import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
 import { StepType, WorkflowStepData } from "./types";

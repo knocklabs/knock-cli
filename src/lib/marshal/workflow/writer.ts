@@ -3,7 +3,7 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import { cloneDeep, get, has, keyBy, set, unset } from "lodash";
 
-import { WorkflowDirContext } from "@/lib/helpers/dir-context";
+import { WorkflowDirContext } from "@/lib/run-context";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";

@@ -4,7 +4,7 @@ import * as fs from "fs-extra";
 import { LiquidError } from "liquidjs";
 import { isPlainObject, set } from "lodash";
 
-import { WorkflowDirContext } from "@/lib/helpers/dir-context";
+import { WorkflowDirContext } from "@/lib/run-context";
 import { formatErrors, JsonDataError } from "@/lib/helpers/error";
 import { readJson, ReadJsonResult } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";

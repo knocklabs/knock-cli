@@ -1,29 +1,6 @@
 import { CliUx } from "@oclif/core";
 
-type ResourceType = "workflow" | "layout";
-
-type ResourceDirContextBase = {
-  type: ResourceType;
-  key: string;
-  abspath: string;
-  exists: boolean;
-};
-
-export type WorkflowDirContext = ResourceDirContextBase & {
-  type: "workflow";
-};
-
-type LayoutDirContext = ResourceDirContextBase & {
-  type: "layout";
-};
-
-export type ResourceDirContext = WorkflowDirContext | LayoutDirContext;
-
-export type ResourceTarget = {
-  commandId: string;
-  type: ResourceType;
-  key?: string;
-};
+import { ResourceTarget, ResourceDirContext } from "./types"
 
 /*
  * Ensures the given resource directory does not conflict with the target

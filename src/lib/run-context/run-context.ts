@@ -7,14 +7,7 @@ import * as path from "node:path";
 
 import * as Workflow from "@/lib/marshal/workflow";
 
-import { ResourceDirContext } from "./dir-context";
-
-export type RunContext = {
-  cwd: string;
-  resourceDir?: ResourceDirContext;
-};
-
-export type T = RunContext;
+import { RunContext } from "./types";
 
 const evaluateRecursively = async (
   ctx: RunContext,
