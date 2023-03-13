@@ -1,3 +1,3 @@
-export { load } from "./run-context"
+export { load } from "./loader"
 export { ensureResourceDirForTarget } from "./dir-context"
 export * from "./types"
