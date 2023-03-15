@@ -1,11 +1,14 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
-import { LiquidError } from "liquidjs";
 import { isPlainObject, set } from "lodash";
 
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";
-import { formatErrors, JsonDataError } from "@/lib/helpers/error";
+import {
+  formatErrors,
+  JsonDataError,
+  LiquidParseError,
+} from "@/lib/helpers/error";
 import { readJson, ReadJsonResult } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 import { AnyObj, ObjPath, omitDeep } from "@/lib/helpers/object";
@@ -63,12 +66,8 @@ const validateTemplateFileExists = async (
  * return the content string or an error.
  */
 type TemplateContent = string;
-type TemplateContentError = SyntaxError | LiquidError;
 type MaybeTemplateFileContent = TemplateContent | undefined;
-type ReadTemplateFileResult = [
-  MaybeTemplateFileContent,
-  TemplateContentError[],
-];
+type ReadTemplateFileResult = [MaybeTemplateFileContent, LiquidParseError[]];
 
 const readTemplateFile = async (
   relpath: string,
@@ -79,18 +78,9 @@ const readTemplateFile = async (
   // First read all template files as text content and check for valid liquid
   // syntax given it is supported across all message templates and formats.
   const content = await fs.readFile(abspath, "utf8");
+  const liquidParseError = validateLiquidSyntax(content);
 
-  const liquidError = validateLiquidSyntax(content);
-  if (liquidError) return [undefined, [liquidError]];
-
-  // If not a json file, we can just return the file content.
-  const isJsonFile = abspath.toLowerCase().endsWith(".json");
-  if (!isJsonFile) return [content, []];
-
-  // If json, parse it as json and validate it as such.
-  const [obj, errors] = await readJson(abspath);
-  const json = obj && JSON.stringify(obj);
-  return [json, errors];
+  return liquidParseError ? [undefined, [liquidParseError]] : [content, []];
 };
 
 /*
@@ -325,3 +315,6 @@ export const readWorkflowDir = async (
     ? compileTemplateFiles(workflowDirCtx, workflowJson)
     : [workflowJson, []];
 };
+
+// Exported for tests.
+export { readTemplateFile };
