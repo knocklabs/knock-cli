@@ -1,7 +1,14 @@
-import { expect } from "@oclif/test";
+import * as path from "node:path";
 
+import { expect } from "@oclif/test";
+import * as fs from "fs-extra";
+
+import { sandboxDir } from "@/lib/helpers/const";
 import { WorkflowDirContext } from "@/lib/helpers/dir-context";
-import { validateTemplateFilePathFormat } from "@/lib/marshal/workflow/reader";
+import {
+  readTemplateFile,
+  validateTemplateFilePathFormat,
+} from "@/lib/marshal/workflow/reader";
 
 describe("lib/marshal/workflow/reader", () => {
   describe("validateTemplateFilePathFormat", () => {
@@ -55,6 +62,112 @@ describe("lib/marshal/workflow/reader", () => {
           workflowDirCtx,
         );
         expect(result3).to.equal(true);
+      });
+    });
+  });
+
+  describe("readTemplateFile", () => {
+    const workflowDirCtx: WorkflowDirContext = {
+      type: "workflow",
+      key: "foo",
+      abspath: path.resolve(sandboxDir, "foo"),
+      exists: true,
+    };
+
+    beforeEach(() => {
+      fs.removeSync(sandboxDir);
+      fs.ensureDir(workflowDirCtx.abspath);
+    });
+    after(() => fs.removeSync(sandboxDir));
+
+    describe("given a valid liquid html template", () => {
+      it("returns the read template content without errors", async () => {
+        const fileContent = `
+{% assign my_variable = 10 %}
+<p>
+  Hello {{ recipient.name }}
+</p>
+`.trimStart();
+
+        const filePath = path.resolve(workflowDirCtx.abspath, "sample.html");
+        fs.outputFileSync(filePath, fileContent);
+
+        const [readContent, errors] = await readTemplateFile(
+          "sample.html",
+          workflowDirCtx,
+        );
+
+        expect(readContent).to.be.a("string");
+        expect(errors).to.eql([]);
+      });
+    });
+
+    describe("given a valid liquid markdown template", () => {
+      it("returns the read template content without errors", async () => {
+        const fileContent = `
+{% assign my_variable = 10 %}
+**Hello {{ recipient.name }}**
+`.trimStart();
+
+        const filePath = path.resolve(workflowDirCtx.abspath, "sample.md");
+        fs.outputFileSync(filePath, fileContent);
+
+        const [readContent, errors] = await readTemplateFile(
+          "sample.md",
+          workflowDirCtx,
+        );
+
+        expect(readContent).to.be.a("string");
+        expect(errors).to.eql([]);
+      });
+    });
+
+    describe("given a valid liquid json template", () => {
+      it("returns the read template content without errors", async () => {
+        const fileContent = `
+{% assign my_variable = 10 %}
+{
+  "text":
+    {% if my_variable > 5 %}
+      "foo"
+    {% else %}
+      "bar"
+    {% endif %}
+}
+`.trimStart();
+
+        const filePath = path.resolve(workflowDirCtx.abspath, "sample.json");
+        fs.outputFileSync(filePath, fileContent);
+
+        const [readContent, errors] = await readTemplateFile(
+          "sample.json",
+          workflowDirCtx,
+        );
+
+        expect(readContent).to.be.a("string");
+        expect(errors).to.eql([]);
+      });
+    });
+
+    describe("given an invalid liquid json template", () => {
+      it("returns the read template content without errors", async () => {
+        const fileContent = `
+{% assign my_variable = 10 %}
+{
+  "text": "{{ my_variable "
+}
+`.trimStart();
+
+        const filePath = path.resolve(workflowDirCtx.abspath, "sample.json");
+        fs.outputFileSync(filePath, fileContent);
+
+        const [readContent, errors] = await readTemplateFile(
+          "sample.json",
+          workflowDirCtx,
+        );
+
+        expect(readContent).to.equal(undefined);
+        expect(errors).to.have.lengthOf(1);
       });
     });
   });
