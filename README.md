@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.0-rc.1 darwin-arm64 node-v16.14.0
+@knocklabs/cli/0.1.0-rc.2 darwin-arm64 node-v16.14.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -62,7 +62,7 @@ FLAGS
   --service-token=<value>       (required) The service token to authenticate with
 ```
 
-_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.1/dist/commands/commit/index.ts)_
+_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.2/dist/commands/commit/index.ts)_
 
 ## `knock commit promote`
 
@@ -114,7 +114,7 @@ EXAMPLES
   $ knock ping
 ```
 
-_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.1/dist/commands/ping.ts)_
+_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.2/dist/commands/ping.ts)_
 
 ## `knock plugins`
 
