@@ -1,6 +1,6 @@
 import { CliUx } from "@oclif/core";
 
-import { ResourceTarget, ResourceDirContext } from "./types"
+import { ResourceDirContext, ResourceTarget } from "./types";
 
 /*
  * Ensures the given resource directory does not conflict with the target

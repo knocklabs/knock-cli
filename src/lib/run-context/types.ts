@@ -1,5 +1,7 @@
+import { DirContext } from "@/lib/helpers/fs";
+
 /*
- * Core context container, based on the location of the command invoked.
+ * Core run context object, based on the location of the command invoked.
  */
 
 export type RunContext = {
@@ -9,18 +11,15 @@ export type RunContext = {
 
 export type T = RunContext;
 
-
 /*
- * Individual resource context
+ * Resource directory context
  */
 
-type ResourceType = "workflow" | "layout";
+export type ResourceType = "workflow" | "layout";
 
-type ResourceDirContextBase = {
+type ResourceDirContextBase = DirContext & {
   type: ResourceType;
   key: string;
-  abspath: string;
-  exists: boolean;
 };
 
 export type WorkflowDirContext = ResourceDirContextBase & {

@@ -2,13 +2,13 @@ import { expect } from "@oclif/test";
 import { get } from "lodash";
 
 import { xpath } from "@/../test/support";
-import { WorkflowDirContext } from "@/lib/run-context";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { StepType, WorkflowData } from "@/lib/marshal/workflow";
 import {
   buildWorkflowDirBundle,
   toWorkflowJson,
 } from "@/lib/marshal/workflow/writer";
+import { WorkflowDirContext } from "@/lib/run-context";
 
 const remoteWorkflow: WorkflowData<WithAnnotation> = {
   name: "New comment",

@@ -4,10 +4,10 @@ import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
-import { WorkflowDirContext } from "@/lib/run-context";
 import { merge } from "@/lib/helpers/object";
-import * as spinner from "@/lib/helpers/spinner";
+import { spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
+import { WorkflowDirContext } from "@/lib/run-context";
 
 export default class WorkflowNew extends BaseCommand {
   static flags = {

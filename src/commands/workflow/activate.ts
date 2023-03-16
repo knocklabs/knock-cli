@@ -1,28 +1,10 @@
 import { Flags } from "@oclif/core";
-import enquirer from "enquirer";
 
 import * as ApiV1 from "@/lib/api-v1";
-import BaseCommand, { Props } from "@/lib/base-command";
+import BaseCommand from "@/lib/base-command";
 import { booleanStr } from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
-
-const promptToConfirm = async ({
-  flags,
-  args,
-}: Props): Promise<string | undefined> => {
-  const action = flags.status ? "Activate" : "Deactivate";
-
-  try {
-    const { input } = await enquirer.prompt<{ input: string }>({
-      type: "confirm",
-      name: "input",
-      message: `${action} \`${args.workflowKey}\` workflow in \`${flags.environment}\` environment?`,
-    });
-    return input;
-  } catch (error) {
-    console.log(error);
-  }
-};
+import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class WorkflowActivate extends BaseCommand {
   static flags = {
@@ -42,10 +24,10 @@ export default class WorkflowActivate extends BaseCommand {
     const { args, flags } = this.props;
 
     // 1. Confirm before activating or deactivating the workflow, unless forced.
-    if (!flags.force) {
-      const input = await promptToConfirm(this.props);
-      if (!input) return;
-    }
+    const action = flags.status ? "Activate" : "Deactivate";
+    const prompt = `${action} \`${args.workflowKey}\` workflow in \`${flags.environment}\` environment?`;
+    const input = flags.force ? true : await promptToConfirm(prompt);
+    if (!input) return;
 
     // 2. Proceed to make a request to set the workflow status.
     const actioning = flags.status ? "Activating" : "Deactivating";

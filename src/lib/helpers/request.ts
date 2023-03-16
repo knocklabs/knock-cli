@@ -2,15 +2,18 @@ import { CliUx } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import { ApiError, formatErrors, InputError, JsonDataError } from "./error";
-import * as spinner from "./spinner";
+import { spinner } from "./ux";
 
-const isSuccessResp = (resp: AxiosResponse) =>
+export const isSuccessResp = (resp: AxiosResponse): boolean =>
   resp.status >= 200 && resp.status < 300;
 
 /*
  * Returns a formatted error message from an error response based on status code.
  */
-const formatErrorRespMessage = ({ status, data }: AxiosResponse): string => {
+export const formatErrorRespMessage = ({
+  status,
+  data,
+}: AxiosResponse): string => {
   if (status === 500) {
     return "An internal server error occurred";
   }

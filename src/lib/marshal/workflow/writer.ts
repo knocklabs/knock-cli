@@ -3,12 +3,14 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import { cloneDeep, get, has, keyBy, set, unset } from "lodash";
 
-import { WorkflowDirContext } from "@/lib/run-context";
+import { sandboxDir } from "@/lib/helpers/const";
+import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
+import { WorkflowDirContext } from "@/lib/run-context";
 
-import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
+import { FILEPATH_MARKER, isWorkflowDir, WORKFLOW_JSON } from "./helpers";
 import { readWorkflowDir, validateTemplateFilePathFormat } from "./reader";
 import { StepType, TemplateData, WorkflowData } from "./types";
 
@@ -191,9 +193,9 @@ const buildWorkflowDirBundle = (
 
 /*
  * The main write function that takes the fetched workflow data from Knock API
- * (remote workflow), and the same workflow from the local file system (local
- * workflow, if available), then writes the remote workflow into a workflow
- * directory with the local workflow as a reference.
+ * (remote workflow), and reads the same workflow from the local file system
+ * (local workflow, if available), then writes the remote workflow into a
+ * workflow directory with the local workflow as a reference.
  */
 export const writeWorkflowDirFromData = async (
   workflowDirCtx: WorkflowDirContext,
@@ -245,6 +247,57 @@ export const writeWorkflowDirFromBundle = async (
   } catch (error) {
     await fs.remove(workflowDirCtx.abspath);
     throw error;
+  }
+};
+
+/*
+ * The bulk write function that takes the fetched workflows data from Knock API
+ * (remote workflows), and writes them into a workflows "index" directory by
+ * referencing locally available workflows.
+ */
+export const writeWorkflowsIndexDir = async (
+  indexDirCtx: DirContext,
+  remoteWorkflows: WorkflowData<WithAnnotation>[],
+): Promise<void> => {
+  const backupDirPath = path.resolve(sandboxDir, "workflows");
+
+  try {
+    // If the index directory already exists, back it up in the temp sandbox
+    // and before wiping it clean.
+    if (indexDirCtx.exists) {
+      await fs.copy(indexDirCtx.abspath, backupDirPath);
+      await fs.remove(indexDirCtx.abspath);
+    }
+
+    // Write given remote workflows into the given workflows directory path.
+    const promises = remoteWorkflows.map(async (workflow) => {
+      const workflowDirPath = path.resolve(indexDirCtx.abspath, workflow.key);
+
+      const workflowDirCtx: WorkflowDirContext = {
+        type: "workflow",
+        key: workflow.key,
+        abspath: workflowDirPath,
+        exists: indexDirCtx.exists
+          ? await isWorkflowDir(workflowDirPath)
+          : false,
+      };
+
+      return writeWorkflowDirFromData(workflowDirCtx, workflow);
+    });
+
+    await Promise.all(promises);
+  } catch (error) {
+    // In case of any error, wipe the index directory that is likely in a bad
+    // state then restore the backup if one existed before.
+    await fs.remove(indexDirCtx.abspath);
+    if (indexDirCtx.exists) {
+      await fs.copy(backupDirPath, indexDirCtx.abspath);
+    }
+
+    throw error;
+  } finally {
+    // Always clean up the backup directory in the temp sandbox.
+    await fs.remove(backupDirPath);
   }
 };
 
