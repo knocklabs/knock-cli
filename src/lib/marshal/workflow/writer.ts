@@ -1,7 +1,7 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
-import { cloneDeep, get, has, keyBy, set, unset } from "lodash";
+import { cloneDeep, get, has, keyBy, set, uniqueId, unset } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
@@ -259,7 +259,7 @@ export const writeWorkflowsIndexDir = async (
   indexDirCtx: DirContext,
   remoteWorkflows: WorkflowData<WithAnnotation>[],
 ): Promise<void> => {
-  const backupDirPath = path.resolve(sandboxDir, "workflows");
+  const backupDirPath = path.resolve(sandboxDir, uniqueId("bak"));
 
   try {
     // If the index directory already exists, back it up in the temp sandbox

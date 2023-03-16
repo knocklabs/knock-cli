@@ -31,6 +31,7 @@ describe("commands/commit/promote", () => {
 
   describe("given a target `to` environment flag", () => {
     setupWithStub()
+      .stdout()
       .command(["commit promote", "--to", "staging"])
       .it("calls apiV1 promoteAllChanges with expected props", () => {
         sinon.assert.calledWith(

@@ -95,17 +95,22 @@ describe("lib/api-v1", () => {
         "rogue-flag": "hey",
       };
       const workflow = {
-        name: "New campaign"
-      }
+        name: "New campaign",
+      };
       await apiV1.upsertWorkflow(factory.props({ args, flags }), workflow);
 
       const params = {
         environment: "development",
         annotate: true,
         commit: true,
-        commit_message: "wip workflow"
+        commit_message: "wip workflow",
       };
-      sinon.assert.calledWith(stub, "/v1/workflows/foo", { workflow }, { params });
+      sinon.assert.calledWith(
+        stub,
+        "/v1/workflows/foo",
+        { workflow },
+        { params },
+      );
 
       stub.restore();
     });
@@ -127,14 +132,19 @@ describe("lib/api-v1", () => {
         "rogue-flag": "hey",
       };
       const workflow = {
-        name: "New campaign"
-      }
+        name: "New campaign",
+      };
       await apiV1.validateWorkflow(factory.props({ args, flags }), workflow);
 
       const params = {
         environment: "development",
       };
-      sinon.assert.calledWith(stub, "/v1/workflows/bar/validate", { workflow }, { params });
+      sinon.assert.calledWith(
+        stub,
+        "/v1/workflows/bar/validate",
+        { workflow },
+        { params },
+      );
 
       stub.restore();
     });
@@ -162,7 +172,12 @@ describe("lib/api-v1", () => {
         environment: "development",
         status: false,
       };
-      sinon.assert.calledWith(stub, "/v1/workflows/baz/activate", {}, { params });
+      sinon.assert.calledWith(
+        stub,
+        "/v1/workflows/baz/activate",
+        {},
+        { params },
+      );
 
       stub.restore();
     });
@@ -174,7 +189,7 @@ describe("lib/api-v1", () => {
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
-          data: { result: "success" }
+          data: { result: "success" },
         }),
       );
 
@@ -188,7 +203,7 @@ describe("lib/api-v1", () => {
 
       const params = {
         environment: "development",
-        commit_message: "latest changes"
+        commit_message: "latest changes",
       };
       sinon.assert.calledWith(stub, "/v1/commits", {}, { params });
 
@@ -202,7 +217,7 @@ describe("lib/api-v1", () => {
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
-          data: { result: "success" }
+          data: { result: "success" },
         }),
       );
 

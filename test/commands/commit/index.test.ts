@@ -19,6 +19,7 @@ describe("commands/commit/index", () => {
       "prompt",
       sinon.stub().onFirstCall().resolves({ input: "y" }),
     )
+    .stdout()
     .command(["commit", "-m", "commit all the changes!"])
     .it("calls apiV1 commitAllChanges with expected props", () => {
       sinon.assert.calledWith(
