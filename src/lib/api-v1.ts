@@ -115,7 +115,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<CommitAllChangesResp>> {
     const params = prune({
       environment: flags.environment,
-      commit_message: flags.commit_message,
+      commit_message: flags["commit-message"],
     });
 
     return this.put(`/commits`, {}, { params });
