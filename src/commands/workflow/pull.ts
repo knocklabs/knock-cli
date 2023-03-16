@@ -61,7 +61,7 @@ export default class WorkflowPull extends BaseCommand {
       this.log(`‣ Found \`${dirContext.key}\` at ${dirContext.abspath}`);
     } else {
       const prompt = `Create a new workflow directory \`${dirContext.key}\`?`;
-      const input = flags.force ? true : await promptToConfirm(prompt);
+      const input = flags.force || (await promptToConfirm(prompt));
       if (!input) return;
     }
 
@@ -138,7 +138,7 @@ export default class WorkflowPull extends BaseCommand {
       ? `Pull latest workflows into ${targetDirCtx.abspath}?`
       : `Create a new workflows directory at ${targetDirCtx.abspath}?`;
 
-    const input = flags.force ? true : await promptToConfirm(prompt);
+    const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
     // Fetch all workflows then write them to the local file system.

@@ -21,7 +21,7 @@ export default class CommitPromote extends BaseCommand {
     // Confirm first as we are about to promote changes to go live in the target
     // environment, unless forced.
     const prompt = `Promote all changes to \`${flags.to}\` environment?`;
-    const input = flags.force ? true : await promptToConfirm(prompt);
+    const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
     await withSpinner<ApiV1.PromoteAllChangesResp>(() =>

@@ -26,7 +26,7 @@ export default class WorkflowActivate extends BaseCommand {
     // 1. Confirm before activating or deactivating the workflow, unless forced.
     const action = flags.status ? "Activate" : "Deactivate";
     const prompt = `${action} \`${args.workflowKey}\` workflow in \`${flags.environment}\` environment?`;
-    const input = flags.force ? true : await promptToConfirm(prompt);
+    const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
     // 2. Proceed to make a request to set the workflow status.

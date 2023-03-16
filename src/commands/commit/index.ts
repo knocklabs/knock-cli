@@ -27,7 +27,7 @@ export default class Commit extends BaseCommand {
     // Confirm first as we are about to commit changes to go live in the
     // development environment, unless forced.
     const prompt = "Commit all changes in the development environment?";
-    const input = flags.force ? true : await promptToConfirm(prompt);
+    const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
     await withSpinner<ApiV1.CommitAllChangesResp>(() =>
