@@ -9,7 +9,7 @@ import { load } from "@/lib/run-context";
 const files = ["a/b/workflow.json", "a/b/c/foo.txt"];
 const currCwd = process.cwd();
 
-describe("lib/run-context", () => {
+describe("lib/run-context/loader", () => {
   describe("load", () => {
     before(() => {
       fs.removeSync(sandboxDir);
