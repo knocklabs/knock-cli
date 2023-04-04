@@ -259,7 +259,7 @@ export const writeWorkflowsIndexDir = async (
   indexDirCtx: DirContext,
   remoteWorkflows: WorkflowData<WithAnnotation>[],
 ): Promise<void> => {
-  const backupDirPath = path.resolve(sandboxDir, uniqueId("bak"));
+  const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
   try {
     // If the index directory already exists, back it up in the temp sandbox
@@ -270,7 +270,7 @@ export const writeWorkflowsIndexDir = async (
     }
 
     // Write given remote workflows into the given workflows directory path.
-    const promises = remoteWorkflows.map(async (workflow) => {
+    const writeWorkflowDirPromises = remoteWorkflows.map(async (workflow) => {
       const workflowDirPath = path.resolve(indexDirCtx.abspath, workflow.key);
 
       const workflowDirCtx: WorkflowDirContext = {
@@ -285,7 +285,7 @@ export const writeWorkflowsIndexDir = async (
       return writeWorkflowDirFromData(workflowDirCtx, workflow);
     });
 
-    await Promise.all(promises);
+    await Promise.all(writeWorkflowDirPromises);
   } catch (error) {
     // In case of any error, wipe the index directory that is likely in a bad
     // state then restore the backup if one existed before.
