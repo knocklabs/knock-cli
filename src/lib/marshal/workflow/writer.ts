@@ -263,7 +263,7 @@ export const writeWorkflowsIndexDir = async (
 
   try {
     // If the index directory already exists, back it up in the temp sandbox
-    // and before wiping it clean.
+    // before wiping it clean.
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
       await fs.remove(indexDirCtx.abspath);
