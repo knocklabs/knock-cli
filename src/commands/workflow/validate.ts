@@ -5,15 +5,15 @@ import { Flags } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import {
-  ensureResourceDirForTarget,
-  ResourceTarget,
-  WorkflowDirContext,
-} from "@/lib/helpers/dir-context";
 import { formatErrors } from "@/lib/helpers/error";
 import { AnyObj, merge } from "@/lib/helpers/object";
 import { withSpinner } from "@/lib/helpers/request";
 import * as Workflow from "@/lib/marshal/workflow";
+import {
+  ensureResourceDirForTarget,
+  ResourceTarget,
+  WorkflowDirContext,
+} from "@/lib/run-context";
 
 export default class WorkflowValidate extends BaseCommand {
   static flags = {

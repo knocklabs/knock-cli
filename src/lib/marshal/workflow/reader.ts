@@ -3,7 +3,6 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import { isPlainObject, set } from "lodash";
 
-import { WorkflowDirContext } from "@/lib/helpers/dir-context";
 import {
   formatErrors,
   JsonDataError,
@@ -12,6 +11,7 @@ import {
 import { readJson, ReadJsonResult } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 import { AnyObj, ObjPath, omitDeep } from "@/lib/helpers/object";
+import { WorkflowDirContext } from "@/lib/run-context";
 
 import { FILEPATH_MARKED_RE, lsWorkflowJson } from "./helpers";
 import { StepType, WorkflowStepData } from "./types";

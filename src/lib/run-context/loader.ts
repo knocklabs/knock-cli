@@ -7,23 +7,12 @@ import * as path from "node:path";
 
 import * as Workflow from "@/lib/marshal/workflow";
 
-import { ResourceDirContext } from "./helpers/dir-context";
-
-export type RunContext = {
-  cwd: string;
-  resourceDir?: ResourceDirContext;
-};
-
-export type T = RunContext;
+import { RunContext } from "./types";
 
 const evaluateRecursively = async (
   ctx: RunContext,
   currDir: string,
 ): Promise<RunContext> => {
-  // If we reached the root of the filesystem, nothing more to do.
-  const { root } = path.parse(currDir);
-  if (currDir === root) return ctx;
-
   // Check if we are inside a workflow directory, and if so update the context.
   const isWorkflowDir = await Workflow.isWorkflowDir(currDir);
   if (!ctx.resourceDir && isWorkflowDir) {
@@ -36,8 +25,13 @@ const evaluateRecursively = async (
   }
 
   // If we've identified the resource context, no need to go further.
-  // TODO: In the future also check for knock project dir context.
+  // TODO: In the future, consider supporting a knock project config file which
+  // we can use to (semi-)explicitly figure out the project directory structure.
   if (ctx.resourceDir) return ctx;
+
+  // If we reached the root of the filesystem, nothing more to do.
+  const { root } = path.parse(currDir);
+  if (currDir === root) return ctx;
 
   const parentDir = path.resolve(currDir, "..");
   return evaluateRecursively(ctx, parentDir);

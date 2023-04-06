@@ -4,11 +4,11 @@ import { expect } from "@oclif/test";
 import * as fs from "fs-extra";
 
 import { sandboxDir } from "@/lib/helpers/const";
-import { WorkflowDirContext } from "@/lib/helpers/dir-context";
 import {
   readTemplateFile,
   validateTemplateFilePathFormat,
 } from "@/lib/marshal/workflow/reader";
+import { WorkflowDirContext } from "@/lib/run-context";
 
 describe("lib/marshal/workflow/reader", () => {
   describe("validateTemplateFilePathFormat", () => {
