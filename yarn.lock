@@ -715,10 +715,10 @@
   dependencies:
     "@octokit/openapi-types" "^12.11.0"
 
-"@prantlf/jsonlint@^11.7.0":
-  version "11.7.0"
-  resolved "https://registry.yarnpkg.com/@prantlf/jsonlint/-/jsonlint-11.7.0.tgz#1ae76d64a6cfb91b19116d23a9d167f70fcd185b"
-  integrity sha512-Q7rxgt0t9gYxsxofunTCqiIB6UH4K73g+C6IySxHBzAk7wwLdsEw7YZSXuiGUDjGrY9oWxcgqbwdlyYWADiJMQ==
+"@prantlf/jsonlint@^11.7.2":
+  version "11.7.2"
+  resolved "https://registry.yarnpkg.com/@prantlf/jsonlint/-/jsonlint-11.7.2.tgz#40785ffd18b3b4c7e66ec57f39ef254229a00b6f"
+  integrity sha512-NWnxZcUBQUk/e16Yu6ZflMoc/5i42sDTvIxWgEAFyLktELCSj7VeMrYe87qnvPsHwEMbUzHpaDcUxD8VQ8XnHQ==
   dependencies:
     ajv "6.12.6"
     commander "9.4.0"
