@@ -46,6 +46,7 @@ USAGE
 * [`knock workflow pull [WORKFLOWKEY]`](#knock-workflow-pull-workflowkey)
 * [`knock workflow push [WORKFLOWKEY]`](#knock-workflow-push-workflowkey)
 * [`knock workflow validate [WORKFLOWKEY]`](#knock-workflow-validate-workflowkey)
+* [`knock translation list`](#knock-translation-list)
 
 ## `knock commit`
 
@@ -167,7 +168,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin 
+  $ knock plugins:install myplugin
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -230,7 +231,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin 
+  $ knock plugins:install myplugin
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -434,5 +435,24 @@ FLAGS
   --environment=<option>   [default: development] Validating a workflow is only done in the development environment
                            <options: development>
   --service-token=<value>  (required) The service token to authenticate with
+```
+
+## `knock translation list`
+
+```
+USAGE
+  $ knock translation list --service-token <value> [--environment <value>] [--hide-uncommitted-changes] [--after
+    <value>] [--before <value>] [--limit <value>] [--json]
+
+FLAGS
+  --after=<value>
+  --before=<value>
+  --environment=<value>       [default: development]
+  --hide-uncommitted-changes
+  --limit=<value>
+  --service-token=<value>     (required) The service token to authenticate with
+
+GLOBAL FLAGS
+  --json  Format output as json.
 ```
 <!-- commandsstop -->
