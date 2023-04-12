@@ -27,12 +27,13 @@ type WorkflowStepBase = {
 
 type TemplateSettings<A extends MaybeWithAnnotation> = A & AnyObj;
 
+// XXX: remove TemplateData
 export type TemplateData<A extends MaybeWithAnnotation = unknown> = A &
   AnyObj & {
     settings?: TemplateSettings<A>;
   };
 
-export type ChannelStepData<A extends MaybeWithAnnotation = unknown> =
+export type ChannelStepData<A extends MaybeWithAnnotation = unknown> = A &
   WorkflowStepBase & {
     type: StepType.Channel;
     channel_key?: string;
@@ -49,10 +50,11 @@ type BatchStepSettings = {
   batch_order: "asc" | "desc";
 };
 
-type BatchStepData = WorkflowStepBase & {
-  type: StepType.Batch;
-  settings: BatchStepSettings;
-};
+type BatchStepData<A extends MaybeWithAnnotation> = A &
+  WorkflowStepBase & {
+    type: StepType.Batch;
+    settings: BatchStepSettings;
+  };
 
 /* Delay step */
 
@@ -61,10 +63,11 @@ type DelayStepSettings = {
   delay_for?: Duration;
 };
 
-type DelayStepData = WorkflowStepBase & {
-  type: StepType.Delay;
-  settings: DelayStepSettings;
-};
+type DelayStepData<A extends MaybeWithAnnotation> = A &
+  WorkflowStepBase & {
+    type: StepType.Delay;
+    settings: DelayStepSettings;
+  };
 
 /* Http fetch step */
 
@@ -78,16 +81,17 @@ type HttpFetchStepSettings = {
 
 /* Workflow & Union steps */
 
-type HttpFetchStepData = WorkflowStepBase & {
-  type: StepType.HttpFetch;
-  settings: HttpFetchStepSettings;
-};
+type HttpFetchStepData<A extends MaybeWithAnnotation> = A &
+  WorkflowStepBase & {
+    type: StepType.HttpFetch;
+    settings: HttpFetchStepSettings;
+  };
 
 export type WorkflowStepData<A extends MaybeWithAnnotation = unknown> =
   | ChannelStepData<A>
-  | BatchStepData
-  | DelayStepData
-  | HttpFetchStepData;
+  | BatchStepData<A>
+  | DelayStepData<A>
+  | HttpFetchStepData<A>;
 
 export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {
   key: string;

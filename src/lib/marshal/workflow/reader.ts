@@ -10,7 +10,7 @@ import {
 } from "@/lib/helpers/error";
 import { readJson, ReadJsonResult } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
-import { AnyObj, ObjPath, omitDeep } from "@/lib/helpers/object";
+import { AnyObj, ObjPath, omitDeep, mapValuesDeep } from "@/lib/helpers/object";
 import { WorkflowDirContext } from "@/lib/run-context";
 
 import { FILEPATH_MARKED_RE, lsWorkflowJson } from "./helpers";
@@ -36,7 +36,7 @@ import { StepType, WorkflowStepData } from "./types";
  * Note: does not validate the presence of the file nor the uniqueness of the
  * file path.
  */
-export const validateTemplateFilePathFormat = (
+export const validateExtractedFilePathFormat = (
   relpath: unknown,
   workflowDirCtx: WorkflowDirContext,
 ): boolean => {
@@ -52,7 +52,7 @@ export const validateTemplateFilePathFormat = (
 /*
  * Validate that a file exists at the given relative path in the directory.
  */
-const validateTemplateFileExists = async (
+const validateExtractedFileExists = async (
   relpath: string,
   workflowDirCtx: WorkflowDirContext,
 ): Promise<boolean> => {
@@ -69,7 +69,7 @@ type TemplateContent = string;
 type MaybeTemplateFileContent = TemplateContent | undefined;
 type ReadTemplateFileResult = [MaybeTemplateFileContent, LiquidParseError[]];
 
-const readTemplateFile = async (
+const readExtractedFile = async (
   relpath: string,
   workflowDirCtx: WorkflowDirContext,
 ): Promise<ReadTemplateFileResult> => {
@@ -87,7 +87,7 @@ const readTemplateFile = async (
  * Validates that a given value is a valid template file path and the file
  * actually exists, before reading the file content.
  */
-const maybeReadTemplateFile = async (
+const maybeReadExtractedFile = async (
   val: unknown,
   workflowDirCtx: WorkflowDirContext,
   extractedFilePaths: Record<string, boolean>,
@@ -95,7 +95,7 @@ const maybeReadTemplateFile = async (
 ): Promise<[undefined, JsonDataError] | [string, undefined]> => {
   // Validate the file path format, and that it is unique per workflow.
   if (
-    !validateTemplateFilePathFormat(val, workflowDirCtx) ||
+    !validateExtractedFilePathFormat(val, workflowDirCtx) ||
     typeof val !== "string" ||
     val in extractedFilePaths
   ) {
@@ -111,7 +111,7 @@ const maybeReadTemplateFile = async (
   extractedFilePaths[val] = true;
 
   // Check a file actually exists at the given file path.
-  const exists = await validateTemplateFileExists(val, workflowDirCtx);
+  const exists = await validateExtractedFileExists(val, workflowDirCtx);
   if (!exists) {
     const error = new JsonDataError(
       "must be a relative path string to a file that exists",
@@ -122,7 +122,7 @@ const maybeReadTemplateFile = async (
 
   // Read the template file and inline the content into the workflow json
   // under the same field name but without the @ filepath marker.
-  const [content, contentErrors] = await readTemplateFile(val, workflowDirCtx);
+  const [content, contentErrors] = await readExtractedFile(val, workflowDirCtx);
   if (contentErrors.length > 0) {
     const error = new JsonDataError(
       `points to a file with invalid content (${val})\n\n` +
@@ -149,12 +149,12 @@ const maybeReadTemplateFile = async (
  *
  * TODO: Include links to docs in the error message when ready.
  */
-type CompileTemplateFilesResult = [AnyObj, JsonDataError[]];
+type JoinExtractedFilesResult = [AnyObj, JsonDataError[]];
 
-const compileTemplateFiles = async (
+const joinExtractedFiles = async (
   workflowDirCtx: WorkflowDirContext,
   workflowJson: AnyObj,
-): Promise<CompileTemplateFilesResult> => {
+): Promise<JoinExtractedFilesResult> => {
   const errors: JsonDataError[] = [];
   const extractedFilePaths: Record<string, boolean> = {};
   const objPath = new ObjPath();
@@ -230,7 +230,7 @@ const compileTemplateFiles = async (
       const pathToFieldStr = objPath.to(field).str;
 
       // eslint-disable-next-line no-await-in-loop
-      const [content, error] = await maybeReadTemplateFile(
+      const [content, error] = await maybeReadExtractedFile(
         val,
         workflowDirCtx,
         extractedFilePaths,
@@ -254,7 +254,7 @@ const compileTemplateFiles = async (
       const pathToFieldStr = objPath.to(field).str;
 
       // eslint-disable-next-line no-await-in-loop
-      const [content, error] = await maybeReadTemplateFile(
+      const [content, error] = await maybeReadExtractedFile(
         val,
         workflowDirCtx,
         extractedFilePaths,
@@ -284,16 +284,16 @@ const compileTemplateFiles = async (
  * TODO: Maybe nice to validate all keys are snake_case.
  */
 type ReadWorkflowDirOpts = {
-  withTemplateFiles?: boolean;
+  withExtractedFiles?: boolean;
   withReadonlyField?: boolean;
 };
 
 export const readWorkflowDir = async (
   workflowDirCtx: WorkflowDirContext,
   opts: ReadWorkflowDirOpts = {},
-): Promise<ReadJsonResult | CompileTemplateFilesResult> => {
+): Promise<ReadJsonResult | JoinExtractedFilesResult> => {
   const { abspath } = workflowDirCtx;
-  const { withTemplateFiles = false, withReadonlyField = false } = opts;
+  const { withExtractedFiles = false, withReadonlyField = false } = opts;
 
   const dirExists = await fs.pathExists(abspath);
   if (!dirExists) throw new Error(`${abspath} does not exist`);
@@ -311,10 +311,10 @@ export const readWorkflowDir = async (
     ? workflowJson
     : omitDeep(workflowJson, ["__readonly"]);
 
-  return withTemplateFiles
-    ? compileTemplateFiles(workflowDirCtx, workflowJson)
+  return withExtractedFiles
+    ? joinExtractedFiles(workflowDirCtx, workflowJson)
     : [workflowJson, []];
 };
 
 // Exported for tests.
-export { readTemplateFile };
+export { readExtractedFile };

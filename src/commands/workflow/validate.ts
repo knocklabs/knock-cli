@@ -35,7 +35,7 @@ export default class WorkflowValidate extends BaseCommand {
 
     // 2. Read the workflow.json with its template files.
     const [workflow, errors] = await Workflow.readWorkflowDir(dirContext, {
-      withTemplateFiles: true,
+      withExtractedFiles: true,
     });
     if (errors.length > 0) {
       this.error(
