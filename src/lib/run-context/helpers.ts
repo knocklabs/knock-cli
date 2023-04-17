@@ -26,7 +26,7 @@ export const ensureResourceDirForTarget = (
     return resourceDirCtx;
   }
 
-  // If the resource key was provided and matches the current workflow dir
+  // If the resource key was provided and matches the current workflow/translation dir
   // context, then use the current resource directory context; otherwise, error.
   if (target.key === resourceDirCtx.key) {
     return resourceDirCtx;

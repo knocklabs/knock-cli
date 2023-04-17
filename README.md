@@ -48,6 +48,7 @@ USAGE
 * [`knock workflow validate [WORKFLOWKEY]`](#knock-workflow-validate-workflowkey)
 * [`knock translation list`](#knock-translation-list)
 * [`knock translation pull`](#knock-translation-pull)
+* [`knock translation push [TRANSLATION_REFERENCE]`](#knock-translation-push-translation_reference)
 
 ## `knock commit`
 
@@ -472,4 +473,20 @@ FLAGS
   --all                       pull all translations
   --translations-dir=<value>  when pulling all translations, the directory to house them in
 ```
+
+## `knock translation push [TRANSLATION_REFERENCE]`
+[TRANSLATION_REFERENCE] is the translation identifier. If the translation has a namespace it will be `[NAMESPACE].[LOCALECODE]`,
+if it has no namespace it will just be `[LOCALECODE]`.
+```
+USAGE
+  $ knock translation push [TRANSLATION_REFERENCE] --service-token <value> [--environment development] [-m <value> --commit]
+
+FLAGS
+  -m, --commit-message=<value>  Use the given value as the commit message
+  --commit                      Push and commit the translation(s) at the same time
+  --environment=<option>        [default: development] Pushing a translation is only allowed in the development environment
+                                <options: development>
+  --service-token=<value>       (required) The service token to authenticate with
+```
+
 <!-- commandsstop -->

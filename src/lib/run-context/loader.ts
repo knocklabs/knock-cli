@@ -1,7 +1,7 @@
 /*
  * Module for surveying the cwd location of the command run and its parent dirs
  * to gather context about a knock resource or the project that the command may
- * be refering to.
+ * be referring to.
  */
 import * as path from "node:path";
 
