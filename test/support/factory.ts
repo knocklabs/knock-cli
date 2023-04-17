@@ -123,7 +123,6 @@ export const translation = (
 ): TranslationData => {
   return {
     locale_code: "en",
-    namespace: "admin",
     content: '{"welcome":"Hello"}',
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",

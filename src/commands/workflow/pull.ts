@@ -7,7 +7,7 @@ import BaseCommand from "@/lib/base-command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object";
-import { PageInfo } from "@/lib/helpers/page";
+import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
 import {
   formatErrorRespMessage,
   isSuccessResp,
@@ -21,8 +21,6 @@ import {
   ResourceTarget,
   WorkflowDirContext,
 } from "@/lib/run-context";
-
-const PAGINATION_LIMIT_PER_REQUEST = 100;
 
 export default class WorkflowPull extends BaseCommand {
   static flags = {
@@ -162,7 +160,7 @@ export default class WorkflowPull extends BaseCommand {
       flags: {
         ...pageParams,
         annotate: true,
-        limit: PAGINATION_LIMIT_PER_REQUEST,
+        limit: MAX_PAGINATION_LIMIT,
       },
     });
 
