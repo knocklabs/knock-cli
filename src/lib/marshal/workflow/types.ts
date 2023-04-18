@@ -1,3 +1,4 @@
+import { AnyObj } from "@/lib/helpers/object";
 import type { Conditions } from "@/lib/marshal/conditions";
 import {
   Duration,
@@ -24,11 +25,19 @@ type WorkflowStepBase = {
 
 /* Channel step */
 
+type TemplateSettings<A extends MaybeWithAnnotation> = A & AnyObj;
+
+type TemplateData<A extends MaybeWithAnnotation = unknown> = A &
+  AnyObj & {
+    settings?: TemplateSettings<A>;
+  };
+
 export type ChannelStepData<A extends MaybeWithAnnotation = unknown> = A &
   WorkflowStepBase & {
     type: StepType.Channel;
     channel_key?: string;
     channel_group_key?: string;
+    template: TemplateData<A>;
   };
 
 /* Batch step */

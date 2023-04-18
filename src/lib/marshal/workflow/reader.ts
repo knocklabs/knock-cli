@@ -68,7 +68,7 @@ const checkIfValidExtractedFilePathFormat = (
   return !pathDiff.startsWith("..");
 };
 
-// XXX: Make a note about it being stateful..
+// XXX: Make a note about it being stateful
 const validateExtractedFilePath = (
   val: unknown,
   workflowDirCtx: WorkflowDirContext,
@@ -243,7 +243,6 @@ const joinExtractedFiles = async (
         pathToFieldStr,
       );
       if (readExtractedFileError) {
-        // console.log(3, readExtractedFileError, normalizedFilePath)
         errors.push(readExtractedFileError);
 
         // Replace the extracted file path with the normalized one, and set the
@@ -264,7 +263,7 @@ const joinExtractedFiles = async (
       set(currJoinedFilePaths, inlinePathStr, normalizedFilePath);
     });
 
-    // Finally add the current set of joined file paths
+    // Finally add the current set of joined file paths XXX
     joinedFilePathsPerLevel[idx] = currJoinedFilePaths;
   }
 
@@ -278,8 +277,6 @@ const joinExtractedFiles = async (
  *
  * By default, it will look for any extracted template files referenced in the
  * workflow json and compile them into the workflow data.
- *
- * TODO: Maybe nice to validate all keys are snake_case.
  */
 type ReadWorkflowDirOpts = {
   withExtractedFiles?: boolean;

@@ -40,21 +40,6 @@ export type WorkflowDirBundle = {
 };
 
 /*
- * For a given workflow step and a template field, return the template file path
- * we can extract out the content to.
- *
- * Note, this is a default "recommended" convention but the template file can
- * be located at any arbitrary path (as long as it is a relative path that is
- * inside the workflow directory and unique to the field)
- */
-// XXX:
-export const newTemplateFilePath = (
-  stepRef: string,
-  fileName: string,
-  fileExt: string,
-): string => path.join(stepRef, `${fileName}.${fileExt}`).toLowerCase();
-
-/*
  * Sanitize the workflow content into a format that's appropriate for reading
  * and writing, by stripping out any annotation fields and handling readonly
  * fields.
@@ -114,7 +99,6 @@ const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
  *     settings.pre_content: { default: true, file_ext: "txt" },
  *   }
  */
-
 /*
  * XXX:
  */
@@ -236,17 +220,13 @@ const compileExtractionSettings = (
  * can be written into a file system as individual files.
  */
 const buildWorkflowDirBundle = (
-  workflowDirCtx: WorkflowDirContext,
   remoteWorkflow: WorkflowData<WithAnnotation>,
   localWorkflow: AnyObj = {},
 ): WorkflowDirBundle => {
   const bundle: WorkflowDirBundle = {};
   const mutWorkflow = cloneDeep(remoteWorkflow);
-  // console.log(localWorkflow)
-  // console.dir(localWorkflow, { depth: null })
 
   const localWorkflowStepsByRef = keyBy(localWorkflow.steps || [], "ref");
-  // const workflowJsonPath = path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON);
 
   for (const step of mutWorkflow.steps) {
     // A compiled map of extraction settings of every field in the step where
@@ -340,11 +320,7 @@ export const writeWorkflowDirFromData = async (
     ? await readWorkflowDir(workflowDirCtx, { withExtractedFiles: true })
     : [];
 
-  const bundle = buildWorkflowDirBundle(
-    workflowDirCtx,
-    remoteWorkflow,
-    localWorkflow,
-  );
+  const bundle = buildWorkflowDirBundle(remoteWorkflow, localWorkflow);
 
   return writeWorkflowDirFromBundle(workflowDirCtx, bundle);
 };
