@@ -170,8 +170,8 @@ const readExtractedFileSync = (
  * and returns the updated object with the extracted content joined and inlined.
  *
  * Important things to keep in mind:
- * 1. There can be multiple places in workflow json where content extraction is
- *    happening.
+ * 1. There can be multiple places in workflow json where content extraction
+ *    happens.
  * 2. There can be multiple levels of content extraction happening, currently
  *    at a maximum of 2 levels. For example, workflow.json links to
  *    visual_blocks.json, and in return visual_blocks.json links to a markdown
