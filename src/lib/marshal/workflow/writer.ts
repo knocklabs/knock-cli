@@ -315,7 +315,6 @@ export const writeWorkflowDirFromData = async (
 ): Promise<void> => {
   // If the workflow directory exists on the file system (i.e. previously
   // pulled before), then read the workflow file to use as a reference.
-  // Note, we do not need to compile or validate template files for this.
   const [localWorkflow] = workflowDirCtx.exists
     ? await readWorkflowDir(workflowDirCtx, { withExtractedFiles: true })
     : [];
@@ -381,6 +380,7 @@ export const writeWorkflowsIndexDir = async (
     const writeWorkflowDirPromises = remoteWorkflows.map(async (workflow) => {
       const workflowDirPath = path.resolve(indexDirCtx.abspath, workflow.key);
 
+      // TODO:
       const workflowDirCtx: WorkflowDirContext = {
         type: "workflow",
         key: workflow.key,
