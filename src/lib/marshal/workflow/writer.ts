@@ -3,9 +3,9 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import {
   cloneDeep,
-  isPlainObject,
   get,
   has,
+  isPlainObject,
   keyBy,
   set,
   uniqueId,
@@ -17,11 +17,11 @@ import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import {
   AnyObj,
-  omitDeep,
-  split,
   mapValuesDeep,
   ObjKeyOrArrayIdx,
   ObjPath,
+  omitDeep,
+  split,
 } from "@/lib/helpers/object";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 import { WorkflowDirContext } from "@/lib/run-context";
@@ -32,7 +32,7 @@ import {
   isWorkflowDir,
   WORKFLOW_JSON,
 } from "./helpers";
-import { readWorkflowDir, validateExtractedFilePathFormat } from "./reader";
+import { readWorkflowDir } from "./reader";
 import { WorkflowData } from "./types";
 
 export type WorkflowDirBundle = {
@@ -161,6 +161,7 @@ const formatExtractedFilePath = (
       continue;
     }
   }
+
   if (arrayIndexNums.length > 0) {
     filePathParts.push(arrayIndexNums.join("."));
   }
@@ -192,7 +193,7 @@ const compileExtractionSettings = (
         {},
       );
 
-      Object.entries(item).map(([key, val]) => {
+      for (const [key, val] of Object.entries(item)) {
         // If the field we are on is extractable, then add its extraction
         // settings to the map with the current object path.
         if (key in extractableFields) {
@@ -200,13 +201,13 @@ const compileExtractionSettings = (
         }
 
         compileRecursively(val, [...parts, key]);
-      });
+      }
+
       return;
     }
 
     if (Array.isArray(item)) {
       item.map((val, idx) => compileRecursively(val, [...parts, idx]));
-      return;
     }
   };
 
@@ -241,8 +242,11 @@ const buildWorkflowDirBundle = (
 ): WorkflowDirBundle => {
   const bundle: WorkflowDirBundle = {};
   const mutWorkflow = cloneDeep(remoteWorkflow);
+  // console.log(localWorkflow)
+  // console.dir(localWorkflow, { depth: null })
 
   const localWorkflowStepsByRef = keyBy(localWorkflow.steps || [], "ref");
+  // const workflowJsonPath = path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON);
 
   for (const step of mutWorkflow.steps) {
     // A compiled map of extraction settings of every field in the step where
@@ -264,18 +268,16 @@ const buildWorkflowDirBundle = (
       // 2. If the field at this path is extracted in the local workflow, then
       // always extract; otherwise extract based on the field settings default.
       const objPathStr = ObjPath.stringify(objPathParts);
+
       const extractedFilePath = get(
         localWorkflowStepsByRef,
         `${step.ref}.${objPathStr}${FILEPATH_MARKER}`,
       );
 
-      const isValidExtractedFilePath =
-        Boolean(extractedFilePath) &&
-        validateExtractedFilePathFormat(extractedFilePath, workflowDirCtx);
-
       const { default: extractByDefault, file_ext: fileExt } =
         extractionSettings;
-      if (!isValidExtractedFilePath && !extractByDefault) continue;
+
+      if (!extractedFilePath && !extractByDefault) continue;
 
       // 3. By this point, we have a field where we need to extract its content.
 
@@ -335,7 +337,7 @@ export const writeWorkflowDirFromData = async (
   // pulled before), then read the workflow file to use as a reference.
   // Note, we do not need to compile or validate template files for this.
   const [localWorkflow] = workflowDirCtx.exists
-    ? await readWorkflowDir(workflowDirCtx, { withExtractedFiles: false })
+    ? await readWorkflowDir(workflowDirCtx, { withExtractedFiles: true })
     : [];
 
   const bundle = buildWorkflowDirBundle(

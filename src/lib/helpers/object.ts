@@ -72,10 +72,9 @@ export const mapValuesDeep = (
       ([k, v]) => {
         return Array.isArray(v) || isPlainObject(v)
           ? [k, mapValuesDeep(v, fn, [...parts, k])]
-          : [k, fn(v, k, parts)];
+          : [k, fn(v, k, [...parts, k])];
       },
     );
-
     return Object.fromEntries(entries);
   }
 
@@ -84,6 +83,29 @@ export const mapValuesDeep = (
   }
 
   return input;
+};
+
+/*
+ * Like Lodash get, but returns the last found value in the object for the path
+ * parts given.
+ */
+export const getLastFound = (obj: AnyObj, parts: ObjKeyOrArrayIdx[]): any => {
+  let current: any = obj;
+  let found;
+
+  for (const part of parts) {
+    const lookupable = Array.isArray(current) || isPlainObject(current);
+
+    if (lookupable && part in current) {
+      found = current[part];
+      current = found;
+      continue;
+    }
+
+    break;
+  }
+
+  return found;
 };
 
 /*

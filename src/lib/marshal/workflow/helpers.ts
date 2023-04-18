@@ -8,6 +8,7 @@ import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export const WORKFLOW_JSON = "workflow.json";
+export const VISUAL_BLOCKS_JSON = "visual_blocks.json";
 
 // Mark any template fields we are extracting out with this suffix as a rule,
 // so we can reliably interpret the field value.
