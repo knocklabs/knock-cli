@@ -4,6 +4,8 @@ import { pick } from "lodash";
 
 import { AnyObj } from "@/lib/helpers/object";
 
+export const MAX_PAGINATION_LIMIT = 100;
+
 export type PageInfo = {
   after: string | null;
   before: string | null;
@@ -18,7 +20,7 @@ export type PaginatedResp<T = any> = {
 export const pageFlags = {
   after: Flags.string(),
   before: Flags.string(),
-  limit: Flags.integer({ max: 100 }),
+  limit: Flags.integer({ max: MAX_PAGINATION_LIMIT }),
 };
 
 type PageParams = {

@@ -47,6 +47,7 @@ USAGE
 * [`knock workflow push [WORKFLOWKEY]`](#knock-workflow-push-workflowkey)
 * [`knock workflow validate [WORKFLOWKEY]`](#knock-workflow-validate-workflowkey)
 * [`knock translation list`](#knock-translation-list)
+* [`knock translation pull`](#knock-translation-pull)
 
 ## `knock commit`
 
@@ -409,6 +410,8 @@ FLAGS
   --environment=<value>       [default: development]
   --hide-uncommitted-changes
   --service-token=<value>     (required) The service token to authenticate with
+  --all                       pull all workflows
+  --workflows-dir=<value>     when pulling all workflows, the directory to house them in
 ```
 
 ## `knock workflow push [WORKFLOWKEY]`
@@ -454,5 +457,19 @@ FLAGS
 
 GLOBAL FLAGS
   --json  Format output as json.
+```
+
+## `knock translation pull`
+
+```
+USAGE
+  $ knock translation pull --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
+
+FLAGS
+  --environment=<value>       [default: development]
+  --hide-uncommitted-changes
+  --service-token=<value>     (required) The service token to authenticate with
+  --all                       pull all translations
+  --translations-dir=<value>  when pulling all translations, the directory to house them in
 ```
 <!-- commandsstop -->
