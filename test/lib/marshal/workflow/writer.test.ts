@@ -6,6 +6,7 @@ import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { StepType, WorkflowData } from "@/lib/marshal/workflow";
 import {
   buildWorkflowDirBundle,
+  formatExtractedFilePath,
   toWorkflowJson,
 } from "@/lib/marshal/workflow/writer";
 
@@ -121,6 +122,36 @@ describe("lib/marshal/workflow/writer", () => {
         subject: "New activity",
         html_body: "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
       });
+    });
+  });
+
+  describe("formatExtractedFilePath", () => {
+    it("returns a formatted file path based on the object path", () => {
+      const result1 = formatExtractedFilePath(["a", "b", "c"], "md");
+      expect(result1).to.equal("a/b/c.md");
+
+      const result2 = formatExtractedFilePath(["a", 0, "b", "c"], "txt");
+      expect(result2).to.equal("a/1.b/c.txt");
+
+      const result3 = formatExtractedFilePath(["a", 0, "b", 2, "c"], "json");
+      expect(result3).to.equal("a/1.b/3.c.json");
+
+      const result4 = formatExtractedFilePath(["a", 0, 2, "b"], "json");
+      expect(result4).to.equal("a/1.3.b.json");
+
+      const result5 = formatExtractedFilePath(["a", 0, 2, "b", 1], "md");
+      expect(result5).to.equal("a/1.3.b/2.md");
+
+      const result6 = formatExtractedFilePath(["a", 0, 2], "md");
+      expect(result6).to.equal("a/1.3.md");
+    });
+
+    it("returns a formatted file path based on the object path and opts", () => {
+      const result1 = formatExtractedFilePath(["a", "b", 0, "c"], "md", {
+        unnestDirsBy: 2,
+        nestIntoDirs: ["foo", "bar"],
+      });
+      expect(result1).to.equal("foo/bar/1.c.md");
     });
   });
 
@@ -259,6 +290,129 @@ describe("lib/marshal/workflow/writer", () => {
           [xpath("email_1/default/subject.txt")]: "New activity",
           [xpath("email_1/default/body.html")]:
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
+        });
+      });
+    });
+
+    describe("given a fetched workflow with visual blocks", () => {
+      it("returns a dir bundle with extracted files from visual blocks", () => {
+        const workflow = {
+          name: "New comment",
+          key: "new-comment",
+          active: false,
+          valid: false,
+          steps: [
+            {
+              ref: "email_1",
+              type: "channel" as StepType.Channel,
+              channel_key: "email-provider",
+              template: {
+                __annotation: {
+                  extractable_fields: {
+                    html_body: { default: true, file_ext: "html" },
+                    subject: { default: false, file_ext: "txt" },
+                    text_body: { default: true, file_ext: "txt" },
+                    visual_blocks: { default: true, file_ext: "json" },
+                  },
+                  readonly_fields: [],
+                },
+                settings: {
+                  __annotation: {
+                    extractable_fields: {
+                      pre_content: { default: true, file_ext: "txt" },
+                    },
+                    readonly_fields: [],
+                  },
+                  layout_key: "default",
+                  pre_content: "{{ foo }}",
+                },
+                subject: "You've got mail!",
+                visual_blocks: [
+                  {
+                    __annotation: {
+                      extractable_fields: {
+                        content: { default: true, file_ext: "md" },
+                      },
+                      readonly_fields: [],
+                    },
+                    content: "Boom",
+                    layout_attrs: {
+                      padding_bottom: 8,
+                      padding_left: 4,
+                      padding_right: 4,
+                      padding_top: 8,
+                    },
+                    type: "markdown",
+                    variant: "default",
+                    version: 1,
+                  },
+                ],
+              },
+            },
+          ],
+          created_at: "2022-12-31T12:00:00.000000Z",
+          updated_at: "2022-12-31T12:00:00.000000Z",
+          __annotation: {
+            extractable_fields: {},
+            readonly_fields: [
+              "environment",
+              "key",
+              "active",
+              "valid",
+              "created_at",
+              "updated_at",
+            ],
+          },
+        };
+
+        const result = buildWorkflowDirBundle(workflow);
+
+        expect(result).to.eql({
+          "workflow.json": {
+            name: "New comment",
+            steps: [
+              {
+                ref: "email_1",
+                type: "channel",
+                channel_key: "email-provider",
+                template: {
+                  settings: {
+                    layout_key: "default",
+                    "pre_content@": "email_1/settings/pre_content.txt",
+                  },
+                  subject: "You've got mail!",
+                  "visual_blocks@": "email_1/visual_blocks.json",
+                },
+              },
+            ],
+            __readonly: {
+              key: "new-comment",
+              active: false,
+              valid: false,
+              created_at: "2022-12-31T12:00:00.000000Z",
+              updated_at: "2022-12-31T12:00:00.000000Z",
+            },
+          },
+          "email_1/settings/pre_content.txt": "{{ foo }}",
+          "email_1/visual_blocks.json": JSON.stringify(
+            [
+              {
+                layout_attrs: {
+                  padding_bottom: 8,
+                  padding_left: 4,
+                  padding_right: 4,
+                  padding_top: 8,
+                },
+                type: "markdown",
+                variant: "default",
+                version: 1,
+                "content@": "visual_blocks/1.content.md",
+              },
+            ],
+            null,
+            2,
+          ),
+          "email_1/visual_blocks/1.content.md": "Boom",
         });
       });
     });

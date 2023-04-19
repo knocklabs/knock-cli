@@ -97,7 +97,7 @@ const formatExtractedFilePath = (
   objPathParts: ObjKeyOrArrayIdx[],
   fileExt: string,
   opts: FormatExtractedFilePathOpts = {},
-) => {
+): string => {
   const { unnestDirsBy = 0, nestIntoDirs = [] } = opts;
 
   // 1. Unnest the obj path parts by the given depths, if the option is given.
@@ -312,6 +312,8 @@ const buildWorkflowDirBundle = (
       // bundle for writing to the file system later. Then replace the field
       // content with the extracted file path and mark the field as extracted
       // with @ suffix.
+      // TODO: Consider guarding against an edge case, and check if the relpath
+      // already exists in the bundle, and if so make the relpath unique.
       set(bundle, [relpath], content);
       set(step, `${objPathStr}${FILEPATH_MARKER}`, relpath);
       unset(step, objPathParts);
@@ -431,4 +433,4 @@ export const writeWorkflowsIndexDir = async (
 };
 
 // Exported for tests.
-export { buildWorkflowDirBundle, toWorkflowJson };
+export { buildWorkflowDirBundle, formatExtractedFilePath, toWorkflowJson };
