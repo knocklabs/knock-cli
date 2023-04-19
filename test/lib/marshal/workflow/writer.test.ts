@@ -128,22 +128,22 @@ describe("lib/marshal/workflow/writer", () => {
   describe("formatExtractedFilePath", () => {
     it("returns a formatted file path based on the object path", () => {
       const result1 = formatExtractedFilePath(["a", "b", "c"], "md");
-      expect(result1).to.equal("a/b/c.md");
+      expect(result1).to.equal(xpath("a/b/c.md"));
 
       const result2 = formatExtractedFilePath(["a", 0, "b", "c"], "txt");
-      expect(result2).to.equal("a/1.b/c.txt");
+      expect(result2).to.equal(xpath("a/1.b/c.txt"));
 
       const result3 = formatExtractedFilePath(["a", 0, "b", 2, "c"], "json");
-      expect(result3).to.equal("a/1.b/3.c.json");
+      expect(result3).to.equal(xpath("a/1.b/3.c.json"));
 
       const result4 = formatExtractedFilePath(["a", 0, 2, "b"], "json");
-      expect(result4).to.equal("a/1.3.b.json");
+      expect(result4).to.equal(xpath("a/1.3.b.json"));
 
       const result5 = formatExtractedFilePath(["a", 0, 2, "b", 1], "md");
-      expect(result5).to.equal("a/1.3.b/2.md");
+      expect(result5).to.equal(xpath("a/1.3.b/2.md"));
 
       const result6 = formatExtractedFilePath(["a", 0, 2], "md");
-      expect(result6).to.equal("a/1.3.md");
+      expect(result6).to.equal(xpath("a/1.3.md"));
     });
 
     it("returns a formatted file path based on the object path and opts", () => {
@@ -151,7 +151,7 @@ describe("lib/marshal/workflow/writer", () => {
         unnestDirsBy: 2,
         nestIntoDirs: ["foo", "bar"],
       });
-      expect(result1).to.equal("foo/bar/1.c.md");
+      expect(result1).to.equal(xpath("foo/bar/1.c.md"));
     });
   });
 
