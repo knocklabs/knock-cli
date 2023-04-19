@@ -378,10 +378,10 @@ describe("lib/marshal/workflow/writer", () => {
                 template: {
                   settings: {
                     layout_key: "default",
-                    "pre_content@": "email_1/settings/pre_content.txt",
+                    "pre_content@": xpath("email_1/settings/pre_content.txt"),
                   },
                   subject: "You've got mail!",
-                  "visual_blocks@": "email_1/visual_blocks.json",
+                  "visual_blocks@": xpath("email_1/visual_blocks.json"),
                 },
               },
             ],
@@ -393,8 +393,8 @@ describe("lib/marshal/workflow/writer", () => {
               updated_at: "2022-12-31T12:00:00.000000Z",
             },
           },
-          "email_1/settings/pre_content.txt": "{{ foo }}",
-          "email_1/visual_blocks.json": JSON.stringify(
+          [xpath("email_1/settings/pre_content.txt")]: "{{ foo }}",
+          [xpath("email_1/visual_blocks.json")]: JSON.stringify(
             [
               {
                 layout_attrs: {
@@ -406,13 +406,13 @@ describe("lib/marshal/workflow/writer", () => {
                 type: "markdown",
                 variant: "default",
                 version: 1,
-                "content@": "visual_blocks/1.content.md",
+                "content@": xpath("visual_blocks/1.content.md"),
               },
             ],
             null,
             2,
           ),
-          "email_1/visual_blocks/1.content.md": "Boom",
+          [xpath("email_1/visual_blocks/1.content.md")]: "Boom",
         });
       });
     });
