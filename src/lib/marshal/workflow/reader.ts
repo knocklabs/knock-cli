@@ -115,7 +115,7 @@ type ReadExtractedFileResult =
 const readExtractedFileSync = (
   relpath: string,
   workflowDirCtx: WorkflowDirContext,
-  objPathToFieldStr: string,
+  objPathToFieldStr = "",
 ): ReadExtractedFileResult => {
   // Check if the file actually exists at the given file path.
   const abspath = path.resolve(workflowDirCtx.abspath, relpath);
@@ -333,4 +333,4 @@ export const readWorkflowDir = async (
 };
 
 // Exported for tests.
-export { readExtractedFileSync };
+export { checkIfValidExtractedFilePathFormat, readExtractedFileSync };

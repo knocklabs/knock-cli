@@ -8,7 +8,6 @@ import {
   buildWorkflowDirBundle,
   toWorkflowJson,
 } from "@/lib/marshal/workflow/writer";
-import { WorkflowDirContext } from "@/lib/run-context";
 
 const remoteWorkflow: WorkflowData<WithAnnotation> = {
   name: "New comment",
@@ -128,14 +127,7 @@ describe("lib/marshal/workflow/writer", () => {
   describe("buildWorkflowDirBundle", () => {
     describe("given a fetched workflow that has not been pulled before", () => {
       it("returns a dir bundle based on default extract settings", () => {
-        const workflowDirCtx: WorkflowDirContext = {
-          type: "workflow",
-          key: "new-comment",
-          abspath: xpath("/my/workflows/new-comment"),
-          exists: false,
-        };
-
-        const result = buildWorkflowDirBundle(workflowDirCtx, remoteWorkflow);
+        const result = buildWorkflowDirBundle(remoteWorkflow);
 
         expect(result).to.eql({
           "workflow.json": {
@@ -215,18 +207,8 @@ describe("lib/marshal/workflow/writer", () => {
             updated_at: "2022-12-31T12:00:00.000000Z",
           },
         };
-        const workflowDirCtx: WorkflowDirContext = {
-          type: "workflow",
-          key: "new-comment",
-          abspath: xpath("/my/workflows/new-comment"),
-          exists: true,
-        };
 
-        const result = buildWorkflowDirBundle(
-          workflowDirCtx,
-          remoteWorkflow,
-          localWorkflow,
-        );
+        const result = buildWorkflowDirBundle(remoteWorkflow, localWorkflow);
 
         expect(result).to.eql({
           "workflow.json": {

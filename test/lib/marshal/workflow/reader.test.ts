@@ -4,14 +4,15 @@ import { expect } from "@oclif/test";
 import * as fs from "fs-extra";
 
 import { sandboxDir } from "@/lib/helpers/const";
+import { JsonDataError } from "@/lib/helpers/error";
 import {
-  readTemplateFile,
-  validateTemplateFilePathFormat,
+  checkIfValidExtractedFilePathFormat,
+  readExtractedFileSync,
 } from "@/lib/marshal/workflow/reader";
 import { WorkflowDirContext } from "@/lib/run-context";
 
 describe("lib/marshal/workflow/reader", () => {
-  describe("validateTemplateFilePathFormat", () => {
+  describe("checkIfValidExtractedFilePathFormat", () => {
     const workflowDirCtx = {
       type: "workflow",
       key: "workflow-x",
@@ -23,7 +24,10 @@ describe("lib/marshal/workflow/reader", () => {
       it("returns false as it is invalid", () => {
         const abspath = "/foo/bar";
 
-        const result = validateTemplateFilePathFormat(abspath, workflowDirCtx);
+        const result = checkIfValidExtractedFilePathFormat(
+          abspath,
+          workflowDirCtx.abspath,
+        );
         expect(result).to.equal(false);
       });
     });
@@ -32,7 +36,10 @@ describe("lib/marshal/workflow/reader", () => {
       it("returns false as it is invalid", () => {
         const relpath = "../foo";
 
-        const result = validateTemplateFilePathFormat(relpath, workflowDirCtx);
+        const result = checkIfValidExtractedFilePathFormat(
+          relpath,
+          workflowDirCtx.abspath,
+        );
         expect(result).to.equal(false);
       });
     });
@@ -40,16 +47,16 @@ describe("lib/marshal/workflow/reader", () => {
     describe("given an relative path that resolves inside the workflow dir", () => {
       it("returns true as it is valid", () => {
         const relpath1 = "email_1/default.subject.txt";
-        const result1 = validateTemplateFilePathFormat(
+        const result1 = checkIfValidExtractedFilePathFormat(
           relpath1,
-          workflowDirCtx,
+          workflowDirCtx.abspath,
         );
         expect(result1).to.equal(true);
 
         const relpath2 = "./email_1/default.subject.txt";
-        const result2 = validateTemplateFilePathFormat(
+        const result2 = checkIfValidExtractedFilePathFormat(
           relpath2,
-          workflowDirCtx,
+          workflowDirCtx.abspath,
         );
         expect(result2).to.equal(true);
 
@@ -57,16 +64,16 @@ describe("lib/marshal/workflow/reader", () => {
         // but technically correct.
         const relpath3 =
           "../workflow-y/../workflow-x/email_1/default.subject.txt";
-        const result3 = validateTemplateFilePathFormat(
+        const result3 = checkIfValidExtractedFilePathFormat(
           relpath3,
-          workflowDirCtx,
+          workflowDirCtx.abspath,
         );
         expect(result3).to.equal(true);
       });
     });
   });
 
-  describe("readTemplateFile", () => {
+  describe("readExtractedFileSync", () => {
     const workflowDirCtx: WorkflowDirContext = {
       type: "workflow",
       key: "foo",
@@ -81,7 +88,7 @@ describe("lib/marshal/workflow/reader", () => {
     after(() => fs.removeSync(sandboxDir));
 
     describe("given a valid liquid html template", () => {
-      it("returns the read template content without errors", async () => {
+      it("returns the read template content without errors", () => {
         const fileContent = `
 {% assign my_variable = 10 %}
 <p>
@@ -92,18 +99,18 @@ describe("lib/marshal/workflow/reader", () => {
         const filePath = path.resolve(workflowDirCtx.abspath, "sample.html");
         fs.outputFileSync(filePath, fileContent);
 
-        const [readContent, errors] = await readTemplateFile(
+        const [readContent, error] = readExtractedFileSync(
           "sample.html",
           workflowDirCtx,
         );
 
         expect(readContent).to.be.a("string");
-        expect(errors).to.eql([]);
+        expect(error).to.equal(undefined);
       });
     });
 
     describe("given a valid liquid markdown template", () => {
-      it("returns the read template content without errors", async () => {
+      it("returns the read template content without error", async () => {
         const fileContent = `
 {% assign my_variable = 10 %}
 **Hello {{ recipient.name }}**
@@ -112,18 +119,18 @@ describe("lib/marshal/workflow/reader", () => {
         const filePath = path.resolve(workflowDirCtx.abspath, "sample.md");
         fs.outputFileSync(filePath, fileContent);
 
-        const [readContent, errors] = await readTemplateFile(
+        const [readContent, error] = readExtractedFileSync(
           "sample.md",
           workflowDirCtx,
         );
 
         expect(readContent).to.be.a("string");
-        expect(errors).to.eql([]);
+        expect(error).to.equal(undefined);
       });
     });
 
     describe("given a valid liquid json template", () => {
-      it("returns the read template content without errors", async () => {
+      it("returns the read template content without error", async () => {
         const fileContent = `
 {% assign my_variable = 10 %}
 {
@@ -139,18 +146,18 @@ describe("lib/marshal/workflow/reader", () => {
         const filePath = path.resolve(workflowDirCtx.abspath, "sample.json");
         fs.outputFileSync(filePath, fileContent);
 
-        const [readContent, errors] = await readTemplateFile(
+        const [readContent, error] = readExtractedFileSync(
           "sample.json",
           workflowDirCtx,
         );
 
         expect(readContent).to.be.a("string");
-        expect(errors).to.eql([]);
+        expect(error).to.equal(undefined);
       });
     });
 
     describe("given an invalid liquid json template", () => {
-      it("returns the read template content without errors", async () => {
+      it("returns the read template content without error", async () => {
         const fileContent = `
 {% assign my_variable = 10 %}
 {
@@ -161,13 +168,13 @@ describe("lib/marshal/workflow/reader", () => {
         const filePath = path.resolve(workflowDirCtx.abspath, "sample.json");
         fs.outputFileSync(filePath, fileContent);
 
-        const [readContent, errors] = await readTemplateFile(
+        const [readContent, error] = readExtractedFileSync(
           "sample.json",
           workflowDirCtx,
         );
 
         expect(readContent).to.equal(undefined);
-        expect(errors).to.have.lengthOf(1);
+        expect(error).to.be.an.instanceof(JsonDataError);
       });
     });
   });
