@@ -54,7 +54,7 @@ export const omitDeep = (input: unknown, paths: string | string[]): any => {
 
 /*
  * Like Lodash mapValues, but walk the given input recursively and apply the
- * iteratee func to the values of all *LEAF* objects.
+ * iteratee func to the values of all *leaf objects*.
  */
 type MapValuesDeepIterateeFn = (
   value: any,

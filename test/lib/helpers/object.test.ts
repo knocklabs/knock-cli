@@ -1,6 +1,14 @@
 import { expect } from "@oclif/test";
 
-import { merge, ObjPath, omitDeep, prune, split } from "@/lib/helpers/object";
+import {
+  getLastFound,
+  mapValuesDeep,
+  merge,
+  ObjPath,
+  omitDeep,
+  prune,
+  split,
+} from "@/lib/helpers/object";
 
 describe("lib/helpers/object", () => {
   describe("split", () => {
@@ -79,6 +87,86 @@ describe("lib/helpers/object", () => {
         expect(omitDeep(undefined, "foo")).to.equal(undefined);
         expect(omitDeep(1, "foo")).to.equal(1);
         expect(omitDeep("hey", "foo")).to.equal("hey");
+      });
+    });
+  });
+
+  describe("mapValuesDeep", () => {
+    describe("given an object", () => {
+      it("traverses and calls the interatee function on every leaf value", () => {
+        const obj = {
+          a: {
+            b: 1,
+            c: "foo",
+            d: ["bar", { e: 2 }, "baz", { f: "hi" }],
+            g: null,
+          },
+        };
+
+        const result = mapValuesDeep(obj, (val, _, parts) => {
+          if (typeof val === "string") return ObjPath.stringify(parts);
+          if (typeof val === "number") return val + 1;
+          return val;
+        });
+
+        expect(result).to.eql({
+          a: {
+            b: 2,
+            c: "a.c",
+            d: ["bar", { e: 3 }, "baz", { f: "a.d[3].f" }],
+            g: null,
+          },
+        });
+      });
+    });
+  });
+
+  describe("getLastFound", () => {
+    describe("given an object with no matching path", () => {
+      it("returns undefined", () => {
+        const obj = {
+          a: {
+            b: 1,
+            c: "foo",
+            d: ["bar", { e: 2 }, "baz"],
+          },
+        };
+
+        expect(getLastFound(obj, ["x", "y", "z"])).to.equal(undefined);
+      });
+    });
+
+    describe("given an object with a partially matching path ", () => {
+      it("returns the last found value for the path", () => {
+        const obj = {
+          a: {
+            b: 1,
+            c: "foo",
+            d: ["bar", { e: 2 }, "baz"],
+          },
+        };
+
+        expect(getLastFound(obj, ["a", "c", "x"])).to.equal("foo");
+        expect(getLastFound(obj, ["a", "d", "x"])).to.eql([
+          "bar",
+          { e: 2 },
+          "baz",
+        ]);
+        expect(getLastFound(obj, ["a", "d", 1, "x"])).to.eql({ e: 2 });
+      });
+    });
+
+    describe("given an object with a fully matching path", () => {
+      it("returns the exact value found at the path", () => {
+        const obj = {
+          a: {
+            b: 1,
+            c: "foo",
+            d: ["bar", { e: 2 }, "baz"],
+          },
+        };
+
+        expect(getLastFound(obj, ["a", "d", 2])).to.equal("baz");
       });
     });
   });
