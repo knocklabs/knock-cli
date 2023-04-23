@@ -6,33 +6,13 @@ import { uniqueId } from "lodash";
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
-import { TranslationDirContext } from "@/lib/run-context";
 
+import { buildTranslationFileCtx } from "./helpers";
 import { TranslationData } from "./types";
 
 /*
- * This simply takes a remote translation and inserts its contents
- * into a file within the parent directory with its locale code. It adds the
- * namespace into the filename if one exists.
- */
-export const writeTranslationDirFromData = async (
-  translationDirCtx: TranslationDirContext,
-  translation: TranslationData,
-): Promise<void> => {
-  const pathTermination = translation.namespace
-    ? `${translation.namespace}.${translation.locale_code}.json`
-    : `${translation.locale_code}.json`;
-
-  const filePath = path.resolve(translationDirCtx.abspath, pathTermination);
-
-  return fs.outputJson(filePath, translation.content, {
-    spaces: DOUBLE_SPACES,
-  });
-};
-
-/*
  * The bulk write function that takes the fetched translations data from Knock API
- * and writes them into a translations "index" directory
+ * and writes them into translation directories, grouped by their common locale codes.
  */
 export const writeTranslationsIndexDir = async (
   indexDirCtx: DirContext,
@@ -56,14 +36,19 @@ export const writeTranslationsIndexDir = async (
           translation.locale_code,
         );
 
-        const translationDirCtx: TranslationDirContext = {
-          type: "translation",
-          key: translation.locale_code,
-          abspath: translationDirPath,
-          exists: false,
-        };
+        const translationFileCtx = await buildTranslationFileCtx(
+          translationDirPath,
+          translation.locale_code,
+          translation.namespace,
+        );
 
-        return writeTranslationDirFromData(translationDirCtx, translation);
+        return fs.outputJson(
+          translationFileCtx.abspath,
+          JSON.parse(translation.content),
+          {
+            spaces: DOUBLE_SPACES,
+          },
+        );
       },
     );
 

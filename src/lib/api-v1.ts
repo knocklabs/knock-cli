@@ -146,6 +146,24 @@ export default class ApiV1 {
     return this.get("/translations", { params });
   }
 
+  async upsertTranslation(
+    { flags }: Props,
+    translation: AnyObj,
+  ): Promise<AxiosResponse<UpsertTranslationResp>> {
+    const params = prune({
+      environment: flags.environment,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+      namespace: translation.namespace,
+    });
+
+    return this.put(
+      `/translations/${translation.locale_code}`,
+      { translation },
+      { params },
+    );
+  }
+
   // By methods:
 
   async get(
@@ -189,6 +207,11 @@ export type ActivateWorkflowResp = {
 };
 
 export type ListTranslationResp = PaginatedResp<Translation.TranslationData>;
+
+export type UpsertTranslationResp = {
+  translation?: Translation.TranslationData;
+  errors?: InputError[];
+};
 
 export type CommitAllChangesResp = {
   result?: "success";
