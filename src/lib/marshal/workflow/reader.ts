@@ -199,16 +199,7 @@ const compileTemplateFiles = async (
       continue;
     }
 
-    if (step.template === undefined) {
-      errors.push(
-        new JsonDataError(
-          "must have a `template` field containing a template object",
-          objPath.str,
-        ),
-      );
-      continue;
-    }
-
+  if(step.template !== undefined){
     if (!isPlainObject(step.template)) {
       errors.push(
         new JsonDataError(
@@ -269,6 +260,7 @@ const compileTemplateFiles = async (
       set(workflowJson, inlinePathStr, content);
     }
   }
+}
 
   return [workflowJson, errors];
 };
