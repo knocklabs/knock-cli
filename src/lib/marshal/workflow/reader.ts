@@ -199,68 +199,68 @@ const compileTemplateFiles = async (
       continue;
     }
 
-  if(step.template !== undefined){
-    if (!isPlainObject(step.template)) {
-      errors.push(
-        new JsonDataError(
-          "must be a template object",
-          objPath.to("template").str,
-        ),
-      );
-      continue;
-    }
-
-    // 3. For a given template, look for any extracted template content, read
-    // the extracted template files, then inline the content.
-    objPath.push("template");
-
-    for (const [field, val] of Object.entries(step.template)) {
-      if (field.startsWith("settings")) continue;
-      if (!FILEPATH_MARKED_RE.test(field)) continue;
-
-      const pathToFieldStr = objPath.to(field).str;
-
-      // eslint-disable-next-line no-await-in-loop
-      const [content, error] = await maybeReadTemplateFile(
-        val,
-        workflowDirCtx,
-        extractedFilePaths,
-        pathToFieldStr,
-      );
-      if (error) {
-        errors.push(error);
+    if (step.template !== undefined) {
+      if (!isPlainObject(step.template)) {
+        errors.push(
+          new JsonDataError(
+            "must be a template object",
+            objPath.to("template").str,
+          ),
+        );
         continue;
       }
 
-      const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
-      set(workflowJson, inlinePathStr, content);
-    }
+      // 3. For a given template, look for any extracted template content, read
+      // the extracted template files, then inline the content.
+      objPath.push("template");
 
-    if (!step.template.settings) continue;
-    objPath.push("settings");
+      for (const [field, val] of Object.entries(step.template)) {
+        if (field.startsWith("settings")) continue;
+        if (!FILEPATH_MARKED_RE.test(field)) continue;
 
-    for (const [field, val] of Object.entries(step.template.settings)) {
-      if (!FILEPATH_MARKED_RE.test(field)) continue;
+        const pathToFieldStr = objPath.to(field).str;
 
-      const pathToFieldStr = objPath.to(field).str;
+        // eslint-disable-next-line no-await-in-loop
+        const [content, error] = await maybeReadTemplateFile(
+          val,
+          workflowDirCtx,
+          extractedFilePaths,
+          pathToFieldStr,
+        );
+        if (error) {
+          errors.push(error);
+          continue;
+        }
 
-      // eslint-disable-next-line no-await-in-loop
-      const [content, error] = await maybeReadTemplateFile(
-        val,
-        workflowDirCtx,
-        extractedFilePaths,
-        pathToFieldStr,
-      );
-      if (error) {
-        errors.push(error);
-        continue;
+        const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
+        set(workflowJson, inlinePathStr, content);
       }
 
-      const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
-      set(workflowJson, inlinePathStr, content);
+      if (!step.template.settings) continue;
+      objPath.push("settings");
+
+      for (const [field, val] of Object.entries(step.template.settings)) {
+        if (!FILEPATH_MARKED_RE.test(field)) continue;
+
+        const pathToFieldStr = objPath.to(field).str;
+
+        // eslint-disable-next-line no-await-in-loop
+        const [content, error] = await maybeReadTemplateFile(
+          val,
+          workflowDirCtx,
+          extractedFilePaths,
+          pathToFieldStr,
+        );
+        if (error) {
+          errors.push(error);
+          continue;
+        }
+
+        const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
+        set(workflowJson, inlinePathStr, content);
+      }
     }
   }
-}
 
   return [workflowJson, errors];
 };
