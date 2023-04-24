@@ -4,13 +4,18 @@ import * as fs from "fs-extra";
 import localeData from "locale-codes";
 
 /*
+ * Evaluates whether the string is a valid locale name
+ */
+export const isValidLocale = (localeCode: string): boolean =>
+  Boolean(localeData.getByTag(localeCode));
+
+/*
  * Evaluates whether the given directory path is a translations directory
  * by checking if the directory name is a valid locale name
  */
 export const isTranslationsDir = (dirPath: string): boolean => {
   const locale = path.basename(dirPath);
-
-  return Boolean(localeData.getByTag(locale));
+  return isValidLocale(locale);
 };
 
 export type TranslationFileContext = {
