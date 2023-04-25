@@ -4,6 +4,7 @@ import { expect } from "@oclif/test";
 import * as fs from "fs-extra";
 import { get } from "lodash";
 
+import { xpath } from "@/../test/support";
 import { sandboxDir } from "@/lib/helpers/const";
 import { JsonDataError } from "@/lib/helpers/error";
 import {
@@ -197,8 +198,8 @@ describe("lib/marshal/workflow/reader", () => {
               layout_key: "default",
             },
             subject: "You've got mail!",
-            "text_body@": "email_1/text_body.txt",
-            "visual_blocks@": "email_1/visual_blocks.json",
+            "text_body@": xpath("email_1/text_body.txt"),
+            "visual_blocks@": xpath("email_1/visual_blocks.json"),
           },
           type: "channel",
         },
@@ -218,7 +219,7 @@ describe("lib/marshal/workflow/reader", () => {
         type: "markdown",
         variant: "default",
         version: 1,
-        "content@": "visual_blocks/1.content.md",
+        "content@": xpath("visual_blocks/1.content.md"),
       },
     ];
 
@@ -310,7 +311,7 @@ describe("lib/marshal/workflow/reader", () => {
           "foo",
         );
         expect(get(workflow, ["steps", 0, "template", "text_body@"])).to.equal(
-          "email_1/text_body.txt",
+          xpath("email_1/text_body.txt"),
         );
 
         // Email visual blocks should be inlined into workflow data
@@ -319,7 +320,7 @@ describe("lib/marshal/workflow/reader", () => {
           .that.has.length(1);
         expect(
           get(workflow, ["steps", 0, "template", "visual_blocks@"]),
-        ).to.equal("email_1/visual_blocks.json");
+        ).to.equal(xpath("email_1/visual_blocks.json"));
 
         // Block content fields in visual blocks should also be inlined, with
         // its extracted path rebased to be relative to workflow.json
@@ -342,7 +343,7 @@ describe("lib/marshal/workflow/reader", () => {
             0,
             "content@",
           ]),
-        ).to.equal("email_1/visual_blocks/1.content.md");
+        ).to.equal(xpath("email_1/visual_blocks/1.content.md"));
       });
     });
   });
