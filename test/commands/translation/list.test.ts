@@ -100,7 +100,6 @@ describe("commands/translation/list", () => {
       .stdout()
       .command(["translation list"])
       .it("displays the list of translations", (ctx) => {
-        console.error(ctx);
         expect(ctx.stdout).to.contain("Showing 3 translations in");
         expect(ctx.stdout).to.contain("en-CA");
         expect(ctx.stdout).to.contain("en-GB");
