@@ -6,6 +6,7 @@ import { InputError } from "@/lib/helpers/error";
 import { AnyObj, prune } from "@/lib/helpers/object";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
+import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
 const DEFAULT_ORIGIN = "https://control.knock.app";
@@ -35,11 +36,11 @@ export default class ApiV1 {
     });
   }
 
-  // By resources: Workflows
-
   async ping(): Promise<AxiosResponse> {
     return this.get("/ping");
   }
+
+  // By resources: Workflows
 
   async listWorkflows<A extends MaybeWithAnnotation>({
     flags,
@@ -131,6 +132,38 @@ export default class ApiV1 {
     return this.put(`/commits/promote`, {}, { params });
   }
 
+  // By resources: Translations
+
+  async listTranslations({
+    flags,
+  }: Props): Promise<AxiosResponse<ListTranslationResp>> {
+    const params = prune({
+      environment: flags.environment,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      ...toPageParams(flags),
+    });
+
+    return this.get("/translations", { params });
+  }
+
+  async upsertTranslation(
+    { flags }: Props,
+    translation: AnyObj,
+  ): Promise<AxiosResponse<UpsertTranslationResp>> {
+    const params = prune({
+      environment: flags.environment,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+      namespace: translation.namespace,
+    });
+
+    return this.put(
+      `/translations/${translation.locale_code}`,
+      { translation },
+      { params },
+    );
+  }
+
   // By methods:
 
   async get(
@@ -170,6 +203,13 @@ export type ValidateWorkflowResp = {
 
 export type ActivateWorkflowResp = {
   workflow?: Workflow.WorkflowData;
+  errors?: InputError[];
+};
+
+export type ListTranslationResp = PaginatedResp<Translation.TranslationData>;
+
+export type UpsertTranslationResp = {
+  translation?: Translation.TranslationData;
   errors?: InputError[];
 };
 

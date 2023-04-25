@@ -1,10 +1,11 @@
 /*
  * Module for surveying the cwd location of the command run and its parent dirs
  * to gather context about a knock resource or the project that the command may
- * be refering to.
+ * be referring to.
  */
 import * as path from "node:path";
 
+import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
 import { RunContext } from "./types";
@@ -18,6 +19,19 @@ const evaluateRecursively = async (
   if (!ctx.resourceDir && isWorkflowDir) {
     ctx.resourceDir = {
       type: "workflow",
+      key: path.basename(currDir),
+      abspath: currDir,
+      exists: true,
+    };
+  }
+
+  // NOTE: Must keep this check as last in the order of directory-type checks
+  // since the `isTranslationsDir` only checks that the directory name is a
+  // valid locale name.
+  const isTranslationsDir = await Translation.isTranslationsDir(currDir);
+  if (!ctx.resourceDir && isTranslationsDir) {
+    ctx.resourceDir = {
+      type: "translation",
       key: path.basename(currDir),
       abspath: currDir,
       exists: true,

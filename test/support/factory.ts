@@ -3,6 +3,7 @@ import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { GFlags } from "@/lib/api-v1";
 import { Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
+import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
   ChannelType,
@@ -115,4 +116,16 @@ export const channelStep = (
   };
 
   return step;
+};
+
+export const translation = (
+  attrs: Partial<TranslationData> = {},
+): TranslationData => {
+  return {
+    locale_code: "en",
+    content: '{"welcome":"Hello"}',
+    created_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    ...attrs,
+  };
 };
