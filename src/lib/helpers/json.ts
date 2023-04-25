@@ -10,6 +10,29 @@ import { AnyObj } from "@/lib/helpers/object";
 export const DOUBLE_SPACES = "  ";
 
 /*
+ * Parses a json string with it into an object with jsonlint.
+ */
+export type ParsedJson = AnyObj;
+type MaybeParsedJson = ParsedJson | undefined;
+export type ParseJsonResult = [MaybeParsedJson, JsonSyntaxError[]];
+
+export const parseJson = (json: string): ParseJsonResult => {
+  let payload: MaybeParsedJson;
+  const errors: JsonSyntaxError[] = [];
+
+  try {
+    payload = jsonlint.parse(json) as AnyObj;
+  } catch (error) {
+    // https://github.com/prantlf/jsonlint#error-handling
+    if (!(error instanceof SyntaxError)) throw error;
+
+    errors.push(new JsonSyntaxError(error.message));
+  }
+
+  return [payload, errors];
+};
+
+/*
  * Reads a JSON file and then parses it into an object.
  *
  * Like the `readJson` method of `fs-extra`, but parse with jsonlint instead
@@ -24,23 +47,8 @@ export const DOUBLE_SPACES = "  ";
  *    ------------------------^
  *    Expecting 'STRING', got '}'
  */
-type MaybeParsedPayload = AnyObj | undefined;
-export type ReadJsonResult = [MaybeParsedPayload, JsonSyntaxError[]];
-
-export const readJson = async (filePath: string): Promise<ReadJsonResult> => {
+export const readJson = async (filePath: string): Promise<ParseJsonResult> => {
   const json = await fs.readFile(filePath, "utf8");
 
-  let payload: MaybeParsedPayload;
-  const errors: JsonSyntaxError[] = [];
-
-  try {
-    payload = jsonlint.parse(json) as AnyObj;
-  } catch (error) {
-    // https://github.com/prantlf/jsonlint#error-handling
-    if (!(error instanceof SyntaxError)) throw error;
-
-    errors.push(new JsonSyntaxError(error.message));
-  }
-
-  return [payload, errors];
+  return parseJson(json);
 };

@@ -51,7 +51,11 @@ export class LiquidParseError extends CustomError {
 }
 
 // Possible errors we want to handle.
-type HandledError = ApiError | SyntaxError | JsonDataError | LiquidParseError;
+type HandledError =
+  | ApiError
+  | JsonSyntaxError
+  | JsonDataError
+  | LiquidParseError;
 
 /*
  * Returns a formatted error message string from a single error instance.

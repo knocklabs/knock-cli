@@ -27,7 +27,7 @@ type WorkflowStepBase = {
 
 type TemplateSettings<A extends MaybeWithAnnotation> = A & AnyObj;
 
-export type TemplateData<A extends MaybeWithAnnotation = unknown> = A &
+type TemplateData<A extends MaybeWithAnnotation = unknown> = A &
   AnyObj & {
     settings?: TemplateSettings<A>;
   };
