@@ -117,51 +117,49 @@ export default class TranslationPush extends BaseCommand {
         `${resourceDir.abspath} is not a translations directory.`,
       );
 
-    // if (
-    //   resourceDir?.exists &&
-    //   resourceDir?.type === "translation" &&
-    //   resourceDir?.key !== translationReference
-    // )
-    //   return this.error(
-    //     `${translationReference} doesn't match the locale of the current directory, ${resourceDir.abspath}. Try navigating to its parent directory and pushing again.`,
-    //   );
-
-    // We are in the directory for this locale we want to push
     if (
       resourceDir?.exists &&
       resourceDir?.type === "translation" &&
-      resourceDir?.key === translationReference
-    ) {
-      return fs.readdir(resourceDir.abspath, (_err, children) => {
-        children.map((childTranslation) => {
-          console.log("child trans,", childTranslation);
-          const ext = path.extname(childTranslation);
-          const childRef = path.basename(childTranslation, ext);
-          return this.pushOneTranslation(resourceDir, runCwd, childRef);
-        });
+      resourceDir?.key !== translationReference
+    )
+      return this.error(
+        `${translationReference} doesn't match the locale of the current directory, ${resourceDir.abspath}. Try navigating to its parent directory and pushing again.`,
+      );
+
+    // We are in the directory for this locale we want to push
+    if (resourceDir?.exists && resourceDir?.type === "translation") {
+      const children = await fs.readdir(resourceDir.abspath);
+
+      children.map((childTranslation) => {
+        const ext = path.extname(childTranslation);
+        const childRef = path.basename(childTranslation, ext);
+
+        return this.pushOneTranslation(resourceDir, runCwd, childRef);
       });
+
+      return;
     }
 
-    if (!resourceDir) {
-      return fs.readdir(runCwd, (_err, children) => {
-        const localeDir = children.find(
-          (child) => child === translationReference,
-        );
-        if (!localeDir) {
-          this.error(
-            `${translationReference} doesn't exist in this directory. Make sure you have a locale directory for \`${translationReference}\` or navigate to your translations directory and try pushing for this locale again.`,
-          );
-        }
+    const dirChildren = await fs.readdir(runCwd);
 
-        return fs.readdir(localeDir, (_err, children) => {
-          children.map((childTranslation) => {
-            const ext = path.extname(childTranslation);
-            const childRef = path.basename(childTranslation, ext);
-            return this.pushOneTranslation(resourceDir, runCwd, childRef);
-          });
-        });
-      });
+    const localeDir = dirChildren.find(
+      (child) => child === translationReference,
+    );
+
+    if (!localeDir) {
+      this.error(
+        `${translationReference} doesn't exist in this directory. Make sure you have a locale directory for \`${translationReference}\` or navigate to your translations directory and try pushing for this locale again.`,
+      );
     }
+
+    const localeDirChildren = await fs.readdir(localeDir);
+
+    localeDirChildren.map((childTranslation) => {
+      const ext = path.extname(childTranslation);
+      const childRef = path.basename(childTranslation, ext);
+
+      return this.pushOneTranslation(resourceDir, runCwd, childRef);
+    });
   }
 
   async pushAllTranslations(
@@ -177,28 +175,35 @@ export default class TranslationPush extends BaseCommand {
       // If we're already in a locale directory, we only want to push the
       // translations within this one, even though the command was `--all` with
       // no locale.
+
       const translationsDir = path.dirname(resourceDir.abspath);
 
-      return fs.readdir(translationsDir, (_err, children) => {
-        return children.map((childLocaleDir) =>
-          this.pushTranslationsForLocale(resourceDir, runCwd, childLocaleDir),
-        );
-      });
+      const children = await fs.readdir(translationsDir);
+
+      children.map((childLocaleDir) =>
+        this.pushTranslationsForLocale(
+          undefined,
+          translationsDir,
+          childLocaleDir,
+        ),
+      );
+
+      return;
     }
 
     if (!resourceDir?.exists) {
-      fs.readdir(runCwd, (_err, children) => {
-        const allValidLocales = children.every((child) => isValidLocale(child));
-        if (!allValidLocales) {
-          return this.error(
-            `Cannot locate translation files within this directory or there are some translation directories with invalid locales.`,
-          );
-        }
+      const children = await fs.readdir(runCwd);
+      const allValidLocales = children.every((child) => isValidLocale(child));
 
-        return children.map((childLocaleDir) =>
-          this.pushTranslationsForLocale(resourceDir, runCwd, childLocaleDir),
+      if (!allValidLocales) {
+        return this.error(
+          `Cannot locate translation files within this directory or there are some translation directories with invalid locales.`,
         );
-      });
+      }
+
+      children.map((childLocaleDir) =>
+        this.pushTranslationsForLocale(resourceDir, runCwd, childLocaleDir),
+      );
     }
   }
 
