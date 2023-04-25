@@ -60,6 +60,10 @@ export default class TranslationPush extends BaseCommand {
     if (flags.all) {
       return this.pushAllTranslations(resourceDir, runCwd);
     }
+
+    return this.error(
+      `Pass a translation reference or --all to push all translations.`,
+    );
   }
 
   async pushOneTranslation(
@@ -103,20 +107,39 @@ export default class TranslationPush extends BaseCommand {
     );
   }
 
+  parseAndPushTranslations = (
+    resourceDir: ResourceDirContext | undefined,
+    runCwd: string,
+    translations: string[],
+  ): void => {
+    // Break if we encounter an error in one of the upserts
+    for (const translation of translations) {
+      const ext = path.extname(translation);
+      const childRef = path.basename(translation, ext);
+
+      try {
+        this.pushOneTranslation(resourceDir, runCwd, childRef);
+      } catch {
+        this.error(
+          `There was an error upserting the ${childRef} translation; upserting this batch has aborted.`,
+        );
+        break;
+      }
+    }
+  };
+
   async pushTranslationsForLocale(
     resourceDir: ResourceDirContext | undefined,
     runCwd: string,
     translationReference: string,
   ): Promise<ApiV1.UpsertTranslationResp | void> {
-    if (!isValidLocale(translationReference)) {
-      return this.error(`${translationReference} is not a valid locale.`);
-    }
-
+    // Error: in a non-translations resource directory
     if (resourceDir?.exists && resourceDir?.type !== "translation")
       return this.error(
         `${resourceDir.abspath} is not a translations directory.`,
       );
 
+    // Error: in a translations directory that doesn't match the translation reference passed
     if (
       resourceDir?.exists &&
       resourceDir?.type === "translation" &&
@@ -129,43 +152,31 @@ export default class TranslationPush extends BaseCommand {
     // We are in the directory for this locale we want to push
     if (resourceDir?.exists && resourceDir?.type === "translation") {
       const children = await fs.readdir(resourceDir.abspath);
-
-      children.map((childTranslation) => {
-        const ext = path.extname(childTranslation);
-        const childRef = path.basename(childTranslation, ext);
-
-        return this.pushOneTranslation(resourceDir, runCwd, childRef);
-      });
-
+      this.parseAndPushTranslations(resourceDir, runCwd, children);
       return;
     }
 
     const dirChildren = await fs.readdir(runCwd);
-
     const localeDir = dirChildren.find(
       (child) => child === translationReference,
     );
 
+    // Error: we didn't find the intended locale directory in this parent directory
     if (!localeDir) {
-      this.error(
+      return this.error(
         `${translationReference} doesn't exist in this directory. Make sure you have a locale directory for \`${translationReference}\` or navigate to your translations directory and try pushing for this locale again.`,
       );
     }
 
     const localeDirChildren = await fs.readdir(localeDir);
-
-    localeDirChildren.map((childTranslation) => {
-      const ext = path.extname(childTranslation);
-      const childRef = path.basename(childTranslation, ext);
-
-      return this.pushOneTranslation(resourceDir, runCwd, childRef);
-    });
+    this.parseAndPushTranslations(resourceDir, runCwd, localeDirChildren);
   }
 
   async pushAllTranslations(
     resourceDir: ResourceDirContext | undefined,
     runCwd: string,
   ): Promise<ApiV1.UpsertTranslationResp | void> {
+    // Error: not a translations directory
     if (resourceDir?.exists && resourceDir?.type !== "translation")
       return this.error(
         `${resourceDir.abspath} is not a translations directory.`,
@@ -180,13 +191,12 @@ export default class TranslationPush extends BaseCommand {
 
       const children = await fs.readdir(translationsDir);
 
-      children.map((childLocaleDir) =>
+      for (const childLocaleDir of children)
         this.pushTranslationsForLocale(
           undefined,
           translationsDir,
           childLocaleDir,
-        ),
-      );
+        );
 
       return;
     }
@@ -201,9 +211,8 @@ export default class TranslationPush extends BaseCommand {
         );
       }
 
-      children.map((childLocaleDir) =>
-        this.pushTranslationsForLocale(resourceDir, runCwd, childLocaleDir),
-      );
+      for (const childLocaleDir of children)
+        this.pushTranslationsForLocale(resourceDir, runCwd, childLocaleDir);
     }
   }
 
