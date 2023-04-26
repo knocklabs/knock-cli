@@ -106,6 +106,9 @@ export default class TranslationPush extends BaseCommand {
     );
   }
 
+  // This function is used in the pushTranslationsForLocale
+  // to iterate through the children passed and break if one fails to
+  // upsert.
   async readAndPushDirChildren(
     directoryPath: fs.PathLike,
     resourceDir: ResourceDirContext | undefined,
@@ -206,29 +209,30 @@ export default class TranslationPush extends BaseCommand {
       return;
     }
 
-    if (!resourceDir?.exists) {
-      const children = await fs.readdir(runCwd);
-      // The way we're checking that this is most likely the translations directory is by
-      // checking that every directory name is a valid locale.
-      const allValidLocales = children.every((child) => isValidLocale(child));
+    // We're not in a resource dir, so we're going to look for the translations
+    // directories within this path
+    const children = await fs.readdir(runCwd);
 
-      if (!allValidLocales) {
-        return this.error(
-          `Cannot locate translation files within this directory or all translation directories do not have a valid locale name.`,
-        );
-      }
+    // The way we're checking that this is most likely the translations directory is by
+    // checking that every directory name is a valid locale.
+    const allValidLocales = children.every((child) => isValidLocale(child));
 
-      for (const childLocaleDir of children) {
-        // eslint-disable-next-line no-await-in-loop
-        const res = await this.pushTranslationsForLocale(
-          resourceDir,
-          runCwd,
-          childLocaleDir,
-        );
+    if (!allValidLocales) {
+      return this.error(
+        `Cannot locate translation files within this directory or all translation directories do not have a valid locale name.`,
+      );
+    }
 
-        if (res?.errors) {
-          break;
-        }
+    for (const childLocaleDir of children) {
+      // eslint-disable-next-line no-await-in-loop
+      const res = await this.pushTranslationsForLocale(
+        resourceDir,
+        runCwd,
+        childLocaleDir,
+      );
+
+      if (res?.errors) {
+        break;
       }
     }
   }
