@@ -41,6 +41,7 @@ export default class TranslationPush extends BaseCommand {
   async run(): Promise<ApiV1.UpsertTranslationResp | void> {
     const { args, flags } = this.props;
     const { resourceDir, cwd: runCwd } = this.runContext;
+
     if (flags.all && args.translationReference) {
       return this.pushTranslationsForLocale(
         resourceDir,
@@ -61,9 +62,7 @@ export default class TranslationPush extends BaseCommand {
       return this.pushAllTranslations(resourceDir, runCwd);
     }
 
-    return this.error(
-      `Pass a translation reference or --all to push all translations.`,
-    );
+    return this.error(`Error: no translation reference or \`all\` flag used.`);
   }
 
   async pushOneTranslation(
@@ -107,26 +106,25 @@ export default class TranslationPush extends BaseCommand {
     );
   }
 
-  parseAndPushTranslations = (
+  async readAndPushDirChildren(
+    directoryPath: fs.PathLike,
     resourceDir: ResourceDirContext | undefined,
     runCwd: string,
-    translations: string[],
-  ): void => {
+  ): Promise<void> {
+    const children = await fs.readdir(directoryPath);
+
     // Break if we encounter an error in one of the upserts
-    for (const translation of translations) {
+    for (const translation of children) {
       const ext = path.extname(translation);
       const childRef = path.basename(translation, ext);
 
-      try {
-        this.pushOneTranslation(resourceDir, runCwd, childRef);
-      } catch {
-        this.error(
-          `There was an error upserting the ${childRef} translation; upserting this batch has aborted.`,
-        );
+      // eslint-disable-next-line no-await-in-loop
+      const res = await this.pushOneTranslation(resourceDir, runCwd, childRef);
+      if (res?.errors) {
         break;
       }
     }
-  };
+  }
 
   async pushTranslationsForLocale(
     resourceDir: ResourceDirContext | undefined,
@@ -151,11 +149,14 @@ export default class TranslationPush extends BaseCommand {
 
     // We are in the directory for this locale we want to push
     if (resourceDir?.exists && resourceDir?.type === "translation") {
-      const children = await fs.readdir(resourceDir.abspath);
-      this.parseAndPushTranslations(resourceDir, runCwd, children);
-      return;
+      return this.readAndPushDirChildren(
+        resourceDir.abspath,
+        resourceDir,
+        runCwd,
+      );
     }
 
+    // Not in a resource directory; looking for the locale in the cwd
     const dirChildren = await fs.readdir(runCwd);
     const localeDir = dirChildren.find(
       (child) => child === translationReference,
@@ -168,8 +169,9 @@ export default class TranslationPush extends BaseCommand {
       );
     }
 
-    const localeDirChildren = await fs.readdir(localeDir);
-    this.parseAndPushTranslations(resourceDir, runCwd, localeDirChildren);
+    // If it was found, read and push its children
+    const localeDirPath = path.resolve(runCwd, localeDir);
+    this.readAndPushDirChildren(localeDirPath, resourceDir, runCwd);
   }
 
   async pushAllTranslations(
@@ -183,36 +185,51 @@ export default class TranslationPush extends BaseCommand {
       );
 
     if (resourceDir?.exists && resourceDir?.type === "translation") {
-      // If we're already in a locale directory, we only want to push the
-      // translations within this one, even though the command was `--all` with
-      // no locale.
-
+      // If we're already in a locale directory, we know how to find
+      // the translations dir parent to get all of the translation files
       const translationsDir = path.dirname(resourceDir.abspath);
-
       const children = await fs.readdir(translationsDir);
 
-      for (const childLocaleDir of children)
-        this.pushTranslationsForLocale(
+      for (const childLocaleDir of children) {
+        // eslint-disable-next-line no-await-in-loop
+        const res = await this.pushTranslationsForLocale(
           undefined,
           translationsDir,
           childLocaleDir,
         );
+
+        if (res?.errors) {
+          break;
+        }
+      }
 
       return;
     }
 
     if (!resourceDir?.exists) {
       const children = await fs.readdir(runCwd);
+      // The way we're checking that this is most likely the translations directory is by
+      // checking that every directory name is a valid locale.
       const allValidLocales = children.every((child) => isValidLocale(child));
 
       if (!allValidLocales) {
         return this.error(
-          `Cannot locate translation files within this directory or there are some translation directories with invalid locales.`,
+          `Cannot locate translation files within this directory or all translation directories do not have a valid locale name.`,
         );
       }
 
-      for (const childLocaleDir of children)
-        this.pushTranslationsForLocale(resourceDir, runCwd, childLocaleDir);
+      for (const childLocaleDir of children) {
+        // eslint-disable-next-line no-await-in-loop
+        const res = await this.pushTranslationsForLocale(
+          resourceDir,
+          runCwd,
+          childLocaleDir,
+        );
+
+        if (res?.errors) {
+          break;
+        }
+      }
     }
   }
 
@@ -228,7 +245,6 @@ export default class TranslationPush extends BaseCommand {
 
     // Error: trying to run the command not in a translation directory
     if (resourceDir && resourceDir.type !== "translation") {
-      console.log(BaseCommand);
       return this.error(
         `Cannot run ${BaseCommand.id} inside a ${resourceDir.type} directory`,
       );
@@ -257,17 +273,17 @@ export default class TranslationPush extends BaseCommand {
       ? resourceDir.abspath
       : path.resolve(runCwd, localeCode);
 
-    const translationFileCtx = buildTranslationFileCtx(
+    const translationFileCtx = await buildTranslationFileCtx(
       dirPath,
       localeCode,
       namespace,
     );
 
     // Error if the filepath generated doesn't exist, otherwise return the translation context
-    return (await translationFileCtx).exists
+    return translationFileCtx.exists
       ? translationFileCtx
       : this.error(
-          `Cannot locate a translation file for \`${translationReference}\``,
+          `Cannot locate a translation file for \`${translationReference}\` in ${dirPath}`,
         );
   }
 }
