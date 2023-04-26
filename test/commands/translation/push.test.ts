@@ -10,10 +10,24 @@ import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { TranslationData } from "@/lib/marshal/translation";
 
-const mockTranslationData: TranslationData = {
+const mockEnAdminTranslationData: TranslationData = {
   locale_code: "en",
   namespace: "admin",
   content: '{"welcome":"hello!"}',
+  created_at: "2022-12-31T12:00:00.000000Z",
+  updated_at: "2022-12-31T12:00:00.000000Z",
+};
+
+const mockEnTranslationData: TranslationData = {
+  locale_code: "en",
+  content: '{"welcome":"hello!", "goodbye":"Goodbye!"}',
+  created_at: "2022-12-31T12:00:00.000000Z",
+  updated_at: "2022-12-31T12:00:00.000000Z",
+};
+
+const mockEsTranslationData: TranslationData = {
+  locale_code: "es",
+  content: '{"welcome":"Bienvenido!"}',
   created_at: "2022-12-31T12:00:00.000000Z",
   updated_at: "2022-12-31T12:00:00.000000Z",
 };
@@ -43,14 +57,14 @@ describe("commands/translation/push", () => {
     beforeEach(() => {
       const abspath = path.resolve(
         sandboxDir,
-        `${mockTranslationData.locale_code}/${mockTranslationData.namespace}.${mockTranslationData.locale_code}.json`,
+        `${mockEnAdminTranslationData.locale_code}/${mockEnAdminTranslationData.namespace}.${mockEnAdminTranslationData.locale_code}.json`,
       );
       fs.outputJsonSync(abspath, { welcome: "hello!" });
 
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: { translation: mockTranslationData } })
+    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
       .stdout()
       .command(["translation push", "admin.en"])
       .it("calls apiV1 upsertTranslation with expected props", () => {
@@ -71,7 +85,7 @@ describe("commands/translation/push", () => {
         );
       });
 
-    setupWithStub({ data: { translation: mockTranslationData } })
+    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
       .stdout()
       .command([
         "translation push",
@@ -103,36 +117,57 @@ describe("commands/translation/push", () => {
           );
         },
       );
+  });
 
-    setupWithStub({ data: { translation: mockTranslationData } })
-      .stdout()
-      .command(["translation push", "admin.en"])
-      .it(
-        "writes the upserted translation data into the content of the translation file",
-        () => {
-          const abspath = path.resolve(
-            sandboxDir,
-            `${mockTranslationData.locale_code}/${mockTranslationData.namespace}.${mockTranslationData.locale_code}.json`,
-          );
-          const translationContent = fs.readJsonSync(abspath);
-
-          expect(translationContent).to.eql({ welcome: "hello!" });
-        },
+  describe("with the --all flag", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(
+        sandboxDir,
+        `${mockEnAdminTranslationData.locale_code}/${mockEnAdminTranslationData.namespace}.${mockEnAdminTranslationData.locale_code}.json`,
       );
+      fs.outputJsonSync(abspath, { welcome: "hello!" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({
+      data: {
+        translations: [
+          mockEnAdminTranslationData,
+          mockEsTranslationData,
+          mockEnTranslationData,
+        ],
+      },
+    })
+      .stdout()
+      .command(["translation push", "--all"])
+      .it("calls apiV1 upsertTranslation with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertTranslation as any,
+          sinon.match(({ flags }) => {
+            return isEqual(flags, {
+              "service-token": "valid-token",
+              "api-origin": undefined,
+              environment: "development",
+              all: true,
+            });
+          }),
+        );
+      });
   });
 
   describe("given a translation file, with syntax errors", () => {
     beforeEach(() => {
       const abspath = path.resolve(
         sandboxDir,
-        `${mockTranslationData.locale_code}/${mockTranslationData.namespace}.${mockTranslationData.locale_code}.json`,
+        `${mockEnAdminTranslationData.locale_code}/${mockEnAdminTranslationData.namespace}.${mockEnAdminTranslationData.locale_code}.json`,
       );
       fs.outputFileSync(abspath, '{"name":"New comment",}');
 
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: { translation: mockTranslationData } })
+    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
       .stdout()
       .command(["translation push", "admin.en"])
       .catch((error) =>
@@ -145,7 +180,7 @@ describe("commands/translation/push", () => {
     beforeEach(() => {
       const abspath = path.resolve(
         sandboxDir,
-        `${mockTranslationData.locale_code}/${mockTranslationData.namespace}.${mockTranslationData.locale_code}.json`,
+        `${mockEnAdminTranslationData.locale_code}/${mockEnAdminTranslationData.namespace}.${mockEnAdminTranslationData.locale_code}.json`,
       );
       fs.outputJsonSync(abspath, { name: 10 });
 
@@ -171,7 +206,7 @@ describe("commands/translation/push", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: { translation: mockTranslationData } })
+    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
       .stdout()
       .command(["translation push", "does-not-exist"])
       .catch((error) =>
@@ -180,8 +215,8 @@ describe("commands/translation/push", () => {
       .it("throws an error");
   });
 
-  describe("given no translation filename arg", () => {
-    setupWithStub({ data: { translation: mockTranslationData } })
+  describe("given no translation filename arg and no --all", () => {
+    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
       .stdout()
       .command(["translation push"])
       .exit(2)
