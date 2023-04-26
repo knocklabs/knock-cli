@@ -38,6 +38,14 @@ export class JsonDataError extends CustomError {
   }
 }
 
+// XXX:
+export class FoundError extends CustomError {
+  constructor(origin: string, errors: Array<JsonSyntaxError | JsonDataError>) {
+    const message = `${origin}\n\n` + `${formatErrors(errors, { indentBy: 2 })}`;
+    super(message);
+  }
+}
+
 // Error to indicate a syntax error in liquid content.
 export class LiquidParseError extends CustomError {
   // Shows the erroneous liquid content with line numbers, should be taken

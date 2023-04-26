@@ -6,6 +6,7 @@ import { DirContext } from "@/lib/helpers/fs";
 
 export type RunContext = {
   cwd: string;
+  commandId: string | undefined;
   resourceDir?: ResourceDirContext;
 };
 
