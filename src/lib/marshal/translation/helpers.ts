@@ -18,7 +18,7 @@ export const isValidLocale = (localeCode: string): boolean =>
  * Evaluates whether the given directory path is a translations directory
  * by checking if the directory name is a valid locale name
  */
-export const isTranslationsDir = (dirPath: string): boolean => {
+export const isTranslationDir = (dirPath: string): boolean => {
   const locale = path.basename(dirPath);
   return isValidLocale(locale);
 };

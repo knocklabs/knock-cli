@@ -28,7 +28,7 @@ const evaluateRecursively = async (
   // NOTE: Must keep this check as last in the order of directory-type checks
   // since the `isTranslationDir` only checks that the directory name is a
   // valid locale name.
-  const isTranslationDir = Translation.isTranslationsDir(currDir);
+  const isTranslationDir = Translation.isTranslationDir(currDir);
   if (!ctx.resourceDir && isTranslationDir) {
     ctx.resourceDir = {
       type: "translation",
