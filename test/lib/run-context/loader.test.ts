@@ -29,7 +29,7 @@ describe("lib/run-context/loader", () => {
         const newCwd = path.resolve(sandboxDir, "a");
         process.chdir(newCwd);
 
-        expect(await load()).to.eql({ cwd: newCwd });
+        expect(await load()).to.eql({ commandId: undefined, cwd: newCwd });
       });
     });
 
@@ -39,6 +39,7 @@ describe("lib/run-context/loader", () => {
         process.chdir(newCwd);
 
         expect(await load()).to.eql({
+          commandId: undefined,
           cwd: newCwd,
           resourceDir: {
             type: "workflow",
@@ -56,6 +57,7 @@ describe("lib/run-context/loader", () => {
         process.chdir(newCwd);
 
         expect(await load()).to.eql({
+          commandId: undefined,
           cwd: newCwd,
           resourceDir: {
             type: "workflow",

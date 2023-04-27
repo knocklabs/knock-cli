@@ -24,7 +24,7 @@ abstract class BaseCommand extends Command {
     this.apiV1 = new KnockApiV1(this.props.flags, this.config);
 
     // 4. Load the run context of the invoked command.
-    this.runContext = await RunContext.load();
+    this.runContext = await RunContext.load(this.id);
   }
 
   // Global flags are inherited by any command that extends BaseCommand.

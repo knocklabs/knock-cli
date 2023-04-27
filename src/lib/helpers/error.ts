@@ -50,12 +50,24 @@ export class LiquidParseError extends CustomError {
   }
 }
 
+// Generic error to wrap a message and associate it to a "source".
+export class SourceError extends CustomError {
+  // Arbitrary string to describe the identifying source of the error message.
+  source: string;
+
+  constructor(message: string, source: string, tag?: string) {
+    super(tag ? `${tag}: ${message}` : message);
+    this.source = source;
+  }
+}
+
 // Possible errors we want to handle.
 type HandledError =
   | ApiError
-  | JsonSyntaxError
+  | SyntaxError
   | JsonDataError
-  | LiquidParseError;
+  | LiquidParseError
+  | SourceError;
 
 /*
  * Returns a formatted error message string from a single error instance.
@@ -63,7 +75,7 @@ type HandledError =
  * Note, primarily used to print out multiple errors below. When only need to
  * surface a single error, the oclif error helper takes an error instance.
  */
-const formatError = (error: HandledError): string => {
+export const formatError = (error: HandledError): string => {
   switch (true) {
     case error instanceof ApiError:
     case error instanceof JsonSyntaxError:
@@ -81,6 +93,11 @@ const formatError = (error: HandledError): string => {
       return `${e.name}: ${e.message + "\n" + e.context}`;
     }
 
+    case error instanceof SourceError: {
+      const e = error as SourceError;
+      return `${e.source}\n` + indentString(e.message, 2);
+    }
+
     default:
       throw new Error(`Unhandled error type: ${error}`);
   }
@@ -91,6 +108,7 @@ const formatError = (error: HandledError): string => {
  */
 type FormatErrorsOpts = {
   joinBy?: string;
+  prependBy?: string;
   indentBy?: number;
 };
 
@@ -98,8 +116,8 @@ export const formatErrors = (
   errors: HandledError[],
   opts: FormatErrorsOpts = {},
 ): string => {
-  const { joinBy = "\n\n", indentBy = 0 } = opts;
+  const { prependBy = "", joinBy = "\n\n", indentBy = 0 } = opts;
 
   const formatted = errors.map((e) => formatError(e)).join(joinBy);
-  return indentString(formatted, indentBy);
+  return indentString(prependBy + formatted, indentBy);
 };

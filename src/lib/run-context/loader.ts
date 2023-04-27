@@ -26,10 +26,10 @@ const evaluateRecursively = async (
   }
 
   // NOTE: Must keep this check as last in the order of directory-type checks
-  // since the `isTranslationsDir` only checks that the directory name is a
+  // since the `isTranslationDir` only checks that the directory name is a
   // valid locale name.
-  const isTranslationsDir = await Translation.isTranslationsDir(currDir);
-  if (!ctx.resourceDir && isTranslationsDir) {
+  const isTranslationDir = Translation.isTranslationDir(currDir);
+  if (!ctx.resourceDir && isTranslationDir) {
     ctx.resourceDir = {
       type: "translation",
       key: path.basename(currDir),
@@ -56,8 +56,10 @@ const evaluateRecursively = async (
  * was invoked, then recursively walk up the dir tree as we gather any resource
  * or project context for the command.
  */
-export const load = async (): Promise<RunContext> => {
-  const ctx = { cwd: process.cwd() };
+export const load = async (
+  commandId?: string | undefined,
+): Promise<RunContext> => {
+  const ctx = { commandId, cwd: process.cwd() };
 
   return evaluateRecursively(ctx, ctx.cwd);
 };

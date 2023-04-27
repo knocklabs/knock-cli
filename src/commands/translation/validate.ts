@@ -1,41 +1,30 @@
 import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
-import BaseCommand from "@/lib/base-command";
+import BaseCommand, { Props } from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
+import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Translation from "@/lib/marshal/translation";
 
-import TranslationValidate from "./validate";
-
-export default class TranslationPush extends BaseCommand {
+export default class TranslationValidate extends BaseCommand {
   static flags = {
     environment: Flags.string({
       summary:
-        "Pushing a translation is only allowed in the development environment",
+        "Validating a workflow is only done in the development environment",
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
     all: Flags.boolean(),
     "translations-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
-    commit: Flags.boolean({
-      summary: "Push and commit the translation(s) at the same time",
-    }),
-    "commit-message": Flags.string({
-      summary: "Use the given value as the commit message",
-      char: "m",
-      dependsOn: ["commit"],
-    }),
   };
 
   static args = [{ name: "translationRef", required: false }];
 
-  async run(): Promise<ApiV1.UpsertTranslationResp | void> {
-    // First read all translation files found for the given command.
+  async run(): Promise<void> {
     const target = await Translation.ensureValidCommandTarget(
       this.props,
       this.runContext,
@@ -51,7 +40,6 @@ export default class TranslationPush extends BaseCommand {
       this.error(`No translation files found in ${target.context.abspath}`);
     }
 
-    // Then validate them all ahead of pushing them.
     spinner.start(`‣ Validating`);
 
     const apiErrors = await TranslationValidate.validateAll(
@@ -61,31 +49,43 @@ export default class TranslationPush extends BaseCommand {
     );
 
     if (apiErrors.length > 0) {
-      this.error(formatErrors(apiErrors));
-    }
-
-    // Finally push up each translation file, abort on the first error.
-    for (const translation of translations) {
-      // eslint-disable-next-line no-await-in-loop
-      const resp = await this.apiV1.upsertTranslation(this.props, {
-        locale_code: translation.localeCode,
-        namespace: translation.namespace,
-        content: translation.content,
-      });
-
-      if (isSuccessResp(resp)) continue;
-
-      const message = formatErrorRespMessage(resp);
-      const error = new SourceError(message, translation.abspath, "ApiError");
-      this.error(formatError(error));
+      this.error(formatErrors(apiErrors, { prependBy: "\n\n" }));
     }
 
     spinner.stop();
 
     const handledRefs = translations.map((t) => t.ref);
     this.log(
-      `‣ Successfully pushed ${translations.length} translation(s):\n` +
+      `‣ Successfully validated ${translations.length} translation(s):\n` +
         indentString(handledRefs.join("\n"), 4),
     );
+  }
+
+  static async validateAll(
+    api: ApiV1.T,
+    props: Props,
+    translations: Translation.TranslationFileData[],
+  ): Promise<SourceError[]> {
+    // TODO: Throw if a non validation error (e.g. authentication error) instead
+    // of printing out same error messages repeatedly.
+
+    const errorPromises = translations.map(async (translation) => {
+      const resp = await api.validateTranslation(props, {
+        locale_code: translation.localeCode,
+        namespace: translation.namespace,
+        content: translation.content,
+      });
+
+      if (isSuccessResp(resp)) return;
+
+      const message = formatErrorRespMessage(resp);
+      return new SourceError(message, translation.abspath, "ApiError");
+    });
+
+    const errors = (await Promise.all(errorPromises)).filter(
+      (e): e is Exclude<typeof e, undefined> => Boolean(e),
+    );
+
+    return errors;
   }
 }

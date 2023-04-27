@@ -24,7 +24,9 @@ export const formatErrorRespMessage = ({
     const errs = errors.map(
       (e: InputError) => new JsonDataError(e.message, e.field),
     );
-    return errs.length === 0 ? message : message + "\n\n" + formatErrors(errs);
+    return errs.length === 0
+      ? message
+      : message + "\n\n" + formatErrors(errs, { indentBy: 2 });
   }
 
   return message;

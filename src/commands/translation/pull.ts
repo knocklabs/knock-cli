@@ -23,7 +23,7 @@ export default class TranslationPull extends BaseCommand {
     // TODO MKD: Enable pulling a single translation or group of translations for locale
     return flags.all
       ? this.pullAllTranslations()
-      : this.log("Must use --all to pull all translations.");
+      : this.error("Must use --all to pull all translations");
   }
 
   /*

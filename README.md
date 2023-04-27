@@ -482,6 +482,8 @@ USAGE
   $ knock translation push [TRANSLATION_REFERENCE] --service-token <value> [--environment development] [-m <value> --commit]
 
 FLAGS
+  --all                         Push all translations to the environment. When used with a locale code, pushes
+                                the translations for that specific locale code.
   -m, --commit-message=<value>  Use the given value as the commit message
   --commit                      Push and commit the translation(s) at the same time
   --environment=<option>        [default: development] Pushing a translation is only allowed in the development environment
