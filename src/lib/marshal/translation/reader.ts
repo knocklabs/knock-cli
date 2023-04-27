@@ -57,9 +57,10 @@ const readTranslationFiles = async (
 /*
  * XXX: Assumes a valid command target
  */
-export const readTranslationFilesForTarget = async (
+export const readTranslationFilesForCommandTarget = async (
   target: TranslationCommandTarget,
 ): Promise<[TranslationFileData[], FoundError[]]> => {
+  // XXX: Maybe a better way to parse it.
   const [targetEntry] = Object.entries(target);
   if (!targetEntry) {
     throw new Error(`Invalid translation command target: ${target}`);

@@ -28,13 +28,14 @@ export default class TranslationValidate extends BaseCommand {
       this.props,
       this.runContext,
     );
-    const [translations, errors] =
-      await Translation.readTranslationFilesForTarget(target);
+    const [translations, readErrors] =
+      await Translation.readTranslationFilesForCommandTarget(target);
 
-    if (errors.length > 0) {
-      this.error(formatErrors(errors));
+    if (readErrors.length > 0) {
+      this.error(formatErrors(readErrors));
     }
 
+    // XXX
     if (translations.length === 0) {
       this.error("No translation files found");
     }
@@ -51,7 +52,9 @@ export default class TranslationValidate extends BaseCommand {
       this.error(formatErrors(apiErrors));
     }
 
-    this.log(`‣ Successfully validated XXX`);
+    spinner.stop();
+    // XXX
+    this.log(`‣ Successfully validated ${translations.length} translation(s)`);
   }
 
   static async validateAll(
