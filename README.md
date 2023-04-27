@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.0-rc.2 darwin-arm64 node-v16.14.0
+@knocklabs/cli/0.1.0-rc.3 darwin-arm64 node-v16.14.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -40,15 +40,16 @@ USAGE
 * [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-1)
 * [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-2)
 * [`knock plugins update`](#knock-plugins-update)
+* [`knock translation list`](#knock-translation-list)
+* [`knock translation pull`](#knock-translation-pull)
+* [`knock translation push [TRANSLATIONREF]`](#knock-translation-push-translationref)
+* [`knock translation validate [TRANSLATIONREF]`](#knock-translation-validate-translationref)
 * [`knock workflow activate WORKFLOWKEY`](#knock-workflow-activate-workflowkey)
 * [`knock workflow get WORKFLOWKEY`](#knock-workflow-get-workflowkey)
 * [`knock workflow list`](#knock-workflow-list)
 * [`knock workflow pull [WORKFLOWKEY]`](#knock-workflow-pull-workflowkey)
 * [`knock workflow push [WORKFLOWKEY]`](#knock-workflow-push-workflowkey)
 * [`knock workflow validate [WORKFLOWKEY]`](#knock-workflow-validate-workflowkey)
-* [`knock translation list`](#knock-translation-list)
-* [`knock translation pull`](#knock-translation-pull)
-* [`knock translation push [TRANSLATION_REFERENCE]`](#knock-translation-push-translation_reference)
 
 ## `knock commit`
 
@@ -65,7 +66,7 @@ FLAGS
   --service-token=<value>       (required) The service token to authenticate with
 ```
 
-_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.2/dist/commands/commit/index.ts)_
+_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.3/dist/commands/commit/index.ts)_
 
 ## `knock commit promote`
 
@@ -97,7 +98,7 @@ DESCRIPTION
   Display help for knock.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.4/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.9/src/commands/help.ts)_
 
 ## `knock ping`
 
@@ -117,7 +118,7 @@ EXAMPLES
   $ knock ping
 ```
 
-_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.2/dist/commands/ping.ts)_
+_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.3/dist/commands/ping.ts)_
 
 ## `knock plugins`
 
@@ -137,7 +138,7 @@ EXAMPLES
   $ knock plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.3.0/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.4.6/src/commands/plugins/index.ts)_
 
 ## `knock plugins:install PLUGIN...`
 
@@ -170,7 +171,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin
+  $ knock plugins:install myplugin 
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -233,7 +234,7 @@ ALIASES
   $ knock plugins add
 
 EXAMPLES
-  $ knock plugins:install myplugin
+  $ knock plugins:install myplugin 
 
   $ knock plugins:install https://github.com/someuser/someplugin
 
@@ -352,11 +353,79 @@ DESCRIPTION
   Update installed plugins.
 ```
 
+## `knock translation list`
+
+```
+USAGE
+  $ knock translation list --service-token <value> [--environment <value>] [--hide-uncommitted-changes] [--after
+    <value>] [--before <value>] [--limit <value>] [--json]
+
+FLAGS
+  --after=<value>
+  --before=<value>
+  --environment=<value>       [default: development]
+  --hide-uncommitted-changes
+  --limit=<value>
+  --service-token=<value>     (required) The service token to authenticate with
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+## `knock translation pull`
+
+```
+USAGE
+  $ knock translation pull --service-token <value> [--environment <value>] [--translations-dir <value> --all]
+    [--hide-uncommitted-changes] [--force]
+
+FLAGS
+  --all
+  --environment=<value>       [default: development]
+  --force
+  --hide-uncommitted-changes
+  --service-token=<value>     (required) The service token to authenticate with
+  --translations-dir=<value>
+```
+
+## `knock translation push [TRANSLATIONREF]`
+
+```
+USAGE
+  $ knock translation push [TRANSLATIONREF] --service-token <value> [--environment development] [--translations-dir
+    <value> --all] [-m <value> --commit]
+
+FLAGS
+  -m, --commit-message=<value>  Use the given value as the commit message
+  --all
+  --commit                      Push and commit the translation(s) at the same time
+  --environment=<option>        [default: development] Pushing a translation is only allowed in the development
+                                environment
+                                <options: development>
+  --service-token=<value>       (required) The service token to authenticate with
+  --translations-dir=<value>
+```
+
+## `knock translation validate [TRANSLATIONREF]`
+
+```
+USAGE
+  $ knock translation validate [TRANSLATIONREF] --service-token <value> [--environment development] [--translations-dir
+    <value> --all]
+
+FLAGS
+  --all
+  --environment=<option>      [default: development] Validating a workflow is only done in the development environment
+                              <options: development>
+  --service-token=<value>     (required) The service token to authenticate with
+  --translations-dir=<value>
+```
+
 ## `knock workflow activate WORKFLOWKEY`
 
 ```
 USAGE
-  $ knock workflow activate [WORKFLOWKEY] --service-token <value> --environment <value> [--status true|false] [--force]
+  $ knock workflow activate WORKFLOWKEY --service-token <value> --environment <value> [--status true|false] [--force]
 
 FLAGS
   --environment=<value>    (required)
@@ -370,7 +439,7 @@ FLAGS
 
 ```
 USAGE
-  $ knock workflow get [WORKFLOWKEY] --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
+  $ knock workflow get WORKFLOWKEY --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
     [--json]
 
 FLAGS
@@ -405,14 +474,16 @@ GLOBAL FLAGS
 
 ```
 USAGE
-  $ knock workflow pull [WORKFLOWKEY] --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
+  $ knock workflow pull [WORKFLOWKEY] --service-token <value> [--environment <value>] [--workflows-dir <value>
+    --all] [--hide-uncommitted-changes] [--force]
 
 FLAGS
+  --all
   --environment=<value>       [default: development]
+  --force
   --hide-uncommitted-changes
   --service-token=<value>     (required) The service token to authenticate with
-  --all                       pull all workflows
-  --workflows-dir=<value>     when pulling all workflows, the directory to house them in
+  --workflows-dir=<value>
 ```
 
 ## `knock workflow push [WORKFLOWKEY]`
@@ -440,55 +511,4 @@ FLAGS
                            <options: development>
   --service-token=<value>  (required) The service token to authenticate with
 ```
-
-## `knock translation list`
-
-```
-USAGE
-  $ knock translation list --service-token <value> [--environment <value>] [--hide-uncommitted-changes] [--after
-    <value>] [--before <value>] [--limit <value>] [--json]
-
-FLAGS
-  --after=<value>
-  --before=<value>
-  --environment=<value>       [default: development]
-  --hide-uncommitted-changes
-  --limit=<value>
-  --service-token=<value>     (required) The service token to authenticate with
-
-GLOBAL FLAGS
-  --json  Format output as json.
-```
-
-## `knock translation pull`
-
-```
-USAGE
-  $ knock translation pull --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
-
-FLAGS
-  --environment=<value>       [default: development]
-  --hide-uncommitted-changes
-  --service-token=<value>     (required) The service token to authenticate with
-  --all                       pull all translations
-  --translations-dir=<value>  when pulling all translations, the directory to house them in
-```
-
-## `knock translation push [TRANSLATION_REFERENCE]`
-[TRANSLATION_REFERENCE] is the translation identifier. If the translation has a namespace it will be `[NAMESPACE].[LOCALECODE]`,
-if it has no namespace it will just be `[LOCALECODE]`.
-```
-USAGE
-  $ knock translation push [TRANSLATION_REFERENCE] --service-token <value> [--environment development] [-m <value> --commit]
-
-FLAGS
-  --all                         Push all translations to the environment. When used with a locale code, pushes
-                                the translations for that specific locale code.
-  -m, --commit-message=<value>  Use the given value as the commit message
-  --commit                      Push and commit the translation(s) at the same time
-  --environment=<option>        [default: development] Pushing a translation is only allowed in the development environment
-                                <options: development>
-  --service-token=<value>       (required) The service token to authenticate with
-```
-
 <!-- commandsstop -->
