@@ -88,23 +88,34 @@ export const parseTranslationRef = (
  * Validate the provided args and flags with the current run context, to first
  * ensure the invoked command makes sense, and return the target context.
  */
-export type TranslationCommandTarget = {
-  // Only of the keys should be present at a time.
-  translationFile?: TranslationFileContext;
-  translationDir?: TranslationDirContext;
-  translationsIndexDir?: DirContext;
+type TranslationFileTarget = {
+  type: "translationFile";
+  context: TranslationFileContext;
 };
+type TranslationDirTarget = {
+  type: "translationDir";
+  context: TranslationDirContext;
+};
+type TranslationsIndexDirTarget = {
+  type: "translationsIndexDir";
+  context: DirContext;
+};
+export type TranslationCommandTarget =
+  | TranslationFileTarget
+  | TranslationDirTarget
+  | TranslationsIndexDirTarget;
+
 export const ensureValidCommandTarget = async (
   props: Props,
   runContext: RunContext,
 ): Promise<TranslationCommandTarget> => {
   const { flags, args } = props;
-  const { commandId, resourceDir, cwd: runCwd } = runContext;
+  const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
 
   // Error, trying to run the command not in a translation directory.
-  if (resourceDir && resourceDir.type !== "translation") {
+  if (resourceDirCtx && resourceDirCtx.type !== "translation") {
     return CliUx.ux.error(
-      `Cannot run ${commandId} inside a ${resourceDir.type} directory`,
+      `Cannot run ${commandId} inside a ${resourceDirCtx.type} directory`,
     );
   }
 
@@ -118,8 +129,8 @@ export const ensureValidCommandTarget = async (
   // No translationRef arg, which means --all flag is used.
   if (!args.translationRef) {
     // Targeting all translation files in the current locale directory.
-    if (resourceDir) {
-      return { translationDir: resourceDir };
+    if (resourceDirCtx) {
+      return { type: "translationDir", context: resourceDirCtx };
     }
 
     // Targeting all translation files in the translations index dir.
@@ -127,7 +138,7 @@ export const ensureValidCommandTarget = async (
     const defaultToCwd = { abspath: runCwd, exists: true };
     const indexDirCtx = flags["translations-dir"] || defaultToCwd;
 
-    return { translationsIndexDir: indexDirCtx };
+    return { type: "translationsIndexDir", context: indexDirCtx };
   }
 
   // From this point on, we have translationRef so parse and validate the format.
@@ -141,14 +152,14 @@ export const ensureValidCommandTarget = async (
   const { localeCode, namespace } = parsedRef;
 
   // If we are in the translation dir, make sure the locale matches.
-  if (resourceDir && resourceDir.key !== localeCode) {
+  if (resourceDirCtx && resourceDirCtx.key !== localeCode) {
     return CliUx.ux.error(
-      `Cannot run ${commandId} with \`${args.translationRef}\` inside a ${resourceDir.key} directory`,
+      `Cannot run ${commandId} with \`${args.translationRef}\` inside a ${resourceDirCtx.key} directory`,
     );
   }
 
-  const targetDirPath = resourceDir
-    ? resourceDir.abspath
+  const targetDirPath = resourceDirCtx
+    ? resourceDirCtx.abspath
     : path.resolve(runCwd, localeCode);
 
   // Got translationRef arg but no --all flag, which means target only a single
@@ -159,7 +170,7 @@ export const ensureValidCommandTarget = async (
       localeCode,
       namespace,
     );
-    return { translationFile: translationFileCtx };
+    return { type: "translationFile", context: translationFileCtx };
   }
 
   // From this point on, we have both translationRef and --all flag used
@@ -176,7 +187,7 @@ export const ensureValidCommandTarget = async (
     abspath: targetDirPath,
     exists: await isDirectory(targetDirPath),
   };
-  return { translationDir: translationDirCtx };
+  return { type: "translationDir", context: translationDirCtx };
 };
 
 /*

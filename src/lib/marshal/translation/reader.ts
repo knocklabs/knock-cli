@@ -67,13 +67,7 @@ const readTranslationFiles = async (
 export const readTranslationFilesForCommandTarget = async (
   target: TranslationCommandTarget,
 ): Promise<[TranslationFileData[], FoundError[]]> => {
-  // XXX: Maybe a better way to parse it.
-  const [targetEntry] = Object.entries(target);
-  if (!targetEntry) {
-    throw new Error(`Invalid translation command target: ${target}`);
-  }
-
-  const [targetType, targetCtx] = targetEntry;
+  const { type: targetType, context: targetCtx } = target;
 
   if (!targetCtx.exists) {
     return CliUx.ux.error(
