@@ -1,46 +1,43 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
-import { cloneDeep, get, has, keyBy, set, uniqueId, unset } from "lodash";
+import {
+  cloneDeep,
+  get,
+  has,
+  isPlainObject,
+  keyBy,
+  set,
+  uniqueId,
+  unset,
+} from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
-import { AnyObj, omitDeep, split } from "@/lib/helpers/object";
+import {
+  AnyObj,
+  mapValuesDeep,
+  ObjKeyOrArrayIdx,
+  ObjPath,
+  omitDeep,
+  split,
+} from "@/lib/helpers/object";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 import { WorkflowDirContext } from "@/lib/run-context";
 
-import { FILEPATH_MARKER, isWorkflowDir, WORKFLOW_JSON } from "./helpers";
-import { readWorkflowDir, validateTemplateFilePathFormat } from "./reader";
-import { StepType, TemplateData, WorkflowData } from "./types";
+import {
+  FILEPATH_MARKED_RE,
+  FILEPATH_MARKER,
+  isWorkflowDir,
+  WORKFLOW_JSON,
+} from "./helpers";
+import { readWorkflowDir } from "./reader";
+import { WorkflowData } from "./types";
 
 export type WorkflowDirBundle = {
   [relpath: string]: string;
 };
-
-/*
- * For a given workflow step and a template field, return the template file path
- * we can extract out the content to.
- *
- * Note, this is a default "recommended" convention but the template file can
- * be located at any arbitrary path (as long as it is a relative path that is
- * inside the workflow directory and unique to the field)
- */
-export const newTemplateFilePath = (
-  stepRef: string,
-  fileName: string,
-  fileExt: string,
-): string => path.join(stepRef, `${fileName}.${fileExt}`).toLowerCase();
-
-/*
- * For a given workflow step and a template field, return the path of object
- * which we can use to check whether the field has been extracted (hence, with
- * the filepath marker).
- */
-const objPathToExtractableField = (
-  stepRef: string,
-  pathToFieldInTemplate: string,
-): string => `${stepRef}.template.${pathToFieldInTemplate}${FILEPATH_MARKER}`;
 
 /*
  * Sanitize the workflow content into a format that's appropriate for reading
@@ -59,78 +56,188 @@ const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
 };
 
 /*
- * Compile and return extractable fields settings from the template and its
- * template settings if present.
+ * Formats a file path for the extracted content based on the object path to the
+ * field.
  *
- * For example, for a channel step like this:
- *   {
- *     ref: "email_1",
- *     type: "channel",
- *     channel_key: "email-provider",
- *     template: {
- *       settings: {
- *         layout_key: "default",
- *         __annotation: {
- *           extractable_fields: {
- *             pre_content: { default: true, file_ext: "txt" },
- *           },
- *           readonly_fields: [],
- *         },
- *       },
- *       subject: "New activity",
- *       html_body: "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
- *       __annotation: {
- *         extractable_fields: {
- *           subject: { default: false, file_ext: "txt" },
- *           json_body: { default: true, file_ext: "json" },
- *           html_body: { default: true, file_ext: "html" },
- *           text_body: { default: true, file_ext: "txt" },
- *         },
- *         readonly_fields: [],
- *       },
- *     },
- *   }
+ * Here's how it works:
+ * 1. Each "key" part in the object path becomes a directory name if not the
+ *    last one; if the last one, then it becomes a file name.
  *
- * Takes the template data and returns a merged map of extractable fields like
- * this:
+ *    Example: ["template", "settings", "pre_content"] becomes..
+ *    "template/settings/pre_content.txt"
  *
- *   {
- *     subject: { default: false, file_ext: "txt" },
- *     json_body: { default: true, file_ext: "json" },
- *     html_body: { default: true, file_ext: "html" },
- *     text_body: { default: true, file_ext: "txt" },
- *     settings.pre_content: { default: true, file_ext: "txt" },
- *   }
+ * 2. Each "index" part in the object path gets appended to the next "key" part
+ *    in the object path (converted to the 1-based index number).
+ *
+ *    Example: ["template", "visual_blocks", 0, "buttons", 0, "action"] becomes..
+ *    "template/visual_blocks/1.buttons/1.action"
+ *
+ *    If the "index" part is the last in the object path parts, then it becomes
+ *    the file name itself (but shouldn't happen).
+ *
+ * There are two options to transform the final output of the file path.
+ * 1. `unnestDirsBy` takes out the first N parts in the object path parts,
+ *    which effectively unnests N levels of directories in the formatted path.
+ *
+ *    Example: with unnestDirsBy of 1,
+ *    ["template", "settings", "pre_content"] becomes..
+ *    "settings/pre_content.txt"
+ *
+ * 2. `nestIntoDirs` nests the formatted path into the given directory parts.
+ *    Example: with nestIntoDirs of ["email_1"] and unnestDirsBy of 1,
+ *    ["template", "settings", "pre_content"] becomes..
+ *    "email_1/settings/pre_content.txt"
  */
-const collateExtractableFields = (
-  template: TemplateData<WithAnnotation>,
-): Record<string, ExtractionSettings> => {
-  const extractableFields = template.__annotation?.extractable_fields || {};
-  if (!template.settings) return extractableFields;
+type FormatExtractedFilePathOpts = {
+  unnestDirsBy?: number;
+  nestIntoDirs?: string[];
+};
 
-  // If the template has template settings, then merge in the extractable fields
-  // for the template settings (with the field names prefixed with "settings.")
-  let settingsExtractableFields =
-    template.settings.__annotation?.extractable_fields || {};
+const formatExtractedFilePath = (
+  objPathParts: ObjKeyOrArrayIdx[],
+  fileExt: string,
+  opts: FormatExtractedFilePathOpts = {},
+): string => {
+  const { unnestDirsBy = 0, nestIntoDirs = [] } = opts;
 
-  settingsExtractableFields = Object.fromEntries(
-    Object.entries(settingsExtractableFields).map(([key, val]) => [
-      `settings.${key}`,
-      val,
-    ]),
+  // 1. Unnest the obj path parts by the given depths, if the option is given.
+  const maxUnnestableDepth = Math.min(
+    Math.max(objPathParts.length - 1, 0),
+    unnestDirsBy,
+  );
+  const unnestedObjPathParts = objPathParts.slice(
+    maxUnnestableDepth,
+    objPathParts.length,
   );
 
-  return { ...extractableFields, ...settingsExtractableFields };
+  // 2. Build the file path parts based on the object path parts.
+  const filePathParts = [];
+  let arrayIndexNums = [];
+
+  for (const part of unnestedObjPathParts) {
+    if (typeof part === "string" && arrayIndexNums.length > 0) {
+      filePathParts.push([...arrayIndexNums, part].join("."));
+      arrayIndexNums = [];
+      continue;
+    }
+
+    if (typeof part === "string") {
+      filePathParts.push(part);
+      continue;
+    }
+
+    if (typeof part === "number") {
+      arrayIndexNums.push(part + 1);
+      continue;
+    }
+  }
+
+  if (arrayIndexNums.length > 0) {
+    filePathParts.push(arrayIndexNums.join("."));
+  }
+
+  // 3. Format the final file path out based on the file path parts. Nest it
+  // under the directories if the option is given.
+  const fileName = filePathParts.pop();
+  const paths = [...nestIntoDirs, ...filePathParts, `${fileName}.${fileExt}`];
+
+  return path.join(...paths).toLowerCase();
 };
 
 /*
- * Parse a given workflow payload, and extract out any template contents where
- * necessary and mutate the workflow data accordingly so we end up with a
- * mapping of file contents by its relative path (aka workflow dir bundle) that
- * can be written into a file system as individual files.
+ * Traverse a given node and compile extraction settings of every extractable
+ * field in the node into a sorted map.
+ *
+ * For example:
+ *
+ * Map(5) {
+ *   [ 'template', 'visual_blocks', 0, 'content' ] => { default: true, file_ext: 'md' },
+ *   [ 'template', 'settings', 'pre_content' ] => { default: true, file_ext: 'txt' },
+ *   [ 'channel_overrides', 'json_overrides' ] => { default: true, file_ext: 'json' },
+ *   [ 'template', 'subject' ] => { default: false, file_ext: 'txt' },
+ *   [ 'template', 'visual_blocks' ] => { default: true, file_ext: 'json' }
+ * }
+ *
+ * Note the compiled extraction settings are ordered from leaf to root.
+ */
+type CompiledExtractionSettings = Map<ObjKeyOrArrayIdx[], ExtractionSettings>;
+
+const compileExtractionSettings = (
+  node: unknown,
+  objPathParts: ObjKeyOrArrayIdx[] = [],
+): CompiledExtractionSettings => {
+  const map: CompiledExtractionSettings = new Map();
+
+  const compileRecursively = (item: any, parts: ObjKeyOrArrayIdx[]): any => {
+    if (isPlainObject(item)) {
+      const extractableFields = get(
+        item,
+        ["__annotation", "extractable_fields"],
+        {},
+      );
+
+      for (const [key, val] of Object.entries(item)) {
+        // If the field we are on is extractable, then add its extraction
+        // settings to the map with the current object path.
+        if (key in extractableFields) {
+          map.set([...parts, key], extractableFields[key]);
+        }
+
+        compileRecursively(val, [...parts, key]);
+      }
+
+      return;
+    }
+
+    if (Array.isArray(item)) {
+      item.map((val, idx) => compileRecursively(val, [...parts, idx]));
+    }
+  };
+
+  // Walk the node tree and compile all extractable fields by object path.
+  compileRecursively(node, objPathParts);
+
+  // Sort the compiled entries in desc order by the object path length, so the
+  // deepest nested fields come first and the top most fields come last because
+  // this is the order we should be extracting and replacing field contents.
+  return new Map(
+    [...map].sort((a, b) => {
+      const aLength = a[0].length;
+      const bLength = b[0].length;
+
+      if (aLength < bLength) return 1;
+      if (aLength > bLength) return -1;
+      return 0;
+    }),
+  );
+};
+
+/*
+ * For a given workflow payload (and its local workflow reference), this function
+ * builds a "workflow directory bundle", which is an obj made up of all the
+ * relative file paths (within the workflow directory) and its file content to
+ * write the workflow directory.
+ *
+ * Every workflow will always have a workflow.json file, so every bundle includes
+ * it and its content at minimum. To the extent the workflow includes any
+ * extractable fields, those fields content get extracted out and added to the
+ * bundle.
+ *
+ * Important things to keep in mind re: content extraction:
+ * 1. There can be multiple places in workflow json where content extraction
+ *    happens.
+ * 2. There can be multiple levels of content extraction happening, currently
+ *    at a maximum of 2 levels.
+ *
+ * The way this function works and handles the content extraction is by:
+ * 1. Traversing the given step node, and compiling all annotated extraction
+ *    settings by the object path in the node *ordered from leaf to root*.
+ * 2. Iterate over compiled extraction settings from leaf to root, and start
+ *    extracting out the field as needed. In case the node that needs to be
+ *    extracted out contains extracted file paths, then those file paths get
+ *    rebased to relative to the referenced file.
  */
 const buildWorkflowDirBundle = (
-  workflowDirCtx: WorkflowDirContext,
   remoteWorkflow: WorkflowData<WithAnnotation>,
   localWorkflow: AnyObj = {},
 ): WorkflowDirBundle => {
@@ -139,51 +246,77 @@ const buildWorkflowDirBundle = (
 
   const localWorkflowStepsByRef = keyBy(localWorkflow.steps || [], "ref");
 
-  // For each channel step, extract out any template content into seperate
-  // template files where appropriate.
   for (const step of mutWorkflow.steps) {
-    if (step.type !== StepType.Channel) continue;
-    if (!step.template) continue;
+    // A compiled map of extraction settings of every field in the step where
+    // we support content extraction, organized by each field's object path.
+    const compiledExtractionSettings = compileExtractionSettings(step);
 
-    const template = step.template;
-    const extractableFields = collateExtractableFields(template);
-
+    // Iterate through each extractable field, determine whether we need to
+    // extract the field content in the remote workflow, and if so, perform the
+    // extraction. Note, this compiled map is ordered by the deepest nested to
+    // the top most fields, so that more than one extraction is possible.
     for (const [
-      pathToField,
-      { default: extractByDefault, file_ext: fileExt },
-    ] of Object.entries(extractableFields)) {
-      // If this template doesn't have this path, then it's not relevant so
+      objPathParts,
+      extractionSettings,
+    ] of compiledExtractionSettings) {
+      // If this step doesn't have this object path, then it's not relevant so
       // nothing more to do here.
-      if (!has(template, pathToField)) continue;
+      if (!has(step, objPathParts)) continue;
 
       // If the field at this path is extracted in the local workflow, then
       // always extract; otherwise extract based on the field settings default.
-      const extractedTemplateFilePath = get(
+      const objPathStr = ObjPath.stringify(objPathParts);
+
+      const extractedFilePath = get(
         localWorkflowStepsByRef,
-        objPathToExtractableField(step.ref, pathToField),
+        `${step.ref}.${objPathStr}${FILEPATH_MARKER}`,
       );
 
-      const isValidTemplateFilePath =
-        Boolean(extractedTemplateFilePath) &&
-        validateTemplateFilePathFormat(
-          extractedTemplateFilePath,
-          workflowDirCtx,
-        );
+      const { default: extractByDefault, file_ext: fileExt } =
+        extractionSettings;
 
-      if (!isValidTemplateFilePath && !extractByDefault) continue;
+      if (!extractedFilePath && !extractByDefault) continue;
 
-      // Add the template content being extracted and its relative file path
-      // within the workflow directory to the bundle.
+      // By this point, we have a field where we need to extract its content.
+
+      // First figure out the relative file path (within the workflow directory)
+      // for the extracted file. If already extracted in the local workflow,
+      // then use that; otherwise format a new file path.
       const relpath =
-        extractedTemplateFilePath ||
-        newTemplateFilePath(step.ref, pathToField, fileExt);
+        extractedFilePath ||
+        formatExtractedFilePath(objPathParts, fileExt, {
+          unnestDirsBy: 1,
+          nestIntoDirs: [step.ref],
+        });
 
-      set(bundle, [relpath], get(template, pathToField));
+      // In case we are about to extract a field that has children rather than
+      // string content (e.g. visual blocks), prepare the data to strip out any
+      // annotations.
+      let data = omitDeep(get(step, objPathParts), ["__annotation"]);
 
-      // Replace the extracted field content with the file path, and
-      // append the @ suffix to the field name to mark it as such.
-      set(template, [`${pathToField}${FILEPATH_MARKER}`], relpath);
-      unset(template, pathToField);
+      // Also, if the extractable data contains extracted file paths in itself
+      // then rebase those file paths to be relative to its referenced file.
+      data = mapValuesDeep(data, (value, key) => {
+        if (!FILEPATH_MARKED_RE.test(key)) return value;
+
+        const rebaseRootDir = path.dirname(relpath);
+        const rebasedFilePath = path.relative(rebaseRootDir, value);
+
+        return rebasedFilePath;
+      });
+
+      const content =
+        typeof data === "string" ? data : JSON.stringify(data, null, 2);
+
+      // Perform the extraction by adding the content and its file path to the
+      // bundle for writing to the file system later. Then replace the field
+      // content with the extracted file path and mark the field as extracted
+      // with @ suffix.
+      // TODO: Consider guarding against an edge case, and check if the relpath
+      // already exists in the bundle, and if so make the relpath unique.
+      set(bundle, [relpath], content);
+      set(step, `${objPathStr}${FILEPATH_MARKER}`, relpath);
+      unset(step, objPathParts);
     }
   }
 
@@ -203,16 +336,11 @@ export const writeWorkflowDirFromData = async (
 ): Promise<void> => {
   // If the workflow directory exists on the file system (i.e. previously
   // pulled before), then read the workflow file to use as a reference.
-  // Note, we do not need to compile or validate template files for this.
   const [localWorkflow] = workflowDirCtx.exists
-    ? await readWorkflowDir(workflowDirCtx, { withTemplateFiles: false })
+    ? await readWorkflowDir(workflowDirCtx, { withExtractedFiles: true })
     : [];
 
-  const bundle = buildWorkflowDirBundle(
-    workflowDirCtx,
-    remoteWorkflow,
-    localWorkflow,
-  );
+  const bundle = buildWorkflowDirBundle(remoteWorkflow, localWorkflow);
 
   return writeWorkflowDirFromBundle(workflowDirCtx, bundle);
 };
@@ -230,8 +358,8 @@ export const writeWorkflowDirFromBundle = async (
   workflowDirBundle: WorkflowDirBundle,
 ): Promise<void> => {
   try {
-    // TODO(KNO-2794): Should rather clean up any orphaned template files
-    // individually after successfully writing the workflow directory.
+    // TODO(KNO-2794): Just back up the current workflow directory, wipe it,
+    // then write a new directory.
     await fs.remove(workflowDirCtx.abspath);
 
     const promises = Object.entries(workflowDirBundle).map(
@@ -266,6 +394,9 @@ export const writeWorkflowsIndexDir = async (
     // before wiping it clean.
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+
+      // TODO(KNO-2794): Only remove directories that aren't part of the remote
+      // workflows.
       await fs.remove(indexDirCtx.abspath);
     }
 
@@ -302,4 +433,4 @@ export const writeWorkflowsIndexDir = async (
 };
 
 // Exported for tests.
-export { buildWorkflowDirBundle, toWorkflowJson };
+export { buildWorkflowDirBundle, formatExtractedFilePath, toWorkflowJson };

@@ -1,24 +1,42 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
-import { isPlainObject, set } from "lodash";
+import { hasIn, set } from "lodash";
 
+import { formatErrors, JsonDataError } from "@/lib/helpers/error";
 import {
-  formatErrors,
-  JsonDataError,
-  LiquidParseError,
-} from "@/lib/helpers/error";
-import { readJson, ReadJsonResult } from "@/lib/helpers/json";
+  ParsedJson,
+  parseJson,
+  ParseJsonResult,
+  readJson,
+} from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
-import { AnyObj, ObjPath, omitDeep } from "@/lib/helpers/object";
+import {
+  AnyObj,
+  getLastFound,
+  mapValuesDeep,
+  ObjPath,
+  omitDeep,
+} from "@/lib/helpers/object";
 import { WorkflowDirContext } from "@/lib/run-context";
 
-import { FILEPATH_MARKED_RE, lsWorkflowJson } from "./helpers";
-import { StepType, WorkflowStepData } from "./types";
+import {
+  FILEPATH_MARKED_RE,
+  lsWorkflowJson,
+  VISUAL_BLOCKS_JSON,
+  WORKFLOW_JSON,
+} from "./helpers";
+
+// For now we support up to two levels of content extraction in workflow.json.
+// (e.g. workflow.json, then visual_blocks.json)
+const MAX_EXTRACTION_LEVEL = 2;
+
+// The following files are exepected to have valid json content, and should be
+// decoded and joined into the main workflow.json.
+const DECODABLE_JSON_FILES = new Set([VISUAL_BLOCKS_JSON]);
 
 /*
- * Validate the file path format of an extracted template field. The file path
- * must be:
+ * Validate the file path format of an extracted field. The file path must be:
  *
  * 1) Expressed as a relative path.
  *
@@ -36,98 +54,109 @@ import { StepType, WorkflowStepData } from "./types";
  * Note: does not validate the presence of the file nor the uniqueness of the
  * file path.
  */
-export const validateTemplateFilePathFormat = (
+const checkIfValidExtractedFilePathFormat = (
   relpath: unknown,
-  workflowDirCtx: WorkflowDirContext,
+  sourceFileAbspath: string,
 ): boolean => {
   if (typeof relpath !== "string") return false;
   if (path.isAbsolute(relpath)) return false;
 
-  const abspath = path.resolve(workflowDirCtx.abspath, relpath);
-  const pathDiff = path.relative(workflowDirCtx.abspath, abspath);
+  const extractedFileAbspath = path.resolve(sourceFileAbspath, relpath);
+  const pathDiff = path.relative(sourceFileAbspath, extractedFileAbspath);
 
   return !pathDiff.startsWith("..");
 };
 
 /*
- * Validate that a file exists at the given relative path in the directory.
+ * Validate the extracted file path based on its format and uniqueness (but not
+ * the presence).
+ *
+ * Note, the uniqueness check is based on reading from and writing to
+ * uniqueFilePaths, which is MUTATED in place.
  */
-const validateTemplateFileExists = async (
-  relpath: string,
-  workflowDirCtx: WorkflowDirContext,
-): Promise<boolean> => {
-  const abspath = path.resolve(workflowDirCtx.abspath, relpath);
-
-  return fs.pathExists(abspath);
-};
-
-/*
- * Read a template file at the given path, validate the content as applicable,
- * return the content string or an error.
- */
-type TemplateContent = string;
-type MaybeTemplateFileContent = TemplateContent | undefined;
-type ReadTemplateFileResult = [MaybeTemplateFileContent, LiquidParseError[]];
-
-const readTemplateFile = async (
-  relpath: string,
-  workflowDirCtx: WorkflowDirContext,
-): Promise<ReadTemplateFileResult> => {
-  const abspath = path.resolve(workflowDirCtx.abspath, relpath);
-
-  // First read all template files as text content and check for valid liquid
-  // syntax given it is supported across all message templates and formats.
-  const content = await fs.readFile(abspath, "utf8");
-  const liquidParseError = validateLiquidSyntax(content);
-
-  return liquidParseError ? [undefined, [liquidParseError]] : [content, []];
-};
-
-/*
- * Validates that a given value is a valid template file path and the file
- * actually exists, before reading the file content.
- */
-const maybeReadTemplateFile = async (
+const validateExtractedFilePath = (
   val: unknown,
   workflowDirCtx: WorkflowDirContext,
-  extractedFilePaths: Record<string, boolean>,
-  pathToFieldStr: string,
-): Promise<[undefined, JsonDataError] | [string, undefined]> => {
+  uniqueFilePaths: Record<string, boolean>,
+  objPathToFieldStr: string,
+): JsonDataError | undefined => {
+  const workflowJsonPath = path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON);
+
   // Validate the file path format, and that it is unique per workflow.
   if (
-    !validateTemplateFilePathFormat(val, workflowDirCtx) ||
+    !checkIfValidExtractedFilePathFormat(val, workflowJsonPath) ||
     typeof val !== "string" ||
-    val in extractedFilePaths
+    val in uniqueFilePaths
   ) {
     const error = new JsonDataError(
       "must be a relative path string to a unique file within the directory",
-      pathToFieldStr,
+      objPathToFieldStr,
     );
-    return [undefined, error];
+
+    return error;
   }
 
-  // Keep track of all the extracted file paths that have been seen, so we
-  // can validate each file path's uniqueness as we traverse.
-  extractedFilePaths[val] = true;
+  // Keep track of all the valid extracted file paths that have been seen, so
+  // we can validate each file path's uniqueness as we traverse.
+  uniqueFilePaths[val] = true;
 
-  // Check a file actually exists at the given file path.
-  const exists = await validateTemplateFileExists(val, workflowDirCtx);
+  return undefined;
+};
+
+/*
+ * Read the file at the given path if it exists, validate the content as
+ * applicable, and return the content string or an error.
+ */
+type ExtractedFileContent = string | ParsedJson;
+type ReadExtractedFileResult =
+  | [undefined, JsonDataError]
+  | [ExtractedFileContent, undefined];
+
+const readExtractedFileSync = (
+  relpath: string,
+  workflowDirCtx: WorkflowDirContext,
+  objPathToFieldStr = "",
+): ReadExtractedFileResult => {
+  // Check if the file actually exists at the given file path.
+  const abspath = path.resolve(workflowDirCtx.abspath, relpath);
+  const exists = fs.pathExistsSync(abspath);
   if (!exists) {
     const error = new JsonDataError(
       "must be a relative path string to a file that exists",
-      pathToFieldStr,
+      objPathToFieldStr,
     );
     return [undefined, error];
   }
 
-  // Read the template file and inline the content into the workflow json
-  // under the same field name but without the @ filepath marker.
-  const [content, contentErrors] = await readTemplateFile(val, workflowDirCtx);
-  if (contentErrors.length > 0) {
+  // Read the file and check for valid liquid syntax given it is supported
+  // across all message templates and file extensions.
+  const contentStr = fs.readFileSync(abspath, "utf8");
+  const liquidParseError = validateLiquidSyntax(contentStr);
+
+  if (liquidParseError) {
     const error = new JsonDataError(
-      `points to a file with invalid content (${val})\n\n` +
-        formatErrors(contentErrors, { indentBy: 2 }),
-      pathToFieldStr,
+      `points to a file that contains invalid liquid syntax (${relpath})\n\n` +
+        formatErrors([liquidParseError], { indentBy: 2 }),
+      objPathToFieldStr,
+    );
+
+    return [undefined, error];
+  }
+
+  // If the file is expected to contain decodable json, then parse the contentStr
+  // as such.
+  const fileName = path.basename(abspath.toLowerCase());
+  const decodable = DECODABLE_JSON_FILES.has(fileName);
+
+  const [content, jsonParseErrors] = decodable
+    ? parseJson(contentStr)
+    : [contentStr, []];
+
+  if (jsonParseErrors.length > 0) {
+    const error = new JsonDataError(
+      `points to a file with invalid content (${relpath})\n\n` +
+        formatErrors(jsonParseErrors, { indentBy: 2 }),
+      objPathToFieldStr,
     );
 
     return [undefined, error];
@@ -137,163 +166,150 @@ const maybeReadTemplateFile = async (
 };
 
 /*
- * Given a workflow json object, compiles all referenced template files in it
- * and returns the updated object with templates content pulled in and inlined.
+ * Given a workflow json object, compiles all referenced extracted files from it
+ * and returns the updated object with the extracted content joined and inlined.
  *
- * In order for us to traverse the workflow object and gather template file
- * references (i.e. file paths to read), the given object must be structurally
- * "valid" to some degree. Given we cannot know that, we do minimum validations
- * necessary to reach templates in channel steps.
+ * Important things to keep in mind:
+ * 1. There can be multiple places in workflow json where content extraction
+ *    happens.
+ * 2. There can be multiple levels of content extraction happening, currently
+ *    at a maximum of 2 levels. For example, workflow.json links to
+ *    visual_blocks.json, and in return visual_blocks.json links to a markdown
+ *    file for its block content. Any referenced extracted paths should be
+ *    expressed *as a relative path to the file it is referenced in*.
  *
- * Note, this function is meant to be a PRIVATE func and MUTATES the object.
+ * The way this function works and handles above two points, is by:
+ * 1. Traversing the entire given workflow json node from root to leaf and
+ *    discovering extracted paths, without knowing about any specific fields
+ *    extracted.
+ * 2. Whenever it discovers an extracted path, it reads the linked file and
+ *    inlines the content into the node. If the inlined content itself contains
+ *    extracted paths, then it "rebase"s the file paths to be relative to the
+ *    location of the workflow json.
+ * 3. This traversal takes place for the maximum levels of content extraction
+ *    supported (currently 2 levels).
+ *
+ * Note, this function is meant to be PRIVATE and MUTATES the workflow json obj.
  *
  * TODO: Include links to docs in the error message when ready.
  */
-type CompileTemplateFilesResult = [AnyObj, JsonDataError[]];
+type JoinExtractedFilesResult = [AnyObj, JsonDataError[]];
+type JoinedFilePaths = Record<string, string>;
 
-const compileTemplateFiles = async (
+const joinExtractedFiles = async (
   workflowDirCtx: WorkflowDirContext,
   workflowJson: AnyObj,
-): Promise<CompileTemplateFilesResult> => {
+): Promise<JoinExtractedFilesResult> => {
+  // Tracks any errors encountered during traversal. Mutated in place.
   const errors: JsonDataError[] = [];
-  const extractedFilePaths: Record<string, boolean> = {};
-  const objPath = new ObjPath();
 
-  // 1. Make sure we have a list of steps to look through.
-  if (workflowJson.steps === undefined) {
-    return [workflowJson, errors];
-  }
+  // Tracks each new valid extracted file path seen (rebased to be relative to
+  // workflow.json) in the workflow json node. Mutated in place, and used
+  // to validate the uniqueness of an extracted path encountered.
+  const uniqueFilePaths = {};
 
-  if (!Array.isArray(workflowJson.steps)) {
-    errors.push(
-      new JsonDataError(
-        "must be an array of workflow steps",
-        objPath.to("steps").str,
-      ),
-    );
+  // Tracks each extracted file path (rebased) that gets inlined with its object
+  // path location, per each traversal iteration. Mutated in place, and used for
+  // rebasing an extracted path to be relative to the location of the workflow
+  // json file.
+  const joinedFilePathsPerLevel: JoinedFilePaths[] = [];
 
-    return [workflowJson, errors];
-  }
+  for (const [idx] of Array.from({ length: MAX_EXTRACTION_LEVEL }).entries()) {
+    const currJoinedFilePaths: JoinedFilePaths = {};
+    const prevJoinedFilePaths = joinedFilePathsPerLevel[idx - 1] || {};
 
-  // 2. Make sure we can reach `steps[i].template` for channel steps.
-  const steps = (workflowJson.steps || []) as Partial<WorkflowStepData>[];
-  const pathToSteps = objPath.push("steps").checkout();
+    mapValuesDeep(workflowJson, (value, key, parts) => {
+      // If not marked with the @ suffix, there's nothing to do.
+      if (!FILEPATH_MARKED_RE.test(key)) return;
 
-  for (const [stepIdx, step] of steps.entries()) {
-    objPath.reset(pathToSteps).push(stepIdx);
+      const objPathToFieldStr = ObjPath.stringify(parts);
+      const inlinObjPathStr = objPathToFieldStr.replace(FILEPATH_MARKED_RE, "");
 
-    if (!isPlainObject(step)) {
-      errors.push(
-        new JsonDataError("must be a workflow step object", objPath.str),
-      );
-      continue;
-    }
+      // If there is inlined content present already, then nothing more to do.
+      if (hasIn(workflowJson, inlinObjPathStr)) return;
 
-    if (step.type === undefined) {
-      errors.push(new JsonDataError("must have a `type` field", objPath.str));
-      continue;
-    }
+      // Check if the extracted path found at the current field path belongs to
+      // a node whose parent or grandparent has been previously joined earlier
+      // in the tree. If so, rebase the extracted path to be a relative path to
+      // the workflow json.
+      const lastFound = getLastFound(prevJoinedFilePaths, parts);
+      const prevJoinedFilePath =
+        typeof lastFound === "string" ? lastFound : undefined;
 
-    // Not a channel step, nothing more to do.
-    if (step.type !== StepType.Channel) {
-      continue;
-    }
+      const rebasedFilePath = prevJoinedFilePath
+        ? path.join(path.dirname(prevJoinedFilePath), value)
+        : value;
 
-    if (step.template === undefined) {
-      errors.push(
-        new JsonDataError(
-          "must have a `template` field containing a template object",
-          objPath.str,
-        ),
-      );
-      continue;
-    }
-
-    if (!isPlainObject(step.template)) {
-      errors.push(
-        new JsonDataError(
-          "must be a template object",
-          objPath.to("template").str,
-        ),
-      );
-      continue;
-    }
-
-    // 3. For a given template, look for any extracted template content, read
-    // the extracted template files, then inline the content.
-    objPath.push("template");
-
-    for (const [field, val] of Object.entries(step.template)) {
-      if (field.startsWith("settings")) continue;
-      if (!FILEPATH_MARKED_RE.test(field)) continue;
-
-      const pathToFieldStr = objPath.to(field).str;
-
-      // eslint-disable-next-line no-await-in-loop
-      const [content, error] = await maybeReadTemplateFile(
-        val,
+      const invalidFilePathError = validateExtractedFilePath(
+        rebasedFilePath,
         workflowDirCtx,
-        extractedFilePaths,
-        pathToFieldStr,
+        uniqueFilePaths,
+        objPathToFieldStr,
       );
-      if (error) {
-        errors.push(error);
-        continue;
+      if (invalidFilePathError) {
+        errors.push(invalidFilePathError);
+
+        // Wipe the invalid file path in the node so the final workflow json
+        // object ends up with only valid file paths, this way workflow writer
+        // can see only valid file paths and use those when pulling. Also set
+        // the inlined field path in workflow object with empty content so we
+        // know we've looked at this extracted file path.
+        set(workflowJson, objPathToFieldStr, undefined);
+        set(workflowJson, inlinObjPathStr, undefined);
+
+        return;
       }
 
-      const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
-      set(workflowJson, inlinePathStr, content);
-    }
-
-    if (!step.template.settings) continue;
-    objPath.push("settings");
-
-    for (const [field, val] of Object.entries(step.template.settings)) {
-      if (!FILEPATH_MARKED_RE.test(field)) continue;
-
-      const pathToFieldStr = objPath.to(field).str;
-
-      // eslint-disable-next-line no-await-in-loop
-      const [content, error] = await maybeReadTemplateFile(
-        val,
+      // By this point we have a valid extracted file path, so attempt to read
+      // the file at the file path.
+      const [content, readExtractedFileError] = readExtractedFileSync(
+        rebasedFilePath,
         workflowDirCtx,
-        extractedFilePaths,
-        pathToFieldStr,
+        objPathToFieldStr,
       );
-      if (error) {
-        errors.push(error);
-        continue;
+      if (readExtractedFileError) {
+        errors.push(readExtractedFileError);
+
+        // Replace the extracted file path with the rebased one, and set the
+        // inlined field path in workflow object with empty content, so we know
+        // we do not need to try inlining again.
+        set(workflowJson, objPathToFieldStr, rebasedFilePath);
+        set(workflowJson, inlinObjPathStr, undefined);
+
+        return;
       }
 
-      const inlinePathStr = pathToFieldStr.replace(FILEPATH_MARKED_RE, "");
-      set(workflowJson, inlinePathStr, content);
-    }
+      // Inline the file content and replace the extracted file path with a
+      // rebased one.
+      set(workflowJson, objPathToFieldStr, rebasedFilePath);
+      set(workflowJson, inlinObjPathStr, content);
+
+      // Track joined file paths from the current join level.
+      set(currJoinedFilePaths, inlinObjPathStr, rebasedFilePath);
+    });
+
+    // Finally save all the joined file paths from this traversal iteration.
+    joinedFilePathsPerLevel[idx] = currJoinedFilePaths;
   }
 
   return [workflowJson, errors];
 };
 
 /*
- * The main read function that takes the path to a workflow directory, then
- * reads from the file system. Looks for the workflow json file as an entry
- * point and returns the workflow data obj.
- *
- * By default, it will look for any extracted template files referenced in the
- * workflow json and compile them into the workflow data.
- *
- * TODO: Maybe nice to validate all keys are snake_case.
+ * The main read function that takes the workflow directory context, then reads
+ * the workflow json from the file system and returns the workflow data obj.
  */
 type ReadWorkflowDirOpts = {
-  withTemplateFiles?: boolean;
+  withExtractedFiles?: boolean;
   withReadonlyField?: boolean;
 };
 
 export const readWorkflowDir = async (
   workflowDirCtx: WorkflowDirContext,
   opts: ReadWorkflowDirOpts = {},
-): Promise<ReadJsonResult | CompileTemplateFilesResult> => {
+): Promise<ParseJsonResult | JoinExtractedFilesResult> => {
   const { abspath } = workflowDirCtx;
-  const { withTemplateFiles = false, withReadonlyField = false } = opts;
+  const { withExtractedFiles = false, withReadonlyField = false } = opts;
 
   const dirExists = await fs.pathExists(abspath);
   if (!dirExists) throw new Error(`${abspath} does not exist`);
@@ -311,10 +327,10 @@ export const readWorkflowDir = async (
     ? workflowJson
     : omitDeep(workflowJson, ["__readonly"]);
 
-  return withTemplateFiles
-    ? compileTemplateFiles(workflowDirCtx, workflowJson)
+  return withExtractedFiles
+    ? joinExtractedFiles(workflowDirCtx, workflowJson)
     : [workflowJson, []];
 };
 
 // Exported for tests.
-export { readTemplateFile };
+export { checkIfValidExtractedFilePathFormat, readExtractedFileSync };

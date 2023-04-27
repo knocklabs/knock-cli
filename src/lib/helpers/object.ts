@@ -53,6 +53,62 @@ export const omitDeep = (input: unknown, paths: string | string[]): any => {
 };
 
 /*
+ * Like Lodash mapValues, but walk the given input recursively and apply the
+ * iteratee func to the values of all *leaf objects*.
+ */
+type MapValuesDeepIterateeFn = (
+  value: any,
+  key: string,
+  parts: ObjKeyOrArrayIdx[],
+) => any;
+
+export const mapValuesDeep = (
+  input: unknown,
+  fn: MapValuesDeepIterateeFn,
+  parts: ObjKeyOrArrayIdx[] = [],
+): any => {
+  if (isPlainObject(input)) {
+    const entries: Array<[string, any]> = Object.entries(input as AnyObj).map(
+      ([k, v]) => {
+        return Array.isArray(v) || isPlainObject(v)
+          ? [k, mapValuesDeep(v, fn, [...parts, k])]
+          : [k, fn(v, k, [...parts, k])];
+      },
+    );
+    return Object.fromEntries(entries);
+  }
+
+  if (Array.isArray(input)) {
+    return input.map((item, idx) => mapValuesDeep(item, fn, [...parts, idx]));
+  }
+
+  return input;
+};
+
+/*
+ * Like Lodash get, but returns the last found value in the object for the path
+ * parts given.
+ */
+export const getLastFound = (obj: AnyObj, parts: ObjKeyOrArrayIdx[]): any => {
+  let current: any = obj;
+  let found;
+
+  for (const part of parts) {
+    const lookupable = Array.isArray(current) || isPlainObject(current);
+
+    if (lookupable && part in current) {
+      found = current[part];
+      current = found;
+      continue;
+    }
+
+    break;
+  }
+
+  return found;
+};
+
+/*
  * Omit any keys that have nil or undefined.
  */
 export const prune = (obj: AnyObj): AnyObj => omitBy(obj, isNil);
@@ -73,7 +129,7 @@ export const merge = (obj: AnyObj, ...sources: AnyObj[]): any =>
  *
  * For example: `foo.bar[0].baz`
  */
-type ObjKeyOrArrayIdx = string | number;
+export type ObjKeyOrArrayIdx = string | number;
 
 export class ObjPath {
   private parts: ObjKeyOrArrayIdx[];

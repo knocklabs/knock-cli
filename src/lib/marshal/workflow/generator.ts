@@ -1,14 +1,18 @@
+import * as path from "node:path";
+
 import { assign, get, zip } from "lodash";
 
 import { WorkflowDirContext } from "@/lib/run-context";
 
 import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
 import { StepType, WorkflowStepData } from "./types";
-import {
-  newTemplateFilePath,
-  WorkflowDirBundle,
-  writeWorkflowDirFromBundle,
-} from "./writer";
+import { WorkflowDirBundle, writeWorkflowDirFromBundle } from "./writer";
+
+const newTemplateFilePath = (
+  stepRef: string,
+  fileName: string,
+  fileExt: string,
+): string => path.join(stepRef, `${fileName}.${fileExt}`).toLowerCase();
 
 /*
  * Step scaffold functions for each step and channel type.
