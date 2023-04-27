@@ -3,7 +3,7 @@ import { Flags } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import { ApiError, formatErrors } from "@/lib/helpers/error";
+import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
@@ -33,12 +33,11 @@ export default class TranslationValidate extends BaseCommand {
       await Translation.readTranslationFilesForCommandTarget(target);
 
     if (readErrors.length > 0) {
-      this.error(formatErrors(readErrors));
+      this.error(formatErrors(readErrors, { prependBy: "\n\n" }));
     }
 
-    // XXX
     if (translations.length === 0) {
-      this.error("No translation files found");
+      this.error(`No translation files found in ${target.context.abspath}`);
     }
 
     spinner.start(`‣ Validating`);
@@ -50,7 +49,7 @@ export default class TranslationValidate extends BaseCommand {
     );
 
     if (apiErrors.length > 0) {
-      this.error(formatErrors(apiErrors));
+      this.error(formatErrors(apiErrors, { prependBy: "\n\n" }));
     }
 
     spinner.stop();
@@ -66,7 +65,10 @@ export default class TranslationValidate extends BaseCommand {
     api: ApiV1.T,
     props: Props,
     translations: Translation.TranslationFileData[],
-  ): Promise<ApiError[]> {
+  ): Promise<SourceError[]> {
+    // TODO: Throw if a non validation error (e.g. authentication error) instead
+    // of printing out same error messages repeatedly.
+
     const errorPromises = translations.map(async (translation) => {
       const resp = await api.validateTranslation(props, {
         locale_code: translation.localeCode,
@@ -77,7 +79,7 @@ export default class TranslationValidate extends BaseCommand {
       if (isSuccessResp(resp)) return;
 
       const message = formatErrorRespMessage(resp);
-      return new ApiError(`${translation.abspath}: ` + message);
+      return new SourceError(message, translation.abspath, "ApiError");
     });
 
     const errors = (await Promise.all(errorPromises)).filter(

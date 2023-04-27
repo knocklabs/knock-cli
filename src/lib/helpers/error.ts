@@ -38,14 +38,6 @@ export class JsonDataError extends CustomError {
   }
 }
 
-// XXX: REMOVE
-export class FoundError extends CustomError {
-  constructor(origin: string, errors: Array<JsonSyntaxError | JsonDataError>) {
-    const message = `${origin}\n\n${formatErrors(errors, { indentBy: 2 })}`;
-    super(message);
-  }
-}
-
 // Error to indicate a syntax error in liquid content.
 export class LiquidParseError extends CustomError {
   // Shows the erroneous liquid content with line numbers, should be taken
@@ -58,8 +50,24 @@ export class LiquidParseError extends CustomError {
   }
 }
 
+// Generic error to wrap a message and associate it to a "source".
+export class SourceError extends CustomError {
+  // Arbitrary string to describe the identifying source of the error message.
+  source: string;
+
+  constructor(message: string, source: string, tag?: string) {
+    super(tag ? `${tag}: ${message}` : message);
+    this.source = source;
+  }
+}
+
 // Possible errors we want to handle.
-type HandledError = ApiError | SyntaxError | JsonDataError | LiquidParseError;
+type HandledError =
+  | ApiError
+  | SyntaxError
+  | JsonDataError
+  | LiquidParseError
+  | SourceError;
 
 /*
  * Returns a formatted error message string from a single error instance.
@@ -67,7 +75,7 @@ type HandledError = ApiError | SyntaxError | JsonDataError | LiquidParseError;
  * Note, primarily used to print out multiple errors below. When only need to
  * surface a single error, the oclif error helper takes an error instance.
  */
-const formatError = (error: HandledError): string => {
+export const formatError = (error: HandledError): string => {
   switch (true) {
     case error instanceof ApiError:
     case error instanceof JsonSyntaxError:
@@ -85,10 +93,9 @@ const formatError = (error: HandledError): string => {
       return `${e.name}: ${e.message + "\n" + e.context}`;
     }
 
-    // XXX
-    case error instanceof FoundError: {
-      const e = error as FoundError;
-      return e.message;
+    case error instanceof SourceError: {
+      const e = error as SourceError;
+      return `${e.source}\n` + indentString(e.message, 2);
     }
 
     default:
@@ -101,6 +108,7 @@ const formatError = (error: HandledError): string => {
  */
 type FormatErrorsOpts = {
   joinBy?: string;
+  prependBy?: string;
   indentBy?: number;
 };
 
@@ -108,8 +116,8 @@ export const formatErrors = (
   errors: HandledError[],
   opts: FormatErrorsOpts = {},
 ): string => {
-  const { joinBy = "\n\n", indentBy = 0 } = opts;
+  const { prependBy = "", joinBy = "\n\n", indentBy = 0 } = opts;
 
   const formatted = errors.map((e) => formatError(e)).join(joinBy);
-  return indentString(formatted, indentBy);
+  return indentString(prependBy + formatted, indentBy);
 };

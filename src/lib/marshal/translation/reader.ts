@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { CliUx } from "@oclif/core";
 import * as fs from "fs-extra";
 
-import { FoundError } from "@/lib/helpers/error";
+import { formatErrors, SourceError } from "@/lib/helpers/error";
 import { readJson } from "@/lib/helpers/json";
 
 import {
@@ -26,9 +26,9 @@ export type TranslationFileData = TranslationFileContext & {
  */
 const readTranslationFiles = async (
   filePaths: string[],
-): Promise<[TranslationFileData[], FoundError[]]> => {
+): Promise<[TranslationFileData[], SourceError[]]> => {
   const translations: TranslationFileData[] = [];
-  const errors: FoundError[] = [];
+  const errors: SourceError[] = [];
 
   for (const abspath of filePaths) {
     const { name: translationRef } = path.parse(abspath);
@@ -40,7 +40,7 @@ const readTranslationFiles = async (
     const [content, readJsonErrors] = await readJson(abspath);
 
     if (readJsonErrors.length > 0) {
-      const e = new FoundError(abspath, readJsonErrors);
+      const e = new SourceError(formatErrors(readJsonErrors), abspath);
       errors.push(e);
     }
 
@@ -66,7 +66,7 @@ const readTranslationFiles = async (
  */
 export const readTranslationFilesForCommandTarget = async (
   target: TranslationCommandTarget,
-): Promise<[TranslationFileData[], FoundError[]]> => {
+): Promise<[TranslationFileData[], SourceError[]]> => {
   const { type: targetType, context: targetCtx } = target;
 
   if (!targetCtx.exists) {

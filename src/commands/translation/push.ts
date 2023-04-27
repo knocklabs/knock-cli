@@ -3,7 +3,7 @@ import { Flags } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import { ApiError, formatErrors } from "@/lib/helpers/error";
+import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
@@ -44,11 +44,11 @@ export default class TranslationPush extends BaseCommand {
       await Translation.readTranslationFilesForCommandTarget(target);
 
     if (readErrors.length > 0) {
-      this.error(formatErrors(readErrors));
+      this.error(formatErrors(readErrors, { prependBy: "\n\n" }));
     }
 
     if (translations.length === 0) {
-      this.error("No translation files found");
+      this.error(`No translation files found in ${target.context.abspath}`);
     }
 
     // Then validate them all ahead of pushing them.
@@ -76,7 +76,8 @@ export default class TranslationPush extends BaseCommand {
       if (isSuccessResp(resp)) continue;
 
       const message = formatErrorRespMessage(resp);
-      this.error(new ApiError(`${translation.abspath}: ` + message));
+      const error = new SourceError(message, translation.abspath, "ApiError");
+      this.error(formatError(error));
     }
 
     spinner.stop();
