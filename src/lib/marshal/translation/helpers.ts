@@ -1,13 +1,12 @@
 import * as path from "node:path";
 
+import { CliUx } from "@oclif/core";
 import * as fs from "fs-extra";
 import localeData from "locale-codes";
-import { CliUx } from "@oclif/core";
 
-import { isDirectory, DirContext } from "@/lib/helpers/fs";
+import { Props } from "@/lib/base-command";
+import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
-
-import { Props } from "@/lib/base-command"
 
 /*
  * Evaluates whether the string is a valid locale name
@@ -66,13 +65,15 @@ export const buildTranslationFileCtx = async (
 type ParsedTranslationRef = {
   localeCode: string;
   namespace?: string;
-}
-export const parseTranslationRef = (reference: string): ParsedTranslationRef | undefined => {
+};
+export const parseTranslationRef = (
+  reference: string,
+): ParsedTranslationRef | undefined => {
   const strings = reference.split(".");
 
   // Locale code only (e.g. `en`)
   if (strings.length === 1) {
-    return { localeCode: strings[0] }
+    return { localeCode: strings[0] };
   }
 
   // Locale code prefixed with a namespace (e.g. `admin.en`)
@@ -93,7 +94,7 @@ export type TranslationCommandTarget = {
   translationFile?: TranslationFileContext;
   translationDir?: TranslationDirContext;
   translationsIndexDir?: DirContext;
-}
+};
 export const ensureValidCommandTarget = async (
   props: Props,
   runContext: RunContext,
@@ -111,13 +112,12 @@ export const ensureValidCommandTarget = async (
   // Error, got neither the translationRef arg nor the --all flag.
   if (!args.translationRef && !flags.all) {
     CliUx.ux.error(
-      "At least one of translationRef arg or --all flag must be used"
+      "At least one of translationRef arg or --all flag must be used",
     );
   }
 
   // No translationRef arg, which means --all flag is used.
   if (!args.translationRef) {
-
     // Targeting all translation files in the current locale directory.
     if (resourceDir) {
       return { translationDir: resourceDir };
@@ -125,14 +125,14 @@ export const ensureValidCommandTarget = async (
 
     // Targeting all translation files in the translations index dir.
     // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runContext.cwd, exists: true };
+    const defaultToCwd = { abspath: runCwd, exists: true };
     const indexDirCtx = flags["translations-dir"] || defaultToCwd;
 
     return { translationsIndexDir: indexDirCtx };
   }
 
   // From this point on, we have translationRef so parse and validate the format.
-  const parsedRef = parseTranslationRef(args.translationRef)
+  const parsedRef = parseTranslationRef(args.translationRef);
   if (!parsedRef) {
     return CliUx.ux.error(
       `Invalid translationRef arg \`${args.translationRef}\`, use valid <locale> or <namespace>.<locale> for namespaced translations`,
@@ -158,9 +158,9 @@ export const ensureValidCommandTarget = async (
     const translationFileCtx = await buildTranslationFileCtx(
       targetDirPath,
       localeCode,
-      namespace
-    )
-    return { translationFile: translationFileCtx }
+      namespace,
+    );
+    return { translationFile: translationFileCtx };
   }
 
   // From this point on, we have both translationRef and --all flag used
@@ -176,19 +176,21 @@ export const ensureValidCommandTarget = async (
     key: localeCode,
     abspath: targetDirPath,
     exists: await isDirectory(targetDirPath),
-  }
+  };
   return { translationDir: translationDirCtx };
-}
+};
 
 /*
  * XXX
  */
-export const lsTranslationDir = async (pathToDir: string) => {
+export const lsTranslationDir = async (
+  pathToDir: string,
+): Promise<string[]> => {
   const localeCode = path.basename(pathToDir).toLowerCase();
-  const dirents = await fs.readdir(pathToDir, { withFileTypes: true })
+  const dirents = await fs.readdir(pathToDir, { withFileTypes: true });
 
   return dirents
-    .filter(dirent => {
+    .filter((dirent) => {
       if (dirent.isDirectory()) return false;
 
       const filename = dirent.name.toLowerCase();
@@ -200,5 +202,5 @@ export const lsTranslationDir = async (pathToDir: string) => {
 
       return true;
     })
-    .map(dirent => path.resolve(pathToDir, dirent.name))
-}
+    .map((dirent) => path.resolve(pathToDir, dirent.name));
+};

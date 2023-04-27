@@ -11,5 +11,5 @@ export type DirContext = {
 export const isDirectory = async (abspath: string): Promise<boolean> => {
   const exists = await fs.pathExists(abspath);
 
-  return exists && (await fs.lstat(abspath)).isDirectory()
-}
+  return exists && (await fs.lstat(abspath)).isDirectory();
+};

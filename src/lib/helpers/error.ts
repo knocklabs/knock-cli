@@ -38,10 +38,10 @@ export class JsonDataError extends CustomError {
   }
 }
 
-// XXX:
+// XXX: REMOVE
 export class FoundError extends CustomError {
   constructor(origin: string, errors: Array<JsonSyntaxError | JsonDataError>) {
-    const message = `${origin}\n\n` + `${formatErrors(errors, { indentBy: 2 })}`;
+    const message = `${origin}\n\n${formatErrors(errors, { indentBy: 2 })}`;
     super(message);
   }
 }
@@ -83,6 +83,12 @@ const formatError = (error: HandledError): string => {
     case error instanceof LiquidParseError: {
       const e = error as LiquidParseError;
       return `${e.name}: ${e.message + "\n" + e.context}`;
+    }
+
+    // XXX
+    case error instanceof FoundError: {
+      const e = error as FoundError;
+      return e.message;
     }
 
     default:

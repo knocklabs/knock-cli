@@ -5,3 +5,8 @@ export type TranslationData = {
   created_at: string;
   updated_at: string;
 };
+
+export type TranslationInput = Pick<
+  TranslationData,
+  "locale_code" | "namespace" | "content"
+>;

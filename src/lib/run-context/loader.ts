@@ -56,7 +56,9 @@ const evaluateRecursively = async (
  * was invoked, then recursively walk up the dir tree as we gather any resource
  * or project context for the command.
  */
-export const load = async (commandId: string | undefined): Promise<RunContext> => {
+export const load = async (
+  commandId: string | undefined,
+): Promise<RunContext> => {
   const ctx = { commandId, cwd: process.cwd() };
 
   return evaluateRecursively(ctx, ctx.cwd);

@@ -164,6 +164,21 @@ export default class ApiV1 {
     );
   }
 
+  async validateTranslation(
+    { flags }: Props,
+    translation: Translation.TranslationInput,
+  ): Promise<AxiosResponse<ValidateTranslationResp>> {
+    const params = prune({
+      environment: flags.environment,
+      namespace: translation.namespace,
+    });
+    const data = { translation };
+
+    return this.put(`/translations/${translation.locale_code}/validate`, data, {
+      params,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -181,6 +196,8 @@ export default class ApiV1 {
     return this.client.put(`/${API_VERSION}` + subpath, data, config);
   }
 }
+
+export type T = ApiV1;
 
 /*
  * API v1 response types:
@@ -209,6 +226,11 @@ export type ActivateWorkflowResp = {
 export type ListTranslationResp = PaginatedResp<Translation.TranslationData>;
 
 export type UpsertTranslationResp = {
+  translation?: Translation.TranslationData;
+  errors?: InputError[];
+};
+
+export type ValidateTranslationResp = {
   translation?: Translation.TranslationData;
   errors?: InputError[];
 };

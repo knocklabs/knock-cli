@@ -1,18 +1,12 @@
-import { CliUx, Flags } from "@oclif/core";
-import { AxiosResponse } from "axios";
-import localeData from "locale-codes";
+import { Flags } from "@oclif/core";
 
-import { KnockEnv } from "@/lib/helpers/const";
 import * as ApiV1 from "@/lib/api-v1";
+import BaseCommand, { Props } from "@/lib/base-command";
+import { KnockEnv } from "@/lib/helpers/const";
+import { ApiError, formatErrors } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import BaseCommand from "@/lib/base-command";
-import { formatDate } from "@/lib/helpers/date";
-import { merge } from "@/lib/helpers/object";
-import {
-  maybePromptPageAction,
-  paramsForPageAction,
-} from "@/lib/helpers/page";
-import { withSpinner } from "@/lib/helpers/request";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import { spinner } from "@/lib/helpers/ux";
 import * as Translation from "@/lib/marshal/translation";
 
 export default class TranslationValidate extends BaseCommand {
@@ -30,43 +24,58 @@ export default class TranslationValidate extends BaseCommand {
   static args = [{ name: "translationRef", required: false }];
 
   async run(): Promise<void> {
-    const target = await Translation.ensureValidCommandTarget(this.props, this.runContext);
+    const target = await Translation.ensureValidCommandTarget(
+      this.props,
+      this.runContext,
+    );
+    const [translations, errors] =
+      await Translation.readTranslationFilesForTarget(target);
 
+    if (errors.length > 0) {
+      this.error(formatErrors(errors));
+    }
 
+    if (translations.length === 0) {
+      this.error("No translation files found");
+    }
+
+    spinner.start(`‣ Validating`);
+
+    const apiErrors = await TranslationValidate.validateAll(
+      this.apiV1,
+      this.props,
+      translations,
+    );
+
+    if (apiErrors.length > 0) {
+      this.error(formatErrors(apiErrors));
+    }
+
+    this.log(`‣ Successfully validated XXX`);
   }
 
-  // static validateTranslations() {
-  // }
+  static async validateAll(
+    api: ApiV1.T,
+    props: Props,
+    translations: Translation.TranslationFileData[],
+  ): Promise<ApiError[]> {
+    const errorPromises = translations.map(async (translation) => {
+      const resp = await api.validateTranslation(props, {
+        locale_code: translation.localeCode,
+        namespace: translation.namespace,
+        content: translation.content,
+      });
 
-  // async run(): Promise<ApiV1.ValidateWorkflowResp | void> {
-  //   // 1. Retrieve the target workflow directory context.
-  //   const dirContext = await this.getWorkflowDirContext();
-  //
-  //   this.log(`‣ Reading \`${dirContext.key}\` at ${dirContext.abspath}`);
-  //
-  //   // 2. Read the workflow.json with its template files.
-  //   const [workflow, errors] = await Workflow.readWorkflowDir(dirContext, {
-  //     withTemplateFiles: true,
-  //   });
-  //   if (errors.length > 0) {
-  //     this.error(
-  //       `Found the following errors in \`${dirContext.key}\` ${Workflow.WORKFLOW_JSON}\n\n` +
-  //         formatErrors(errors),
-  //     );
-  //   }
-  //
-  //   // 3. Validate the compiled workflow data.
-  //   await withSpinner<ApiV1.ValidateWorkflowResp>(
-  //     () => {
-  //       const props = merge(this.props, {
-  //         args: { workflowKey: dirContext.key },
-  //       });
-  //
-  //       return this.apiV1.validateWorkflow(props, workflow as AnyObj);
-  //     },
-  //     { action: "‣ Validating" },
-  //   );
-  //
-  //   this.log(`‣ Successfully validated \`${dirContext.key}\``);
-  // }
+      if (isSuccessResp(resp)) return;
+
+      const message = formatErrorRespMessage(resp);
+      return new ApiError(`${translation.abspath}: ` + message);
+    });
+
+    const errors = (await Promise.all(errorPromises)).filter(
+      (e): e is Exclude<typeof e, undefined> => Boolean(e),
+    );
+
+    return errors;
+  }
 }
