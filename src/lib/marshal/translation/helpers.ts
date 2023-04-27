@@ -24,6 +24,7 @@ export const isTranslationDir = (dirPath: string): boolean => {
 };
 
 export type TranslationFileContext = {
+  ref: string;
   localeCode: string;
   namespace: string | undefined;
   abspath: string;
@@ -40,14 +41,12 @@ export const buildTranslationFileCtx = async (
   localeCode: string,
   namespace: string | undefined,
 ): Promise<TranslationFileContext> => {
-  const filename = namespace
-    ? `${namespace}.${localeCode}.json`
-    : `${localeCode}.json`;
-
-  const abspath = path.resolve(dirPath, filename);
+  const ref = namespace ? `${namespace}.${localeCode}` : localeCode;
+  const abspath = path.resolve(dirPath, `${ref}.json`);
   const exists = await fs.pathExists(abspath);
 
   return {
+    ref,
     localeCode,
     namespace,
     abspath,
@@ -112,7 +111,7 @@ export const ensureValidCommandTarget = async (
   // Error, got neither the translationRef arg nor the --all flag.
   if (!args.translationRef && !flags.all) {
     CliUx.ux.error(
-      "At least one of translationRef arg or --all flag must be used",
+      "At least one of translation ref arg or --all flag must be given",
     );
   }
 
@@ -167,7 +166,7 @@ export const ensureValidCommandTarget = async (
   // together, so make sure we are targeting a non-namespaced top-level locale.
   if (namespace) {
     return CliUx.ux.error(
-      `Namespaced translation \`${args.translationRef}\` cannot be used with --all`,
+      `Cannot use --all with a namespaced translation \`${args.translationRef}\``,
     );
   }
 
@@ -181,7 +180,13 @@ export const ensureValidCommandTarget = async (
 };
 
 /*
- * XXX
+ * List out abspaths of all translation files in a given directory.
+ *
+ * It filters out any directories or files that do not conform to the
+ * translation file name format (e.g. `en.json` or `namespace.en.json` for the
+ * `en` locale directory).
+ *
+ * Note, it assumes the given path exists and is a valid locale directory.
  */
 export const lsTranslationDir = async (
   pathToDir: string,

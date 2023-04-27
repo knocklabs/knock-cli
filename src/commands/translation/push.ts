@@ -6,6 +6,7 @@ import { KnockEnv } from "@/lib/helpers/const";
 import { ApiError, formatErrors } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Translation from "@/lib/marshal/translation";
 
@@ -79,6 +80,11 @@ export default class TranslationPush extends BaseCommand {
     }
 
     spinner.stop();
-    this.log(`‣ Successfully pushed ${translations.length} translation(s)`);
+
+    const handledRefs = translations.map((t) => t.ref);
+    this.log(
+      `‣ Successfully pushed ${translations.length} translation(s):\n` +
+        indentString(handledRefs.join("\n"), 4),
+    );
   }
 }

@@ -6,6 +6,7 @@ import { KnockEnv } from "@/lib/helpers/const";
 import { ApiError, formatErrors } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Translation from "@/lib/marshal/translation";
 
@@ -53,8 +54,12 @@ export default class TranslationValidate extends BaseCommand {
     }
 
     spinner.stop();
-    // XXX
-    this.log(`‣ Successfully validated ${translations.length} translation(s)`);
+
+    const handledRefs = translations.map((t) => t.ref);
+    this.log(
+      `‣ Successfully validated ${translations.length} translation(s):\n` +
+        indentString(handledRefs.join("\n"), 4),
+    );
   }
 
   static async validateAll(

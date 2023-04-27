@@ -7,6 +7,7 @@ import { FoundError } from "@/lib/helpers/error";
 import { readJson } from "@/lib/helpers/json";
 
 import {
+  isTranslationDir,
   lsTranslationDir,
   parseTranslationRef,
   TranslationCommandTarget,
@@ -18,7 +19,10 @@ export type TranslationFileData = TranslationFileContext & {
 };
 
 /*
- * XXX: Assumes the valid translation file paths.
+ * For the given list of translation file paths, read each file and return
+ * translation file data.
+ *
+ * Note, it assumes they are valid file paths to translation files.
  */
 const readTranslationFiles = async (
   filePaths: string[],
@@ -42,6 +46,7 @@ const readTranslationFiles = async (
 
     if (content) {
       translations.push({
+        ref: translationRef,
         localeCode,
         namespace,
         abspath,
@@ -55,7 +60,9 @@ const readTranslationFiles = async (
 };
 
 /*
- * XXX: Assumes a valid command target
+ * List and read all translation files found for the given command target.
+ *
+ * Note, it assumes the valid command target.
  */
 export const readTranslationFilesForCommandTarget = async (
   target: TranslationCommandTarget,
@@ -90,7 +97,9 @@ export const readTranslationFilesForCommandTarget = async (
       });
 
       const translationDirPaths = dirents
-        .filter((dirent) => dirent.isDirectory())
+        .filter(
+          (dirent) => dirent.isDirectory() && isTranslationDir(dirent.name),
+        )
         .map((dirent) => path.resolve(targetCtx.abspath, dirent.name));
 
       const translationFilePaths = (
