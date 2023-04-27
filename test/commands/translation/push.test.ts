@@ -8,37 +8,19 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
-import { TranslationData } from "@/lib/marshal/translation";
 
-const mockEnAdminTranslationData: TranslationData = {
-  locale_code: "en",
-  namespace: "admin",
-  content: '{"welcome":"hello!"}',
-  created_at: "2022-12-31T12:00:00.000000Z",
-  updated_at: "2022-12-31T12:00:00.000000Z",
-};
-
-const mockEnTranslationData: TranslationData = {
-  locale_code: "en",
-  content: '{"welcome":"hello!", "goodbye":"Goodbye!"}',
-  created_at: "2022-12-31T12:00:00.000000Z",
-  updated_at: "2022-12-31T12:00:00.000000Z",
-};
-
-const mockEsTranslationData: TranslationData = {
-  locale_code: "es",
-  content: '{"welcome":"Bienvenido!"}',
-  created_at: "2022-12-31T12:00:00.000000Z",
-  updated_at: "2022-12-31T12:00:00.000000Z",
-};
-
-const setupWithStub = (attrs = {}) =>
+const setupWithStub = (upsertRespAttrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(
       KnockApiV1.prototype,
+      "validateTranslation",
+      sinon.stub().resolves(factory.resp()),
+    )
+    .stub(
+      KnockApiV1.prototype,
       "upsertTranslation",
-      sinon.stub().resolves(factory.resp(attrs)),
+      sinon.stub().resolves(factory.resp(upsertRespAttrs)),
     );
 
 const currCwd = process.cwd();
@@ -53,18 +35,16 @@ describe("commands/translation/push", () => {
     fs.removeSync(sandboxDir);
   });
 
-  describe("given a translation directory exists, for the locale code and namespace", () => {
+  describe("given a translation file exists for locale code and namespace", () => {
     beforeEach(() => {
-      const abspath = path.resolve(
-        sandboxDir,
-        `${mockEnAdminTranslationData.locale_code}/${mockEnAdminTranslationData.namespace}.${mockEnAdminTranslationData.locale_code}.json`,
-      );
-      fs.outputJsonSync(abspath, { welcome: "hello!" });
+      const translationsDir = path.resolve(sandboxDir, "translations");
+      const abspath = path.resolve(translationsDir, "en", "admin.en.json");
+      fs.outputJsonSync(abspath, JSON.parse('{"welcome":"hello!"}'));
 
-      process.chdir(sandboxDir);
+      process.chdir(translationsDir);
     });
 
-    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
+    setupWithStub()
       .stdout()
       .command(["translation push", "admin.en"])
       .it("calls apiV1 upsertTranslation with expected props", () => {
@@ -85,7 +65,7 @@ describe("commands/translation/push", () => {
         );
       });
 
-    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
+    setupWithStub()
       .stdout()
       .command([
         "translation push",
@@ -104,13 +84,12 @@ describe("commands/translation/push", () => {
                 "service-token": "valid-token",
                 "api-origin": undefined,
                 environment: "development",
-                // Commit flags
                 commit: true,
                 "commit-message": "this is a commit comment!",
               }),
             ),
             sinon.match({
-              content: JSON.stringify({ welcome: "hello!" }),
+              content: '{"welcome":"hello!"}',
               locale_code: "en",
               namespace: "admin",
             }),
@@ -119,72 +98,29 @@ describe("commands/translation/push", () => {
       );
   });
 
-  describe("with the --all flag", () => {
-    beforeEach(() => {
-      const abspath = path.resolve(
-        sandboxDir,
-        `${mockEnAdminTranslationData.locale_code}/${mockEnAdminTranslationData.namespace}.${mockEnAdminTranslationData.locale_code}.json`,
-      );
-      fs.outputJsonSync(abspath, { welcome: "hello!" });
-
-      process.chdir(sandboxDir);
-    });
-
-    setupWithStub({
-      data: {
-        translations: [
-          mockEnAdminTranslationData,
-          mockEsTranslationData,
-          mockEnTranslationData,
-        ],
-      },
-    })
-      .stdout()
-      .command(["translation push", "--all"])
-      .it("calls apiV1 upsertTranslation with expected props", () => {
-        sinon.assert.calledWith(
-          KnockApiV1.prototype.upsertTranslation as any,
-          sinon.match(({ flags }) => {
-            return isEqual(flags, {
-              "service-token": "valid-token",
-              "api-origin": undefined,
-              environment: "development",
-              all: true,
-            });
-          }),
-        );
-      });
-  });
-
   describe("given a translation file, with syntax errors", () => {
     beforeEach(() => {
-      const abspath = path.resolve(
-        sandboxDir,
-        `${mockEnAdminTranslationData.locale_code}/${mockEnAdminTranslationData.namespace}.${mockEnAdminTranslationData.locale_code}.json`,
-      );
+      const translationsDir = path.resolve(sandboxDir, "translations");
+      const abspath = path.resolve(translationsDir, "en", "admin.en.json");
       fs.outputFileSync(abspath, '{"name":"New comment",}');
 
-      process.chdir(sandboxDir);
+      process.chdir(translationsDir);
     });
 
-    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
+    setupWithStub()
       .stdout()
       .command(["translation push", "admin.en"])
-      .catch((error) =>
-        expect(error.message).to.match(/^Found the following errors in/),
-      )
+      .catch((error) => expect(error.message).to.match(/JsonSyntaxError/))
       .it("throws an error");
   });
 
   describe("given a translation file, with data errors", () => {
     beforeEach(() => {
-      const abspath = path.resolve(
-        sandboxDir,
-        `${mockEnAdminTranslationData.locale_code}/${mockEnAdminTranslationData.namespace}.${mockEnAdminTranslationData.locale_code}.json`,
-      );
+      const translationsDir = path.resolve(sandboxDir, "translations");
+      const abspath = path.resolve(translationsDir, "en", "admin.en.json");
       fs.outputJsonSync(abspath, { name: 10 });
 
-      process.chdir(sandboxDir);
+      process.chdir(translationsDir);
     });
 
     setupWithStub({
@@ -201,22 +137,22 @@ describe("commands/translation/push", () => {
       .it("throws an error");
   });
 
-  describe("given a nonexistent translation directory, for the translation filename", () => {
+  describe("given a nonexistent translation file, for the translation ref", () => {
     beforeEach(() => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
+    setupWithStub()
       .stdout()
       .command(["translation push", "does-not-exist"])
       .catch((error) =>
-        expect(error.message).to.match(/^Cannot locate a translation file for/),
+        expect(error.message).to.match(/Cannot locate translation file\(s\)/),
       )
       .it("throws an error");
   });
 
-  describe("given no translation filename arg and no --all", () => {
-    setupWithStub({ data: { translation: mockEnAdminTranslationData } })
+  describe("given no translation ref arg and no --all", () => {
+    setupWithStub()
       .stdout()
       .command(["translation push"])
       .exit(2)

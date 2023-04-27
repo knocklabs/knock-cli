@@ -57,7 +57,7 @@ const evaluateRecursively = async (
  * or project context for the command.
  */
 export const load = async (
-  commandId: string | undefined,
+  commandId?: string | undefined,
 ): Promise<RunContext> => {
   const ctx = { commandId, cwd: process.cwd() };
 
