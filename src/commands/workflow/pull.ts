@@ -133,7 +133,7 @@ export default class WorkflowPull extends BaseCommand {
     const targetDirCtx = flags["workflows-dir"] || defaultToCwd;
 
     const prompt = targetDirCtx.exists
-      ? `Pull latest workflows into ${targetDirCtx.abspath}?`
+      ? `Pull latest workflows into ${targetDirCtx.abspath}? This will overwrite the contents of this directory.`
       : `Create a new workflows directory at ${targetDirCtx.abspath}?`;
 
     const input = flags.force || (await promptToConfirm(prompt));

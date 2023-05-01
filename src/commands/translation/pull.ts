@@ -39,7 +39,7 @@ export default class TranslationPull extends BaseCommand {
     const targetDirCtx = flags["translations-dir"] || defaultToCwd;
 
     const prompt = targetDirCtx.exists
-      ? `Pull latest translations into ${targetDirCtx.abspath}?`
+      ? `Pull latest translations into ${targetDirCtx.abspath}? This will overwrite the contents of this directory.`
       : `Create a new translations directory at ${targetDirCtx.abspath}?`;
 
     const input = flags.force || (await promptToConfirm(prompt));
