@@ -357,10 +357,13 @@ export const writeWorkflowDirFromBundle = async (
   workflowDirCtx: WorkflowDirContext,
   workflowDirBundle: WorkflowDirBundle,
 ): Promise<void> => {
+  const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+
   try {
-    // TODO(KNO-2794): Just back up the current workflow directory, wipe it,
-    // then write a new directory.
-    await fs.remove(workflowDirCtx.abspath);
+    if (workflowDirCtx.exists) {
+      await fs.copy(workflowDirCtx.abspath, backupDirPath);
+      await fs.emptyDir(workflowDirCtx.abspath);
+    }
 
     const promises = Object.entries(workflowDirBundle).map(
       ([relpath, fileContent]) => {
@@ -373,9 +376,52 @@ export const writeWorkflowDirFromBundle = async (
     );
     await Promise.all(promises);
   } catch (error) {
-    await fs.remove(workflowDirCtx.abspath);
+    // In case of any error, wipe the target directory that is likely in a bad
+    // state then restore the backup if one existed before.
+    if (workflowDirCtx.exists) {
+      await fs.emptyDir(workflowDirCtx.abspath);
+      await fs.copy(backupDirPath, workflowDirCtx.abspath);
+    } else {
+      await fs.remove(workflowDirCtx.abspath);
+    }
+
     throw error;
+  } finally {
+    // Always clean up the backup directory in the temp sandbox.
+    await fs.remove(backupDirPath);
   }
+};
+
+/*
+ * Prunes the index directory by removing any files, or directories that aren't
+ * workflow dirs found in fetched workflows. We want to preserve any workflow
+ * dirs that are going to be updated with remote workflows, so extracted links
+ * can be respected.
+ */
+const pruneWorkflowsIndexDir = async (
+  indexDirCtx: DirContext,
+  remoteWorkflows: WorkflowData<WithAnnotation>[],
+): Promise<void> => {
+  const workflowsByKey = Object.fromEntries(
+    remoteWorkflows.map((w) => [w.key.toLowerCase(), w]),
+  );
+
+  const dirents = await fs.readdir(indexDirCtx.abspath, {
+    withFileTypes: true,
+  });
+
+  const promises = dirents.map(async (dirent) => {
+    const direntName = dirent.name.toLowerCase();
+    const direntPath = path.resolve(indexDirCtx.abspath, direntName);
+
+    if ((await isWorkflowDir(direntPath)) && workflowsByKey[direntName]) {
+      return;
+    }
+
+    await fs.remove(direntPath);
+  });
+
+  await Promise.all(promises);
 };
 
 /*
@@ -394,10 +440,7 @@ export const writeWorkflowsIndexDir = async (
     // before wiping it clean.
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
-
-      // TODO(KNO-2794): Only remove directories that aren't part of the remote
-      // workflows.
-      await fs.remove(indexDirCtx.abspath);
+      await pruneWorkflowsIndexDir(indexDirCtx, remoteWorkflows);
     }
 
     // Write given remote workflows into the given workflows directory path.
@@ -420,9 +463,11 @@ export const writeWorkflowsIndexDir = async (
   } catch (error) {
     // In case of any error, wipe the index directory that is likely in a bad
     // state then restore the backup if one existed before.
-    await fs.remove(indexDirCtx.abspath);
     if (indexDirCtx.exists) {
+      await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
+    } else {
+      await fs.remove(indexDirCtx.abspath);
     }
 
     throw error;
@@ -433,4 +478,9 @@ export const writeWorkflowsIndexDir = async (
 };
 
 // Exported for tests.
-export { buildWorkflowDirBundle, formatExtractedFilePath, toWorkflowJson };
+export {
+  buildWorkflowDirBundle,
+  formatExtractedFilePath,
+  pruneWorkflowsIndexDir,
+  toWorkflowJson,
+};

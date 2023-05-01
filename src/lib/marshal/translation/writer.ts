@@ -25,7 +25,7 @@ export const writeTranslationsIndexDir = async (
     // before wiping it clean.
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
-      await fs.remove(indexDirCtx.abspath);
+      await fs.emptyDir(indexDirCtx.abspath);
     }
 
     // Write given remote translations into the given translations directory path.
@@ -56,9 +56,11 @@ export const writeTranslationsIndexDir = async (
   } catch (error) {
     // In case of any error, wipe the index directory that is likely in a bad
     // state then restore the backup if one existed before.
-    await fs.remove(indexDirCtx.abspath);
     if (indexDirCtx.exists) {
+      await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
+    } else {
+      await fs.remove(indexDirCtx.abspath);
     }
 
     throw error;
