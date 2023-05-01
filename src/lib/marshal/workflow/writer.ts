@@ -393,12 +393,12 @@ export const writeWorkflowDirFromBundle = async (
 };
 
 /*
- * Clean the index directory by removing any files, or directories that aren't
+ * Prunes the index directory by removing any files, or directories that aren't
  * workflow dirs found in fetched workflows. We want to preserve any workflow
  * dirs that are going to be updated with remote workflows, so extracted links
  * can be respected.
  */
-const cleanWorkflowsIndexDir = async (
+const pruneWorkflowsIndexDir = async (
   indexDirCtx: DirContext,
   remoteWorkflows: WorkflowData<WithAnnotation>[],
 ): Promise<void> => {
@@ -440,7 +440,7 @@ export const writeWorkflowsIndexDir = async (
     // before wiping it clean.
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
-      await cleanWorkflowsIndexDir(indexDirCtx, remoteWorkflows);
+      await pruneWorkflowsIndexDir(indexDirCtx, remoteWorkflows);
     }
 
     // Write given remote workflows into the given workflows directory path.
@@ -478,4 +478,9 @@ export const writeWorkflowsIndexDir = async (
 };
 
 // Exported for tests.
-export { buildWorkflowDirBundle, formatExtractedFilePath, toWorkflowJson };
+export {
+  buildWorkflowDirBundle,
+  formatExtractedFilePath,
+  pruneWorkflowsIndexDir,
+  toWorkflowJson,
+};
