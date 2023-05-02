@@ -1,19 +1,14 @@
-import * as path from "node:path";
-
 import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
-import BaseCommand from "@/lib/base-command";
+import BaseCommand, { Props } from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import { formatErrors } from "@/lib/helpers/error";
-import { AnyObj, merge } from "@/lib/helpers/object";
-import { withSpinner } from "@/lib/helpers/request";
+import { formatErrors, SourceError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import { indentString } from "@/lib/helpers/string";
+import { spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
-import {
-  ensureResourceDirForTarget,
-  ResourceTarget,
-  WorkflowDirContext,
-} from "@/lib/run-context";
 
 export default class WorkflowValidate extends BaseCommand {
   static flags = {
@@ -23,75 +18,83 @@ export default class WorkflowValidate extends BaseCommand {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    all: Flags.boolean(),
+    "workflows-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
   };
 
   static args = [{ name: "workflowKey", required: false }];
 
-  async run(): Promise<ApiV1.ValidateWorkflowResp | void> {
-    // 1. Retrieve the target workflow directory context.
-    const dirContext = await this.getWorkflowDirContext();
-
-    this.log(`‣ Reading \`${dirContext.key}\` at ${dirContext.abspath}`);
-
-    // 2. Read the workflow.json with its template files.
-    const [workflow, errors] = await Workflow.readWorkflowDir(dirContext, {
-      withExtractedFiles: true,
-    });
-    if (errors.length > 0) {
-      this.error(
-        `Found the following errors in \`${dirContext.key}\` ${Workflow.WORKFLOW_JSON}\n\n` +
-          formatErrors(errors),
-      );
-    }
-
-    // 3. Validate the compiled workflow data.
-    await withSpinner<ApiV1.ValidateWorkflowResp>(
-      () => {
-        const props = merge(this.props, {
-          args: { workflowKey: dirContext.key },
-        });
-
-        return this.apiV1.validateWorkflow(props, workflow as AnyObj);
-      },
-      { action: "‣ Validating" },
+  async run(): Promise<void> {
+    // 1. Read all workflow directories found for the given command.
+    const target = await Workflow.ensureValidCommandTarget(
+      this.props,
+      this.runContext,
     );
 
-    this.log(`‣ Successfully validated \`${dirContext.key}\``);
+    const [workflows, readErrors] = await Workflow.readAllForCommandTarget(
+      target,
+      { withExtractedFiles: true },
+    );
+
+    if (readErrors.length > 0) {
+      this.error(formatErrors(readErrors, { prependBy: "\n\n" }));
+    }
+
+    if (workflows.length === 0) {
+      this.error(`No workflow directories found in ${target.context.abspath}`);
+    }
+
+    // 2. Validate each workflow data.
+    spinner.start(`‣ Validating`);
+
+    const apiErrors = await WorkflowValidate.validateAll(
+      this.apiV1,
+      this.props,
+      workflows,
+    );
+
+    if (apiErrors.length > 0) {
+      this.error(formatErrors(apiErrors, { prependBy: "\n\n" }));
+    }
+
+    spinner.stop();
+
+    // 3. Display a success message.
+    const workflowKeys = workflows.map((w) => w.key);
+    this.log(
+      `‣ Successfully validated ${workflows.length} workflow(s):\n` +
+        indentString(workflowKeys.join("\n"), 4),
+    );
   }
 
-  async getWorkflowDirContext(): Promise<WorkflowDirContext> {
-    const { workflowKey } = this.props.args;
-    const { resourceDir, cwd: runCwd } = this.runContext;
+  static async validateAll(
+    api: ApiV1.T,
+    props: Props,
+    workflows: Workflow.WorkflowDirData[],
+  ): Promise<SourceError[]> {
+    // TODO: Throw an error if a non validation error (e.g. authentication error)
+    // instead of printing out same error messages repeatedly.
 
-    if (resourceDir) {
-      const target: ResourceTarget = {
-        commandId: BaseCommand.id,
-        type: "workflow",
-        key: workflowKey,
-      };
+    const errorPromises = workflows.map(async (workflow) => {
+      const resp = await api.validateWorkflow(props, {
+        ...workflow.content,
+        key: workflow.key,
+      });
 
-      return ensureResourceDirForTarget(
-        resourceDir,
-        target,
-      ) as WorkflowDirContext;
-    }
+      if (isSuccessResp(resp)) return;
 
-    if (workflowKey) {
-      const dirPath = path.resolve(runCwd, workflowKey);
-      const exists = await Workflow.isWorkflowDir(dirPath);
+      const error = new SourceError(
+        formatErrorRespMessage(resp),
+        Workflow.workflowJsonPath(workflow),
+        "ApiError",
+      );
+      return error;
+    });
 
-      return exists
-        ? {
-            type: "workflow",
-            key: workflowKey,
-            abspath: dirPath,
-            exists,
-          }
-        : this.error(
-            `Cannot locate a workflow directory for \`${workflowKey}\``,
-          );
-    }
+    const errors = (await Promise.all(errorPromises)).filter(
+      (e): e is Exclude<typeof e, undefined> => Boolean(e),
+    );
 
-    return this.error("Missing 1 required arg:\nworkflowKey");
+    return errors;
   }
 }

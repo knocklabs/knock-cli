@@ -30,7 +30,7 @@ export default class TranslationValidate extends BaseCommand {
       this.runContext,
     );
     const [translations, readErrors] =
-      await Translation.readTranslationFilesForCommandTarget(target);
+      await Translation.readAllForCommandTarget(target);
 
     if (readErrors.length > 0) {
       this.error(formatErrors(readErrors, { prependBy: "\n\n" }));

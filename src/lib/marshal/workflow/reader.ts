@@ -1,9 +1,10 @@
 import * as path from "node:path";
 
+import { CliUx } from "@oclif/core";
 import * as fs from "fs-extra";
 import { hasIn, set } from "lodash";
 
-import { formatErrors, JsonDataError } from "@/lib/helpers/error";
+import { formatErrors, JsonDataError, SourceError } from "@/lib/helpers/error";
 import {
   ParsedJson,
   parseJson,
@@ -22,10 +23,17 @@ import { WorkflowDirContext } from "@/lib/run-context";
 
 import {
   FILEPATH_MARKED_RE,
+  isWorkflowDir,
   lsWorkflowJson,
   VISUAL_BLOCKS_JSON,
   WORKFLOW_JSON,
+  WorkflowCommandTarget,
 } from "./helpers";
+
+// Hydrated workflow directory context with its content.
+export type WorkflowDirData = WorkflowDirContext & {
+  content: AnyObj;
+};
 
 // For now we support up to two levels of content extraction in workflow.json.
 // (e.g. workflow.json, then visual_blocks.json)
@@ -330,6 +338,89 @@ export const readWorkflowDir = async (
   return withExtractedFiles
     ? joinExtractedFiles(workflowDirCtx, workflowJson)
     : [workflowJson, []];
+};
+
+/*
+ * For the given list of workflow directory contexts, read each workflow dir and
+ * return workflow directory data.
+ */
+const readWorkflowDirs = async (
+  workflowDirCtxs: WorkflowDirContext[],
+  opts: ReadWorkflowDirOpts = {},
+): Promise<[WorkflowDirData[], SourceError[]]> => {
+  const workflows: WorkflowDirData[] = [];
+  const errors: SourceError[] = [];
+
+  for (const workflowDirCtx of workflowDirCtxs) {
+    // eslint-disable-next-line no-await-in-loop
+    const [workflow, readErrors] = await readWorkflowDir(workflowDirCtx, opts);
+
+    if (readErrors.length > 0) {
+      const workflowJsonPath = path.resolve(
+        workflowDirCtx.abspath,
+        WORKFLOW_JSON,
+      );
+      const e = new SourceError(formatErrors(readErrors), workflowJsonPath);
+      errors.push(e);
+      continue;
+    }
+
+    workflows.push({ ...workflowDirCtx, content: workflow! });
+  }
+
+  return [workflows, errors];
+};
+
+/*
+ * List and read all workflow directories found for the given command target.
+ *
+ * Note, it assumes the valid command target.
+ */
+export const readAllForCommandTarget = async (
+  target: WorkflowCommandTarget,
+  opts: ReadWorkflowDirOpts = {},
+): Promise<[WorkflowDirData[], SourceError[]]> => {
+  const { type: targetType, context: targetCtx } = target;
+
+  if (!targetCtx.exists) {
+    const subject =
+      targetType === "workflowDir"
+        ? "a workflow directory at"
+        : "workflow directories in";
+
+    return CliUx.ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
+  }
+
+  switch (targetType) {
+    case "workflowDir": {
+      return readWorkflowDirs([targetCtx], opts);
+    }
+
+    case "workflowsIndexDir": {
+      const dirents = await fs.readdir(targetCtx.abspath, {
+        withFileTypes: true,
+      });
+
+      const promises = dirents.map(async (dirent) => {
+        const abspath = path.resolve(targetCtx.abspath, dirent.name);
+        const workflowDirCtx: WorkflowDirContext = {
+          type: "workflow",
+          key: dirent.name,
+          abspath,
+          exists: await isWorkflowDir(abspath),
+        };
+        return workflowDirCtx;
+      });
+
+      const workflowDirCtxs = (await Promise.all(promises)).filter(
+        (workflowDirCtx) => workflowDirCtx.exists,
+      );
+      return readWorkflowDirs(workflowDirCtxs, opts);
+    }
+
+    default:
+      throw new Error(`Invalid workflow command target: ${target}`);
+  }
 };
 
 // Exported for tests.

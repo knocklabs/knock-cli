@@ -1,6 +1,5 @@
 import { Flags } from "@oclif/core";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
@@ -34,14 +33,16 @@ export default class TranslationPush extends BaseCommand {
 
   static args = [{ name: "translationRef", required: false }];
 
-  async run(): Promise<ApiV1.UpsertTranslationResp | void> {
-    // First read all translation files found for the given command.
+  async run(): Promise<void> {
+    const { flags } = this.props;
+
+    // 1. First read all translation files found for the given command.
     const target = await Translation.ensureValidCommandTarget(
       this.props,
       this.runContext,
     );
     const [translations, readErrors] =
-      await Translation.readTranslationFilesForCommandTarget(target);
+      await Translation.readAllForCommandTarget(target);
 
     if (readErrors.length > 0) {
       this.error(formatErrors(readErrors, { prependBy: "\n\n" }));
@@ -51,7 +52,7 @@ export default class TranslationPush extends BaseCommand {
       this.error(`No translation files found in ${target.context.abspath}`);
     }
 
-    // Then validate them all ahead of pushing them.
+    // 2. Then validate them all ahead of pushing them.
     spinner.start(`‣ Validating`);
 
     const apiErrors = await TranslationValidate.validateAll(
@@ -59,12 +60,15 @@ export default class TranslationPush extends BaseCommand {
       this.props,
       translations,
     );
-
     if (apiErrors.length > 0) {
       this.error(formatErrors(apiErrors));
     }
 
-    // Finally push up each translation file, abort on the first error.
+    spinner.stop();
+
+    // 3. Finally push up each translation file, abort on the first error.
+    spinner.start(`‣ Pushing`);
+
     for (const translation of translations) {
       // eslint-disable-next-line no-await-in-loop
       const resp = await this.apiV1.upsertTranslation(this.props, {
@@ -82,9 +86,12 @@ export default class TranslationPush extends BaseCommand {
 
     spinner.stop();
 
+    // 4. Display a success message.
     const handledRefs = translations.map((t) => t.ref);
+    const actioned = flags.commit ? "pushed and committed" : "pushed";
+
     this.log(
-      `‣ Successfully pushed ${translations.length} translation(s):\n` +
+      `‣ Successfully ${actioned} ${translations.length} translation(s):\n` +
         indentString(handledRefs.join("\n"), 4),
     );
   }

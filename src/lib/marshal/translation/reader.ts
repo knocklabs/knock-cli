@@ -23,6 +23,9 @@ export type TranslationFileData = TranslationFileContext & {
  * translation file data.
  *
  * Note, it assumes they are valid file paths to translation files.
+ *
+ * TODO: Refactor to take translation file contexts instead of raw file paths,
+ * to keep things consistent with the workflow reader module.
  */
 const readTranslationFiles = async (
   filePaths: string[],
@@ -64,7 +67,7 @@ const readTranslationFiles = async (
  *
  * Note, it assumes the valid command target.
  */
-export const readTranslationFilesForCommandTarget = async (
+export const readAllForCommandTarget = async (
   target: TranslationCommandTarget,
 ): Promise<[TranslationFileData[], SourceError[]]> => {
   const { type: targetType, context: targetCtx } = target;

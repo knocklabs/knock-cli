@@ -129,7 +129,7 @@ export const ensureValidCommandTarget = async (
   // No translationRef arg, which means --all flag is used.
   if (!args.translationRef) {
     // Targeting all translation files in the current locale directory.
-    if (resourceDirCtx) {
+    if (resourceDirCtx && !flags["translations-dir"]) {
       return { type: "translationDir", context: resourceDirCtx };
     }
 
