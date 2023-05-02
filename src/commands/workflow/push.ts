@@ -3,6 +3,7 @@ import { Flags } from "@oclif/core";
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
@@ -20,6 +21,8 @@ export default class WorkflowPush extends BaseCommand {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    all: Flags.boolean(),
+    "workflows-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
     commit: Flags.boolean({
       summary: "Push and commit the workflow(s) at the same time",
     }),
@@ -71,16 +74,13 @@ export default class WorkflowPush extends BaseCommand {
     spinner.start(`‣ Pushing`);
 
     for (const workflow of workflows) {
-      const props = merge(this.props, {
-        args: { workflowKey: workflow.key },
-        flags: { annotate: true },
-      });
+      const props = merge(this.props, { flags: { annotate: true } });
 
       // eslint-disable-next-line no-await-in-loop
-      const resp = await this.apiV1.upsertWorkflow<WithAnnotation>(
-        props,
-        workflow.content,
-      );
+      const resp = await this.apiV1.upsertWorkflow<WithAnnotation>(props, {
+        ...workflow.content,
+        key: workflow.key,
+      });
 
       if (isSuccessResp(resp)) {
         // Update the workflow directory with the successfully pushed workflow

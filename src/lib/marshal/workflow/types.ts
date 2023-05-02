@@ -100,3 +100,7 @@ export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {
   created_at: string;
   updated_at: string;
 };
+
+export type WorkflowInput = AnyObj & {
+  key: string;
+};

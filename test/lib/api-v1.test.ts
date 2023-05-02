@@ -95,6 +95,7 @@ describe("lib/api-v1", () => {
         "rogue-flag": "hey",
       };
       const workflow = {
+        key: "foo",
         name: "New campaign",
       };
       await apiV1.upsertWorkflow(factory.props({ args, flags }), workflow);
@@ -132,6 +133,7 @@ describe("lib/api-v1", () => {
         "rogue-flag": "hey",
       };
       const workflow = {
+        key: "bar",
         name: "New campaign",
       };
       await apiV1.validateWorkflow(factory.props({ args, flags }), workflow);

@@ -6,10 +6,11 @@ import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
+import WorkflowValidate from "@/commands/workflow/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
-import { WorkflowData } from "@/lib/marshal/workflow";
+import { WORKFLOW_JSON, WorkflowData } from "@/lib/marshal/workflow";
 
 const workflowJsonFile = "new-comment/workflow.json";
 
@@ -37,11 +38,7 @@ const mockWorkflowData: WorkflowData<WithAnnotation> = {
 const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "validateWorkflow",
-      sinon.stub().resolves(factory.resp()),
-    )
+    .stub(WorkflowValidate, "validateAll", sinon.stub().resolves([]))
     .stub(
       KnockApiV1.prototype,
       "upsertWorkflow",
@@ -189,11 +186,115 @@ describe("commands/workflow/push", () => {
       .it("throws an error");
   });
 
-  describe("given no workflow key arg", () => {
+  describe("given no workflow key arg or --all flag", () => {
     setupWithStub({ data: { workflow: mockWorkflowData } })
       .stdout()
       .command(["workflow push"])
       .exit(2)
       .it("exists with status 2");
+  });
+
+  describe("given both workflow key arg and --all flag", () => {
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", "foo", "--all"])
+      .exit(2)
+      .it("exists with status 2");
+  });
+
+  describe("given a nonexistent workflows index directory", () => {
+    beforeEach(() => {
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["workflow push", "--all", "--workflows-dir", "workflows"])
+      .catch((error) =>
+        expect(error.message).to.match(/Cannot locate workflow directories in/),
+      )
+      .it("throws an error");
+  });
+
+  describe("given a workflows index directory, without any workflows", () => {
+    beforeEach(() => {
+      const indexDirPath = path.resolve(sandboxDir, "workflows");
+      fs.ensureDirSync(indexDirPath);
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["workflow push", "--all", "--workflows-dir", "workflows"])
+      .catch((error) =>
+        expect(error.message).to.match(/No workflow directories found in/),
+      )
+      .it("throws an error");
+  });
+
+  describe("given a workflows index directory with 2 workflows", () => {
+    const indexDirPath = path.resolve(sandboxDir, "workflows");
+
+    beforeEach(() => {
+      const fooWorkflowJson = path.resolve(indexDirPath, "foo", WORKFLOW_JSON);
+      fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+      const barWorkflowJson = path.resolve(indexDirPath, "bar", WORKFLOW_JSON);
+      fs.outputJsonSync(barWorkflowJson, { name: "Bar" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", "--all", "--workflows-dir", "workflows"])
+      .it("calls apiV1 upsertWorkflow with expected props twice", () => {
+        // Validate all first
+        const stub1 = WorkflowValidate.validateAll as any;
+        sinon.assert.calledOnce(stub1);
+
+        const stub2 = KnockApiV1.prototype.upsertWorkflow as any;
+        sinon.assert.calledTwice(stub2);
+
+        const expectedArgs = {
+          workflowKey: undefined,
+        };
+        const expectedFlags = {
+          annotate: true,
+          "service-token": "valid-token",
+          "api-origin": undefined,
+          environment: "development",
+          all: true,
+          "workflows-dir": {
+            abspath: indexDirPath,
+            exists: true,
+          },
+        };
+
+        // First upsert call
+        sinon.assert.calledWith(
+          stub2.firstCall,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+          ),
+          sinon.match((workflow) =>
+            isEqual(workflow, { key: "bar", name: "Bar" }),
+          ),
+        );
+
+        // Second upsert call
+        sinon.assert.calledWith(
+          stub2.secondCall,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+          ),
+          sinon.match((workflow) =>
+            isEqual(workflow, { key: "foo", name: "Foo" }),
+          ),
+        );
+      });
   });
 });

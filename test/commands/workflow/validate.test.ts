@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
+import { WORKFLOW_JSON } from "@/lib/marshal/workflow";
 
 const workflowJsonFile = "new-comment/workflow.json";
 
@@ -22,7 +23,7 @@ const setupWithStub = (attrs = {}) =>
 
 const currCwd = process.cwd();
 
-describe("commands/workflow/validate", () => {
+describe("commands/workflow/validate (a single workflow)", () => {
   beforeEach(() => {
     fs.removeSync(sandboxDir);
     fs.ensureDirSync(sandboxDir);
@@ -110,11 +111,158 @@ describe("commands/workflow/validate", () => {
       .it("throws an error");
   });
 
-  describe("given no workflow key arg", () => {
+  describe("given no workflow key arg nor --all flag", () => {
     setupWithStub()
       .stdout()
       .command(["workflow validate"])
       .exit(2)
       .it("exists with status 2");
+  });
+});
+
+describe("commands/workflow/validate (all workflows)", () => {
+  beforeEach(() => {
+    fs.removeSync(sandboxDir);
+    fs.ensureDirSync(sandboxDir);
+  });
+  afterEach(() => {
+    process.chdir(currCwd);
+    fs.removeSync(sandboxDir);
+  });
+
+  describe("given a nonexistent workflows index directory", () => {
+    beforeEach(() => {
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["workflow validate", "--all", "--workflows-dir", "workflows"])
+      .catch((error) =>
+        expect(error.message).to.match(/Cannot locate workflow directories in/),
+      )
+      .it("throws an error");
+  });
+
+  describe("given a workflows index directory, without any workflows", () => {
+    beforeEach(() => {
+      const indexDirPath = path.resolve(sandboxDir, "workflows");
+      fs.ensureDirSync(indexDirPath);
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["workflow validate", "--all", "--workflows-dir", "workflows"])
+      .catch((error) =>
+        expect(error.message).to.match(/No workflow directories found in/),
+      )
+      .it("throws an error");
+  });
+
+  describe("given a workflows index directory with 2 valid workflows", () => {
+    const indexDirPath = path.resolve(sandboxDir, "workflows");
+
+    beforeEach(() => {
+      const fooWorkflowJson = path.resolve(indexDirPath, "foo", WORKFLOW_JSON);
+      fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+      const barWorkflowJson = path.resolve(indexDirPath, "bar", WORKFLOW_JSON);
+      fs.outputJsonSync(barWorkflowJson, { name: "Bar" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["workflow validate", "--all", "--workflows-dir", "workflows"])
+      .it("calls apiV1 validateWorkflow with expected props twice", () => {
+        const stub = KnockApiV1.prototype.validateWorkflow as any;
+        sinon.assert.calledTwice(stub);
+
+        const expectedArgs = {
+          workflowKey: undefined,
+        };
+        const expectedFlags = {
+          "service-token": "valid-token",
+          "api-origin": undefined,
+          environment: "development",
+          all: true,
+          "workflows-dir": {
+            abspath: indexDirPath,
+            exists: true,
+          },
+        };
+
+        // First validate call
+        sinon.assert.calledWith(
+          stub.firstCall,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+          ),
+          sinon.match((workflow) =>
+            isEqual(workflow, { key: "bar", name: "Bar" }),
+          ),
+        );
+
+        // Second validate call
+        sinon.assert.calledWith(
+          stub.secondCall,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+          ),
+          sinon.match((workflow) =>
+            isEqual(workflow, { key: "foo", name: "Foo" }),
+          ),
+        );
+      });
+  });
+
+  describe("given a workflows index directory, with 1 valid and 1 invalid workflows", () => {
+    const indexDirPath = path.resolve(sandboxDir, "workflows");
+
+    beforeEach(() => {
+      const fooWorkflowJson = path.resolve(indexDirPath, "foo", WORKFLOW_JSON);
+      fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+      const barWorkflowJson = path.resolve(indexDirPath, "bar", WORKFLOW_JSON);
+      fs.outputJsonSync(barWorkflowJson, { name: 6 });
+
+      process.chdir(sandboxDir);
+    });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(
+        KnockApiV1.prototype,
+        "validateWorkflow",
+        sinon
+          .stub()
+          .onFirstCall()
+          .resolves(
+            factory.resp({
+              status: 422,
+              data: {
+                errors: [{ field: "name", message: "must be a string" }],
+              },
+            }),
+          )
+          .onSecondCall()
+          .resolves(factory.resp()),
+      )
+      .stdout()
+      .command(["workflow validate", "--all", "--workflows-dir", "workflows"])
+      .catch((error) =>
+        expect(error.message).to.match(
+          /JsonDataError: data at "name" must be a string/,
+        ),
+      )
+      .it("calls apiV1 validateWorkflow twice, then errors", () => {
+        const stub = KnockApiV1.prototype.validateWorkflow as any;
+        sinon.assert.calledTwice(stub);
+      });
   });
 });
