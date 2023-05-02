@@ -70,9 +70,7 @@ describe("commands/workflow/validate", () => {
     setupWithStub()
       .stdout()
       .command(["workflow validate", "new-comment"])
-      .catch((error) =>
-        expect(error.message).to.match(/^Found the following errors in/),
-      )
+      .catch((error) => expect(error.message).to.match(/JsonSyntaxError/))
       .it("throws an error");
   });
 

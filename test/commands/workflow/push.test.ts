@@ -39,6 +39,11 @@ const setupWithStub = (attrs = {}) =>
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(
       KnockApiV1.prototype,
+      "validateWorkflow",
+      sinon.stub().resolves(factory.resp()),
+    )
+    .stub(
+      KnockApiV1.prototype,
       "upsertWorkflow",
       sinon.stub().resolves(factory.resp(attrs)),
     );
@@ -144,9 +149,7 @@ describe("commands/workflow/push", () => {
     setupWithStub({ data: { workflow: mockWorkflowData } })
       .stdout()
       .command(["workflow push", "new-comment"])
-      .catch((error) =>
-        expect(error.message).to.match(/^Found the following errors in/),
-      )
+      .catch((error) => expect(error.message).to.match(/JsonSyntaxError/))
       .it("throws an error");
   });
 
