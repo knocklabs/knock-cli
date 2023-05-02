@@ -148,7 +148,7 @@ export default class ApiV1 {
 
   async upsertTranslation(
     { flags }: Props,
-    translation: AnyObj,
+    translation: Translation.TranslationInput,
   ): Promise<AxiosResponse<UpsertTranslationResp>> {
     const params = prune({
       environment: flags.environment,
