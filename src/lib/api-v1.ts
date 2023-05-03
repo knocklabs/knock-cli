@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import BaseCommand, { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
-import { AnyObj, prune } from "@/lib/helpers/object";
+import { prune } from "@/lib/helpers/object";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
@@ -69,8 +69,8 @@ export default class ApiV1 {
   }
 
   async upsertWorkflow<A extends MaybeWithAnnotation>(
-    { args, flags }: Props,
-    workflow: AnyObj,
+    { flags }: Props,
+    workflow: Workflow.WorkflowInput,
   ): Promise<AxiosResponse<UpsertWorkflowResp<A>>> {
     const params = prune({
       environment: flags.environment,
@@ -80,19 +80,19 @@ export default class ApiV1 {
     });
     const data = { workflow };
 
-    return this.put(`/workflows/${args.workflowKey}`, data, { params });
+    return this.put(`/workflows/${workflow.key}`, data, { params });
   }
 
   async validateWorkflow(
-    { args, flags }: Props,
-    workflow: AnyObj,
+    { flags }: Props,
+    workflow: Workflow.WorkflowInput,
   ): Promise<AxiosResponse<ValidateWorkflowResp>> {
     const params = prune({
       environment: flags.environment,
     });
     const data = { workflow };
 
-    return this.put(`/workflows/${args.workflowKey}/validate`, data, {
+    return this.put(`/workflows/${workflow.key}/validate`, data, {
       params,
     });
   }
@@ -148,7 +148,7 @@ export default class ApiV1 {
 
   async upsertTranslation(
     { flags }: Props,
-    translation: AnyObj,
+    translation: Translation.TranslationInput,
   ): Promise<AxiosResponse<UpsertTranslationResp>> {
     const params = prune({
       environment: flags.environment,

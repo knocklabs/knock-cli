@@ -23,6 +23,9 @@ export type TranslationFileData = TranslationFileContext & {
  * translation file data.
  *
  * Note, it assumes they are valid file paths to translation files.
+ *
+ * TODO: Refactor to take translation file contexts instead of raw file paths,
+ * to keep things consistent with the workflow reader module.
  */
 const readTranslationFiles = async (
   filePaths: string[],
@@ -42,18 +45,17 @@ const readTranslationFiles = async (
     if (readJsonErrors.length > 0) {
       const e = new SourceError(formatErrors(readJsonErrors), abspath);
       errors.push(e);
+      continue;
     }
 
-    if (content) {
-      translations.push({
-        ref: translationRef,
-        localeCode,
-        namespace,
-        abspath,
-        exists: true,
-        content: JSON.stringify(content),
-      });
-    }
+    translations.push({
+      ref: translationRef,
+      localeCode,
+      namespace,
+      abspath,
+      exists: true,
+      content: JSON.stringify(content),
+    });
   }
 
   return [translations, errors];
@@ -64,15 +66,18 @@ const readTranslationFiles = async (
  *
  * Note, it assumes the valid command target.
  */
-export const readTranslationFilesForCommandTarget = async (
+export const readAllForCommandTarget = async (
   target: TranslationCommandTarget,
 ): Promise<[TranslationFileData[], SourceError[]]> => {
   const { type: targetType, context: targetCtx } = target;
 
   if (!targetCtx.exists) {
-    return CliUx.ux.error(
-      `Cannot locate translation file(s) at \`${targetCtx.abspath}\``,
-    );
+    const subject =
+      targetType === "translationFile"
+        ? "a translation file at"
+        : "translation files in";
+
+    return CliUx.ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
   }
 
   switch (targetType) {

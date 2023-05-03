@@ -1,14 +1,21 @@
 import * as path from "node:path";
 
+import { CliUx } from "@oclif/core";
 import * as fs from "fs-extra";
 import { take } from "lodash";
 
+import { Props } from "@/lib/base-command";
+import { DirContext } from "@/lib/helpers/fs";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
+import { RunContext, WorkflowDirContext } from "@/lib/run-context";
 
 import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export const WORKFLOW_JSON = "workflow.json";
 export const VISUAL_BLOCKS_JSON = "visual_blocks.json";
+
+export const workflowJsonPath = (workflowDirCtx: WorkflowDirContext): string =>
+  path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON);
 
 // Mark any template fields we are extracting out with this suffix as a rule,
 // so we can reliably interpret the field value.
@@ -34,7 +41,7 @@ export const validateWorkflowKey = (input: string): string | undefined => {
 export const lsWorkflowJson = async (
   dirPath: string,
 ): Promise<string | undefined> => {
-  const workflowJsonPath = path.join(dirPath, WORKFLOW_JSON);
+  const workflowJsonPath = path.resolve(dirPath, WORKFLOW_JSON);
 
   const exists = await fs.pathExists(workflowJsonPath);
   return exists ? workflowJsonPath : undefined;
@@ -154,4 +161,87 @@ export const formatStepSummary = (step: WorkflowStepData): string => {
  */
 export const formatStatus = (workflow: WorkflowData): string => {
   return workflow.active ? "active" : "inactive";
+};
+
+/*
+ * Validate the provided args and flags with the current run context, to first
+ * ensure the invoked command makes sense, and return the target context.
+ */
+type WorkflowDirTarget = {
+  type: "workflowDir";
+  context: WorkflowDirContext;
+};
+type WorkflowsIndexDirTarget = {
+  type: "workflowsIndexDir";
+  context: DirContext;
+};
+export type WorkflowCommandTarget = WorkflowDirTarget | WorkflowsIndexDirTarget;
+
+export const ensureValidCommandTarget = async (
+  props: Props,
+  runContext: RunContext,
+): Promise<WorkflowCommandTarget> => {
+  const { args, flags } = props;
+  const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
+
+  // If the target resource is a different type than the current resource dir
+  // type, error out.
+  if (resourceDirCtx && resourceDirCtx.type !== "workflow") {
+    return CliUx.ux.error(
+      `Cannot run ${commandId} inside a ${resourceDirCtx.type} directory`,
+    );
+  }
+
+  // Cannot accept both workflow key arg and --all flag.
+  if (flags.all && args.workflowKey) {
+    return CliUx.ux.error(
+      `workflowKey arg \`${args.workflowKey}\` cannot also be provided when using --all`,
+    );
+  }
+
+  // --all flag is given, which means no workflow key arg.
+  if (flags.all) {
+    // If --all flag used inside a workflow directory, then require a workflows
+    // dir path.
+    if (resourceDirCtx && !flags["workflows-dir"]) {
+      return CliUx.ux.error("Missing required flag workflows-dir");
+    }
+
+    // Targeting all workflow dirs in the workflows index dir.
+    // TODO: Default to the knock project config first if present before cwd.
+    const defaultToCwd = { abspath: runCwd, exists: true };
+    const indexDirCtx = flags["workflows-dir"] || defaultToCwd;
+
+    return { type: "workflowsIndexDir", context: indexDirCtx };
+  }
+
+  // Workflow key arg is given, which means no --all flag.
+  if (args.workflowKey) {
+    if (resourceDirCtx && resourceDirCtx.key !== args.workflowKey) {
+      return CliUx.ux.error(
+        `Cannot run ${commandId} \`${args.workflowKey}\` inside another workflow directory:\n${resourceDirCtx.key}`,
+      );
+    }
+
+    const targetDirPath = resourceDirCtx
+      ? resourceDirCtx.abspath
+      : path.resolve(runCwd, args.workflowKey);
+
+    const workflowDirCtx: WorkflowDirContext = {
+      type: "workflow",
+      key: args.workflowKey,
+      abspath: targetDirPath,
+      exists: await isWorkflowDir(targetDirPath),
+    };
+
+    return { type: "workflowDir", context: workflowDirCtx };
+  }
+
+  // From this point on, we have neither a workflow key arg nor --all flag.
+  // If running inside a workflow directory, then use that workflow directory.
+  if (resourceDirCtx) {
+    return { type: "workflowDir", context: resourceDirCtx };
+  }
+
+  return CliUx.ux.error("Missing 1 required arg:\nworkflowKey");
 };

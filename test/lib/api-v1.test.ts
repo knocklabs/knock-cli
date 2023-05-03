@@ -95,6 +95,7 @@ describe("lib/api-v1", () => {
         "rogue-flag": "hey",
       };
       const workflow = {
+        key: "foo",
         name: "New campaign",
       };
       await apiV1.upsertWorkflow(factory.props({ args, flags }), workflow);
@@ -132,6 +133,7 @@ describe("lib/api-v1", () => {
         "rogue-flag": "hey",
       };
       const workflow = {
+        key: "bar",
         name: "New campaign",
       };
       await apiV1.validateWorkflow(factory.props({ args, flags }), workflow);
@@ -232,6 +234,120 @@ describe("lib/api-v1", () => {
         to_environment: "staging",
       };
       sinon.assert.calledWith(stub, "/v1/commits/promote", {}, { params });
+
+      stub.restore();
+    });
+  });
+
+  describe("listTranslations", () => {
+    it("makes a GET request to /v1/translations with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          status: 200,
+          data: {
+            entries: [],
+            page_info: factory.pageInfo(),
+          },
+        }),
+      );
+
+      const flags = {
+        environment: "staging",
+        annotate: true,
+        "hide-uncommitted-changes": true,
+        after: "foo",
+        before: "bar",
+        limit: 99,
+      };
+      await apiV1.listTranslations(factory.props({ flags }));
+
+      const params = {
+        environment: "staging",
+        hide_uncommitted_changes: true,
+        after: "foo",
+        before: "bar",
+        limit: 99,
+      };
+      sinon.assert.calledWith(stub, "/v1/translations", { params });
+
+      stub.restore();
+    });
+  });
+
+  describe("upsertTranslation", () => {
+    it("makes a PUT request to /v1/translations/:locale with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          data: factory.translation(),
+        }),
+      );
+
+      const flags = {
+        environment: "development",
+        annotate: true,
+        commit: true,
+        "commit-message": "french translation",
+        "rogue-flag": "hey",
+      };
+      const translation = {
+        locale_code: "fr-FR",
+        namespace: "tasks",
+        content: '{"hello":"Bonjour"}',
+      };
+      await apiV1.upsertTranslation(factory.props({ flags }), translation);
+
+      const params = {
+        environment: "development",
+        commit: true,
+        commit_message: "french translation",
+        namespace: "tasks",
+      };
+      sinon.assert.calledWith(
+        stub,
+        "/v1/translations/fr-FR",
+        { translation },
+        { params },
+      );
+
+      stub.restore();
+    });
+  });
+
+  describe("validateTranslation", () => {
+    it("makes a PUT request to /v1/translations/:locale/validate with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          data: factory.translation(),
+        }),
+      );
+
+      const flags = {
+        environment: "development",
+        "rogue-flag": "hey",
+      };
+      const translation = {
+        locale_code: "fr-FR",
+        namespace: "admin",
+        content: '{"hello":"Bonjour"}',
+      };
+      await apiV1.validateTranslation(factory.props({ flags }), translation);
+
+      const params = {
+        environment: "development",
+        namespace: "admin",
+      };
+      sinon.assert.calledWith(
+        stub,
+        "/v1/translations/fr-FR/validate",
+        { translation },
+        { params },
+      );
 
       stub.restore();
     });

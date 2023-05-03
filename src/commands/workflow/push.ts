@@ -1,20 +1,17 @@
-import * as path from "node:path";
-
 import { Flags } from "@oclif/core";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import { formatErrors } from "@/lib/helpers/error";
-import { AnyObj, merge } from "@/lib/helpers/object";
-import { withSpinner } from "@/lib/helpers/request";
+import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
+import { merge } from "@/lib/helpers/object";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import { indentString } from "@/lib/helpers/string";
+import { spinner } from "@/lib/helpers/ux";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import * as Workflow from "@/lib/marshal/workflow";
-import {
-  ensureResourceDirForTarget,
-  ResourceTarget,
-  WorkflowDirContext,
-} from "@/lib/run-context";
+
+import WorkflowValidate from "./validate";
 
 export default class WorkflowPush extends BaseCommand {
   static flags = {
@@ -24,6 +21,8 @@ export default class WorkflowPush extends BaseCommand {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    all: Flags.boolean(),
+    "workflows-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
     commit: Flags.boolean({
       summary: "Push and commit the workflow(s) at the same time",
     }),
@@ -36,76 +35,79 @@ export default class WorkflowPush extends BaseCommand {
 
   static args = [{ name: "workflowKey", required: false }];
 
-  async run(): Promise<ApiV1.UpsertWorkflowResp | void> {
-    // 1. Retrieve the target workflow directory context.
-    const dirContext = await this.getWorkflowDirContext();
+  async run(): Promise<void> {
+    const { flags } = this.props;
 
-    this.log(`‣ Reading \`${dirContext.key}\` at ${dirContext.abspath}`);
+    // 1. First read all workflow directories found for the given command.
+    const target = await Workflow.ensureValidCommandTarget(
+      this.props,
+      this.runContext,
+    );
+    const [workflows, readErrors] = await Workflow.readAllForCommandTarget(
+      target,
+      { withExtractedFiles: true },
+    );
 
-    // 2. Read the workflow.json with its template files.
-    const [workflow, errors] = await Workflow.readWorkflowDir(dirContext, {
-      withExtractedFiles: true,
-    });
-    if (errors.length > 0) {
-      this.error(
-        `Found the following errors in \`${dirContext.key}\` ${Workflow.WORKFLOW_JSON}\n\n` +
-          formatErrors(errors),
+    if (readErrors.length > 0) {
+      this.error(formatErrors(readErrors, { prependBy: "\n\n" }));
+    }
+
+    if (workflows.length === 0) {
+      this.error(`No workflow directories found in ${target.context.abspath}`);
+    }
+
+    // 2. Then validate them all ahead of pushing them.
+    spinner.start(`‣ Validating`);
+
+    const apiErrors = await WorkflowValidate.validateAll(
+      this.apiV1,
+      this.props,
+      workflows,
+    );
+
+    if (apiErrors.length > 0) {
+      this.error(formatErrors(apiErrors, { prependBy: "\n\n" }));
+    }
+
+    spinner.stop();
+
+    // 3. Finally push up each workflow, abort on the first error.
+    spinner.start(`‣ Pushing`);
+
+    for (const workflow of workflows) {
+      const props = merge(this.props, { flags: { annotate: true } });
+
+      // eslint-disable-next-line no-await-in-loop
+      const resp = await this.apiV1.upsertWorkflow<WithAnnotation>(props, {
+        ...workflow.content,
+        key: workflow.key,
+      });
+
+      if (isSuccessResp(resp)) {
+        // Update the workflow directory with the successfully pushed workflow
+        // payload from the server.
+        // eslint-disable-next-line no-await-in-loop
+        await Workflow.writeWorkflowDirFromData(workflow, resp.data.workflow!);
+        continue;
+      }
+
+      const error = new SourceError(
+        formatErrorRespMessage(resp),
+        Workflow.workflowJsonPath(workflow),
+        "ApiError",
       );
+      this.error(formatError(error));
     }
 
-    // 3. Push up the compiled workflow data.
-    const resp = await withSpinner<ApiV1.UpsertWorkflowResp<WithAnnotation>>(
-      () => {
-        const props = merge(this.props, {
-          args: { workflowKey: dirContext.key },
-          flags: { annotate: true },
-        });
+    spinner.stop();
 
-        return this.apiV1.upsertWorkflow(props, workflow as AnyObj);
-      },
-    );
+    // 4. Display a success message.
+    const workflowKeys = workflows.map((w) => w.key);
+    const actioned = flags.commit ? "pushed and committed" : "pushed";
 
-    // 4. Update the workflow directory with the successfully pushed workflow
-    // payload from the server.
-    await Workflow.writeWorkflowDirFromData(dirContext, resp.data.workflow!);
     this.log(
-      `‣ Successfully pushed \`${dirContext.key}\`, and updated ${dirContext.abspath}`,
+      `‣ Successfully ${actioned} ${workflows.length} workflow(s):\n` +
+        indentString(workflowKeys.join("\n"), 4),
     );
-  }
-
-  async getWorkflowDirContext(): Promise<WorkflowDirContext> {
-    const { workflowKey } = this.props.args;
-    const { resourceDir, cwd: runCwd } = this.runContext;
-
-    if (resourceDir) {
-      const target: ResourceTarget = {
-        commandId: BaseCommand.id,
-        type: "workflow",
-        key: workflowKey,
-      };
-
-      return ensureResourceDirForTarget(
-        resourceDir,
-        target,
-      ) as WorkflowDirContext;
-    }
-
-    if (workflowKey) {
-      const dirPath = path.resolve(runCwd, workflowKey);
-      const exists = await Workflow.isWorkflowDir(dirPath);
-
-      return exists
-        ? {
-            type: "workflow",
-            key: workflowKey,
-            abspath: dirPath,
-            exists,
-          }
-        : this.error(
-            `Cannot locate a workflow directory for \`${workflowKey}\``,
-          );
-    }
-
-    return this.error("Missing 1 required arg:\nworkflowKey");
   }
 }

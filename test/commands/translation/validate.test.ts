@@ -6,23 +6,21 @@ import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
-import TranslationValidate from "@/commands/translation/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 
-const setupWithStub = (upsertRespAttrs = {}) =>
+const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(TranslationValidate, "validateAll", sinon.stub().resolves([]))
     .stub(
       KnockApiV1.prototype,
-      "upsertTranslation",
-      sinon.stub().resolves(factory.resp(upsertRespAttrs)),
+      "validateTranslation",
+      sinon.stub().resolves(factory.resp(attrs)),
     );
 
 const currCwd = process.cwd();
 
-describe("commands/translation/push", () => {
+describe("commands/translation/validate (a single translation)", () => {
   beforeEach(() => {
     fs.removeSync(sandboxDir);
     fs.ensureDirSync(sandboxDir);
@@ -32,105 +30,86 @@ describe("commands/translation/push", () => {
     fs.removeSync(sandboxDir);
   });
 
-  describe("given a translation file exists for locale code and namespace", () => {
+  describe("given a valid en translation file", () => {
     beforeEach(() => {
-      const translationsDir = path.resolve(sandboxDir, "translations");
-      const abspath = path.resolve(translationsDir, "en", "admin.en.json");
-      fs.outputJsonSync(abspath, JSON.parse('{"welcome":"hello!"}'));
+      const abspath = path.resolve(sandboxDir, "en", "en.json");
+      fs.outputJsonSync(abspath, { hello: "Heyyyy" });
 
-      process.chdir(translationsDir);
+      process.chdir(sandboxDir);
     });
 
     setupWithStub()
       .stdout()
-      .command(["translation push", "admin.en"])
-      .it("calls apiV1 upsertTranslation with expected props", () => {
+      .command(["translation validate", "en"])
+      .it("calls apiV1 validateTranslation with expected props", () => {
         sinon.assert.calledWith(
-          KnockApiV1.prototype.upsertTranslation as any,
-          sinon.match(({ flags }) => {
-            return isEqual(flags, {
-              "service-token": "valid-token",
-              "api-origin": undefined,
-              environment: "development",
-            });
-          }),
-          sinon.match({
-            content: '{"welcome":"hello!"}',
-            locale_code: "en",
-            namespace: "admin",
-          }),
-        );
-      });
-
-    setupWithStub()
-      .stdout()
-      .command([
-        "translation push",
-        "admin.en",
-        "--commit",
-        "-m",
-        "this is a commit comment!",
-      ])
-      .it(
-        "calls apiV1 upsertTranslation with commit flags, if provided",
-        () => {
-          sinon.assert.calledWith(
-            KnockApiV1.prototype.upsertTranslation as any,
-            sinon.match(({ flags }) =>
+          KnockApiV1.prototype.validateTranslation as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { translationRef: "en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
                 "api-origin": undefined,
                 environment: "development",
-                commit: true,
-                "commit-message": "this is a commit comment!",
               }),
-            ),
-            sinon.match({
-              content: '{"welcome":"hello!"}',
+          ),
+          sinon.match((translation) =>
+            isEqual(translation, {
               locale_code: "en",
-              namespace: "admin",
+              namespace: undefined,
+              content: '{"hello":"Heyyyy"}',
             }),
-          );
-        },
-      );
+          ),
+        );
+      });
   });
 
-  describe("given a translation file, with syntax errors", () => {
+  describe("given a valid admin.en translation file", () => {
     beforeEach(() => {
-      const translationsDir = path.resolve(sandboxDir, "translations");
-      const abspath = path.resolve(translationsDir, "en", "admin.en.json");
-      fs.outputFileSync(abspath, '{"name":"New comment",}');
+      const abspath = path.resolve(sandboxDir, "en", "admin.en.json");
+      fs.outputJsonSync(abspath, { hello: "Heyyyy" });
 
-      process.chdir(translationsDir);
+      process.chdir(sandboxDir);
     });
 
     setupWithStub()
       .stdout()
-      .command(["translation push", "admin.en"])
-      .catch((error) => expect(error.message).to.match(/JsonSyntaxError/))
-      .it("throws an error");
+      .command(["translation validate", "admin.en"])
+      .it("calls apiV1 validateTranslation with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.validateTranslation as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { translationRef: "admin.en" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                "api-origin": undefined,
+                environment: "development",
+              }),
+          ),
+          sinon.match((translation) =>
+            isEqual(translation, {
+              locale_code: "en",
+              namespace: "admin",
+              content: '{"hello":"Heyyyy"}',
+            }),
+          ),
+        );
+      });
   });
 
-  describe("given a translation file, with data errors", () => {
+  describe("given a translation file, with syntax errors", () => {
     beforeEach(() => {
-      const translationsDir = path.resolve(sandboxDir, "translations");
-      const abspath = path.resolve(translationsDir, "en", "admin.en.json");
-      fs.outputJsonSync(abspath, { name: 10 });
+      const abspath = path.resolve(sandboxDir, "en", "en.json");
+      fs.outputFileSync(abspath, '{"hello":"Heyyyy",}');
 
-      process.chdir(translationsDir);
+      process.chdir(sandboxDir);
     });
 
-    setupWithStub({
-      status: 422,
-      data: { errors: [{ field: "name", message: "must be a string" }] },
-    })
+    setupWithStub()
       .stdout()
-      .command(["translation push", "admin.en"])
-      .catch((error) =>
-        expect(error.message).to.match(
-          /JsonDataError.*"name" must be a string/,
-        ),
-      )
+      .command(["translation validate", "en"])
+      .catch((error) => expect(error.message).to.match(/JsonSyntaxError/))
       .it("throws an error");
   });
 
@@ -141,22 +120,33 @@ describe("commands/translation/push", () => {
 
     setupWithStub()
       .stdout()
-      .command(["translation push", "does-not-exist"])
+      .command(["translation validate", "admin.en"])
       .catch((error) =>
         expect(error.message).to.match(/Cannot locate a translation file/),
       )
       .it("throws an error");
   });
 
-  describe("given no translation ref arg and no --all", () => {
+  describe("given no translation ref arg nor --all flag", () => {
     setupWithStub()
       .stdout()
-      .command(["translation push"])
+      .command(["translation validate"])
       .exit(2)
       .it("exists with status 2");
   });
+});
 
-  describe("given --all and a nonexistent translations index directory", () => {
+describe("commands/translation/validate (all translations)", () => {
+  beforeEach(() => {
+    fs.removeSync(sandboxDir);
+    fs.ensureDirSync(sandboxDir);
+  });
+  afterEach(() => {
+    process.chdir(currCwd);
+    fs.removeSync(sandboxDir);
+  });
+
+  describe("given a nonexistent translations index directory", () => {
     beforeEach(() => {
       process.chdir(sandboxDir);
     });
@@ -164,7 +154,7 @@ describe("commands/translation/push", () => {
     setupWithStub()
       .stdout()
       .command([
-        "translation push",
+        "translation validate",
         "--all",
         "--translations-dir",
         "translations",
@@ -175,7 +165,7 @@ describe("commands/translation/push", () => {
       .it("throws an error");
   });
 
-  describe("given --all and a translations index directory, without any translation files", () => {
+  describe("given a translations index directory, without any translation files", () => {
     beforeEach(() => {
       const indexDirPath = path.resolve(sandboxDir, "translations");
       fs.ensureDirSync(indexDirPath);
@@ -186,7 +176,7 @@ describe("commands/translation/push", () => {
     setupWithStub()
       .stdout()
       .command([
-        "translation push",
+        "translation validate",
         "--all",
         "--translations-dir",
         "translations",
@@ -197,7 +187,7 @@ describe("commands/translation/push", () => {
       .it("throws an error");
   });
 
-  describe("given --all and a translations index directory with multiple translation files", () => {
+  describe("given a translations index directory with multiple translation files", () => {
     const indexDirPath = path.resolve(sandboxDir, "translations");
 
     beforeEach(() => {
@@ -207,8 +197,18 @@ describe("commands/translation/push", () => {
       fs.outputJsonSync(path.resolve(indexDirPath, "en", "admin.en.json"), {
         admin: "foo",
       });
+      // Invalid translation file in a valid locale directory.
+      fs.outputJsonSync(path.resolve(indexDirPath, "en", "yolo.json"), {
+        yolo: "foo",
+      });
+
       fs.outputJsonSync(path.resolve(indexDirPath, "es", "tasks.es.json"), {
         hello: "Hola",
+      });
+
+      // Invalid locale directory.
+      fs.outputJsonSync(path.resolve(indexDirPath, "blah", "blah.json"), {
+        blah: "Blah",
       });
 
       process.chdir(sandboxDir);
@@ -217,20 +217,16 @@ describe("commands/translation/push", () => {
     setupWithStub()
       .stdout()
       .command([
-        "translation push",
+        "translation validate",
         "--all",
         "--translations-dir",
         "translations",
       ])
       .it(
-        "calls apiV1 upsertTranslation with expected props for correct number of times",
+        "calls apiV1 validateTranslation with expected props for correct number of times",
         () => {
-          // Validate all first
-          const stub1 = TranslationValidate.validateAll as any;
-          sinon.assert.calledOnce(stub1);
-
-          const stub2 = KnockApiV1.prototype.upsertTranslation as any;
-          sinon.assert.calledThrice(stub2);
+          const stub = KnockApiV1.prototype.validateTranslation as any;
+          sinon.assert.calledThrice(stub);
 
           const expectedArgs = {
             translationRef: undefined,
@@ -246,9 +242,9 @@ describe("commands/translation/push", () => {
             },
           };
 
-          // First push call
+          // First validate call
           sinon.assert.calledWith(
-            stub2.firstCall,
+            stub.firstCall,
             sinon.match(
               ({ args, flags }) =>
                 isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
@@ -262,9 +258,9 @@ describe("commands/translation/push", () => {
             ),
           );
 
-          // Second push call
+          // Second validate call
           sinon.assert.calledWith(
-            stub2.secondCall,
+            stub.secondCall,
             sinon.match(
               ({ args, flags }) =>
                 isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
@@ -278,9 +274,9 @@ describe("commands/translation/push", () => {
             ),
           );
 
-          // Third push call
+          // Third validate call
           sinon.assert.calledWith(
-            stub2.thirdCall,
+            stub.thirdCall,
             sinon.match(
               ({ args, flags }) =>
                 isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
