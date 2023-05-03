@@ -351,8 +351,7 @@ const readWorkflowDirs = async (
   const workflows: WorkflowDirData[] = [];
   const errors: SourceError[] = [];
 
-  for (const workflowDirCtx of workflowDirCtxs) {
-    // eslint-disable-next-line no-await-in-loop
+  const promises = workflowDirCtxs.map(async (workflowDirCtx) => {
     const [workflow, readErrors] = await readWorkflowDir(workflowDirCtx, opts);
 
     if (readErrors.length > 0) {
@@ -362,11 +361,12 @@ const readWorkflowDirs = async (
       );
       const e = new SourceError(formatErrors(readErrors), workflowJsonPath);
       errors.push(e);
-      continue;
+      return;
     }
 
     workflows.push({ ...workflowDirCtx, content: workflow! });
-  }
+  });
+  await Promise.all(promises);
 
   return [workflows, errors];
 };

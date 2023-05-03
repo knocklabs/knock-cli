@@ -33,31 +33,30 @@ const readTranslationFiles = async (
   const translations: TranslationFileData[] = [];
   const errors: SourceError[] = [];
 
-  for (const abspath of filePaths) {
+  const promises = filePaths.map(async (abspath) => {
     const { name: translationRef } = path.parse(abspath);
     const parsedRef = parseTranslationRef(translationRef)!;
-    if (!parsedRef) continue;
+    if (!parsedRef) return;
 
     const { localeCode, namespace } = parsedRef;
-    // eslint-disable-next-line no-await-in-loop
     const [content, readJsonErrors] = await readJson(abspath);
 
     if (readJsonErrors.length > 0) {
       const e = new SourceError(formatErrors(readJsonErrors), abspath);
       errors.push(e);
+      return;
     }
 
-    if (content) {
-      translations.push({
-        ref: translationRef,
-        localeCode,
-        namespace,
-        abspath,
-        exists: true,
-        content: JSON.stringify(content),
-      });
-    }
-  }
+    translations.push({
+      ref: translationRef,
+      localeCode,
+      namespace,
+      abspath,
+      exists: true,
+      content: JSON.stringify(content),
+    });
+  });
+  await Promise.all(promises);
 
   return [translations, errors];
 };
