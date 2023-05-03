@@ -82,6 +82,12 @@ describe("commands/workflow/push", () => {
                 annotate: true,
               }),
           ),
+          sinon.match((workflow) =>
+            isEqual(workflow, {
+              key: "new-comment",
+              name: "New comment",
+            }),
+          ),
         );
       });
 
@@ -110,6 +116,12 @@ describe("commands/workflow/push", () => {
                 // Internally set flags
                 annotate: true,
               }),
+          ),
+          sinon.match((workflow) =>
+            isEqual(workflow, {
+              key: "new-comment",
+              name: "New comment",
+            }),
           ),
         );
       });

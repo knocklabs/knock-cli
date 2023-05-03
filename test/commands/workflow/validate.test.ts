@@ -56,6 +56,12 @@ describe("commands/workflow/validate (a single workflow)", () => {
                 environment: "development",
               }),
           ),
+          sinon.match((workflow) =>
+            isEqual(workflow, {
+              key: "new-comment",
+              name: "New comment",
+            }),
+          ),
         );
       });
   });
