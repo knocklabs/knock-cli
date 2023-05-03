@@ -122,7 +122,7 @@ describe("commands/translation/validate (a single translation)", () => {
       .stdout()
       .command(["translation validate", "admin.en"])
       .catch((error) =>
-        expect(error.message).to.match(/Cannot locate translation file\(s\)/),
+        expect(error.message).to.match(/Cannot locate a translation file/),
       )
       .it("throws an error");
   });
@@ -160,7 +160,7 @@ describe("commands/translation/validate (all translations)", () => {
         "translations",
       ])
       .catch((error) =>
-        expect(error.message).to.match(/Cannot locate translation file\(s\)/),
+        expect(error.message).to.match(/Cannot locate translation files/),
       )
       .it("throws an error");
   });

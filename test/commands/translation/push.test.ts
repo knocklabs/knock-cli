@@ -143,7 +143,7 @@ describe("commands/translation/push", () => {
       .stdout()
       .command(["translation push", "does-not-exist"])
       .catch((error) =>
-        expect(error.message).to.match(/Cannot locate translation file\(s\)/),
+        expect(error.message).to.match(/Cannot locate a translation file/),
       )
       .it("throws an error");
   });
@@ -170,7 +170,7 @@ describe("commands/translation/push", () => {
         "translations",
       ])
       .catch((error) =>
-        expect(error.message).to.match(/Cannot locate translation file\(s\)/),
+        expect(error.message).to.match(/Cannot locate translation files/),
       )
       .it("throws an error");
   });
