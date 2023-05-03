@@ -1,8 +1,10 @@
 import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { TranslationDirContext } from "@/lib/run-context";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
+import { DirContext } from "@/lib/helpers/fs";
 import { merge } from "@/lib/helpers/object";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
@@ -19,24 +21,48 @@ export default class TranslationPull extends BaseCommand {
   };
 
   async run(): Promise<void> {
-    const { flags } = this.props;
-    // TODO MKD: Enable pulling a single translation or group of translations for locale
-    return flags.all
-      ? this.pullAllTranslations()
-      : this.error("Must use --all to pull all translations");
+    const target = await Translation.ensureValidCommandTarget(
+      this.props,
+      this.runContext,
+    );
+
+    switch (target.type) {
+      case "translationFile":
+        this.pullOneTranslation(target.context);
+        return;
+
+      case "translationDir":
+        this.pullAllTranslationsForLocale(target.context);
+        return;
+
+      case "translationsIndexDir":
+        this.pullAllTranslations(target.context);
+        return;
+
+      default:
+        throw new Error(`Invalid translation command target: ${target}`);
+    }
+  }
+
+  /*
+   * Pull a single translation
+   */
+  async pullOneTranslation(translationFileCtx: Translation.TranslationFileContext): Promise<void> {
+    // XXX:
+  }
+
+  /*
+   * Pull all translations for a locale
+   */
+  async pullAllTranslationsForLocale(translationDirCtx: TranslationDirContext): Promise<void> {
+    // XXX
   }
 
   /*
    * Pull all translations
    */
-
-  async pullAllTranslations(): Promise<void> {
+  async pullAllTranslations(targetDirCtx: DirContext): Promise<void> {
     const { flags } = this.props;
-
-    // TODO: In the future we should default to the knock project config first
-    // if present, before defaulting to the cwd.
-    const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags["translations-dir"] || defaultToCwd;
 
     const prompt = targetDirCtx.exists
       ? `Pull latest translations into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`
