@@ -73,9 +73,12 @@ export const readAllForCommandTarget = async (
   const { type: targetType, context: targetCtx } = target;
 
   if (!targetCtx.exists) {
-    return CliUx.ux.error(
-      `Cannot locate translation file(s) at \`${targetCtx.abspath}\``,
-    );
+    const subject =
+      targetType === "translationFile"
+        ? "a translation file at"
+        : "translation files in";
+
+    return CliUx.ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
   }
 
   switch (targetType) {
