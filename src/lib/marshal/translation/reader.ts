@@ -33,18 +33,19 @@ const readTranslationFiles = async (
   const translations: TranslationFileData[] = [];
   const errors: SourceError[] = [];
 
-  const promises = filePaths.map(async (abspath) => {
+  for (const abspath of filePaths) {
     const { name: translationRef } = path.parse(abspath);
     const parsedRef = parseTranslationRef(translationRef)!;
-    if (!parsedRef) return;
+    if (!parsedRef) continue;
 
     const { localeCode, namespace } = parsedRef;
+    // eslint-disable-next-line no-await-in-loop
     const [content, readJsonErrors] = await readJson(abspath);
 
     if (readJsonErrors.length > 0) {
       const e = new SourceError(formatErrors(readJsonErrors), abspath);
       errors.push(e);
-      return;
+      continue;
     }
 
     translations.push({
@@ -55,8 +56,7 @@ const readTranslationFiles = async (
       exists: true,
       content: JSON.stringify(content),
     });
-  });
-  await Promise.all(promises);
+  }
 
   return [translations, errors];
 };
