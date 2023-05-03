@@ -223,7 +223,7 @@ describe("commands/translation/validate (all translations)", () => {
         "translations",
       ])
       .it(
-        "calls apiV1 validateTranslation with expected props correct number of times",
+        "calls apiV1 validateTranslation with expected props for correct number of times",
         () => {
           const stub = KnockApiV1.prototype.validateTranslation as any;
           sinon.assert.calledThrice(stub);

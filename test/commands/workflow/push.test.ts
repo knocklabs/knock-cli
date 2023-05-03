@@ -214,7 +214,7 @@ describe("commands/workflow/push", () => {
       .it("exists with status 2");
   });
 
-  describe("given a nonexistent workflows index directory", () => {
+  describe("given --all and a nonexistent workflows index directory", () => {
     beforeEach(() => {
       process.chdir(sandboxDir);
     });
@@ -228,7 +228,7 @@ describe("commands/workflow/push", () => {
       .it("throws an error");
   });
 
-  describe("given a workflows index directory, without any workflows", () => {
+  describe("given --all and a workflows index directory, without any workflows", () => {
     beforeEach(() => {
       const indexDirPath = path.resolve(sandboxDir, "workflows");
       fs.ensureDirSync(indexDirPath);
@@ -245,7 +245,7 @@ describe("commands/workflow/push", () => {
       .it("throws an error");
   });
 
-  describe("given a workflows index directory with 2 workflows", () => {
+  describe("given --all and a workflows index directory with 2 workflows", () => {
     const indexDirPath = path.resolve(sandboxDir, "workflows");
 
     beforeEach(() => {

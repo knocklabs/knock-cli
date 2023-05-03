@@ -6,17 +6,14 @@ import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
+import TranslationValidate from "@/commands/translation/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 
 const setupWithStub = (upsertRespAttrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "validateTranslation",
-      sinon.stub().resolves(factory.resp()),
-    )
+    .stub(TranslationValidate, "validateAll", sinon.stub().resolves([]))
     .stub(
       KnockApiV1.prototype,
       "upsertTranslation",
@@ -157,5 +154,146 @@ describe("commands/translation/push", () => {
       .command(["translation push"])
       .exit(2)
       .it("exists with status 2");
+  });
+
+  describe("given --all and a nonexistent translations index directory", () => {
+    beforeEach(() => {
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command([
+        "translation push",
+        "--all",
+        "--translations-dir",
+        "translations",
+      ])
+      .catch((error) =>
+        expect(error.message).to.match(/Cannot locate translation file\(s\)/),
+      )
+      .it("throws an error");
+  });
+
+  describe("given --all and a translations index directory, without any translation files", () => {
+    beforeEach(() => {
+      const indexDirPath = path.resolve(sandboxDir, "translations");
+      fs.ensureDirSync(indexDirPath);
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command([
+        "translation push",
+        "--all",
+        "--translations-dir",
+        "translations",
+      ])
+      .catch((error) =>
+        expect(error.message).to.match(/No translation files found in/),
+      )
+      .it("throws an error");
+  });
+
+  describe("given --all and a translations index directory with multiple translation files", () => {
+    const indexDirPath = path.resolve(sandboxDir, "translations");
+
+    beforeEach(() => {
+      fs.outputJsonSync(path.resolve(indexDirPath, "en", "en.json"), {
+        hello: "Heyyyy",
+      });
+      fs.outputJsonSync(path.resolve(indexDirPath, "en", "admin.en.json"), {
+        admin: "foo",
+      });
+      fs.outputJsonSync(path.resolve(indexDirPath, "es", "tasks.es.json"), {
+        hello: "Hola",
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command([
+        "translation push",
+        "--all",
+        "--translations-dir",
+        "translations",
+      ])
+      .it(
+        "calls apiV1 upsertTranslation with expected props for correct number of times",
+        () => {
+          // Validate all first
+          const stub1 = TranslationValidate.validateAll as any;
+          sinon.assert.calledOnce(stub1);
+
+          const stub2 = KnockApiV1.prototype.upsertTranslation as any;
+          sinon.assert.calledThrice(stub2);
+
+          const expectedArgs = {
+            translationRef: undefined,
+          };
+          const expectedFlags = {
+            "service-token": "valid-token",
+            "api-origin": undefined,
+            environment: "development",
+            all: true,
+            "translations-dir": {
+              abspath: indexDirPath,
+              exists: true,
+            },
+          };
+
+          // First push call
+          sinon.assert.calledWith(
+            stub2.firstCall,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+            ),
+            sinon.match((translation) =>
+              isEqual(translation, {
+                locale_code: "en",
+                namespace: "admin",
+                content: '{"admin":"foo"}',
+              }),
+            ),
+          );
+
+          // Second push call
+          sinon.assert.calledWith(
+            stub2.secondCall,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+            ),
+            sinon.match((translation) =>
+              isEqual(translation, {
+                locale_code: "en",
+                namespace: undefined,
+                content: '{"hello":"Heyyyy"}',
+              }),
+            ),
+          );
+
+          // Third push call
+          sinon.assert.calledWith(
+            stub2.thirdCall,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+            ),
+            sinon.match((translation) =>
+              isEqual(translation, {
+                locale_code: "es",
+                namespace: "tasks",
+                content: '{"hello":"Hola"}',
+              }),
+            ),
+          );
+        },
+      );
   });
 });
