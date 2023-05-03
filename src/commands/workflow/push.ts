@@ -45,6 +45,7 @@ export default class WorkflowPush extends BaseCommand {
     );
     const [workflows, readErrors] = await Workflow.readAllForCommandTarget(
       target,
+      { withExtractedFiles: true },
     );
 
     if (readErrors.length > 0) {
