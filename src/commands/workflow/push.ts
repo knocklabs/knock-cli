@@ -66,7 +66,7 @@ export default class WorkflowPush extends BaseCommand {
     );
 
     if (apiErrors.length > 0) {
-      this.error(formatErrors(apiErrors));
+      this.error(formatErrors(apiErrors, { prependBy: "\n\n" }));
     }
 
     spinner.stop();

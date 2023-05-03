@@ -61,7 +61,7 @@ export default class TranslationPush extends BaseCommand {
       translations,
     );
     if (apiErrors.length > 0) {
-      this.error(formatErrors(apiErrors));
+      this.error(formatErrors(apiErrors, { prependBy: "\n\n" }));
     }
 
     spinner.stop();
