@@ -35,16 +35,13 @@ export default class TranslationPull extends BaseCommand {
 
     switch (target.type) {
       case "translationFile":
-        this.pullOneTranslation(target.context);
-        return;
+        return this.pullOneTranslation(target.context);
 
       case "translationDir":
-        this.pullAllTranslationsForLocale(target.context);
-        return;
+        return this.pullAllTranslationsForLocale(target.context);
 
       case "translationsIndexDir":
-        this.pullAllTranslations(target.context);
-        return;
+        return this.pullAllTranslations(target.context);
 
       default:
         throw new Error(`Invalid translation command target: ${target}`);
@@ -60,9 +57,7 @@ export default class TranslationPull extends BaseCommand {
     const { flags } = this.props;
 
     if (targetCtx.exists) {
-      this.log(
-        `‣ Found the translation \`${targetCtx.ref}\` at ${targetCtx.abspath}`,
-      );
+      this.log(`‣ Found \`${targetCtx.ref}\` at ${targetCtx.abspath}`);
     } else {
       const prompt = `Create a new translation file \`${targetCtx.ref}\` at ${targetCtx.abspath}?`;
       const input = flags.force || (await promptToConfirm(prompt));
