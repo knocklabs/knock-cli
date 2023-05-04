@@ -14,6 +14,7 @@ import {
   TranslationFileContext,
 } from "./helpers";
 
+// Hydrated translation file context with its content.
 export type TranslationFileData = TranslationFileContext & {
   content: string;
 };

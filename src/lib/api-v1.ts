@@ -134,16 +134,32 @@ export default class ApiV1 {
 
   // By resources: Translations
 
-  async listTranslations({
-    flags,
-  }: Props): Promise<AxiosResponse<ListTranslationResp>> {
+  async listTranslations(
+    { flags }: Props,
+    filters: Partial<Translation.TranslationIdentifier> = {},
+  ): Promise<AxiosResponse<ListTranslationResp>> {
     const params = prune({
       environment: flags.environment,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      locale_code: filters.localeCode,
+      namespace: filters.namespace,
       ...toPageParams(flags),
     });
 
     return this.get("/translations", { params });
+  }
+
+  async getTranslation(
+    { flags }: Props,
+    translation: Translation.TranslationIdentifier,
+  ): Promise<AxiosResponse<GetTranslationResp>> {
+    const params = prune({
+      environment: flags.environment,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      namespace: translation.namespace,
+    });
+
+    return this.get(`/translations/${translation.localeCode}`, { params });
   }
 
   async upsertTranslation(
@@ -224,6 +240,8 @@ export type ActivateWorkflowResp = {
 };
 
 export type ListTranslationResp = PaginatedResp<Translation.TranslationData>;
+
+export type GetTranslationResp = Translation.TranslationData;
 
 export type UpsertTranslationResp = {
   translation?: Translation.TranslationData;
