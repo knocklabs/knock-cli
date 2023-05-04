@@ -8,6 +8,8 @@ import { Props } from "@/lib/base-command";
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
+import { TranslationData } from "./types";
+
 // Minimum data required to identify a single unique translation.
 export type TranslationIdentifier = {
   localeCode: string;
@@ -19,6 +21,24 @@ export type TranslationFileContext = TranslationIdentifier & {
   abspath: string;
   exists: boolean;
 };
+
+/*
+ * Returns a human readable language for the given locale code.
+ */
+export const formatLanguage = (translation: TranslationData): string => {
+  const lang = localeData.getByTag(translation.locale_code);
+
+  return lang.location ? `${lang.name}, ${lang.location}` : lang.name;
+};
+
+/*
+ * Returns a formatted translation "ref".
+ */
+export const formatRef = ({
+  locale_code,
+  namespace,
+}: TranslationData): string =>
+  namespace ? `${namespace}.${locale_code}` : locale_code;
 
 /*
  * Evaluates whether the string is a valid locale name
@@ -67,7 +87,7 @@ export const buildTranslationFileCtx = async (
  */
 type ParsedTranslationRef = {
   localeCode: string;
-  namespace?: string;
+  namespace: string | undefined;
 };
 export const parseTranslationRef = (
   reference: string,
@@ -76,7 +96,7 @@ export const parseTranslationRef = (
 
   // Locale code only (e.g. `en`)
   if (strings.length === 1) {
-    return { localeCode: strings[0] };
+    return { localeCode: strings[0], namespace: undefined };
   }
 
   // Locale code prefixed with a namespace (e.g. `admin.en`)
@@ -149,7 +169,7 @@ export const ensureValidCommandTarget = async (
   const parsedRef = parseTranslationRef(args.translationRef);
   if (!parsedRef) {
     return CliUx.ux.error(
-      `Invalid translationRef arg \`${args.translationRef}\`, use valid <locale> or <namespace>.<locale> for namespaced translations`,
+      `Invalid translation ref \`${args.translationRef}\`, use valid <locale> or <namespace>.<locale> for namespaced translations`,
     );
   }
 

@@ -1,6 +1,5 @@
 import { CliUx, Flags } from "@oclif/core";
 import { AxiosResponse } from "axios";
-import localeData from "locale-codes";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
@@ -12,6 +11,7 @@ import {
   paramsForPageAction,
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
+import * as Translation from "@/lib/marshal/translation";
 
 export default class TranslationList extends BaseCommand {
   static flags = {
@@ -58,17 +58,16 @@ export default class TranslationList extends BaseCommand {
      */
 
     CliUx.ux.table(entries, {
+      ref: {
+        header: "Ref",
+        get: (entry) => Translation.formatRef(entry),
+      },
       language_name: {
         header: "Language",
-        get: (entry) => {
-          const language = localeData.getByTag(entry.locale_code);
-          return language.location
-            ? `${language.name}, ${language.location}`
-            : language.name;
-        },
+        get: (entry) => Translation.formatLanguage(entry),
       },
       locale_code: {
-        header: "Locale code",
+        header: "Locale",
       },
       namespace: {
         header: "Namespace",
@@ -76,6 +75,10 @@ export default class TranslationList extends BaseCommand {
       updated_at: {
         header: "Updated at",
         get: (entry) => formatDate(entry.updated_at),
+      },
+      created_at: {
+        header: "Created at",
+        get: (entry) => formatDate(entry.created_at),
       },
     });
 
