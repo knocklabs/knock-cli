@@ -40,6 +40,10 @@ export default class ApiV1 {
     return this.get("/ping");
   }
 
+  async whoami(): Promise<AxiosResponse<WhoamiResp>> {
+    return this.get("/whoami");
+  }
+
   // By resources: Workflows
 
   async listWorkflows<A extends MaybeWithAnnotation>({
@@ -218,6 +222,11 @@ export type T = ApiV1;
 /*
  * API v1 response types:
  */
+export type WhoamiResp = {
+  account_name: string;
+  service_token_name: string;
+};
+
 export type ListWorkflowResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<Workflow.WorkflowData<A>>;
 
