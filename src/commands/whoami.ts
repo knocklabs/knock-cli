@@ -9,7 +9,7 @@ export default class Whoami extends BaseCommand {
   public async run(): Promise<void> {
     const resp = await withSpinner<ApiV1.WhoamiResp>(() => this.apiV1.whoami());
 
-    this.log(`‣ Successfully authenticated with the provided service token:`);
+    this.log(`‣ Successfully verified the provided service token:`);
 
     const info = [
       `Account name: ${resp.data.account_name}`,
