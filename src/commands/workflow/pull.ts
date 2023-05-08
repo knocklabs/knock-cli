@@ -58,7 +58,7 @@ export default class WorkflowPull extends BaseCommand {
     if (dirContext.exists) {
       this.log(`‣ Found \`${dirContext.key}\` at ${dirContext.abspath}`);
     } else {
-      const prompt = `Create a new workflow directory \`${dirContext.key}\`?`;
+      const prompt = `Create a new workflow directory \`${dirContext.key}\` at ${dirContext.abspath}?`;
       const input = flags.force || (await promptToConfirm(prompt));
       if (!input) return;
     }

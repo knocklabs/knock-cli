@@ -8,6 +8,18 @@ import { Props } from "@/lib/base-command";
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
+// Minimum data required to identify a single unique translation.
+export type TranslationIdentifier = {
+  localeCode: string;
+  namespace: string | undefined;
+};
+
+export type TranslationFileContext = TranslationIdentifier & {
+  ref: string;
+  abspath: string;
+  exists: boolean;
+};
+
 /*
  * Evaluates whether the string is a valid locale name
  */
@@ -21,14 +33,6 @@ export const isValidLocale = (localeCode: string): boolean =>
 export const isTranslationDir = (dirPath: string): boolean => {
   const locale = path.basename(dirPath);
   return isValidLocale(locale);
-};
-
-export type TranslationFileContext = {
-  ref: string;
-  localeCode: string;
-  namespace: string | undefined;
-  abspath: string;
-  exists: boolean;
 };
 
 /*

@@ -6,16 +6,29 @@ import { uniqueId } from "lodash";
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
+import { TranslationDirContext } from "@/lib/run-context";
 
-import { buildTranslationFileCtx } from "./helpers";
+import { buildTranslationFileCtx, TranslationFileContext } from "./helpers";
 import { TranslationData } from "./types";
 
 /*
- * The bulk write function that takes the fetched translations data from Knock API
- * and writes them into translation directories, grouped by their common locale codes.
+ * Write a single translation file.
  */
-export const writeTranslationsIndexDir = async (
-  indexDirCtx: DirContext,
+export const writeTranslationFile = async (
+  translationFileCtx: TranslationFileContext,
+  translation: TranslationData,
+): Promise<void> =>
+  fs.outputJson(translationFileCtx.abspath, JSON.parse(translation.content), {
+    spaces: DOUBLE_SPACES,
+  });
+
+/*
+ * The bulk write function that takes the fetched translations data from Knock
+ * API and writes them into translation directories, grouped by their common
+ * locale codes.
+ */
+export const writeTranslationFiles = async (
+  targetDirCtx: TranslationDirContext | DirContext,
   translations: TranslationData[],
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
@@ -23,32 +36,29 @@ export const writeTranslationsIndexDir = async (
   try {
     // If the index directory already exists, back it up in the temp sandbox
     // before wiping it clean.
-    if (indexDirCtx.exists) {
-      await fs.copy(indexDirCtx.abspath, backupDirPath);
-      await fs.emptyDir(indexDirCtx.abspath);
+    if (targetDirCtx.exists) {
+      await fs.copy(targetDirCtx.abspath, backupDirPath);
+      await fs.emptyDir(targetDirCtx.abspath);
     }
 
     // Write given remote translations into the given translations directory path.
     const writeTranslationDirPromises = translations.map(
       async (translation) => {
-        const translationDirPath = path.resolve(
-          indexDirCtx.abspath,
-          translation.locale_code,
-        );
+        // If TranslationDirContext, then that is the locale directory we want
+        // to write translation files in; otherwise for translations index
+        // directory, we want to nest translation files under each locale dir.
+        const localeDirPath =
+          "key" in targetDirCtx
+            ? targetDirCtx.abspath
+            : path.resolve(targetDirCtx.abspath, translation.locale_code);
 
         const translationFileCtx = await buildTranslationFileCtx(
-          translationDirPath,
+          localeDirPath,
           translation.locale_code,
           translation.namespace,
         );
 
-        return fs.outputJson(
-          translationFileCtx.abspath,
-          JSON.parse(translation.content),
-          {
-            spaces: DOUBLE_SPACES,
-          },
-        );
+        return writeTranslationFile(translationFileCtx, translation);
       },
     );
 
@@ -56,11 +66,11 @@ export const writeTranslationsIndexDir = async (
   } catch (error) {
     // In case of any error, wipe the index directory that is likely in a bad
     // state then restore the backup if one existed before.
-    if (indexDirCtx.exists) {
-      await fs.emptyDir(indexDirCtx.abspath);
-      await fs.copy(backupDirPath, indexDirCtx.abspath);
+    if (targetDirCtx.exists) {
+      await fs.emptyDir(targetDirCtx.abspath);
+      await fs.copy(backupDirPath, targetDirCtx.abspath);
     } else {
-      await fs.remove(indexDirCtx.abspath);
+      await fs.remove(targetDirCtx.abspath);
     }
 
     throw error;

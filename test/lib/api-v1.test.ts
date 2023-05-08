@@ -240,27 +240,28 @@ describe("lib/api-v1", () => {
   });
 
   describe("listTranslations", () => {
-    it("makes a GET request to /v1/translations with supported params", async () => {
+    const flags = {
+      environment: "staging",
+      annotate: true,
+      "hide-uncommitted-changes": true,
+      after: "foo",
+      before: "bar",
+      limit: 99,
+    };
+    const resp = {
+      status: 200,
+      data: {
+        entries: [],
+        page_info: factory.pageInfo(),
+      },
+    };
+
+    it("makes a GET request to /v1/translations, without filters", async () => {
       const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const stub = sinon
+        .stub(apiV1.client, "get")
+        .returns(Promise.resolve(resp));
 
-      const stub = sinon.stub(apiV1.client, "get").returns(
-        Promise.resolve({
-          status: 200,
-          data: {
-            entries: [],
-            page_info: factory.pageInfo(),
-          },
-        }),
-      );
-
-      const flags = {
-        environment: "staging",
-        annotate: true,
-        "hide-uncommitted-changes": true,
-        after: "foo",
-        before: "bar",
-        limit: 99,
-      };
       await apiV1.listTranslations(factory.props({ flags }));
 
       const params = {
@@ -271,6 +272,66 @@ describe("lib/api-v1", () => {
         limit: 99,
       };
       sinon.assert.calledWith(stub, "/v1/translations", { params });
+
+      stub.restore();
+    });
+
+    it("makes a GET request to /v1/translations, with filters", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const stub = sinon
+        .stub(apiV1.client, "get")
+        .returns(Promise.resolve(resp));
+
+      const filters = {
+        localeCode: "en",
+        namespace: "admin",
+      };
+      await apiV1.listTranslations(factory.props({ flags }), filters);
+
+      const params = {
+        environment: "staging",
+        hide_uncommitted_changes: true,
+        after: "foo",
+        before: "bar",
+        limit: 99,
+        locale_code: "en",
+        namespace: "admin",
+      };
+      sinon.assert.calledWith(stub, "/v1/translations", { params });
+
+      stub.restore();
+    });
+  });
+
+  describe("getTranslation", () => {
+    it("makes a GET request to /v1/translations/:locale_code with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          data: factory.translation(),
+        }),
+      );
+
+      const flags = {
+        environment: "staging",
+        annotate: true,
+        "hide-uncommitted-changes": true,
+        "rogue-flag": "hey",
+      };
+      const translation = {
+        localeCode: "foo",
+        namespace: "bar",
+      };
+
+      await apiV1.getTranslation(factory.props({ flags }), translation);
+
+      const params = {
+        environment: "staging",
+        hide_uncommitted_changes: true,
+        namespace: "bar",
+      };
+      sinon.assert.calledWith(stub, "/v1/translations/foo", { params });
 
       stub.restore();
     });
