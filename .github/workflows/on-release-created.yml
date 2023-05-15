@@ -48,8 +48,6 @@ jobs:
             formula: {{formulaName}}
             version: {{version}}
         env:
-          # TODO: Swap out the committer token to use a new dedicated user, and also
-          # the user profile.
           COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
 
   publish-npm:
