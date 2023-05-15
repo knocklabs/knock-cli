@@ -22,7 +22,7 @@
     "@oclif/plugin-plugins": "^2.4.7",
     "@prantlf/jsonlint": "^11.7.2",
     "axios": "^1.4.0",
-    "date-fns": "^2.29.3",
+    "date-fns": "^2.30.0",
     "enquirer": "^2.3.6",
     "fs-extra": "^10.1.0",
     "liquidjs": "^10.7.1",
