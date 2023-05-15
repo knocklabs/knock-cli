@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.0-rc.4 darwin-arm64 node-v16.14.0
+@knocklabs/cli/0.1.0 darwin-arm64 node-v16.14.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -30,7 +30,6 @@ USAGE
 * [`knock commit`](#knock-commit)
 * [`knock commit promote`](#knock-commit-promote)
 * [`knock help [COMMANDS]`](#knock-help-commands)
-* [`knock ping`](#knock-ping)
 * [`knock plugins`](#knock-plugins)
 * [`knock plugins:install PLUGIN...`](#knock-pluginsinstall-plugin)
 * [`knock plugins:inspect PLUGIN...`](#knock-pluginsinspect-plugin)
@@ -40,10 +39,12 @@ USAGE
 * [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-1)
 * [`knock plugins:uninstall PLUGIN...`](#knock-pluginsuninstall-plugin-2)
 * [`knock plugins update`](#knock-plugins-update)
+* [`knock translation get TRANSLATIONREF`](#knock-translation-get-translationref)
 * [`knock translation list`](#knock-translation-list)
-* [`knock translation pull`](#knock-translation-pull)
+* [`knock translation pull [TRANSLATIONREF]`](#knock-translation-pull-translationref)
 * [`knock translation push [TRANSLATIONREF]`](#knock-translation-push-translationref)
 * [`knock translation validate [TRANSLATIONREF]`](#knock-translation-validate-translationref)
+* [`knock whoami`](#knock-whoami)
 * [`knock workflow activate WORKFLOWKEY`](#knock-workflow-activate-workflowkey)
 * [`knock workflow get WORKFLOWKEY`](#knock-workflow-get-workflowkey)
 * [`knock workflow list`](#knock-workflow-list)
@@ -66,7 +67,7 @@ FLAGS
   --service-token=<value>       (required) The service token to authenticate with
 ```
 
-_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.4/dist/commands/commit/index.ts)_
+_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0/dist/commands/commit/index.ts)_
 
 ## `knock commit promote`
 
@@ -99,26 +100,6 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.9/src/commands/help.ts)_
-
-## `knock ping`
-
-Ping the Knock management API to verify access.
-
-```
-USAGE
-  $ knock ping --service-token <value>
-
-FLAGS
-  --service-token=<value>  (required) The service token to authenticate with
-
-DESCRIPTION
-  Ping the Knock management API to verify access.
-
-EXAMPLES
-  $ knock ping
-```
-
-_See code: [dist/commands/ping.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0-rc.4/dist/commands/ping.ts)_
 
 ## `knock plugins`
 
@@ -353,6 +334,22 @@ DESCRIPTION
   Update installed plugins.
 ```
 
+## `knock translation get TRANSLATIONREF`
+
+```
+USAGE
+  $ knock translation get TRANSLATIONREF --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
+    [--json]
+
+FLAGS
+  --environment=<value>       [default: development]
+  --hide-uncommitted-changes
+  --service-token=<value>     (required) The service token to authenticate with
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
 ## `knock translation list`
 
 ```
@@ -372,12 +369,12 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-## `knock translation pull`
+## `knock translation pull [TRANSLATIONREF]`
 
 ```
 USAGE
-  $ knock translation pull --service-token <value> [--environment <value>] [--translations-dir <value> --all]
-    [--hide-uncommitted-changes] [--force]
+  $ knock translation pull [TRANSLATIONREF] --service-token <value> [--environment <value>] [--translations-dir
+    <value> --all] [--hide-uncommitted-changes] [--force]
 
 FLAGS
   --all
@@ -420,6 +417,21 @@ FLAGS
   --service-token=<value>     (required) The service token to authenticate with
   --translations-dir=<value>
 ```
+
+## `knock whoami`
+
+```
+USAGE
+  $ knock whoami --service-token <value> [--json]
+
+FLAGS
+  --service-token=<value>  (required) The service token to authenticate with
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [dist/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0/dist/commands/whoami.ts)_
 
 ## `knock workflow activate WORKFLOWKEY`
 
@@ -490,25 +502,31 @@ FLAGS
 
 ```
 USAGE
-  $ knock workflow push [WORKFLOWKEY] --service-token <value> [--environment development] [-m <value> --commit]
+  $ knock workflow push [WORKFLOWKEY] --service-token <value> [--environment development] [--workflows-dir <value>
+    --all] [-m <value> --commit]
 
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message
+  --all
   --commit                      Push and commit the workflow(s) at the same time
   --environment=<option>        [default: development] Pushing a workflow is only allowed in the development environment
                                 <options: development>
   --service-token=<value>       (required) The service token to authenticate with
+  --workflows-dir=<value>
 ```
 
 ## `knock workflow validate [WORKFLOWKEY]`
 
 ```
 USAGE
-  $ knock workflow validate [WORKFLOWKEY] --service-token <value> [--environment development]
+  $ knock workflow validate [WORKFLOWKEY] --service-token <value> [--environment development] [--workflows-dir <value>
+    --all]
 
 FLAGS
+  --all
   --environment=<option>   [default: development] Validating a workflow is only done in the development environment
                            <options: development>
   --service-token=<value>  (required) The service token to authenticate with
+  --workflows-dir=<value>
 ```
 <!-- commandsstop -->
