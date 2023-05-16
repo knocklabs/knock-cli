@@ -1,6 +1,6 @@
 {
   "name": "@knocklabs/cli",
-  "version": "0.1.0-rc.4",
+  "version": "0.1.0",
   "description": "Knock CLI",
   "author": "@knocklabs",
   "bin": {
@@ -22,7 +22,7 @@
     "@oclif/plugin-plugins": "^2.4.7",
     "@prantlf/jsonlint": "^11.7.2",
     "axios": "^1.4.0",
-    "date-fns": "^2.29.3",
+    "date-fns": "^2.30.0",
     "enquirer": "^2.3.6",
     "fs-extra": "^10.1.0",
     "liquidjs": "^10.7.1",
@@ -47,7 +47,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^8.0.0",
     "mocha": "^9",
-    "nock": "^13.3.0",
+    "nock": "^13.3.1",
     "oclif": "^3",
     "prettier": "2.8.8",
     "shx": "^0.3.4",
