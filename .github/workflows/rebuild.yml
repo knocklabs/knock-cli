@@ -1,0 +1,33 @@
+name: rebuild 0.1.0 tarball
+on:
+  pull_request:
+  # push:
+  #   branches-ignore: [main]
+
+jobs:
+  publish-brew:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: "v0.1.0"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.4.x"
+      - run: yarn
+
+      - name: Pack tarball
+        run: npx oclif pack tarballs -t darwin-x64 --no-xz
+
+      - name: Set tarball vars
+        id: tarball
+        run: |
+          FILENAME=$(ls ./dist/*darwin-x64.tar.gz | head -1 | xargs -n 1 basename)
+          echo "filename=${FILENAME}" >> $GITHUB_OUTPUT
+          echo "download_url=https://github.com/knocklabs/knock-groot/releases/download/${GITHUB_REF_NAME}/${FILENAME}" >> $GITHUB_OUTPUT
+
+      - name: Upload tarball to the release
+        run: gh release upload ${GITHUB_REF_NAME} ./dist/${{ steps.tarball.outputs.filename }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
