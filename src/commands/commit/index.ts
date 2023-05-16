@@ -7,18 +7,22 @@ import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class Commit extends BaseCommand {
+  static summary = "Commit all changes in development environment.";
+
   static flags = {
     environment: Flags.string({
       summary:
-        "Committing changes applies to the development environment only, use `commit promote` to promote changes to a later environment",
+        "Committing changes applies to the development environment only, use `commit promote` to promote changes to a later environment.",
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
     "commit-message": Flags.string({
-      summary: "Use the given value as the commit message",
+      summary: "Use the given value as the commit message.",
       char: "m",
     }),
-    force: Flags.boolean(),
+    force: Flags.boolean({
+      summary: "Remove the confirmation prompt.",
+    }),
   };
 
   async run(): Promise<void> {

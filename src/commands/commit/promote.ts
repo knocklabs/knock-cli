@@ -6,13 +6,17 @@ import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class CommitPromote extends BaseCommand {
+  static summary = "Promote all changes to the destination environment.";
+
   static flags = {
     to: Flags.string({
       summary:
-        "The destination environment to promote changes from the preceding environment",
+        "The destination environment to promote changes from the preceding environment.",
       required: true,
     }),
-    force: Flags.boolean(),
+    force: Flags.boolean({
+      summary: "Remove the confirmation prompt.",
+    }),
   };
 
   async run(): Promise<void> {

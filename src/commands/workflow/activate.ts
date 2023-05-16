@@ -7,15 +7,30 @@ import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class WorkflowActivate extends BaseCommand {
+  static summary = "Activate or deactivate a workflow in a given environment.";
+
+  static description = `
+This immediately enables or disables a workflow in a given environment without
+needing to go through environment promotion.
+
+By default, this command activates a given workflow. Pass in the --status flag
+with \`false\` in order to deactivate it.
+`.trim();
+
   static flags = {
     // Do not default to any env for this command, since this action runs
     // directly in each environment outside the commit and promote flow.
     environment: Flags.string({
       required: true,
+      summary: "The environment to use.",
     }),
-
-    status: booleanStr({ default: true }),
-    force: Flags.boolean(),
+    status: booleanStr({
+      default: true,
+      summary: "The workflow active status to set.",
+    }),
+    force: Flags.boolean({
+      summary: "Remove the confirmation prompt.",
+    }),
   };
 
   static args = [{ name: "workflowKey", required: true }];

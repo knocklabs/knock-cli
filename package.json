@@ -67,8 +67,14 @@
     ],
     "topicSeparator": " ",
     "topics": {
+      "commit": {
+        "description": "Commit or promote changes."
+      },
       "workflow": {
-        "description": "interact with and manage workflows"
+        "description": "Manage notification workflows."
+      },
+      "translation": {
+        "description": "Manage translation files."
       }
     }
   },

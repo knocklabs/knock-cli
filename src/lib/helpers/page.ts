@@ -18,9 +18,16 @@ export type PaginatedResp<T = any> = {
 };
 
 export const pageFlags = {
-  after: Flags.string(),
-  before: Flags.string(),
-  limit: Flags.integer({ max: MAX_PAGINATION_LIMIT }),
+  after: Flags.string({
+    summary: "The cursor after which to fetch the next page.",
+  }),
+  before: Flags.string({
+    summary: "The cursor before which to fetch the previous page.",
+  }),
+  limit: Flags.integer({
+    summary: "The total number of entries to fetch per page.",
+    max: MAX_PAGINATION_LIMIT,
+  }),
 };
 
 type PageParams = {
