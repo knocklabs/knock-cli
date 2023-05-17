@@ -3,7 +3,7 @@ import enquirer from "enquirer";
 import BaseCommand from "@/lib/base-command";
 
 const JOKES = [
-  ["Boo.", "Boo hoo?", "Don't cry, it's just a joke!"],
+  ["Boo.", "Boo who?", "Don't cry, it's just a joke!"],
   ["Cows go.", "Cows go who?", "No silly, cows go moo!"],
   ["Lettuce.", "Lettuce who?", "Lettuce in!"],
   ["Interrupting cow.", "Interrupting cow wh—", "MOO!"],
@@ -38,6 +38,6 @@ export default class Knock extends BaseCommand {
     }
 
     this.log("");
-    this.log("Thank you for using Knock. Have a nice day! 🙂");
+    this.log("Thank you for using Knock, and have a nice day! 🙂");
   }
 }

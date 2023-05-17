@@ -14,7 +14,7 @@ import { withSpinner } from "@/lib/helpers/request";
 import * as Translation from "@/lib/marshal/translation";
 
 export default class TranslationList extends BaseCommand {
-  static summary = "Display all translations from an environment.";
+  static summary = "Display all translations for an environment.";
 
   static flags = {
     environment: Flags.string({

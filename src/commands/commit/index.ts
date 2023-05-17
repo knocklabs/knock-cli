@@ -12,7 +12,7 @@ export default class Commit extends BaseCommand {
   static flags = {
     environment: Flags.string({
       summary:
-        "Committing changes applies to the development environment only, use `commit promote` to promote changes to a later environment.",
+        "Committing changes applies to the development environment only, use `commit promote` to promote changes to a subsequent environment.",
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
