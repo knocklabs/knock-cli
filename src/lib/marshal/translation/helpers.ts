@@ -10,6 +10,12 @@ import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
 import { TranslationData } from "./types";
 
+export const translationRefDescription = `
+A [translation ref] is a identifier string that refers to a unique translation.
+If a translation has no namespace, it is the same as the locale, e.g. \`en\`.
+If namespaced, it is formatted as namespace.locale, e.g. \`admin.en\`.
+`.trim();
+
 // Minimum data required to identify a single unique translation.
 export type TranslationIdentifier = {
   localeCode: string;

@@ -7,9 +7,18 @@ import { withSpinner } from "@/lib/helpers/request";
 import * as Translation from "@/lib/marshal/translation";
 
 export default class TranslationGet extends BaseCommand {
+  static summary = "Display a single translation from an environment.";
+
+  static description = Translation.translationRefDescription;
+
   static flags = {
-    environment: Flags.string({ default: "development" }),
-    "hide-uncommitted-changes": Flags.boolean(),
+    environment: Flags.string({
+      default: "development",
+      summary: "The environment to use.",
+    }),
+    "hide-uncommitted-changes": Flags.boolean({
+      summary: "Hide any uncommitted changes.",
+    }),
   };
 
   static args = [{ name: "translationRef", required: true }];

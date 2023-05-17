@@ -14,6 +14,9 @@ import * as Workflow from "@/lib/marshal/workflow";
 import WorkflowValidate from "./validate";
 
 export default class WorkflowPush extends BaseCommand {
+  static summary =
+    "Push one or more workflows from a local file system to Knock.";
+
   static flags = {
     environment: Flags.string({
       summary:
@@ -21,8 +24,13 @@ export default class WorkflowPush extends BaseCommand {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
-    all: Flags.boolean(),
-    "workflows-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
+    all: Flags.boolean({
+      summary: "Whether to push all workflows from the target directory.",
+    }),
+    "workflows-dir": CustomFlags.dirPath({
+      summary: "The target directory path to find all workflows to push.",
+      dependsOn: ["all"],
+    }),
     commit: Flags.boolean({
       summary: "Push and commit the workflow(s) at the same time",
     }),

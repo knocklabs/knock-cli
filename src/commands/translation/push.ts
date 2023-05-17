@@ -12,6 +12,11 @@ import * as Translation from "@/lib/marshal/translation";
 import TranslationValidate from "./validate";
 
 export default class TranslationPush extends BaseCommand {
+  static summary =
+    "Push one or more translations from a local file system to Knock.";
+
+  static description = Translation.translationRefDescription;
+
   static flags = {
     environment: Flags.string({
       summary:
@@ -19,8 +24,13 @@ export default class TranslationPush extends BaseCommand {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
-    all: Flags.boolean(),
-    "translations-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
+    all: Flags.boolean({
+      summary: "Whether to push all translations from the target directory.",
+    }),
+    "translations-dir": CustomFlags.dirPath({
+      summary: "The target directory path to find all translations to push.",
+      dependsOn: ["all"],
+    }),
     commit: Flags.boolean({
       summary: "Push and commit the translation(s) at the same time",
     }),

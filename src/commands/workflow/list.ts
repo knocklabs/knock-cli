@@ -14,9 +14,16 @@ import { withSpinner } from "@/lib/helpers/request";
 import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowList extends BaseCommand {
+  static summary = "Display all workflows for an environment.";
+
   static flags = {
-    environment: Flags.string({ default: "development" }),
-    "hide-uncommitted-changes": Flags.boolean(),
+    environment: Flags.string({
+      default: "development",
+      summary: "The environment to use.",
+    }),
+    "hide-uncommitted-changes": Flags.boolean({
+      summary: "Hide any uncommitted changes.",
+    }),
     ...pageFlags,
   };
 

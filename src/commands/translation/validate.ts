@@ -11,15 +11,27 @@ import { spinner } from "@/lib/helpers/ux";
 import * as Translation from "@/lib/marshal/translation";
 
 export default class TranslationValidate extends BaseCommand {
+  static summary =
+    "Validate one or more translations from a local file system.";
+
+  static description = Translation.translationRefDescription;
+
   static flags = {
     environment: Flags.string({
       summary:
-        "Validating a workflow is only done in the development environment",
+        "Validating a translation is only done in the development environment",
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
-    all: Flags.boolean(),
-    "translations-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
+    all: Flags.boolean({
+      summary:
+        "Whether to validate all translations from the target directory.",
+    }),
+    "translations-dir": CustomFlags.dirPath({
+      summary:
+        "The target directory path to find all translations to validate.",
+      dependsOn: ["all"],
+    }),
   };
 
   static args = [{ name: "translationRef", required: false }];

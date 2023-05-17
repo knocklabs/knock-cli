@@ -17,12 +17,30 @@ import * as Translation from "@/lib/marshal/translation";
 import { TranslationDirContext } from "@/lib/run-context";
 
 export default class TranslationPull extends BaseCommand {
+  static summary =
+    "Pull one or more translations from an environment into a local file system.";
+
+  static description = Translation.translationRefDescription;
+
   static flags = {
-    environment: Flags.string({ default: "development" }),
-    all: Flags.boolean(),
-    "translations-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
-    "hide-uncommitted-changes": Flags.boolean(),
-    force: Flags.boolean(),
+    environment: Flags.string({
+      default: "development",
+      summary: "The environment to use.",
+    }),
+    all: Flags.boolean({
+      summary:
+        "Whether to pull all translations from the specified environment.",
+    }),
+    "translations-dir": CustomFlags.dirPath({
+      summary: "The target directory path to pull all translations into.",
+      dependsOn: ["all"],
+    }),
+    "hide-uncommitted-changes": Flags.boolean({
+      summary: "Hide any uncommitted changes.",
+    }),
+    force: Flags.boolean({
+      summary: "Remove the confirmation prompt.",
+    }),
   };
 
   static args = [{ name: "translationRef", required: false }];

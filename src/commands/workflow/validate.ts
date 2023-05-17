@@ -11,6 +11,8 @@ import { spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
 
 export default class WorkflowValidate extends BaseCommand {
+  static summary = "Validate one or more workflows from a local file system.";
+
   static flags = {
     environment: Flags.string({
       summary:
@@ -18,8 +20,13 @@ export default class WorkflowValidate extends BaseCommand {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
-    all: Flags.boolean(),
-    "workflows-dir": CustomFlags.dirPath({ dependsOn: ["all"] }),
+    all: Flags.boolean({
+      summary: "Whether to validate all workflows from the target directory.",
+    }),
+    "workflows-dir": CustomFlags.dirPath({
+      summary: "The target directory path to find all workflows to validate.",
+      dependsOn: ["all"],
+    }),
   };
 
   static args = [{ name: "workflowKey", required: false }];
