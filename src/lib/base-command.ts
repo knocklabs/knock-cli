@@ -27,8 +27,8 @@ abstract class BaseCommand extends Command {
     this.runContext = await RunContext.load(this.id);
   }
 
-  // Global flags are inherited by any command that extends BaseCommand.
-  static globalFlags = {
+  // Base flags are inherited by any command that extends BaseCommand.
+  static baseFlags = {
     // Evaluated in the following precedence:
     // - service token flag passed into the command
     // - if not provided, fall back to env variable

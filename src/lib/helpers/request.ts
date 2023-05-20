@@ -1,4 +1,4 @@
-import { CliUx } from "@oclif/core";
+import { ux } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import { ApiError, formatErrors, InputError, JsonDataError } from "./error";
@@ -57,7 +57,7 @@ export const withSpinner = async <T>(
   // Error out before the action stop so the spinner can update accordingly.
   if (ensureSuccess && !isSuccessResp(resp)) {
     const message = formatErrorRespMessage(resp);
-    CliUx.ux.error(new ApiError(message));
+    ux.error(new ApiError(message));
   }
 
   spinner.stop();
