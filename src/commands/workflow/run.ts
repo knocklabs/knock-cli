@@ -2,33 +2,27 @@ import { CliUx, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { ApiError, formatErrors } from "@/lib/helpers/error";
 import { commaSeparatedStr, jsonStr } from "@/lib/helpers/flag";
-import { withSpinner } from "@/lib/helpers/request";
-import { indentString } from "@/lib/helpers/string";
-import { spinner } from "@/lib/helpers/ux";
+import {
+  formatErrorRespMessage,
+  isSuccessResp,
+  withSpinner,
+} from "@/lib/helpers/request";
 import * as Workflow from "@/lib/marshal/workflow";
-
-import WorkflowValidate from "./validate";
 
 export default class WorkflowRun extends BaseCommand {
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment in which to run the workflow",
-    }),
+    environment: Flags.string({ default: "development" }),
     recipients: commaSeparatedStr({
       required: true,
       aliases: ["recipient"],
-      summary:
-        "One or more recipient ids for this workflow run, separated by comma.",
+      multiple: true,
     }),
-    actor: Flags.string({ summary: "An actor id for the workflow run." }),
-    tenant: Flags.string({
-      summary: "A tenant id for the workflow run.",
-    }),
-    data: jsonStr({
-      summary: "A JSON string of the data for this workflow",
-    }),
+    actor: Flags.string(),
+    tenant: Flags.string(),
+    data: jsonStr(),
+    local: Flags.boolean({ default: false }),
   };
 
   static args = [{ name: "workflowKey", required: true }];
@@ -92,25 +86,5 @@ export default class WorkflowRun extends BaseCommand {
       },
       { action: `‣ Requesting workflow run` },
     );
-  }
-
-  async run(): Promise<void> {
-    const { args, flags } = this.props;
-
-    if (flags["run-local"]) {
-      return this.runLocal();
-    }
-
-    const resp = await withSpinner<ApiV1.RehearseWorkflowResp>(
-      () => {
-        return this.apiV1.runWorkflow(this.props);
-      },
-      { action: "‣ Running" },
-    );
-
-    this.log(
-      `‣ Successfully ran \`${args.workflowKey}\` workflow in \`${flags.environment}\` environment`,
-    );
-    this.log(indentString(`Workflow run id: ${resp.data.workflow_run_id}`), 4);
   }
 }
