@@ -99,6 +99,7 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
 
     this.log("");
 
+    // Leading space is there intentionally to align the left padding.
     if (workflow.steps.length === 0) {
       return ux.log(" This workflow has no steps to display.");
     }
