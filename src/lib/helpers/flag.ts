@@ -5,6 +5,8 @@ import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
 
+import { AnyObj } from "./object";
+
 /*
  * Takes a flag input of 'true' or 'false' as a string, then cast to a boolean
  * value when parsing.
@@ -34,5 +36,25 @@ export const dirPath = Flags.custom<DirContext>({
     }
 
     return { abspath, exists };
+  },
+});
+
+/*
+ * Takes a flag input that's supposed to be a JSON string and validates it.
+ */
+export const jsonStr = Flags.custom<AnyObj>({
+  parse: async (input: string) => {
+    try {
+      const data = JSON.parse(input);
+      return data;
+    } catch {
+      throw new Error(`${input} is not a valid JSON string.`);
+    }
+  },
+});
+
+export const commaSeparatedStr = Flags.custom<string[]>({
+  parse: async (input: string) => {
+    return input.split(",").filter((x) => x);
   },
 });

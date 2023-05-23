@@ -109,6 +109,21 @@ export default class ApiV1 {
     return this.put(`/workflows/${args.workflowKey}/activate`, {}, { params });
   }
 
+  async runWorkflow({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ActivateWorkflowResp>> {
+    const params = prune({
+      environment: flags.environment,
+      recipients: flags.recipients,
+      tenant: flags.tenant,
+      data: flags.data,
+      actor: flags.actor,
+    });
+
+    return this.put(`/workflows/${args.workflowKey}/run`, {}, { params });
+  }
+
   // By resources: Commits
 
   async commitAllChanges({
@@ -241,6 +256,11 @@ export type ValidateWorkflowResp = {
 
 export type ActivateWorkflowResp = {
   workflow?: Workflow.WorkflowData;
+  errors?: InputError[];
+};
+
+export type RehearseWorkflowResp = {
+  workflow_run_id?: string;
   errors?: InputError[];
 };
 
