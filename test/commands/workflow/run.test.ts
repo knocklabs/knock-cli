@@ -1,10 +1,14 @@
+import path from "node:path";
+
 import { test } from "@oclif/test";
 import enquirer from "enquirer";
+import * as fs from "fs-extra";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
+import { sandboxDir } from "@/lib/helpers/const";
 
 const setupWithStub = (attrs = {}) =>
   test
@@ -61,6 +65,7 @@ describe("commands/workflow/run", () => {
                 "api-origin": undefined,
                 environment: "staging",
                 recipients: ["alice"],
+                local: false,
               }),
           ),
         );
@@ -75,7 +80,7 @@ describe("commands/workflow/run", () => {
         "workflow-x",
         "--environment",
         "staging",
-        "--recipient",
+        "--recipients",
         "alice,barry",
       ])
       .it("calls apiV1 runWorkflow with expected props", () => {
@@ -91,8 +96,59 @@ describe("commands/workflow/run", () => {
                 "api-origin": undefined,
                 environment: "staging",
                 recipients: ["alice", "barry"],
+                local: false,
               }),
           ),
+        );
+      });
+  });
+
+  const currCwd = process.cwd();
+  const workflowJsonFile = "new-comment/workflow.json";
+
+  describe("given the workflow key arg and the local flag", () => {
+    beforeEach(() => {
+      fs.removeSync(sandboxDir);
+      fs.ensureDirSync(sandboxDir);
+      const abspath = path.resolve(sandboxDir, workflowJsonFile);
+      fs.outputJsonSync(abspath, { name: "New comment" });
+
+      process.chdir(sandboxDir);
+    });
+
+    afterEach(() => {
+      process.chdir(currCwd);
+      fs.removeSync(sandboxDir);
+    });
+
+    setupWithStub({ data: { workflow: factory.workflow() } })
+      .stdout()
+      .command([
+        "workflow run",
+        "new-comment",
+        "--environment",
+        "staging",
+        "--recipient",
+        "alice,barry",
+        "--local",
+      ])
+      .it("calls apiV1 runWorkflow with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.runWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                workflowKey: "new-comment",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                "api-origin": undefined,
+                environment: "staging",
+                recipients: ["alice", "barry"],
+                local: true,
+              }),
+          ),
+          sinon.match((workflow) => isEqual(workflow, { name: "New comment" })),
         );
       });
   });

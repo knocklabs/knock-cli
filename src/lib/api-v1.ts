@@ -109,10 +109,10 @@ export default class ApiV1 {
     return this.put(`/workflows/${args.workflowKey}/activate`, {}, { params });
   }
 
-  async runWorkflow({
-    args,
-    flags,
-  }: Props): Promise<AxiosResponse<ActivateWorkflowResp>> {
+  async runWorkflow(
+    { args, flags }: Props,
+    workflow?: Workflow.WorkflowInput,
+  ): Promise<AxiosResponse<ActivateWorkflowResp>> {
     const params = prune({
       environment: flags.environment,
       recipients: flags.recipients,
@@ -121,7 +121,11 @@ export default class ApiV1 {
       actor: flags.actor,
     });
 
-    return this.put(`/workflows/${args.workflowKey}/run`, {}, { params });
+    return this.put(
+      `/workflows/${args.workflowKey}/run`,
+      { workflow },
+      { params },
+    );
   }
 
   // By resources: Commits

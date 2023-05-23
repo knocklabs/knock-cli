@@ -166,10 +166,10 @@ export const formatStatus = (workflow: WorkflowData): string => {
  * Validate the provided args and flags with the current run context, to first
  * ensure the invoked command makes sense, and return the target context.
  */
-type CommandTargetProps = {
+export type CommandTargetProps = {
   flags: {
-    all: boolean | undefined;
-    "workflows-dir": DirContext | undefined;
+    all?: boolean | undefined;
+    "workflows-dir"?: DirContext | undefined;
   };
   args: {
     workflowKey: string | undefined;
