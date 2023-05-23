@@ -11,7 +11,9 @@ import * as Translation from "@/lib/marshal/translation";
 
 import TranslationValidate from "./validate";
 
-export default class TranslationPush extends BaseCommand<typeof TranslationPush> {
+export default class TranslationPush extends BaseCommand<
+  typeof TranslationPush
+> {
   static summary =
     "Push one or more translations from a local file system to Knock.";
 
@@ -42,9 +44,9 @@ export default class TranslationPush extends BaseCommand<typeof TranslationPush>
   static args = {
     translationRef: Args.string({
       description: Translation.translationRefDescription,
-      required: false
-    })
-  }
+      required: false,
+    }),
+  };
 
   async run(): Promise<void> {
     const { flags } = this.props;

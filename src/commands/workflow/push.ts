@@ -43,9 +43,9 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
 
   static args = {
     workflowKey: Args.string({
-      required: false
-    })
-  }
+      required: false,
+    }),
+  };
 
   async run(): Promise<void> {
     const { flags } = this.props;

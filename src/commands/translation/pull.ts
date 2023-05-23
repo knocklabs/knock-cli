@@ -16,7 +16,9 @@ import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Translation from "@/lib/marshal/translation";
 import { TranslationDirContext } from "@/lib/run-context";
 
-export default class TranslationPull extends BaseCommand<typeof TranslationPull> {
+export default class TranslationPull extends BaseCommand<
+  typeof TranslationPull
+> {
   static summary =
     "Pull one or more translations from an environment into a local file system.";
 
@@ -44,9 +46,9 @@ export default class TranslationPull extends BaseCommand<typeof TranslationPull>
   static args = {
     translationRef: Args.string({
       description: Translation.translationRefDescription,
-      required: false
-    })
-  }
+      required: false,
+    }),
+  };
 
   async run(): Promise<void> {
     const target = await Translation.ensureValidCommandTarget(

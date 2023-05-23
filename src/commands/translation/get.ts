@@ -1,4 +1,4 @@
-import { ux, Flags, Args } from "@oclif/core";
+import { Args, Flags, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
@@ -22,9 +22,9 @@ export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
   static args = {
     translationRef: Args.string({
       description: Translation.translationRefDescription,
-      required: true
-    })
-  }
+      required: true,
+    }),
+  };
 
   static enableJsonFlag = true;
 

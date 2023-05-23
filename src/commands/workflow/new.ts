@@ -17,9 +17,9 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
 
   static args = {
     workflowKey: Args.string({
-      required: true
-    })
-  }
+      required: true,
+    }),
+  };
 
   // TODO(KNO-3072): Unhide after we move the generator logic to the backend.
   static hidden = true;

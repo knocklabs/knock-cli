@@ -108,9 +108,7 @@ describe("commands/workflow/pull", () => {
           KnockApiV1.prototype.listWorkflows as any,
           sinon.match(
             ({ args, flags }) =>
-              isEqual(args, {
-                workflowKey: undefined,
-              }) &&
+              isEqual(args, {}) &&
               isEqual(flags, {
                 all: true,
                 "workflows-dir": {

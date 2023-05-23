@@ -1,7 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
-import BaseCommand, { TProps } from "@/lib/base-command";
+import BaseCommand, { Props } from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -10,9 +10,11 @@ import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Translation from "@/lib/marshal/translation";
 
-import TranslationPush from "./push"
+import TranslationPush from "./push";
 
-export default class TranslationValidate extends BaseCommand<typeof TranslationValidate> {
+export default class TranslationValidate extends BaseCommand<
+  typeof TranslationValidate
+> {
   static summary =
     "Validate one or more translations from a local file system.";
 
@@ -37,9 +39,9 @@ export default class TranslationValidate extends BaseCommand<typeof TranslationV
   static args = {
     translationRef: Args.string({
       description: Translation.translationRefDescription,
-      required: false
-    })
-  }
+      required: false,
+    }),
+  };
 
   async run(): Promise<void> {
     const target = await Translation.ensureValidCommandTarget(
@@ -80,7 +82,7 @@ export default class TranslationValidate extends BaseCommand<typeof TranslationV
 
   static async validateAll(
     api: ApiV1.T,
-    props: TProps<typeof TranslationValidate | typeof TranslationPush>,
+    props: Props<typeof TranslationValidate | typeof TranslationPush>,
     translations: Translation.TranslationFileData[],
   ): Promise<SourceError[]> {
     // TODO: Throw if a non validation error (e.g. authentication error) instead

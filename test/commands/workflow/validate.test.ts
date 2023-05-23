@@ -187,9 +187,7 @@ describe("commands/workflow/validate (all workflows)", () => {
         const stub = KnockApiV1.prototype.validateWorkflow as any;
         sinon.assert.calledTwice(stub);
 
-        const expectedArgs = {
-          workflowKey: undefined,
-        };
+        const expectedArgs = {};
         const expectedFlags = {
           "service-token": "valid-token",
           "api-origin": undefined,

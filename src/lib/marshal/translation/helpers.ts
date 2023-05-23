@@ -4,7 +4,6 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 import localeData from "locale-codes";
 
-import { Props } from "@/lib/base-command";
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
@@ -118,6 +117,15 @@ export const parseTranslationRef = (
  * Validate the provided args and flags with the current run context, to first
  * ensure the invoked command makes sense, and return the target context.
  */
+type CommandTargetProps = {
+  flags: {
+    all: boolean | undefined;
+    "translations-dir": DirContext | undefined;
+  };
+  args: {
+    translationRef: string | undefined;
+  };
+};
 type TranslationFileTarget = {
   type: "translationFile";
   context: TranslationFileContext;
@@ -136,7 +144,7 @@ export type TranslationCommandTarget =
   | TranslationsIndexDirTarget;
 
 export const ensureValidCommandTarget = async (
-  props: Props,
+  props: CommandTargetProps,
   runContext: RunContext,
 ): Promise<TranslationCommandTarget> => {
   const { flags, args } = props;
@@ -151,9 +159,7 @@ export const ensureValidCommandTarget = async (
 
   // Error, got neither the translationRef arg nor the --all flag.
   if (!args.translationRef && !flags.all) {
-    ux.error(
-      "At least one of translation ref arg or --all flag must be given",
-    );
+    ux.error("At least one of translation ref arg or --all flag must be given");
   }
 
   // No translationRef arg, which means --all flag is used.

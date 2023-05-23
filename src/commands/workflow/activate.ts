@@ -6,7 +6,9 @@ import { booleanStr } from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
-export default class WorkflowActivate extends BaseCommand<typeof WorkflowActivate> {
+export default class WorkflowActivate extends BaseCommand<
+  typeof WorkflowActivate
+> {
   static summary = "Activate or deactivate a workflow in a given environment.";
 
   static description = `
@@ -36,9 +38,9 @@ with \`false\` in order to deactivate it.
   // static args = [{ name: "workflowKey", required: true }];
   static args = {
     workflowKey: Args.string({
-      required: true
-    })
-  }
+      required: true,
+    }),
+  };
 
   async run(): Promise<void> {
     const { args, flags } = this.props;

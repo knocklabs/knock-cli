@@ -1,4 +1,4 @@
-import { ux, Flags } from "@oclif/core";
+import { Flags, ux } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import * as ApiV1 from "@/lib/api-v1";

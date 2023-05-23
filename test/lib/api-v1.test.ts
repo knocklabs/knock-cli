@@ -29,6 +29,7 @@ describe("lib/api-v1", () => {
         before: "bar",
         limit: 99,
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       await apiV1.listWorkflows(factory.props({ flags }));
 
@@ -62,6 +63,7 @@ describe("lib/api-v1", () => {
         annotate: true,
         "hide-uncommitted-changes": true,
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       await apiV1.getWorkflow(factory.props({ args, flags }));
 
@@ -93,6 +95,7 @@ describe("lib/api-v1", () => {
         commit: true,
         "commit-message": "wip workflow",
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       const workflow = {
         key: "foo",
@@ -131,6 +134,7 @@ describe("lib/api-v1", () => {
       const flags = {
         environment: "development",
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       const workflow = {
         key: "bar",
@@ -167,6 +171,7 @@ describe("lib/api-v1", () => {
         environment: "development",
         status: false,
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       await apiV1.activateWorkflow(factory.props({ args, flags }));
 
@@ -200,6 +205,7 @@ describe("lib/api-v1", () => {
         environment: "development",
         "commit-message": "latest changes",
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       await apiV1.commitAllChanges(factory.props({ args, flags }));
 
@@ -227,6 +233,7 @@ describe("lib/api-v1", () => {
       const flags = {
         to: "staging",
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       await apiV1.promoteAllChanges(factory.props({ args, flags }));
 
@@ -247,6 +254,7 @@ describe("lib/api-v1", () => {
       after: "foo",
       before: "bar",
       limit: 99,
+      ...factory.gFlags(),
     };
     const resp = {
       status: 200,
@@ -318,6 +326,7 @@ describe("lib/api-v1", () => {
         annotate: true,
         "hide-uncommitted-changes": true,
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       const translation = {
         localeCode: "foo",
@@ -353,6 +362,7 @@ describe("lib/api-v1", () => {
         commit: true,
         "commit-message": "french translation",
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       const translation = {
         locale_code: "fr-FR",
@@ -391,6 +401,7 @@ describe("lib/api-v1", () => {
       const flags = {
         environment: "development",
         "rogue-flag": "hey",
+        ...factory.gFlags(),
       };
       const translation = {
         locale_code: "fr-FR",

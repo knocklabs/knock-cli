@@ -1,7 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
-import BaseCommand, { TProps } from "@/lib/base-command";
+import BaseCommand, { Props } from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -12,7 +12,9 @@ import * as Workflow from "@/lib/marshal/workflow";
 
 import WorkflowPush from "./push";
 
-export default class WorkflowValidate extends BaseCommand<typeof WorkflowValidate> {
+export default class WorkflowValidate extends BaseCommand<
+  typeof WorkflowValidate
+> {
   static summary = "Validate one or more workflows from a local file system.";
 
   static flags = {
@@ -33,9 +35,9 @@ export default class WorkflowValidate extends BaseCommand<typeof WorkflowValidat
 
   static args = {
     workflowKey: Args.string({
-      required: false
-    })
-  }
+      required: false,
+    }),
+  };
 
   async run(): Promise<void> {
     // 1. Read all workflow directories found for the given command.
@@ -82,7 +84,7 @@ export default class WorkflowValidate extends BaseCommand<typeof WorkflowValidat
 
   static async validateAll(
     api: ApiV1.T,
-    props: TProps<typeof WorkflowValidate | typeof WorkflowPush>,
+    props: Props<typeof WorkflowValidate | typeof WorkflowPush>,
     workflows: Workflow.WorkflowDirData[],
   ): Promise<SourceError[]> {
     // TODO: Throw an error if a non validation error (e.g. authentication error)

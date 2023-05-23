@@ -1,8 +1,7 @@
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
-import { BFlags } from "@/lib/base-command";
+import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
-import { AnyObj } from "@/lib/helpers/object";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
@@ -13,7 +12,7 @@ import {
 
 import { sequence } from "./helpers";
 
-export const bFlags = (attrs: Partial<BFlags> = {}): BFlags => {
+export const gFlags = (attrs: Partial<BFlags> = {}): BFlags => {
   return {
     "service-token": "valid-token",
     "api-origin": undefined,
@@ -22,11 +21,12 @@ export const bFlags = (attrs: Partial<BFlags> = {}): BFlags => {
   };
 };
 
-export const props = (attrs: AnyObj = {}): AnyObj => {
+export const props = (attrs: Partial<Props> = {}): Props => {
+  const { flags = {}, args = {} } = attrs;
+
   return {
-    flags: bFlags(),
-    args: {},
-    ...attrs,
+    flags: { ...gFlags(), ...flags },
+    args,
   };
 };
 

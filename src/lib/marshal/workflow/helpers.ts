@@ -4,7 +4,6 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 import { take } from "lodash";
 
-import { Props } from "@/lib/base-command";
 import { DirContext } from "@/lib/helpers/fs";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { RunContext, WorkflowDirContext } from "@/lib/run-context";
@@ -167,6 +166,15 @@ export const formatStatus = (workflow: WorkflowData): string => {
  * Validate the provided args and flags with the current run context, to first
  * ensure the invoked command makes sense, and return the target context.
  */
+type CommandTargetProps = {
+  flags: {
+    all: boolean | undefined;
+    "workflows-dir": DirContext | undefined;
+  };
+  args: {
+    workflowKey: string | undefined;
+  };
+};
 type WorkflowDirTarget = {
   type: "workflowDir";
   context: WorkflowDirContext;
@@ -178,7 +186,7 @@ type WorkflowsIndexDirTarget = {
 export type WorkflowCommandTarget = WorkflowDirTarget | WorkflowsIndexDirTarget;
 
 export const ensureValidCommandTarget = async (
-  props: Props,
+  props: CommandTargetProps,
   runContext: RunContext,
 ): Promise<WorkflowCommandTarget> => {
   const { args, flags } = props;

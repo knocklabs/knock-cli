@@ -1,7 +1,7 @@
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-import { Props } from "@/lib/base-command";
+import { BFlags, Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
@@ -18,8 +18,7 @@ const API_VERSION = "v1";
 export default class ApiV1 {
   client!: AxiosInstance;
 
-  constructor(props: Props, config: Config) {
-    const { flags } = props;
+  constructor(flags: BFlags, config: Config) {
     const baseURL = flags["api-origin"] || DEFAULT_ORIGIN;
 
     this.client = axios.create({

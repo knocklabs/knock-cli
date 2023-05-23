@@ -6,41 +6,30 @@ import KnockApiV1 from "./api-v1";
 import * as RunContext from "./run-context";
 import UserConfig from "./user-config";
 
-export type BFlags = Interfaces.InferredFlags<(typeof BaseCommand)["baseFlags"]>;
+export type BFlags = Interfaces.InferredFlags<
+  (typeof BaseCommand)["baseFlags"]
+>;
 
-// type TFlags<T extends typeof Command> = T['flags'] & BFlags;
-// type TArgs<T extends typeof Command> = T['args']
-//
-// export type TProps<T extends typeof Command> = {
-//   flags: TFlags<T>;
-//   args: TArgs<T>;
-// }
+type TFlags<T extends typeof Command> = Interfaces.InferredFlags<T["flags"]> &
+  BFlags;
 
-// export type Props = {
-//   flags: AnyObj & BFlags;
-//   args: AnyObj
-// }
+type TArgs<T extends typeof Command> = Interfaces.InferredArgs<T["args"]>;
 
-// export type BFlags = {
-//   "service-token": string;
-//   "api-origin": string | undefined
-//   "json": boolean | undefined
-// }
-
-type TFlags<T extends typeof Command> = Interfaces.InferredFlags<T['flags']> & BFlags;
-type TArgs<T extends typeof Command> = Interfaces.InferredArgs<T['args']>
-
-export type TProps<T extends typeof Command> = {
+// Typed exactly with the underlying command flags and args.
+type TProps<T extends typeof Command> = {
   flags: TFlags<T>;
   args: TArgs<T>;
-}
+};
 
+// Typed loosely without any specific command.
 type UnknownProps = {
   flags: AnyObj & BFlags;
-  args: AnyObj
-}
+  args: AnyObj;
+};
 
-export type Props<T = unknown> = T extends typeof Command ? TProps<T> : UnknownProps
+export type Props<T = unknown> = T extends typeof Command
+  ? TProps<T>
+  : UnknownProps;
 
 abstract class BaseCommand<T extends typeof Command> extends Command {
   protected props!: TProps<T>;
@@ -55,10 +44,10 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
 
     // 2. Parse flags and args, must come after the user config load.
     const { args, flags } = await this.parse(this.ctor);
-    this.props = { args: args as TArgs<T>, flags: flags as TFlags<T> }
+    this.props = { args: args as TArgs<T>, flags: flags as TFlags<T> };
 
     // 3. Instantiate a knock api client.
-    this.apiV1 = new KnockApiV1(this.props, this.config);
+    this.apiV1 = new KnockApiV1(this.props.flags, this.config);
 
     // 4. Load the run context of the invoked command.
     this.runContext = await RunContext.load(this.id);
