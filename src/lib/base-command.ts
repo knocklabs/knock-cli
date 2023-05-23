@@ -15,21 +15,21 @@ type TFlags<T extends typeof Command> = Interfaces.InferredFlags<T["flags"]> &
 
 type TArgs<T extends typeof Command> = Interfaces.InferredArgs<T["args"]>;
 
-// Typed exactly with the underlying command flags and args.
+// Typed exactly for the underlying command with its flags and args.
 type TProps<T extends typeof Command> = {
   flags: TFlags<T>;
   args: TArgs<T>;
 };
 
-// Typed loosely without any specific command.
-type UnknownProps = {
+// Typed loosely for convenience.
+type GenericCommandProps = {
   flags: AnyObj & BFlags;
   args: AnyObj;
 };
 
 export type Props<T = unknown> = T extends typeof Command
   ? TProps<T>
-  : UnknownProps;
+  : GenericCommandProps;
 
 abstract class BaseCommand<T extends typeof Command> extends Command {
   protected props!: TProps<T>;

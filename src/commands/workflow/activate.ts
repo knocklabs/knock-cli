@@ -35,7 +35,6 @@ with \`false\` in order to deactivate it.
     }),
   };
 
-  // static args = [{ name: "workflowKey", required: true }];
   static args = {
     workflowKey: Args.string({
       required: true,

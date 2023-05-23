@@ -182,7 +182,7 @@ export default class WorkflowPull extends BaseCommand<typeof WorkflowPull> {
         limit: MAX_PAGINATION_LIMIT,
       },
     });
-    console.log(props);
+
     const resp = await this.apiV1.listWorkflows<WithAnnotation>(props);
     if (!isSuccessResp(resp)) {
       const message = formatErrorRespMessage(resp);
