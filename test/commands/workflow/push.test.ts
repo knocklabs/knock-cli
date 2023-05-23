@@ -269,9 +269,7 @@ describe("commands/workflow/push", () => {
         const stub2 = KnockApiV1.prototype.upsertWorkflow as any;
         sinon.assert.calledTwice(stub2);
 
-        const expectedArgs = {
-          workflowKey: undefined,
-        };
+        const expectedArgs = {};
         const expectedFlags = {
           annotate: true,
           "service-token": "valid-token",

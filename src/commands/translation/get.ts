@@ -1,4 +1,4 @@
-import { CliUx, Flags } from "@oclif/core";
+import { Args, Flags, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
@@ -6,10 +6,8 @@ import { formatDate } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
 import * as Translation from "@/lib/marshal/translation";
 
-export default class TranslationGet extends BaseCommand {
+export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
   static summary = "Display a single translation from an environment.";
-
-  static description = Translation.translationRefDescription;
 
   static flags = {
     environment: Flags.string({
@@ -21,7 +19,12 @@ export default class TranslationGet extends BaseCommand {
     }),
   };
 
-  static args = [{ name: "translationRef", required: true }];
+  static args = {
+    translationRef: Args.string({
+      description: Translation.translationRefDescription,
+      required: true,
+    }),
+  };
 
   static enableJsonFlag = true;
 
@@ -82,7 +85,7 @@ export default class TranslationGet extends BaseCommand {
       },
     ];
 
-    CliUx.ux.table(rows, {
+    ux.table(rows, {
       key: {
         header: "Translation",
         minWidth: 24,
@@ -94,6 +97,6 @@ export default class TranslationGet extends BaseCommand {
     });
 
     this.log("");
-    CliUx.ux.styledJSON(JSON.parse(translation.content));
+    ux.styledJSON(JSON.parse(translation.content));
   }
 }

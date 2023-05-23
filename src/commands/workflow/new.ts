@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import { Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
@@ -9,13 +9,17 @@ import { spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
 import { WorkflowDirContext } from "@/lib/run-context";
 
-export default class WorkflowNew extends BaseCommand {
+export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
   static flags = {
     steps: Flags.string({ aliases: ["step"] }),
     force: Flags.boolean(),
   };
 
-  static args = [{ name: "workflowKey", required: true }];
+  static args = {
+    workflowKey: Args.string({
+      required: true,
+    }),
+  };
 
   // TODO(KNO-3072): Unhide after we move the generator logic to the backend.
   static hidden = true;

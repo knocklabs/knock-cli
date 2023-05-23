@@ -5,7 +5,7 @@ import BaseCommand from "@/lib/base-command";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
-export default class CommitPromote extends BaseCommand {
+export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
   static summary = "Promote all changes to the destination environment.";
 
   static flags = {

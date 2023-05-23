@@ -1,13 +1,38 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
 
+import { AnyObj } from "@/lib/helpers/object";
+
 import KnockApiV1 from "./api-v1";
 import * as RunContext from "./run-context";
 import UserConfig from "./user-config";
 
-export type Props = Interfaces.ParserOutput;
+export type BFlags = Interfaces.InferredFlags<
+  (typeof BaseCommand)["baseFlags"]
+>;
 
-abstract class BaseCommand extends Command {
-  protected props!: Props;
+type TFlags<T extends typeof Command> = Interfaces.InferredFlags<T["flags"]> &
+  BFlags;
+
+type TArgs<T extends typeof Command> = Interfaces.InferredArgs<T["args"]>;
+
+// Typed exactly for the underlying command with its flags and args.
+type TProps<T extends typeof Command> = {
+  flags: TFlags<T>;
+  args: TArgs<T>;
+};
+
+// Typed loosely for convenience.
+type GenericCommandProps = {
+  flags: AnyObj & BFlags;
+  args: AnyObj;
+};
+
+export type Props<T = unknown> = T extends typeof Command
+  ? TProps<T>
+  : GenericCommandProps;
+
+abstract class BaseCommand<T extends typeof Command> extends Command {
+  protected props!: TProps<T>;
   protected apiV1!: KnockApiV1;
   protected runContext!: RunContext.T;
 
@@ -18,7 +43,8 @@ abstract class BaseCommand extends Command {
     await UserConfig.load(this.config.configDir);
 
     // 2. Parse flags and args, must come after the user config load.
-    this.props = await this.parse(this.constructor as Interfaces.Command.Class);
+    const { args, flags } = await this.parse(this.ctor);
+    this.props = { args: args as TArgs<T>, flags: flags as TFlags<T> };
 
     // 3. Instantiate a knock api client.
     this.apiV1 = new KnockApiV1(this.props.flags, this.config);
@@ -27,8 +53,8 @@ abstract class BaseCommand extends Command {
     this.runContext = await RunContext.load(this.id);
   }
 
-  // Global flags are inherited by any command that extends BaseCommand.
-  static globalFlags = {
+  // Base flags are inherited by any command that extends BaseCommand.
+  static baseFlags = {
     // Evaluated in the following precedence:
     // - service token flag passed into the command
     // - if not provided, fall back to env variable

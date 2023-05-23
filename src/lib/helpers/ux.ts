@@ -1,4 +1,4 @@
-import { CliUx } from "@oclif/core";
+import { ux } from "@oclif/core";
 import enquirer from "enquirer";
 
 import { isTestEnv } from "./const";
@@ -20,9 +20,9 @@ export const promptToConfirm = async (
 
 export const spinner = {
   start(action: string): void {
-    if (!isTestEnv) CliUx.ux.action.start(action);
+    if (!isTestEnv) ux.action.start(action);
   },
   stop(): void {
-    CliUx.ux.action.stop();
+    ux.action.stop();
   },
 };

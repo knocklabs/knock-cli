@@ -52,9 +52,3 @@ export const jsonStr = Flags.custom<AnyObj>({
     }
   },
 });
-
-export const commaSeparatedStr = Flags.custom<string[]>({
-  parse: async (input: string) => {
-    return input.split(",").filter((x) => x);
-  },
-});

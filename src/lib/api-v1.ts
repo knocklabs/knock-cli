@@ -1,7 +1,7 @@
-import { Config, Interfaces } from "@oclif/core";
+import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-import BaseCommand, { Props } from "@/lib/base-command";
+import { BFlags, Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
@@ -12,17 +12,13 @@ import * as Workflow from "@/lib/marshal/workflow";
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
 
-export type GFlags = Interfaces.InferredFlags<
-  (typeof BaseCommand)["globalFlags"]
->;
-
 /*
  * API v1 client
  */
 export default class ApiV1 {
   client!: AxiosInstance;
 
-  constructor(flags: GFlags, config: Config) {
+  constructor(flags: BFlags, config: Config) {
     const baseURL = flags["api-origin"] || DEFAULT_ORIGIN;
 
     this.client = axios.create({

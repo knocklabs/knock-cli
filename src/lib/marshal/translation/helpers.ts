@@ -1,17 +1,16 @@
 import * as path from "node:path";
 
-import { CliUx } from "@oclif/core";
+import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 import localeData from "locale-codes";
 
-import { Props } from "@/lib/base-command";
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
 import { TranslationData } from "./types";
 
 export const translationRefDescription = `
-A [translation ref] is a identifier string that refers to a unique translation.
+Translation ref is a identifier string that refers to a unique translation.
 If a translation has no namespace, it is the same as the locale, e.g. \`en\`.
 If namespaced, it is formatted as namespace.locale, e.g. \`admin.en\`.
 `.trim();
@@ -118,6 +117,15 @@ export const parseTranslationRef = (
  * Validate the provided args and flags with the current run context, to first
  * ensure the invoked command makes sense, and return the target context.
  */
+type CommandTargetProps = {
+  flags: {
+    all: boolean | undefined;
+    "translations-dir": DirContext | undefined;
+  };
+  args: {
+    translationRef: string | undefined;
+  };
+};
 type TranslationFileTarget = {
   type: "translationFile";
   context: TranslationFileContext;
@@ -136,7 +144,7 @@ export type TranslationCommandTarget =
   | TranslationsIndexDirTarget;
 
 export const ensureValidCommandTarget = async (
-  props: Props,
+  props: CommandTargetProps,
   runContext: RunContext,
 ): Promise<TranslationCommandTarget> => {
   const { flags, args } = props;
@@ -144,16 +152,14 @@ export const ensureValidCommandTarget = async (
 
   // Error, trying to run the command not in a translation directory.
   if (resourceDirCtx && resourceDirCtx.type !== "translation") {
-    return CliUx.ux.error(
+    return ux.error(
       `Cannot run ${commandId} inside a ${resourceDirCtx.type} directory`,
     );
   }
 
   // Error, got neither the translationRef arg nor the --all flag.
   if (!args.translationRef && !flags.all) {
-    CliUx.ux.error(
-      "At least one of translation ref arg or --all flag must be given",
-    );
+    ux.error("At least one of translation ref arg or --all flag must be given");
   }
 
   // No translationRef arg, which means --all flag is used.
@@ -174,7 +180,7 @@ export const ensureValidCommandTarget = async (
   // From this point on, we have translationRef so parse and validate the format.
   const parsedRef = parseTranslationRef(args.translationRef);
   if (!parsedRef) {
-    return CliUx.ux.error(
+    return ux.error(
       `Invalid translation ref \`${args.translationRef}\`, use valid <locale> or <namespace>.<locale> for namespaced translations`,
     );
   }
@@ -183,7 +189,7 @@ export const ensureValidCommandTarget = async (
 
   // If we are in the translation dir, make sure the locale matches.
   if (resourceDirCtx && resourceDirCtx.key !== localeCode) {
-    return CliUx.ux.error(
+    return ux.error(
       `Cannot run ${commandId} with \`${args.translationRef}\` inside a ${resourceDirCtx.key} directory`,
     );
   }
@@ -206,7 +212,7 @@ export const ensureValidCommandTarget = async (
   // From this point on, we have both translationRef and --all flag used
   // together, so make sure we are targeting a non-namespaced top-level locale.
   if (namespace) {
-    return CliUx.ux.error(
+    return ux.error(
       `Cannot use --all with a namespaced translation \`${args.translationRef}\``,
     );
   }

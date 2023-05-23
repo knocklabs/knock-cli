@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import { CliUx } from "@oclif/core";
+import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { formatErrors, SourceError } from "@/lib/helpers/error";
@@ -78,7 +78,7 @@ export const readAllForCommandTarget = async (
         ? "a translation file at"
         : "translation files in";
 
-    return CliUx.ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
+    return ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
   }
 
   switch (targetType) {

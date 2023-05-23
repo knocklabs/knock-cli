@@ -232,9 +232,7 @@ describe("commands/translation/push", () => {
           const stub2 = KnockApiV1.prototype.upsertTranslation as any;
           sinon.assert.calledThrice(stub2);
 
-          const expectedArgs = {
-            translationRef: undefined,
-          };
+          const expectedArgs = {};
           const expectedFlags = {
             "service-token": "valid-token",
             "api-origin": undefined,

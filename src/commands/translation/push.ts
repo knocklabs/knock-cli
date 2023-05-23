@@ -1,4 +1,4 @@
-import { Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
@@ -11,11 +11,11 @@ import * as Translation from "@/lib/marshal/translation";
 
 import TranslationValidate from "./validate";
 
-export default class TranslationPush extends BaseCommand {
+export default class TranslationPush extends BaseCommand<
+  typeof TranslationPush
+> {
   static summary =
     "Push one or more translations from a local file system to Knock.";
-
-  static description = Translation.translationRefDescription;
 
   static flags = {
     environment: Flags.string({
@@ -41,7 +41,12 @@ export default class TranslationPush extends BaseCommand {
     }),
   };
 
-  static args = [{ name: "translationRef", required: false }];
+  static args = {
+    translationRef: Args.string({
+      description: Translation.translationRefDescription,
+      required: false,
+    }),
+  };
 
   async run(): Promise<void> {
     const { flags } = this.props;

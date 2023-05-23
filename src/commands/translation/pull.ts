@@ -1,4 +1,4 @@
-import { Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
@@ -16,11 +16,11 @@ import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Translation from "@/lib/marshal/translation";
 import { TranslationDirContext } from "@/lib/run-context";
 
-export default class TranslationPull extends BaseCommand {
+export default class TranslationPull extends BaseCommand<
+  typeof TranslationPull
+> {
   static summary =
     "Pull one or more translations from an environment into a local file system.";
-
-  static description = Translation.translationRefDescription;
 
   static flags = {
     environment: Flags.string({
@@ -43,7 +43,12 @@ export default class TranslationPull extends BaseCommand {
     }),
   };
 
-  static args = [{ name: "translationRef", required: false }];
+  static args = {
+    translationRef: Args.string({
+      description: Translation.translationRefDescription,
+      required: false,
+    }),
+  };
 
   async run(): Promise<void> {
     const target = await Translation.ensureValidCommandTarget(
