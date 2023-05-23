@@ -1,4 +1,4 @@
-import { Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
@@ -13,7 +13,7 @@ import * as Workflow from "@/lib/marshal/workflow";
 
 import WorkflowValidate from "./validate";
 
-export default class WorkflowPush extends BaseCommand {
+export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
   static summary =
     "Push one or more workflows from a local file system to Knock.";
 
@@ -41,7 +41,11 @@ export default class WorkflowPush extends BaseCommand {
     }),
   };
 
-  static args = [{ name: "workflowKey", required: false }];
+  static args = {
+    workflowKey: Args.string({
+      required: false
+    })
+  }
 
   async run(): Promise<void> {
     const { flags } = this.props;

@@ -1,4 +1,4 @@
-import { CliUx } from "@oclif/core";
+import { ux } from "@oclif/core";
 
 import { ResourceDirContext, ResourceTarget } from "./types";
 
@@ -15,7 +15,7 @@ export const ensureResourceDirForTarget = (
   // If the target resource is a different type than the current resource dir
   // type, error out.
   if (resourceDirCtx.type !== target.type) {
-    return CliUx.ux.error(
+    return ux.error(
       `Cannot run ${target.commandId} inside a ${resourceDirCtx.type} directory`,
     );
   }
@@ -32,7 +32,7 @@ export const ensureResourceDirForTarget = (
     return resourceDirCtx;
   }
 
-  return CliUx.ux.error(
+  return ux.error(
     `Cannot run ${target.commandId} \`${target.key}\` inside another ${resourceDirCtx.type} directory:\n${resourceDirCtx.key}`,
   );
 };

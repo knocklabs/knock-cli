@@ -1,6 +1,6 @@
 import BaseCommand from "@/lib/base-command";
 
-export default class Ping extends BaseCommand {
+export default class Ping extends BaseCommand<typeof Ping> {
   // Deprecated, in favor of the whoami command.
   static hidden = true;
 

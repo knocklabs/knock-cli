@@ -1,4 +1,4 @@
-import { CliUx, Flags } from "@oclif/core";
+import { ux, Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
@@ -7,7 +7,7 @@ import { withSpinner } from "@/lib/helpers/request";
 import * as Conditions from "@/lib/marshal/conditions";
 import * as Workflow from "@/lib/marshal/workflow";
 
-export default class WorkflowGet extends BaseCommand {
+export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
   static summary = "Display a single workflow from an environment.";
 
   static flags = {
@@ -20,7 +20,11 @@ export default class WorkflowGet extends BaseCommand {
     }),
   };
 
-  static args = [{ name: "workflowKey", required: true }];
+  static args = {
+    workflowKey: Args.string({
+      required: true
+    })
+  }
 
   static enableJsonFlag = true;
 
@@ -82,7 +86,7 @@ export default class WorkflowGet extends BaseCommand {
       },
     ];
 
-    CliUx.ux.table(rows, {
+    ux.table(rows, {
       key: {
         header: "Workflow",
         minWidth: 24,
@@ -96,7 +100,7 @@ export default class WorkflowGet extends BaseCommand {
     this.log("");
 
     if (workflow.steps.length === 0) {
-      return CliUx.ux.log(" This workflow has no steps to display.");
+      return ux.log(" This workflow has no steps to display.");
     }
 
     /*
@@ -105,7 +109,7 @@ export default class WorkflowGet extends BaseCommand {
 
     const steps = workflow.steps.map((step, index) => ({ ...step, index }));
 
-    CliUx.ux.table(steps, {
+    ux.table(steps, {
       index: {
         header: "Steps",
         get: (step) => step.index + 1,

@@ -1,4 +1,4 @@
-import { CliUx, Flags } from "@oclif/core";
+import { ux, Flags } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import * as ApiV1 from "@/lib/api-v1";
@@ -13,7 +13,7 @@ import {
 import { withSpinner } from "@/lib/helpers/request";
 import * as Workflow from "@/lib/marshal/workflow";
 
-export default class WorkflowList extends BaseCommand {
+export default class WorkflowList extends BaseCommand<typeof WorkflowList> {
   static summary = "Display all workflows for an environment.";
 
   static flags = {
@@ -64,7 +64,7 @@ export default class WorkflowList extends BaseCommand {
      * Workflows list table
      */
 
-    CliUx.ux.table(entries, {
+    ux.table(entries, {
       key: {
         header: "Key",
       },

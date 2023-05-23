@@ -21,7 +21,7 @@ const JOKES = [
   ["Beets.", "Beets who?", "Beets me!"],
 ];
 
-export default class Knock extends BaseCommand {
+export default class Knock extends BaseCommand<typeof Knock> {
   // Because, it's a secret :)
   static hidden = true;
 

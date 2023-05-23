@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import { CliUx } from "@oclif/core";
+import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 import { take } from "lodash";
 
@@ -187,14 +187,14 @@ export const ensureValidCommandTarget = async (
   // If the target resource is a different type than the current resource dir
   // type, error out.
   if (resourceDirCtx && resourceDirCtx.type !== "workflow") {
-    return CliUx.ux.error(
+    return ux.error(
       `Cannot run ${commandId} inside a ${resourceDirCtx.type} directory`,
     );
   }
 
   // Cannot accept both workflow key arg and --all flag.
   if (flags.all && args.workflowKey) {
-    return CliUx.ux.error(
+    return ux.error(
       `workflowKey arg \`${args.workflowKey}\` cannot also be provided when using --all`,
     );
   }
@@ -204,7 +204,7 @@ export const ensureValidCommandTarget = async (
     // If --all flag used inside a workflow directory, then require a workflows
     // dir path.
     if (resourceDirCtx && !flags["workflows-dir"]) {
-      return CliUx.ux.error("Missing required flag workflows-dir");
+      return ux.error("Missing required flag workflows-dir");
     }
 
     // Targeting all workflow dirs in the workflows index dir.
@@ -218,7 +218,7 @@ export const ensureValidCommandTarget = async (
   // Workflow key arg is given, which means no --all flag.
   if (args.workflowKey) {
     if (resourceDirCtx && resourceDirCtx.key !== args.workflowKey) {
-      return CliUx.ux.error(
+      return ux.error(
         `Cannot run ${commandId} \`${args.workflowKey}\` inside another workflow directory:\n${resourceDirCtx.key}`,
       );
     }
@@ -243,5 +243,5 @@ export const ensureValidCommandTarget = async (
     return { type: "workflowDir", context: resourceDirCtx };
   }
 
-  return CliUx.ux.error("Missing 1 required arg:\nworkflowKey");
+  return ux.error("Missing 1 required arg:\nworkflowKey");
 };

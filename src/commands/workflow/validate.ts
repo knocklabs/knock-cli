@@ -1,7 +1,7 @@
-import { Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
-import BaseCommand, { Props } from "@/lib/base-command";
+import BaseCommand, { TProps } from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -10,7 +10,9 @@ import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
 
-export default class WorkflowValidate extends BaseCommand {
+import WorkflowPush from "./push";
+
+export default class WorkflowValidate extends BaseCommand<typeof WorkflowValidate> {
   static summary = "Validate one or more workflows from a local file system.";
 
   static flags = {
@@ -29,7 +31,11 @@ export default class WorkflowValidate extends BaseCommand {
     }),
   };
 
-  static args = [{ name: "workflowKey", required: false }];
+  static args = {
+    workflowKey: Args.string({
+      required: false
+    })
+  }
 
   async run(): Promise<void> {
     // 1. Read all workflow directories found for the given command.
@@ -76,7 +82,7 @@ export default class WorkflowValidate extends BaseCommand {
 
   static async validateAll(
     api: ApiV1.T,
-    props: Props,
+    props: TProps<typeof WorkflowValidate | typeof WorkflowPush>,
     workflows: Workflow.WorkflowDirData[],
   ): Promise<SourceError[]> {
     // TODO: Throw an error if a non validation error (e.g. authentication error)

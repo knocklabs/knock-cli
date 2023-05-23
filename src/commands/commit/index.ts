@@ -6,7 +6,7 @@ import { KnockEnv } from "@/lib/helpers/const";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
-export default class Commit extends BaseCommand {
+export default class Commit extends BaseCommand<typeof Commit> {
   static summary = "Commit all changes in development environment.";
 
   static flags = {

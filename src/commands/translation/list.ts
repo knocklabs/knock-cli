@@ -1,4 +1,4 @@
-import { CliUx, Flags } from "@oclif/core";
+import { ux, Flags } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import * as ApiV1 from "@/lib/api-v1";
@@ -13,7 +13,7 @@ import {
 import { withSpinner } from "@/lib/helpers/request";
 import * as Translation from "@/lib/marshal/translation";
 
-export default class TranslationList extends BaseCommand {
+export default class TranslationList extends BaseCommand<typeof TranslationList> {
   static summary = "Display all translations for an environment.";
 
   static flags = {
@@ -64,7 +64,7 @@ export default class TranslationList extends BaseCommand {
      * Translations list table
      */
 
-    CliUx.ux.table(entries, {
+    ux.table(entries, {
       ref: {
         header: "Ref",
         get: (entry) => Translation.formatRef(entry),

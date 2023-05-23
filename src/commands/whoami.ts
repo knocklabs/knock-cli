@@ -3,7 +3,7 @@ import BaseCommand from "@/lib/base-command";
 import { withSpinner } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 
-export default class Whoami extends BaseCommand {
+export default class Whoami extends BaseCommand<typeof Whoami> {
   static summary = "Verify the provided service token.";
 
   static enableJsonFlag = true;

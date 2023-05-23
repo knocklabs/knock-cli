@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import { Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
@@ -22,7 +22,7 @@ import {
   WorkflowDirContext,
 } from "@/lib/run-context";
 
-export default class WorkflowPull extends BaseCommand {
+export default class WorkflowPull extends BaseCommand<typeof WorkflowPull> {
   static summary =
     "Pull one or more workflows from an environment into a local file system.";
 
@@ -46,7 +46,11 @@ export default class WorkflowPull extends BaseCommand {
     }),
   };
 
-  static args = [{ name: "workflowKey", required: false }];
+  static args = {
+    workflowKey: Args.string({
+      required: false
+    })
+  }
 
   async run(): Promise<void> {
     const { args, flags } = this.props;
