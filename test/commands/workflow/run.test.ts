@@ -148,7 +148,9 @@ describe("commands/workflow/run", () => {
                 local: true,
               }),
           ),
-          sinon.match((workflow) => isEqual(workflow, { name: "New comment" })),
+          sinon.match((workflow) =>
+            isEqual(workflow, { name: "New comment", key: "new-comment" }),
+          ),
         );
       });
   });

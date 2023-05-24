@@ -1,14 +1,12 @@
-import { Args, Flags, ux } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatErrors } from "@/lib/helpers/error";
 import { jsonStr } from "@/lib/helpers/flag";
-import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import * as Workflow from "@/lib/marshal/workflow";
-import { CommandTargetProps } from "@/lib/marshal/workflow";
 
 export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
   static summary =
@@ -19,9 +17,11 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       default: "development",
       summary: "The environment in which to run the workflow",
     }),
-    recipients: CustomFlags.commaSeparatedStr({
+    recipients: Flags.string({
       required: true,
       aliases: ["recipient"],
+      multiple: true,
+      delimiter: ",",
       summary:
         "One or more recipient ids for this workflow run, separated by comma.",
     }),
@@ -36,7 +36,7 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
     }),
     local: Flags.boolean({
       default: false,
-      summary: "Whether to use the local file version of this workflow",
+      summary: "Whether to use the local version from the workflow directory",
     }),
   };
 
@@ -62,9 +62,15 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
     this.log(indentString(`Workflow run id: ${resp.data.workflow_run_id}`, 2));
   }
 
-  async getWorkflowInput(): Promise<Workflow.WorkflowInput | undefined> {
+  async getWorkflowInput(): Promise<Workflow.WorkflowInput> {
+    const commandTargetProps = {
+      // These flags aren't supported for the run command.
+      flags: { all: false, "workflow-dir": undefined },
+      args: this.props.args,
+    };
+
     const target = await Workflow.ensureValidCommandTarget(
-      this.props as CommandTargetProps,
+      commandTargetProps,
       this.runContext,
     );
 
@@ -75,7 +81,7 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
     }
 
     if (!targetCtx.exists) {
-      return ux.error(
+      return this.error(
         `Cannot locate a workflow directory at \`${targetCtx.abspath}\``,
       );
     }
@@ -88,6 +94,7 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       return this.error(formatErrors(readErrors));
     }
 
-    return workflow as Workflow.WorkflowInput;
+    const { args } = this.props;
+    return { key: args.workflowKey, ...workflow };
   }
 }

@@ -52,12 +52,3 @@ export const jsonStr = Flags.custom<AnyObj>({
     }
   },
 });
-
-/**
- * Takes a string separated by commas and turns it into an array
- */
-export const commaSeparatedStr = Flags.custom<string[]>({
-  parse: async (input: string) => {
-    return input.split(",").filter((x) => x);
-  },
-});
