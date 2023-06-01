@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.2 darwin-arm64 node-v19.7.0
+@knocklabs/cli/0.1.3 darwin-arm64 node-v16.14.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -70,7 +70,7 @@ FLAGS
   --service-token=<value>       (required) The service token to authenticate with.
 ```
 
-_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.2/dist/commands/commit/index.ts)_
+_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.3/dist/commands/commit/index.ts)_
 
 ## `knock commit promote`
 
@@ -469,7 +469,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [dist/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.2/dist/commands/whoami.ts)_
+_See code: [dist/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.3/dist/commands/whoami.ts)_
 
 ## `knock workflow activate WORKFLOWKEY`
 
