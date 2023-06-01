@@ -20,7 +20,7 @@ jobs:
         run: |
           FILENAME=$(ls ./dist/*darwin-x64.tar.gz | head -1 | xargs -n 1 basename)
           echo "filename=${FILENAME}" >> $GITHUB_OUTPUT
-          echo "download_url=https://github.com/knocklabs/knock-groot/releases/download/${GITHUB_REF_NAME}/${FILENAME}" >> $GITHUB_OUTPUT
+          echo "download_url=https://github.com/knocklabs/knock-cli/releases/download/${GITHUB_REF_NAME}/${FILENAME}" >> $GITHUB_OUTPUT
 
       - name: Upload tarball to the release
         run: gh release upload ${GITHUB_REF_NAME} ./dist/${{ steps.tarball.outputs.filename }}
@@ -35,7 +35,7 @@ jobs:
         if: "!contains(github.ref, '-')" # skip prereleases
         with:
           homebrew-tap: knocklabs/homebrew-tap
-          formula-name: groot
+          formula-name: knock
           download-url: ${{ steps.tarball.outputs.download_url }}
           create-pullrequest: true
           # IMPORTANT: PR title format needs to be exactly as below so it can be
