@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.0 darwin-arm64 node-v16.14.0
+@knocklabs/cli/0.1.1 darwin-arm64 node-v19.7.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -50,35 +50,40 @@ USAGE
 * [`knock workflow list`](#knock-workflow-list)
 * [`knock workflow pull [WORKFLOWKEY]`](#knock-workflow-pull-workflowkey)
 * [`knock workflow push [WORKFLOWKEY]`](#knock-workflow-push-workflowkey)
+* [`knock workflow run WORKFLOWKEY`](#knock-workflow-run-workflowkey)
 * [`knock workflow validate [WORKFLOWKEY]`](#knock-workflow-validate-workflowkey)
 
 ## `knock commit`
+
+Commit all changes in development environment.
 
 ```
 USAGE
   $ knock commit --service-token <value> [--environment development] [-m <value>] [--force]
 
 FLAGS
-  -m, --commit-message=<value>  Use the given value as the commit message
+  -m, --commit-message=<value>  Use the given value as the commit message.
   --environment=<option>        [default: development] Committing changes applies to the development environment only,
-                                use `commit promote` to promote changes to a later environment
+                                use `commit promote` to promote changes to a subsequent environment.
                                 <options: development>
-  --force
-  --service-token=<value>       (required) The service token to authenticate with
+  --force                       Remove the confirmation prompt.
+  --service-token=<value>       (required) The service token to authenticate with.
 ```
 
-_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0/dist/commands/commit/index.ts)_
+_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.1/dist/commands/commit/index.ts)_
 
 ## `knock commit promote`
+
+Promote all changes to the destination environment.
 
 ```
 USAGE
   $ knock commit promote --service-token <value> --to <value> [--force]
 
 FLAGS
-  --force
-  --service-token=<value>  (required) The service token to authenticate with
-  --to=<value>             (required) The destination environment to promote changes from the preceding environment
+  --force                  Remove the confirmation prompt.
+  --service-token=<value>  (required) The service token to authenticate with.
+  --to=<value>             (required) The destination environment to promote changes from the preceding environment.
 ```
 
 ## `knock help [COMMANDS]`
@@ -119,7 +124,7 @@ EXAMPLES
   $ knock plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.4.6/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.0.1/src/commands/plugins/index.ts)_
 
 ## `knock plugins:install PLUGIN...`
 
@@ -336,15 +341,22 @@ DESCRIPTION
 
 ## `knock translation get TRANSLATIONREF`
 
+Display a single translation from an environment.
+
 ```
 USAGE
   $ knock translation get TRANSLATIONREF --service-token <value> [--environment <value>] [--hide-uncommitted-changes]
     [--json]
 
+ARGUMENTS
+  TRANSLATIONREF  Translation ref is a identifier string that refers to a unique translation.
+                  If a translation has no namespace, it is the same as the locale, e.g. `en`.
+                  If namespaced, it is formatted as namespace.locale, e.g. `admin.en`.
+
 FLAGS
-  --environment=<value>       [default: development]
-  --hide-uncommitted-changes
-  --service-token=<value>     (required) The service token to authenticate with
+  --environment=<value>       [default: development] The environment to use.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --service-token=<value>     (required) The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -352,18 +364,20 @@ GLOBAL FLAGS
 
 ## `knock translation list`
 
+Display all translations for an environment.
+
 ```
 USAGE
   $ knock translation list --service-token <value> [--environment <value>] [--hide-uncommitted-changes] [--after
     <value>] [--before <value>] [--limit <value>] [--json]
 
 FLAGS
-  --after=<value>
-  --before=<value>
-  --environment=<value>       [default: development]
-  --hide-uncommitted-changes
-  --limit=<value>
-  --service-token=<value>     (required) The service token to authenticate with
+  --after=<value>             The cursor after which to fetch the next page.
+  --before=<value>            The cursor before which to fetch the previous page.
+  --environment=<value>       [default: development] The environment to use.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --limit=<value>             The total number of entries to fetch per page.
+  --service-token=<value>     (required) The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -371,83 +385,120 @@ GLOBAL FLAGS
 
 ## `knock translation pull [TRANSLATIONREF]`
 
+Pull one or more translations from an environment into a local file system.
+
 ```
 USAGE
   $ knock translation pull [TRANSLATIONREF] --service-token <value> [--environment <value>] [--translations-dir
     <value> --all] [--hide-uncommitted-changes] [--force]
 
+ARGUMENTS
+  TRANSLATIONREF  Translation ref is a identifier string that refers to a unique translation.
+                  If a translation has no namespace, it is the same as the locale, e.g. `en`.
+                  If namespaced, it is formatted as namespace.locale, e.g. `admin.en`.
+
 FLAGS
-  --all
-  --environment=<value>       [default: development]
-  --force
-  --hide-uncommitted-changes
-  --service-token=<value>     (required) The service token to authenticate with
-  --translations-dir=<value>
+  --all                       Whether to pull all translations from the specified environment.
+  --environment=<value>       [default: development] The environment to use.
+  --force                     Remove the confirmation prompt.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --service-token=<value>     (required) The service token to authenticate with.
+  --translations-dir=<value>  The target directory path to pull all translations into.
 ```
 
 ## `knock translation push [TRANSLATIONREF]`
+
+Push one or more translations from a local file system to Knock.
 
 ```
 USAGE
   $ knock translation push [TRANSLATIONREF] --service-token <value> [--environment development] [--translations-dir
     <value> --all] [-m <value> --commit]
 
+ARGUMENTS
+  TRANSLATIONREF  Translation ref is a identifier string that refers to a unique translation.
+                  If a translation has no namespace, it is the same as the locale, e.g. `en`.
+                  If namespaced, it is formatted as namespace.locale, e.g. `admin.en`.
+
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message
-  --all
+  --all                         Whether to push all translations from the target directory.
   --commit                      Push and commit the translation(s) at the same time
   --environment=<option>        [default: development] Pushing a translation is only allowed in the development
                                 environment
                                 <options: development>
-  --service-token=<value>       (required) The service token to authenticate with
-  --translations-dir=<value>
+  --service-token=<value>       (required) The service token to authenticate with.
+  --translations-dir=<value>    The target directory path to find all translations to push.
 ```
 
 ## `knock translation validate [TRANSLATIONREF]`
+
+Validate one or more translations from a local file system.
 
 ```
 USAGE
   $ knock translation validate [TRANSLATIONREF] --service-token <value> [--environment development] [--translations-dir
     <value> --all]
 
+ARGUMENTS
+  TRANSLATIONREF  Translation ref is a identifier string that refers to a unique translation.
+                  If a translation has no namespace, it is the same as the locale, e.g. `en`.
+                  If namespaced, it is formatted as namespace.locale, e.g. `admin.en`.
+
 FLAGS
-  --all
-  --environment=<option>      [default: development] Validating a workflow is only done in the development environment
+  --all                       Whether to validate all translations from the target directory.
+  --environment=<option>      [default: development] Validating a translation is only done in the development
+                              environment
                               <options: development>
-  --service-token=<value>     (required) The service token to authenticate with
-  --translations-dir=<value>
+  --service-token=<value>     (required) The service token to authenticate with.
+  --translations-dir=<value>  The target directory path to find all translations to validate.
 ```
 
 ## `knock whoami`
+
+Verify the provided service token.
 
 ```
 USAGE
   $ knock whoami --service-token <value> [--json]
 
 FLAGS
-  --service-token=<value>  (required) The service token to authenticate with
+  --service-token=<value>  (required) The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [dist/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.0/dist/commands/whoami.ts)_
+_See code: [dist/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.1/dist/commands/whoami.ts)_
 
 ## `knock workflow activate WORKFLOWKEY`
+
+Activate or deactivate a workflow in a given environment.
 
 ```
 USAGE
   $ knock workflow activate WORKFLOWKEY --service-token <value> --environment <value> [--status true|false] [--force]
 
 FLAGS
-  --environment=<value>    (required)
-  --force
-  --service-token=<value>  (required) The service token to authenticate with
-  --status=<option>        [default: true]
+  --environment=<value>    (required) The environment to use.
+  --force                  Remove the confirmation prompt.
+  --service-token=<value>  (required) The service token to authenticate with.
+  --status=<option>        [default: true] The workflow active status to set.
                            <options: true|false>
+
+DESCRIPTION
+  Activate or deactivate a workflow in a given environment.
+
+  This immediately enables or disables a workflow in a given environment without
+  needing to go through environment promotion.
+
+  By default, this command activates a given workflow. Pass in the --status flag
+  with `false` in order to deactivate it.
 ```
 
 ## `knock workflow get WORKFLOWKEY`
+
+Display a single workflow from an environment.
 
 ```
 USAGE
@@ -455,9 +506,9 @@ USAGE
     [--json]
 
 FLAGS
-  --environment=<value>       [default: development]
-  --hide-uncommitted-changes
-  --service-token=<value>     (required) The service token to authenticate with
+  --environment=<value>       [default: development] The environment to use.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --service-token=<value>     (required) The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -465,18 +516,20 @@ GLOBAL FLAGS
 
 ## `knock workflow list`
 
+Display all workflows for an environment.
+
 ```
 USAGE
   $ knock workflow list --service-token <value> [--environment <value>] [--hide-uncommitted-changes] [--after
     <value>] [--before <value>] [--limit <value>] [--json]
 
 FLAGS
-  --after=<value>
-  --before=<value>
-  --environment=<value>       [default: development]
-  --hide-uncommitted-changes
-  --limit=<value>
-  --service-token=<value>     (required) The service token to authenticate with
+  --after=<value>             The cursor after which to fetch the next page.
+  --before=<value>            The cursor before which to fetch the previous page.
+  --environment=<value>       [default: development] The environment to use.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --limit=<value>             The total number of entries to fetch per page.
+  --service-token=<value>     (required) The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -484,21 +537,25 @@ GLOBAL FLAGS
 
 ## `knock workflow pull [WORKFLOWKEY]`
 
+Pull one or more workflows from an environment into a local file system.
+
 ```
 USAGE
   $ knock workflow pull [WORKFLOWKEY] --service-token <value> [--environment <value>] [--workflows-dir <value>
     --all] [--hide-uncommitted-changes] [--force]
 
 FLAGS
-  --all
-  --environment=<value>       [default: development]
-  --force
-  --hide-uncommitted-changes
-  --service-token=<value>     (required) The service token to authenticate with
-  --workflows-dir=<value>
+  --all                       Whether to pull all workflows from the specified environment.
+  --environment=<value>       [default: development] The environment to use.
+  --force                     Remove the confirmation prompt.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --service-token=<value>     (required) The service token to authenticate with.
+  --workflows-dir=<value>     The target directory path to pull all workflows into.
 ```
 
 ## `knock workflow push [WORKFLOWKEY]`
+
+Push one or more workflows from a local file system to Knock.
 
 ```
 USAGE
@@ -507,15 +564,35 @@ USAGE
 
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message
-  --all
+  --all                         Whether to push all workflows from the target directory.
   --commit                      Push and commit the workflow(s) at the same time
   --environment=<option>        [default: development] Pushing a workflow is only allowed in the development environment
                                 <options: development>
-  --service-token=<value>       (required) The service token to authenticate with
-  --workflows-dir=<value>
+  --service-token=<value>       (required) The service token to authenticate with.
+  --workflows-dir=<value>       The target directory path to find all workflows to push.
+```
+
+## `knock workflow run WORKFLOWKEY`
+
+Test run a workflow using the latest version from Knock, or a local workflow directory.
+
+```
+USAGE
+  $ knock workflow run WORKFLOWKEY --service-token <value> --recipients <value> [--environment <value>] [--actor
+    <value>] [--tenant <value>] [--data <value>]
+
+FLAGS
+  --actor=<value>          An actor id for the workflow run.
+  --data=<value>           A JSON string of the data for this workflow
+  --environment=<value>    [default: development] The environment in which to run the workflow
+  --recipients=<value>...  (required) One or more recipient ids for this workflow run, separated by comma.
+  --service-token=<value>  (required) The service token to authenticate with.
+  --tenant=<value>         A tenant id for the workflow run.
 ```
 
 ## `knock workflow validate [WORKFLOWKEY]`
+
+Validate one or more workflows from a local file system.
 
 ```
 USAGE
@@ -523,10 +600,10 @@ USAGE
     --all]
 
 FLAGS
-  --all
+  --all                    Whether to validate all workflows from the target directory.
   --environment=<option>   [default: development] Validating a workflow is only done in the development environment
                            <options: development>
-  --service-token=<value>  (required) The service token to authenticate with
-  --workflows-dir=<value>
+  --service-token=<value>  (required) The service token to authenticate with.
+  --workflows-dir=<value>  The target directory path to find all workflows to validate.
 ```
 <!-- commandsstop -->
