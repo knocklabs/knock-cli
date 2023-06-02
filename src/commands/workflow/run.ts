@@ -51,6 +51,6 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
     this.log(
       `‣ Successfully ran \`${args.workflowKey}\` workflow in \`${flags.environment}\` environment`,
     );
-    this.log(indentString(`Workflow run id: ${resp.data.workflow_run_id}`), 4);
+    this.log(indentString(`Workflow run id: ${resp.data.workflow_run_id}`, 4));
   }
 }
