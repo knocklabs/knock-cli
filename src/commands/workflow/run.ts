@@ -7,8 +7,7 @@ import { withSpinner } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 
 export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
-  static summary =
-    "Test run a workflow using the latest version from Knock, or a local workflow directory.";
+  static summary = "Test run a workflow using the latest version from Knock.";
 
   static flags = {
     environment: Flags.string({
