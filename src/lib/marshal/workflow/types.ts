@@ -13,6 +13,7 @@ export enum StepType {
   Batch = "batch",
   Delay = "delay",
   HttpFetch = "http_fetch",
+  Throttle = "throttle",
 }
 
 type WorkflowStepBase = {
@@ -54,6 +55,20 @@ type BatchStepData = WorkflowStepBase & {
   settings: BatchStepSettings;
 };
 
+/* Throttle step */
+
+type ThrottleStepSettings = {
+  throttle_window?: Duration;
+  throttle_window_field_path?: string;
+  throttle_key?: string;
+  throttle_limit?: number;
+};
+
+type ThrottleStepData = WorkflowStepBase & {
+  type: StepType.Throttle;
+  settings: ThrottleStepSettings;
+};
+
 /* Delay step */
 
 type DelayStepSettings = {
@@ -87,7 +102,8 @@ export type WorkflowStepData<A extends MaybeWithAnnotation = unknown> =
   | ChannelStepData<A>
   | BatchStepData
   | DelayStepData
-  | HttpFetchStepData;
+  | HttpFetchStepData
+  | ThrottleStepData;
 
 export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {
   key: string;
