@@ -61,7 +61,7 @@ type ThrottleStepSettings = {
   throttle_window?: Duration;
   throttle_window_field_path?: string;
   throttle_key?: string;
-  throttle_limit?: number;
+  throttle_limit: number;
 };
 
 type ThrottleStepData = WorkflowStepBase & {

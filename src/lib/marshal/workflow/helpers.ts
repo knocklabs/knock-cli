@@ -122,7 +122,7 @@ const throttleStepSummaryLines = (step: WorkflowStepData) => {
     throttle_key && `Throttle key: ${throttle_key}`,
     duration && `Throttle window: ${duration.value} ${duration.unit}`,
     field_path && `Throttle window: "${field_path}"`,
-    throttle_limit && `Throttle limit: ${throttle_limit}`,
+    `Throttle limit: ${throttle_limit}`,
   ];
 };
 
