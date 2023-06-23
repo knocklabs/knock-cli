@@ -43,6 +43,7 @@ const scaffoldBatchStep = (refSuffix: number): StepScaffoldFuncRet => {
     type: StepType.Batch,
     settings: {
       batch_order: "asc",
+      batch_window_type: "sliding",
       batch_window: {
         unit: "seconds",
         value: 30,
