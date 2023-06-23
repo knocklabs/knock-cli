@@ -108,6 +108,24 @@ const batchStepSummaryLines = (step: WorkflowStepData) => {
   ];
 };
 
+const throttleStepSummaryLines = (step: WorkflowStepData) => {
+  if (step.type !== StepType.Throttle) return [];
+
+  const {
+    throttle_key,
+    throttle_window: duration,
+    throttle_window_field_path: field_path,
+    throttle_limit,
+  } = step.settings;
+
+  return [
+    throttle_key && `Throttle key: ${throttle_key}`,
+    duration && `Throttle window: ${duration.value} ${duration.unit}`,
+    field_path && `Throttle window: "${field_path}"`,
+    `Throttle limit: ${throttle_limit}`,
+  ];
+};
+
 const delayStepSummaryLines = (step: WorkflowStepData) => {
   if (step.type !== StepType.Delay) return [];
 
@@ -147,6 +165,7 @@ export const formatStepSummary = (step: WorkflowStepData): string => {
     ...batchStepSummaryLines(step),
     ...delayStepSummaryLines(step),
     ...httpFetchStepSummaryLines(step),
+    ...throttleStepSummaryLines(step),
 
     // Extra line between step rows to make it easier on the eye.
     " ",
