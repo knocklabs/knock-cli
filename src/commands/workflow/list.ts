@@ -81,7 +81,11 @@ export default class WorkflowList extends BaseCommand<typeof WorkflowList> {
       },
       steps: {
         header: "Steps",
-        get: (entry) => (entry.steps.length > 0 ? entry.steps.length : "-"),
+        get: (entry) => {
+          const result = Workflow.countSteps(entry);
+
+          return result > 0 ? result : "-";
+        },
       },
       updated_at: {
         header: "Updated at",
