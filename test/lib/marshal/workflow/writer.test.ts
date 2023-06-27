@@ -25,7 +25,7 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
   steps: [
     {
       ref: "sms_1",
-      type: "channel" as StepType.Channel,
+      type: StepType.Channel,
       channel_key: "sms-provider",
       template: {
         text_body: "Hi {{ recipient.name }}.",
@@ -39,7 +39,7 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
     },
     {
       ref: "delay_1",
-      type: "delay" as StepType.Delay,
+      type: StepType.Delay,
       settings: {
         delay_for: {
           unit: "seconds",
@@ -49,7 +49,7 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
     },
     {
       ref: "email_1",
-      type: "channel" as StepType.Channel,
+      type: StepType.Channel,
       channel_key: "email-provider",
       template: {
         settings: {
@@ -73,6 +73,89 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
           readonly_fields: [],
         },
       },
+    },
+    {
+      ref: "if_else_1",
+      type: StepType.IfElse,
+      branches: [
+        {
+          name: "Branch 1",
+          terminates: false,
+          conditions: {
+            all: [
+              {
+                variable: "data.if_else_1_enabled",
+                operator: "equal_to",
+                argument: "true",
+              },
+            ],
+          },
+          steps: [
+            {
+              ref: "email_2",
+              type: StepType.Channel,
+              channel_key: "email-provider",
+              template: {
+                settings: {
+                  layout_key: "default",
+                  __annotation: {
+                    extractable_fields: {
+                      pre_content: { default: true, file_ext: "txt" },
+                    },
+                    readonly_fields: [],
+                  },
+                },
+                subject: "New activity (2)",
+                html_body:
+                  "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the second email!</p>",
+                __annotation: {
+                  extractable_fields: {
+                    subject: { default: false, file_ext: "txt" },
+                    json_body: { default: true, file_ext: "json" },
+                    html_body: { default: true, file_ext: "html" },
+                    text_body: { default: true, file_ext: "txt" },
+                  },
+                  readonly_fields: [],
+                },
+              },
+            },
+          ],
+        },
+        {
+          name: "Default",
+          terminates: false,
+          steps: [
+            {
+              ref: "email_3",
+              type: StepType.Channel,
+              channel_key: "email-provider",
+              template: {
+                settings: {
+                  layout_key: "default",
+                  __annotation: {
+                    extractable_fields: {
+                      pre_content: { default: true, file_ext: "txt" },
+                    },
+                    readonly_fields: [],
+                  },
+                },
+                subject: "New activity (3)",
+                html_body:
+                  "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the third email!</p>",
+                __annotation: {
+                  extractable_fields: {
+                    subject: { default: false, file_ext: "txt" },
+                    json_body: { default: true, file_ext: "json" },
+                    html_body: { default: true, file_ext: "html" },
+                    text_body: { default: true, file_ext: "txt" },
+                  },
+                  readonly_fields: [],
+                },
+              },
+            },
+          ],
+        },
+      ],
     },
   ],
   created_at: "2022-12-31T12:00:00.000000Z",
@@ -128,6 +211,32 @@ describe("lib/marshal/workflow/writer", () => {
         },
         subject: "New activity",
         html_body: "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
+      });
+
+      const template3 = get(
+        workflowJson,
+        "steps[3].branches[0].steps[0].template",
+      );
+      expect(template3).to.eql({
+        settings: {
+          layout_key: "default",
+        },
+        subject: "New activity (2)",
+        html_body:
+          "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the second email!</p>",
+      });
+
+      const template4 = get(
+        workflowJson,
+        "steps[3].branches[1].steps[0].template",
+      );
+      expect(template4).to.eql({
+        settings: {
+          layout_key: "default",
+        },
+        subject: "New activity (3)",
+        html_body:
+          "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the third email!</p>",
       });
     });
   });
@@ -294,6 +403,57 @@ describe("lib/marshal/workflow/writer", () => {
                   "html_body@": xpath("email_1/html_body.html"),
                 },
               },
+              {
+                ref: "if_else_1",
+                type: StepType.IfElse,
+                branches: [
+                  {
+                    name: "Branch 1",
+                    terminates: false,
+                    conditions: {
+                      all: [
+                        {
+                          variable: "data.if_else_1_enabled",
+                          operator: "equal_to",
+                          argument: "true",
+                        },
+                      ],
+                    },
+                    steps: [
+                      {
+                        ref: "email_2",
+                        type: StepType.Channel,
+                        channel_key: "email-provider",
+                        template: {
+                          settings: {
+                            layout_key: "default",
+                          },
+                          subject: "New activity (2)",
+                          "html_body@": xpath("email_2/html_body.html"),
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    name: "Default",
+                    terminates: false,
+                    steps: [
+                      {
+                        ref: "email_3",
+                        type: StepType.Channel,
+                        channel_key: "email-provider",
+                        template: {
+                          settings: {
+                            layout_key: "default",
+                          },
+                          subject: "New activity (3)",
+                          "html_body@": xpath("email_3/html_body.html"),
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
             ],
             __readonly: {
               key: "new-comment",
@@ -306,6 +466,10 @@ describe("lib/marshal/workflow/writer", () => {
           [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
           [xpath("email_1/html_body.html")]:
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
+          [xpath("email_2/html_body.html")]:
+            "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the second email!</p>",
+          [xpath("email_3/html_body.html")]:
+            "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the third email!</p>",
         });
       });
     });
@@ -376,6 +540,57 @@ describe("lib/marshal/workflow/writer", () => {
                   "html_body@": xpath("email_1/default/body.html"),
                 },
               },
+              {
+                ref: "if_else_1",
+                type: StepType.IfElse,
+                branches: [
+                  {
+                    name: "Branch 1",
+                    terminates: false,
+                    conditions: {
+                      all: [
+                        {
+                          variable: "data.if_else_1_enabled",
+                          operator: "equal_to",
+                          argument: "true",
+                        },
+                      ],
+                    },
+                    steps: [
+                      {
+                        ref: "email_2",
+                        type: StepType.Channel,
+                        channel_key: "email-provider",
+                        template: {
+                          settings: {
+                            layout_key: "default",
+                          },
+                          subject: "New activity (2)",
+                          "html_body@": xpath("email_2/html_body.html"),
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    name: "Default",
+                    terminates: false,
+                    steps: [
+                      {
+                        ref: "email_3",
+                        type: StepType.Channel,
+                        channel_key: "email-provider",
+                        template: {
+                          settings: {
+                            layout_key: "default",
+                          },
+                          subject: "New activity (3)",
+                          "html_body@": xpath("email_3/html_body.html"),
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
             ],
             __readonly: {
               key: "new-comment",
@@ -390,6 +605,10 @@ describe("lib/marshal/workflow/writer", () => {
           [xpath("email_1/default/subject.txt")]: "New activity",
           [xpath("email_1/default/body.html")]:
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
+          [xpath("email_2/html_body.html")]:
+            "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the second email!</p>",
+          [xpath("email_3/html_body.html")]:
+            "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the third email!</p>",
         });
       });
     });

@@ -6,7 +6,6 @@ import {
   get,
   has,
   isPlainObject,
-  keyBy,
   set,
   uniqueId,
   unset,
@@ -33,7 +32,7 @@ import {
   WORKFLOW_JSON,
 } from "./helpers";
 import { readWorkflowDir } from "./reader";
-import { WorkflowData } from "./types";
+import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export type WorkflowDirBundle = {
   [relpath: string]: string;
@@ -162,6 +161,8 @@ const formatExtractedFilePath = (
  */
 type CompiledExtractionSettings = Map<ObjKeyOrArrayIdx[], ExtractionSettings>;
 
+const NON_RECURSIVELY_TRAVERSABLE_FIELDS_FOR_EXTRACTION = new Set(["branches"]);
+
 const compileExtractionSettings = (
   node: unknown,
   objPathParts: ObjKeyOrArrayIdx[] = [],
@@ -183,7 +184,11 @@ const compileExtractionSettings = (
           map.set([...parts, key], extractableFields[key]);
         }
 
-        compileRecursively(val, [...parts, key]);
+        // Recursively exam current field for any additionally extractable data
+        // within, except for disallowed fields
+        if (!NON_RECURSIVELY_TRAVERSABLE_FIELDS_FOR_EXTRACTION.has(key)) {
+          compileRecursively(val, [...parts, key]);
+        }
       }
 
       return;
@@ -212,41 +217,29 @@ const compileExtractionSettings = (
   );
 };
 
-/*
- * For a given workflow payload (and its local workflow reference), this function
- * builds a "workflow directory bundle", which is an obj made up of all the
- * relative file paths (within the workflow directory) and its file content to
- * write the workflow directory.
- *
- * Every workflow will always have a workflow.json file, so every bundle includes
- * it and its content at minimum. To the extent the workflow includes any
- * extractable fields, those fields content get extracted out and added to the
- * bundle.
- *
- * Important things to keep in mind re: content extraction:
- * 1. There can be multiple places in workflow json where content extraction
- *    happens.
- * 2. There can be multiple levels of content extraction happening, currently
- *    at a maximum of 2 levels.
- *
- * The way this function works and handles the content extraction is by:
- * 1. Traversing the given step node, and compiling all annotated extraction
- *    settings by the object path in the node *ordered from leaf to root*.
- * 2. Iterate over compiled extraction settings from leaf to root, and start
- *    extracting out the field as needed. In case the node that needs to be
- *    extracted out contains extracted file paths, then those file paths get
- *    rebased to relative to the referenced file.
- */
-const buildWorkflowDirBundle = (
-  remoteWorkflow: WorkflowData<WithAnnotation>,
-  localWorkflow: AnyObj = {},
-): WorkflowDirBundle => {
-  const bundle: WorkflowDirBundle = {};
-  const mutWorkflow = cloneDeep(remoteWorkflow);
+const keyLocalWorkflowStepsByRef = (
+  steps: AnyObj[] = [],
+  result: AnyObj = {},
+) => {
+  for (const step of steps) {
+    result[step.ref as string] = step;
 
-  const localWorkflowStepsByRef = keyBy(localWorkflow.steps || [], "ref");
+    if (step.type === StepType.IfElse) {
+      for (const branch of step.branches as AnyObj[]) {
+        result = keyLocalWorkflowStepsByRef(branch.steps as AnyObj[], result);
+      }
+    }
+  }
 
-  for (const step of mutWorkflow.steps) {
+  return result;
+};
+
+const recursivelyBuildWorkflowDirBundle = (
+  bundle: WorkflowDirBundle,
+  steps: WorkflowStepData<WithAnnotation>[],
+  localWorkflowStepsByRef: AnyObj,
+): void => {
+  for (const step of steps) {
     // A compiled map of extraction settings of every field in the step where
     // we support content extraction, organized by each field's object path.
     const compiledExtractionSettings = compileExtractionSettings(step);
@@ -270,7 +263,7 @@ const buildWorkflowDirBundle = (
       const extractedFilePath = get(
         localWorkflowStepsByRef,
         `${step.ref}.${objPathStr}${FILEPATH_MARKER}`,
-      );
+      ) as string;
 
       const { default: extractByDefault, file_ext: fileExt } =
         extractionSettings;
@@ -312,15 +305,72 @@ const buildWorkflowDirBundle = (
       // bundle for writing to the file system later. Then replace the field
       // content with the extracted file path and mark the field as extracted
       // with @ suffix.
+      //
       // TODO: Consider guarding against an edge case, and check if the relpath
       // already exists in the bundle, and if so make the relpath unique.
       set(bundle, [relpath], content);
       set(step, `${objPathStr}${FILEPATH_MARKER}`, relpath);
       unset(step, objPathParts);
     }
-  }
 
-  // Finally, prepare the workflow data to be written into a workflow json file.
+    // Lastly, recurse thru any branches that exist in the workflow tree
+    if (step.type === StepType.IfElse) {
+      for (const branch of step.branches) {
+        recursivelyBuildWorkflowDirBundle(
+          bundle,
+          branch.steps,
+          localWorkflowStepsByRef,
+        );
+      }
+    }
+  }
+};
+
+/*
+ * For a given workflow payload (and its local workflow reference), this function
+ * builds a "workflow directory bundle", which is an obj made up of all the
+ * relative file paths (within the workflow directory) and its file content to
+ * write the workflow directory.
+ *
+ * Every workflow will always have a workflow.json file, so every bundle includes
+ * it and its content at minimum. To the extent the workflow includes any
+ * extractable fields, those fields content get extracted out and added to the
+ * bundle.
+ *
+ * Important things to keep in mind re: content extraction:
+ * 1. There can be multiple places in workflow json where content extraction
+ *    happens.
+ * 2. There can be multiple levels of content extraction happening, currently
+ *    at a maximum of 2 levels.
+ *
+ * The way this function works and handles the content extraction is by:
+ * 1. Traversing the given step node, and compiling all annotated extraction
+ *    settings by the object path in the node *ordered from leaf to root*.
+ * 2. Iterate over compiled extraction settings from leaf to root, and start
+ *    extracting out the field as needed. In case the node that needs to be
+ *    extracted out contains extracted file paths, then those file paths get
+ *    rebased to relative to the referenced file.
+ */
+const buildWorkflowDirBundle = (
+  remoteWorkflow: WorkflowData<WithAnnotation>,
+  localWorkflow: AnyObj = {},
+): WorkflowDirBundle => {
+  const bundle: WorkflowDirBundle = {};
+  const mutWorkflow = cloneDeep(remoteWorkflow);
+
+  const localWorkflowStepsByRef = keyLocalWorkflowStepsByRef(
+    (localWorkflow.steps as AnyObj[]) || [],
+  );
+
+  // Recursively traverse the workflow step tree, mutating it and the bundle
+  // along the way
+  recursivelyBuildWorkflowDirBundle(
+    bundle,
+    mutWorkflow.steps,
+    localWorkflowStepsByRef,
+  );
+
+  // Then, prepare the workflow data to be written into a workflow json file.
   return set(bundle, [WORKFLOW_JSON], toWorkflowJson(mutWorkflow));
 };
 
