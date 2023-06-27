@@ -47,6 +47,7 @@ type BatchStepSettings = {
   batch_key?: string;
   batch_until_field_path?: string;
   batch_window?: Duration;
+  batch_window_type: "fixed" | "sliding";
   batch_order: "asc" | "desc";
 };
 

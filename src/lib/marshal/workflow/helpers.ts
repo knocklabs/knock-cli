@@ -95,6 +95,7 @@ const batchStepSummaryLines = (step: WorkflowStepData) => {
 
   const {
     batch_key,
+    batch_window_type,
     batch_window: duration,
     batch_until_field_path: field_path,
     batch_order,
@@ -104,6 +105,7 @@ const batchStepSummaryLines = (step: WorkflowStepData) => {
     batch_key && `Batch key: ${batch_key}`,
     duration && `Batch window: ${duration.value} ${duration.unit}`,
     field_path && `Batch window: "${field_path}"`,
+    `Batch window type: ${batch_window_type}`,
     `Batch order: ${batch_order}`,
   ];
 };
