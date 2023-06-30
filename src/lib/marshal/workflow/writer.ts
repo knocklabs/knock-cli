@@ -218,14 +218,21 @@ const compileExtractionSettings = (
 };
 
 const keyLocalWorkflowStepsByRef = (
-  steps: AnyObj[] = [],
+  steps: unknown,
   result: AnyObj = {},
-) => {
-  for (const step of steps) {
-    result[step.ref as string] = step;
+): AnyObj => {
+  if (!Array.isArray(steps)) return result;
 
-    if (step.type === StepType.IfElse) {
-      for (const branch of step.branches as AnyObj[]) {
+  for (const step of steps) {
+    if (!isPlainObject(step)) continue;
+    if (!step.ref) continue;
+
+    result[step.ref] = step;
+
+    if (step.type === StepType.IfElse && Array.isArray(step.branches)) {
+      for (const branch of step.branches) {
+        if (!isPlainObject(branch)) continue;
+
         result = keyLocalWorkflowStepsByRef(branch.steps as AnyObj[], result);
       }
     }
@@ -263,7 +270,7 @@ const recursivelyBuildWorkflowDirBundle = (
       const extractedFilePath = get(
         localWorkflowStepsByRef,
         `${step.ref}.${objPathStr}${FILEPATH_MARKER}`,
-      ) as string;
+      );
 
       const { default: extractByDefault, file_ext: fileExt } =
         extractionSettings;
@@ -276,11 +283,12 @@ const recursivelyBuildWorkflowDirBundle = (
       // for the extracted file. If already extracted in the local workflow,
       // then use that; otherwise format a new file path.
       const relpath =
-        extractedFilePath ||
-        formatExtractedFilePath(objPathParts, fileExt, {
-          unnestDirsBy: 1,
-          nestIntoDirs: [step.ref],
-        });
+        typeof extractedFilePath === "string"
+          ? extractedFilePath
+          : formatExtractedFilePath(objPathParts, fileExt, {
+              unnestDirsBy: 1,
+              nestIntoDirs: [step.ref],
+            });
 
       // In case we are about to extract a field that has children rather than
       // string content (e.g. visual blocks), prepare the data to strip out any
@@ -357,9 +365,8 @@ const buildWorkflowDirBundle = (
 ): WorkflowDirBundle => {
   const bundle: WorkflowDirBundle = {};
   const mutWorkflow = cloneDeep(remoteWorkflow);
-
   const localWorkflowStepsByRef = keyLocalWorkflowStepsByRef(
-    (localWorkflow.steps as AnyObj[]) || [],
+    localWorkflow.steps,
   );
 
   // Recursively traverse the workflow step tree, mutating it and the bundle
