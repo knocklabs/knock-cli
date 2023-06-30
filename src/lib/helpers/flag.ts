@@ -64,27 +64,29 @@ export const commaSeparatedJsonStr = Flags.custom<string[]>({
       let startIndex = 0;
 
       while (startIndex < input.length) {
-        let endIndex = input.indexOf('}', startIndex);
+        let endIndex = input.indexOf("}", startIndex);
         if (endIndex === -1) {
-          throw new Error();
+          throw new SyntaxError("missing `}`");
         }
 
         // Adjust the end index to include the closing brace
         endIndex += 1;
 
-        const jsonObjectString = input.substring(startIndex, endIndex);
+        const jsonObjectString = input.slice(startIndex, endIndex);
         const jsonObject = JSON.parse(jsonObjectString);
         jsonList.push(jsonObject);
 
         // Move the start index to the next JSON string
         startIndex = endIndex + 1;
       }
+
       return jsonList;
-
-    } catch {
-      throw new Error(`${input} is not a valid JSON string.`);
+    } catch (error_) {
+      const error =
+        error_ instanceof SyntaxError
+          ? new Error(`${input} is not a valid JSON string, ${error_.message}`)
+          : new Error(`${input} is not a valid JSON string.`);
+      throw error;
     }
-
-  }
-
+  },
 });

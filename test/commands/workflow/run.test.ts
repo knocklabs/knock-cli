@@ -62,8 +62,8 @@ describe("commands/workflow/run", () => {
                 environment: "staging",
                 recipients: [
                   {
-                    "id": "alice",
-                  }
+                    id: "alice",
+                  },
                 ],
               }),
           ),
@@ -96,12 +96,12 @@ describe("commands/workflow/run", () => {
                 environment: "staging",
                 recipients: [
                   {
-                    "id": "alice",
+                    id: "alice",
                   },
                   {
-                    "id": "object",
-                    "collection": "projects-1"
-                  }
+                    id: "object",
+                    collection: "projects-1",
+                  },
                 ],
               }),
           ),

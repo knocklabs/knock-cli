@@ -21,7 +21,8 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
         "A string containing mutiple JSON strings with the id (and an optional collection) for the recipients, separated by commas",
     }),
     actor: jsonStr({
-      summary: "A JSON string containing the id (and an optional collection) for the actor",
+      summary:
+        "A JSON string containing the id (and an optional collection) for the actor",
     }),
     tenant: Flags.string({
       summary: "A tenant id for the workflow run.",
