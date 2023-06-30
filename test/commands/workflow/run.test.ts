@@ -46,7 +46,7 @@ describe("commands/workflow/run", () => {
         "--environment",
         "staging",
         "--recipient",
-        "alice",
+        '{"id": "alice"}',
       ])
       .it("calls apiV1 runWorkflow with expected props", () => {
         sinon.assert.calledWith(
@@ -80,7 +80,7 @@ describe("commands/workflow/run", () => {
         "--environment",
         "staging",
         "--recipient",
-        "alice,barry",
+        '{"id": "alice"}, {"id": "object", "collection": "projects-1"}',
       ])
       .it("calls apiV1 runWorkflow with expected props", () => {
         sinon.assert.calledWith(
