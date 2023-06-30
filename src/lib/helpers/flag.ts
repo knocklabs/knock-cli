@@ -52,3 +52,39 @@ export const jsonStr = Flags.custom<AnyObj>({
     }
   },
 });
+
+/*
+ * Takes a flag input that's supposed to be a string containing multiple JSON string
+   and validates it.
+ */
+export const commaSeparatedJsonStr = Flags.custom<string[]>({
+  parse: async (input: string) => {
+    try {
+      const jsonList = [];
+      let startIndex = 0;
+
+      while (startIndex < input.length) {
+        let endIndex = input.indexOf('}', startIndex);
+        if (endIndex === -1) {
+          throw new Error();
+        }
+
+        // Adjust the end index to include the closing brace
+        endIndex += 1;
+
+        const jsonObjectString = input.substring(startIndex, endIndex);
+        const jsonObject = JSON.parse(jsonObjectString);
+        jsonList.push(jsonObject);
+
+        // Move the start index to the next JSON string
+        startIndex = endIndex + 1;
+      }
+      return jsonList;
+
+    } catch {
+      throw new Error(`${input} is not a valid JSON string.`);
+    }
+
+  }
+
+});
