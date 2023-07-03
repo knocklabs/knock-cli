@@ -57,7 +57,7 @@ export const jsonStr = Flags.custom<AnyObj>({
  * Takes a flag input that's supposed to be a string containing multiple JSON string
    and validates it.
  */
-export const commaSeparatedJsonStr = Flags.custom<string[]>({
+export const commaSeparatedJsonStr = Flags.custom<string>({
   parse: async (input: string) => {
     try {
       const jsonList = [];
@@ -80,7 +80,7 @@ export const commaSeparatedJsonStr = Flags.custom<string[]>({
         startIndex = endIndex + 1;
       }
 
-      return jsonList;
+      return JSON.stringify(jsonList);
     } catch (error_) {
       const error =
         error_ instanceof SyntaxError
