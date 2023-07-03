@@ -60,11 +60,11 @@ describe("commands/workflow/run", () => {
                 "service-token": "valid-token",
                 "api-origin": undefined,
                 environment: "staging",
-                recipients: [
+                recipients: JSON.stringify([
                   {
                     id: "alice",
                   },
-                ],
+                ]),
               }),
           ),
         );
@@ -94,7 +94,7 @@ describe("commands/workflow/run", () => {
                 "service-token": "valid-token",
                 "api-origin": undefined,
                 environment: "staging",
-                recipients: [
+                recipients: JSON.stringify([
                   {
                     id: "alice",
                   },
@@ -102,7 +102,7 @@ describe("commands/workflow/run", () => {
                     id: "object",
                     collection: "projects-1",
                   },
-                ],
+                ]),
               }),
           ),
         );
