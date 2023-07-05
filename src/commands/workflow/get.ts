@@ -6,6 +6,7 @@ import { formatDateTime } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
 import * as Conditions from "@/lib/marshal/conditions";
 import * as Workflow from "@/lib/marshal/workflow";
+import { indentString } from "@/lib/helpers/string";
 
 type WorkflowStepWithKey = Workflow.WorkflowStepData & { key: string };
 
@@ -171,8 +172,15 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
     });
 
     if (hasIfElseSteps) {
-this.log(`\n‣ This workflow has branches with nested steps, view the full workflow tree in the Knock Dashboard:);
-this.log(indentString(`https://dashboard.knock.app/${whoami.account_slug}/${env.toLowerCase()}/workflows/${workflow.key}`, 2)) 
+      const viewWorkflowUrl = `https://dashboard.knock.app/${
+        whoami.account_slug
+      }/${env.toLowerCase()}/workflows/${workflow.key}`;
+
+      this.log(
+        `\n‣ This workflow has branches with nested steps, view the full workflow tree in the Knock Dashboard:`,
+      );
+
+      this.log(indentString(viewWorkflowUrl, 2));
     }
   }
 
