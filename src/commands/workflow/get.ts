@@ -185,7 +185,7 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
     stepsAndBranches: WorkflowStepOrBranchWithKey[];
     hasIfElseSteps: boolean;
   } {
-    let stepsAndBranches: WorkflowStepOrBranchWithKey[] = [];
+    const stepsAndBranches: WorkflowStepOrBranchWithKey[] = [];
     let stepsCount = 0;
     let hasIfElseSteps = false;
 
