@@ -209,7 +209,7 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
           };
 
           stepsAndBranches.push(branchWithKey);
-          hasIfElseSteps = hasIfElseSteps || true;
+          hasIfElseSteps = true;
         }
       }
     }
