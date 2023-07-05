@@ -56,7 +56,7 @@ export const jsonStr = Flags.custom<AnyObj>({
 /*
  * Takes a flag input that's supposed to be a string containing one of the following options:
   1) An ID
-  2) A list with multiple ID's separated by comma.
+  2) Multiple ID's separated by comma.
   3) A JSON string.
   4) A list with multiple JSON string separated by comma.
   5) A list with multiple JSON string + ID's, separated by comma.
