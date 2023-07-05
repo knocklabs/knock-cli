@@ -61,7 +61,7 @@ export const jsonStr = Flags.custom<AnyObj>({
   4) A list with multiple JSON string separated by comma.
   5) A list with multiple JSON string + ID's, separated by comma.
 
-  Note: It Will always return a list.
+  Note: It will always return a list.
  */
 export const stringOrJsonStringList = Flags.custom<AnyObj[]>({
   parse: async (input: string) => {
