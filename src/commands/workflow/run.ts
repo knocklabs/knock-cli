@@ -25,8 +25,7 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
         "One or more recipient ids or JSON recipient objects for this workflow run, separated by comma.",
     }),
     actor: stringOrJsonString({
-      summary:
-        "An actor id or JSON object for the workflow run.",
+      summary: "An actor id or JSON object for the workflow run.",
     }),
     tenant: Flags.string({
       summary: "A tenant id for the workflow run.",
