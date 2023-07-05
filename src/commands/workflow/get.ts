@@ -4,9 +4,9 @@ import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
+import { indentString } from "@/lib/helpers/string";
 import * as Conditions from "@/lib/marshal/conditions";
 import * as Workflow from "@/lib/marshal/workflow";
-import { indentString } from "@/lib/helpers/string";
 
 type WorkflowStepWithKey = Workflow.WorkflowStepData & { key: string };
 
