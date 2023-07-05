@@ -80,7 +80,7 @@ export const commaSeparatedJsonStr = Flags.custom<string>({
         startIndex = endIndex + 1;
       }
 
-      return JSON.stringify(jsonList);
+      return jsonList;
     } catch (error_) {
       const error =
         error_ instanceof SyntaxError
