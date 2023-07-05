@@ -3,8 +3,10 @@ import { Args, Flags, ux } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDateTime } from "@/lib/helpers/date";
-import { withSpinner } from "@/lib/helpers/request";
+import { ApiError } from "@/lib/helpers/error";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
+import { spinner } from "@/lib/helpers/ux";
 import * as Conditions from "@/lib/marshal/conditions";
 import * as Workflow from "@/lib/marshal/workflow";
 
@@ -42,20 +44,46 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
   static enableJsonFlag = true;
 
   async run(): Promise<ApiV1.GetWorkflowResp | void> {
-    const { data: whoami } = await withSpinner<ApiV1.WhoamiResp>(
-      () => this.apiV1.whoami(),
-      { action: "‣ Verifying account info" },
-    );
+    spinner.start("‣ Loading");
 
-    const { data: workflow } = await withSpinner<ApiV1.GetWorkflowResp>(
-      () => this.apiV1.getWorkflow(this.props),
-      { action: "‣ Loading workflow" },
-    );
+    const { workflow, whoami } = await this.loadWorkflow();
+
+    spinner.stop();
+
+    if (!workflow || !whoami) return;
 
     const { flags } = this.props;
     if (flags.json) return workflow;
 
     this.render(workflow, whoami);
+  }
+
+  private async loadWorkflow(): Promise<{
+    workflow?: ApiV1.GetWorkflowResp;
+    whoami?: ApiV1.WhoamiResp;
+  }> {
+    const workflowResp = await this.apiV1.getWorkflow(this.props);
+
+    if (!isSuccessResp(workflowResp)) {
+      const message = formatErrorRespMessage(workflowResp);
+      ux.error(new ApiError(message));
+
+      return {};
+    }
+
+    const whoamiResp = await this.apiV1.whoami();
+
+    if (!isSuccessResp(whoamiResp)) {
+      const message = formatErrorRespMessage(whoamiResp);
+      ux.error(new ApiError(message));
+
+      return {};
+    }
+
+    return {
+      workflow: workflowResp.data,
+      whoami: whoamiResp.data,
+    };
   }
 
   render(workflow: ApiV1.GetWorkflowResp, whoami: ApiV1.WhoamiResp): void {
