@@ -54,39 +54,41 @@ export const jsonStr = Flags.custom<AnyObj>({
 });
 
 /*
- * Takes a flag input that's supposed to be a string containing multiple JSON string
-   and validates it.
+ * Takes a flag input that's supposed to be a string containing one of the following options:
+  1) An ID
+  2) A list with multiple ID's separated by comma.
+  3) A JSON string.
+  4) A list with multiple JSON string separated by comma.
+  5) A list with multiple JSON string + ID's, separated by comma.
+
+  Note: It Will always return a list.
  */
-export const commaSeparatedJsonStr = Flags.custom<string>({
+export const stringOrJsonStringList = Flags.custom<AnyObj[]>({
   parse: async (input: string) => {
     try {
-      const jsonList = [];
-      let startIndex = 0;
-
-      while (startIndex < input.length) {
-        let endIndex = input.indexOf("}", startIndex);
-        if (endIndex === -1) {
-          throw new SyntaxError("missing `}`");
-        }
-
-        // Adjust the end index to include the closing brace
-        endIndex += 1;
-
-        const jsonObjectString = input.slice(startIndex, endIndex);
-        const jsonObject = JSON.parse(jsonObjectString);
-        jsonList.push(jsonObject);
-
-        // Move the start index to the next JSON string
-        startIndex = endIndex + 1;
+      const data = JSON.parse(input);
+      if (!Array.isArray(data)) {
+        return [data];
       }
 
-      return jsonList;
-    } catch (error_) {
-      const error =
-        error_ instanceof SyntaxError
-          ? new Error(`${input} is not a valid JSON string, ${error_.message}`)
-          : new Error(`${input} is not a valid JSON string.`);
-      throw error;
+      return data;
+    } catch {
+      return input.split(",");
+    }
+  },
+});
+
+/*
+ * Takes a flag input that's supposed to be a string or a JSON string.
+ */
+
+export const stringOrJsonString = Flags.custom<AnyObj>({
+  parse: async (input: string) => {
+    try {
+      const data = JSON.parse(input);
+      return data;
+    } catch {
+      return input;
     }
   },
 });

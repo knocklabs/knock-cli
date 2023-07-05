@@ -46,29 +46,135 @@ describe("commands/workflow/run", () => {
         "--environment",
         "staging",
         "--recipient",
-        '{"id": "alice"}',
+        "user1",
       ])
-      .it("calls apiV1 runWorkflow with expected props", () => {
-        sinon.assert.calledWith(
-          KnockApiV1.prototype.runWorkflow as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, {
-                workflowKey: "workflow-x",
-              }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-                "api-origin": undefined,
-                environment: "staging",
-                recipients: JSON.stringify([
-                  {
-                    id: "alice",
-                  },
-                ]),
-              }),
-          ),
-        );
-      });
+      .it(
+        "calls apiV1 runWorkflow with expected props (recipient as a string)",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.runWorkflow as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, {
+                  workflowKey: "workflow-x",
+                }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  "api-origin": undefined,
+                  environment: "staging",
+                  recipients: ["user1"],
+                }),
+            ),
+          );
+        },
+      );
+  });
+
+  describe("given the workflow key arg, the environment flag and the recipient flag", () => {
+    setupWithStub({ data: { workflow: factory.workflow() } })
+      .stdout()
+      .command([
+        "workflow run",
+        "workflow-x",
+        "--environment",
+        "staging",
+        "--recipient",
+        "alice,barry",
+      ])
+      .it(
+        "calls apiV1 runWorkflow with expected props (recipient as a list of string)",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.runWorkflow as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, {
+                  workflowKey: "workflow-x",
+                }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  "api-origin": undefined,
+                  environment: "staging",
+                  recipients: ["alice", "barry"],
+                }),
+            ),
+          );
+        },
+      );
+  });
+
+  describe("given the workflow key arg, the environment flag and the recipient flag", () => {
+    setupWithStub({ data: { workflow: factory.workflow() } })
+      .stdout()
+      .command([
+        "workflow run",
+        "workflow-x",
+        "--environment",
+        "staging",
+        "--recipient",
+        '{"id": "user1"}',
+      ])
+      .it(
+        "calls apiV1 runWorkflow with expected props (recipient as a JSON",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.runWorkflow as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, {
+                  workflowKey: "workflow-x",
+                }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  "api-origin": undefined,
+                  environment: "staging",
+                  recipients: [{ id: "user1" }],
+                }),
+            ),
+          );
+        },
+      );
+  });
+
+  describe("given the workflow key arg, the environment flag and the recipient flag", () => {
+    setupWithStub({ data: { workflow: factory.workflow() } })
+      .stdout()
+      .command([
+        "workflow run",
+        "workflow-x",
+        "--environment",
+        "staging",
+        "--recipient",
+        '[{"id": "alice"}, {"id": "object-1", "collection": "project-1"}]',
+      ])
+      .it(
+        "calls apiV1 runWorkflow with expected props (recipient as a list of JSON)",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.runWorkflow as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, {
+                  workflowKey: "workflow-x",
+                }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  "api-origin": undefined,
+                  environment: "staging",
+                  recipients: [
+                    {
+                      id: "alice",
+                    },
+                    {
+                      id: "object-1",
+                      collection: "project-1",
+                    },
+                  ],
+                }),
+            ),
+          );
+        },
+      );
   });
 
   describe("given the workflow key arg, the environment flag and the recipients flag", () => {
@@ -80,32 +186,103 @@ describe("commands/workflow/run", () => {
         "--environment",
         "staging",
         "--recipient",
-        '{"id": "alice"}, {"id": "object", "collection": "projects-1"}',
+        '["alice",{"id": "object-1", "collection": "projects"}, {"id": "bruce"}]',
       ])
-      .it("calls apiV1 runWorkflow with expected props", () => {
-        sinon.assert.calledWith(
-          KnockApiV1.prototype.runWorkflow as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, {
-                workflowKey: "workflow-x",
-              }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-                "api-origin": undefined,
-                environment: "staging",
-                recipients: JSON.stringify([
-                  {
-                    id: "alice",
-                  },
-                  {
-                    id: "object",
-                    collection: "projects-1",
-                  },
-                ]),
-              }),
-          ),
-        );
-      });
+      .it(
+        "calls apiV1 runWorkflow with expected props, (recipient as a list containing JSON + ID's)",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.runWorkflow as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, {
+                  workflowKey: "workflow-x",
+                }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  "api-origin": undefined,
+                  environment: "staging",
+                  recipients: [
+                    "alice",
+                    { id: "object-1", collection: "projects" },
+                    { id: "bruce" },
+                  ],
+                }),
+            ),
+          );
+        },
+      );
+  });
+
+  describe("given the workflow key arg, the environment flag and the recipients flag", () => {
+    setupWithStub({ data: { workflow: factory.workflow() } })
+      .stdout()
+      .command([
+        "workflow run",
+        "workflow-x",
+        "--environment",
+        "staging",
+        "--recipient",
+        "alice",
+        "--actor",
+        "bruce",
+      ])
+      .it(
+        "calls apiV1 runWorkflow with expected props, (actor as a string)",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.runWorkflow as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, {
+                  workflowKey: "workflow-x",
+                }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  "api-origin": undefined,
+                  environment: "staging",
+                  recipients: ["alice"],
+                  actor: "bruce",
+                }),
+            ),
+          );
+        },
+      );
+  });
+
+  describe("given the workflow key arg, the environment flag and the recipients flag", () => {
+    setupWithStub({ data: { workflow: factory.workflow() } })
+      .stdout()
+      .command([
+        "workflow run",
+        "workflow-x",
+        "--environment",
+        "staging",
+        "--recipient",
+        "alice",
+        "--actor",
+        '{"id": "object-1", "collection": "projects"}',
+      ])
+      .it(
+        "calls apiV1 runWorkflow with expected props, (actor as a JSON)",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.runWorkflow as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, {
+                  workflowKey: "workflow-x",
+                }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  "api-origin": undefined,
+                  environment: "staging",
+                  recipients: ["alice"],
+                  actor: { id: "object-1", collection: "projects" },
+                }),
+            ),
+          );
+        },
+      );
   });
 });

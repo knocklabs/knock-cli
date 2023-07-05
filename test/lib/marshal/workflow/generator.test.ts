@@ -140,6 +140,7 @@ describe("lib/marshal/workflow/generator", () => {
                     unit: "seconds",
                     value: 30,
                   },
+                  batch_window_type: "sliding",
                 },
               },
               {

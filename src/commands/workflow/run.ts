@@ -2,7 +2,11 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
-import { commaSeparatedJsonStr, jsonStr } from "@/lib/helpers/flag";
+import {
+  jsonStr,
+  stringOrJsonString,
+  stringOrJsonStringList,
+} from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 
@@ -14,13 +18,13 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       default: "development",
       summary: "The environment in which to run the workflow",
     }),
-    recipients: commaSeparatedJsonStr({
+    recipients: stringOrJsonStringList({
       required: true,
       aliases: ["recipient"],
       summary:
         "A string containing mutiple JSON strings with the id (and an optional collection) for the recipients, separated by commas",
     }),
-    actor: jsonStr({
+    actor: stringOrJsonString({
       summary:
         "A JSON string containing the id (and an optional collection) for the actor",
     }),
