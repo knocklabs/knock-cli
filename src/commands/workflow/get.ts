@@ -41,17 +41,23 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
   static enableJsonFlag = true;
 
   async run(): Promise<ApiV1.GetWorkflowResp | void> {
-    const resp = await withSpinner<ApiV1.GetWorkflowResp>(() =>
-      this.apiV1.getWorkflow(this.props),
+    const { data: whoami } = await withSpinner<ApiV1.WhoamiResp>(
+      () => this.apiV1.whoami(),
+      { action: "‣ Verifying account info" },
+    );
+
+    const { data: workflow } = await withSpinner<ApiV1.GetWorkflowResp>(
+      () => this.apiV1.getWorkflow(this.props),
+      { action: "‣ Loading workflow" },
     );
 
     const { flags } = this.props;
-    if (flags.json) return resp.data;
+    if (flags.json) return workflow;
 
-    this.render(resp.data);
+    this.render(workflow, whoami);
   }
 
-  render(workflow: ApiV1.GetWorkflowResp): void {
+  render(workflow: ApiV1.GetWorkflowResp, whoami: ApiV1.WhoamiResp): void {
     const { workflowKey } = this.props.args;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
@@ -120,9 +126,11 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
      * Workflow steps table
      */
 
-    const { steps } = this.flattenSteps(workflow.steps);
+    const { stepsAndBranches, hasIfElseSteps } = this.flattenSteps(
+      workflow.steps,
+    );
 
-    ux.table(steps, {
+    ux.table(stepsAndBranches, {
       index: {
         header: "Steps",
         get: (stepOrBranch) => stepOrBranch.key,
@@ -131,13 +139,13 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
         header: "Ref",
         minWidth: 18,
         get: (stepOrBranch) =>
-          stepOrBranch.type === "branch" ? "" : stepOrBranch.ref,
+          stepOrBranch.type === "branch" ? "-" : stepOrBranch.ref,
       },
       type: {
         header: "Type",
         minWidth: 12,
         get: (stepOrBranch) =>
-          stepOrBranch.type === "branch" ? "" : stepOrBranch.type,
+          stepOrBranch.type === "branch" ? "branch" : stepOrBranch.type,
       },
       summary: {
         header: "Summary",
@@ -161,55 +169,51 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
         },
       },
     });
+
+    if (hasIfElseSteps) {
+      this.log(
+        `\n‣ This workflow has branches with nested steps.\n‣ You can view the full step tree in the Knock Dashboard here: https://dashboard.knock.app/${
+          whoami.account_slug
+        }/${env.toLowerCase()}/workflows/${workflow.key}`,
+      );
+    }
   }
 
-  // Flattens a nested list of steps and branches for a workflow tree into a
-  // simple list + also includes some formatting logic for the step/branch
-  // "level" values
-  private flattenSteps(
-    steps: Workflow.WorkflowStepData[],
-    totalSteps = 0,
-    parentBranches: string[] = [],
-  ): { steps: WorkflowStepOrBranchWithKey[]; totalSteps: number } {
-    const colsIndented = parentBranches.length * 2;
-    // eslint-disable-next-line unicorn/no-new-array
-    const indentationPrefix = new Array(colsIndented).fill("-").join("");
-
-    let result: WorkflowStepOrBranchWithKey[] = [];
+  // Returns a steps list with any top-level if-else branches mixed in for
+  // display in the table
+  private flattenSteps(steps: Workflow.WorkflowStepData[]): {
+    stepsAndBranches: WorkflowStepOrBranchWithKey[];
+    hasIfElseSteps: boolean;
+  } {
+    let stepsAndBranches: WorkflowStepOrBranchWithKey[] = [];
+    let stepsCount = 0;
+    let hasIfElseSteps = false;
 
     for (const step of steps) {
-      totalSteps += 1;
+      stepsCount += 1;
 
-      const stepKey = `${indentationPrefix}${totalSteps}`;
-      result.push({ ...step, key: stepKey });
+      stepsAndBranches.push({ ...step, key: stepsCount.toString() });
 
       if (step.type === Workflow.StepType.IfElse) {
-        const totalStepsForBranch = totalSteps;
-
         for (let branchIdx = 0; branchIdx < step.branches.length; branchIdx++) {
+          const branch = step.branches[branchIdx];
           const branchLetter = String.fromCharCode(
             LOWERCASE_A_CHAR_CODE + branchIdx,
           );
-          const branchName = `${totalStepsForBranch}${branchLetter}`;
-          const allBranches = [...parentBranches, branchName];
-
-          const branch = step.branches[branchIdx];
-          const { steps: nestedSteps, totalSteps: nextTotalSteps } =
-            this.flattenSteps(branch.steps, totalSteps, allBranches);
 
           const branchWithKey: WorkflowBranchWithKey = {
             ...branch,
             type: "branch",
             isDefault: branchIdx === step.branches.length - 1,
-            key: `${indentationPrefix}--branch_${allBranches.join("_")}\n`,
+            key: `> Branch ${stepsCount}${branchLetter}`,
           };
 
-          result = [...result, branchWithKey, ...nestedSteps];
-          totalSteps = nextTotalSteps;
+          stepsAndBranches.push(branchWithKey);
+          hasIfElseSteps = hasIfElseSteps || true;
         }
       }
     }
 
-    return { steps: result, totalSteps: totalSteps };
+    return { stepsAndBranches, hasIfElseSteps };
   }
 }

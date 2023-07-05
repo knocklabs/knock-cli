@@ -6,6 +6,12 @@ import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 
 describe("commands/workflow/get", () => {
+  const whoami = {
+    account_name: "Collab.io",
+    account_slug: "collab-io",
+    service_token_name: "My cool token",
+  };
+
   describe("given no workflow key arg", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
@@ -17,6 +23,9 @@ describe("commands/workflow/get", () => {
   describe("given a workflow key arg, and no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", () =>
+        factory.resp({ data: whoami }),
+      )
       .stub(
         KnockApiV1.prototype,
         "getWorkflow",
@@ -49,6 +58,9 @@ describe("commands/workflow/get", () => {
   describe("given a workflow key arg, and flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", () =>
+        factory.resp({ data: whoami }),
+      )
       .stub(
         KnockApiV1.prototype,
         "getWorkflow",
@@ -88,6 +100,9 @@ describe("commands/workflow/get", () => {
   describe("given a workflow key that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", () =>
+        factory.resp({ data: whoami }),
+      )
       .stub(
         KnockApiV1.prototype,
         "getWorkflow",

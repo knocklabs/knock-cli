@@ -236,6 +236,7 @@ export type T = ApiV1;
  */
 export type WhoamiResp = {
   account_name: string;
+  account_slug: string;
   service_token_name: string;
 };
 
