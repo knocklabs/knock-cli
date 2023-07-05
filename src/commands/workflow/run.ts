@@ -22,11 +22,11 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       required: true,
       aliases: ["recipient"],
       summary:
-        "A string containing mutiple JSON strings with the id (and an optional collection) for the recipients, separated by commas",
+        "One or more recipient ids or JSON recipient objects for this workflow run, separated by comma.",
     }),
     actor: stringOrJsonString({
       summary:
-        "A JSON string containing the id (and an optional collection) for the actor",
+        "An actor id or JSON object for the workflow run.",
     }),
     tenant: Flags.string({
       summary: "A tenant id for the workflow run.",
