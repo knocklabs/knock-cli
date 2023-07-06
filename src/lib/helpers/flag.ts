@@ -73,7 +73,7 @@ export const maybeJsonStr = Flags.custom<AnyObj | string>({
 
   Note: It will always return a list.
  */
-export const stringOrJsonStringList = Flags.custom<AnyObj[]>({
+export const maybeJsonStrAsList = Flags.custom<AnyObj[]>({
   parse: async (input: string) => {
     try {
       const data = JSON.parse(input);

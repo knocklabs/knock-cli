@@ -5,7 +5,7 @@ import BaseCommand from "@/lib/base-command";
 import {
   jsonStr,
   maybeJsonStr,
-  stringOrJsonStringList,
+  maybeJsonStrAsList,
 } from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
@@ -18,7 +18,7 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       default: "development",
       summary: "The environment in which to run the workflow",
     }),
-    recipients: stringOrJsonStringList({
+    recipients: maybeJsonStrAsList({
       required: true,
       aliases: ["recipient"],
       summary:
