@@ -70,15 +70,9 @@ export const maybeJsonStr = Flags.custom<AnyObj | string>({
  */
 export const maybeJsonStrAsList = Flags.custom<AnyObj[] | string[]>({
   parse: async (input: string) => {
-    try {
-      const data = JSON.parse(input);
-      if (!Array.isArray(data)) {
-        return [data];
-      }
-
-      return data;
-    } catch {
-      return input.split(",");
-    }
+    const data = tryJsonParse(input);
+    if (typeof data === "string") return data.split(",");
+    if (Array.isArray(data)) return data;
+    return [data];
   },
 });
