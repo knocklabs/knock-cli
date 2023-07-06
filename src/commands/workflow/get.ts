@@ -50,8 +50,6 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
 
     spinner.stop();
 
-    if (!workflow || !whoami) return;
-
     const { flags } = this.props;
     if (flags.json) return workflow;
 
@@ -59,16 +57,14 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
   }
 
   private async loadWorkflow(): Promise<{
-    workflow?: ApiV1.GetWorkflowResp;
-    whoami?: ApiV1.WhoamiResp;
+    workflow: ApiV1.GetWorkflowResp;
+    whoami: ApiV1.WhoamiResp;
   }> {
     const workflowResp = await this.apiV1.getWorkflow(this.props);
 
     if (!isSuccessResp(workflowResp)) {
       const message = formatErrorRespMessage(workflowResp);
       ux.error(new ApiError(message));
-
-      return {};
     }
 
     const whoamiResp = await this.apiV1.whoami();
@@ -76,8 +72,6 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
     if (!isSuccessResp(whoamiResp)) {
       const message = formatErrorRespMessage(whoamiResp);
       ux.error(new ApiError(message));
-
-      return {};
     }
 
     return {
