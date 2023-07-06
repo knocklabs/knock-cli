@@ -54,6 +54,20 @@ export const jsonStr = Flags.custom<AnyObj>({
 });
 
 /*
+ * Takes a flag input that's supposed to be a string or a JSON string.
+ */
+export const maybeJsonStr = Flags.custom<AnyObj | string>({
+  parse: async (input: string) => {
+    try {
+      const data = JSON.parse(input);
+      return data;
+    } catch {
+      return input;
+    }
+  },
+});
+
+/*
  * Takes a flag input that's supposed to be a string containing one of the following options:
   1) An ID
   2) Multiple ID's separated by comma.
@@ -78,16 +92,4 @@ export const stringOrJsonStringList = Flags.custom<AnyObj[]>({
   },
 });
 
-/*
- * Takes a flag input that's supposed to be a string or a JSON string.
- */
-export const stringOrJsonString = Flags.custom<AnyObj>({
-  parse: async (input: string) => {
-    try {
-      const data = JSON.parse(input);
-      return data;
-    } catch {
-      return input;
-    }
-  },
-});
+
