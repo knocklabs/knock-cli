@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
 
+import { tryJsonParse } from "./json";
 import { AnyObj } from "./object";
 
 /*
@@ -58,12 +59,7 @@ export const jsonStr = Flags.custom<AnyObj>({
  */
 export const maybeJsonStr = Flags.custom<AnyObj | string>({
   parse: async (input: string) => {
-    try {
-      const data = JSON.parse(input);
-      return data;
-    } catch {
-      return input;
-    }
+    return tryJsonParse(input);
   },
 });
 
@@ -91,5 +87,3 @@ export const stringOrJsonStringList = Flags.custom<AnyObj[]>({
     }
   },
 });
-
-

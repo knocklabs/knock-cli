@@ -4,7 +4,7 @@ import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import {
   jsonStr,
-  stringOrJsonString,
+  maybeJsonStr,
   stringOrJsonStringList,
 } from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
@@ -24,7 +24,7 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       summary:
         "One or more recipient ids or JSON recipient objects for this workflow run, separated by comma.",
     }),
-    actor: stringOrJsonString({
+    actor: maybeJsonStr({
       summary: "An actor id or JSON object for the workflow run.",
     }),
     tenant: Flags.string({
