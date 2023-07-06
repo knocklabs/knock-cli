@@ -68,7 +68,7 @@ export const maybeJsonStr = Flags.custom<AnyObj | string>({
  * Takes a flag input that can be a valid json or an arbitrary comma separate-able string,
  * tries parsing the string then always returns the result as a list.
  */
-export const maybeJsonStrAsList = Flags.custom<AnyObj[]>({
+export const maybeJsonStrAsList = Flags.custom<AnyObj[] | string[]>({
   parse: async (input: string) => {
     try {
       const data = JSON.parse(input);
