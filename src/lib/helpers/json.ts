@@ -33,9 +33,9 @@ export const parseJson = (json: string): ParseJsonResult => {
 };
 
 /*
-* Tries to parse a json string and returns the parsed JSON object if successful,
-  otherwise returns the original string.
-*/
+ * Tries to parse a json string and returns the parsed JSON object if successful,
+ * otherwise returns the original string.
+ */
 type MaybeParseJsonResult = ParsedJson | string;
 export const tryJsonParse = (maybeJson: string): MaybeParseJsonResult => {
   try {

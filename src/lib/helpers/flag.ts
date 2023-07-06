@@ -55,7 +55,8 @@ export const jsonStr = Flags.custom<AnyObj>({
 });
 
 /*
- * Takes a flag input that's supposed to be a string or a JSON string.
+ * Takes a flag input that can be a valid json or an arbitrary string,
+ * tries parsing it before returning it.
  */
 export const maybeJsonStr = Flags.custom<AnyObj | string>({
   parse: async (input: string) => {
@@ -64,14 +65,8 @@ export const maybeJsonStr = Flags.custom<AnyObj | string>({
 });
 
 /*
- * Takes a flag input that's supposed to be a string containing one of the following options:
-  1) An ID
-  2) Multiple ID's separated by comma.
-  3) A JSON string.
-  4) A list with multiple JSON string separated by comma.
-  5) A list with multiple JSON string + ID's, separated by comma.
-
-  Note: It will always return a list.
+ * Takes a flag input that can be a valid json or an arbitrary comma separate-able string,
+ * tries parsing the string then always returns the result as a list.
  */
 export const maybeJsonStrAsList = Flags.custom<AnyObj[]>({
   parse: async (input: string) => {
