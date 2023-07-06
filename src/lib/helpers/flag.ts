@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
 
+import { tryJsonParse } from "./json";
 import { AnyObj } from "./object";
 
 /*
@@ -50,5 +51,28 @@ export const jsonStr = Flags.custom<AnyObj>({
     } catch {
       throw new Error(`${input} is not a valid JSON string.`);
     }
+  },
+});
+
+/*
+ * Takes a flag input that can be a valid json or an arbitrary string,
+ * tries parsing it before returning it.
+ */
+export const maybeJsonStr = Flags.custom<AnyObj | string>({
+  parse: async (input: string) => {
+    return tryJsonParse(input);
+  },
+});
+
+/*
+ * Takes a flag input that can be a valid json or an arbitrary comma separate-able string,
+ * tries parsing the string then always returns the result as a list.
+ */
+export const maybeJsonStrAsList = Flags.custom<AnyObj[] | string[]>({
+  parse: async (input: string) => {
+    const data = tryJsonParse(input);
+    if (typeof data === "string") return data.split(",");
+    if (Array.isArray(data)) return data;
+    return [data];
   },
 });

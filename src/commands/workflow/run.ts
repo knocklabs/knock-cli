@@ -2,7 +2,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
-import { jsonStr } from "@/lib/helpers/flag";
+import { jsonStr, maybeJsonStr, maybeJsonStrAsList } from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 
@@ -14,16 +14,15 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       default: "development",
       summary: "The environment in which to run the workflow",
     }),
-    recipients: Flags.string({
+    recipients: maybeJsonStrAsList({
       required: true,
       aliases: ["recipient"],
       summary:
-        "One or more recipient ids for this workflow run, separated by comma.",
-      multiple: true,
-      delimiter: ",",
+        "One or more recipient user ids separated by comma, or a JSON string containing one or more recipient object references for this workflow run.",
     }),
-    actor: Flags.string({
-      summary: "An actor id for the workflow run.",
+    actor: maybeJsonStr({
+      summary:
+        "An actor id, or a JSON string of an actor object reference for the workflow run.",
     }),
     tenant: Flags.string({
       summary: "A tenant id for the workflow run.",

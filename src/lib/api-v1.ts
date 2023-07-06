@@ -115,13 +115,14 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ActivateWorkflowResp>> {
     const params = prune({
       environment: flags.environment,
+    });
+    const data = prune({
       recipients: flags.recipients,
       tenant: flags.tenant,
       data: flags.data,
       actor: flags.actor,
     });
-
-    return this.put(`/workflows/${args.workflowKey}/run`, {}, { params });
+    return this.put(`/workflows/${args.workflowKey}/run`, data, { params });
   }
 
   // By resources: Commits
