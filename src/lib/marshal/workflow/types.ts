@@ -49,6 +49,7 @@ type BatchStepSettings = {
   batch_window?: Duration;
   batch_window_type: "fixed" | "sliding";
   batch_order: "asc" | "desc";
+  batch_window_extension_limit?: Duration;
 };
 
 type BatchStepData = WorkflowStepBase & {
