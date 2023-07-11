@@ -131,6 +131,18 @@ const throttleStepSummaryLines = (step: WorkflowStepData) => {
   ];
 };
 
+const ifElseStepSummaryLines = (step: WorkflowStepData) => {
+  if (step.type !== StepType.IfElse) return [];
+
+  let stepsCount = 0;
+
+  for (const branch of step.branches) {
+    stepsCount += doCountSteps(branch.steps);
+  }
+
+  return [`Branches: ${step.branches.length}`, `Steps: ${stepsCount}`];
+};
+
 const delayStepSummaryLines = (step: WorkflowStepData) => {
   if (step.type !== StepType.Delay) return [];
 
@@ -170,6 +182,7 @@ export const formatStepSummary = (step: WorkflowStepData): string => {
     ...batchStepSummaryLines(step),
     ...delayStepSummaryLines(step),
     ...httpFetchStepSummaryLines(step),
+    ...ifElseStepSummaryLines(step),
     ...throttleStepSummaryLines(step),
 
     // Extra line between step rows to make it easier on the eye.
@@ -277,3 +290,22 @@ export const ensureValidCommandTarget = async (
 
   return ux.error("Missing 1 required arg:\nworkflowKey");
 };
+
+const doCountSteps = (steps: WorkflowStepData[]): number => {
+  let count = 0;
+
+  for (const step of steps) {
+    count += 1;
+
+    if (step.type === StepType.IfElse) {
+      for (const branch of step.branches) {
+        count += doCountSteps(branch.steps);
+      }
+    }
+  }
+
+  return count;
+};
+
+export const countSteps = (workflow: WorkflowData): number =>
+  doCountSteps(workflow.steps);

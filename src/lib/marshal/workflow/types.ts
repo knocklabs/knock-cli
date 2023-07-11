@@ -13,6 +13,7 @@ export enum StepType {
   Batch = "batch",
   Delay = "delay",
   HttpFetch = "http_fetch",
+  IfElse = "if_else",
   Throttle = "throttle",
 }
 
@@ -93,18 +94,36 @@ type HttpFetchStepSettings = {
   query_params?: KeyValueBlock[];
 };
 
-/* Workflow & Union steps */
-
 type HttpFetchStepData = WorkflowStepBase & {
   type: StepType.HttpFetch;
   settings: HttpFetchStepSettings;
 };
+
+/* If-else step */
+
+type WorkflowBranch<A extends MaybeWithAnnotation = unknown> = {
+  name: string;
+  terminates: boolean;
+  conditions?: Conditions;
+  steps: WorkflowStepData<A>[];
+};
+
+type IfElseStepData<A extends MaybeWithAnnotation = unknown> = Omit<
+  WorkflowStepBase,
+  "conditions"
+> & {
+  type: StepType.IfElse;
+  branches: WorkflowBranch<A>[];
+};
+
+/* Workflow & Union steps */
 
 export type WorkflowStepData<A extends MaybeWithAnnotation = unknown> =
   | ChannelStepData<A>
   | BatchStepData
   | DelayStepData
   | HttpFetchStepData
+  | IfElseStepData<A>
   | ThrottleStepData;
 
 export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {

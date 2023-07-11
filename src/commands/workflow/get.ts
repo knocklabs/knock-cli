@@ -3,7 +3,10 @@ import { Args, Flags, ux } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDateTime } from "@/lib/helpers/date";
-import { withSpinner } from "@/lib/helpers/request";
+import { ApiError } from "@/lib/helpers/error";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import { indentString } from "@/lib/helpers/string";
+import { spinner } from "@/lib/helpers/ux";
 import * as Conditions from "@/lib/marshal/conditions";
 import * as Workflow from "@/lib/marshal/workflow";
 
@@ -29,17 +32,43 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
   static enableJsonFlag = true;
 
   async run(): Promise<ApiV1.GetWorkflowResp | void> {
-    const resp = await withSpinner<ApiV1.GetWorkflowResp>(() =>
-      this.apiV1.getWorkflow(this.props),
-    );
+    spinner.start("‣ Loading");
+
+    const { workflow, whoami } = await this.loadWorkflow();
+
+    spinner.stop();
 
     const { flags } = this.props;
-    if (flags.json) return resp.data;
+    if (flags.json) return workflow;
 
-    this.render(resp.data);
+    this.render(workflow, whoami);
   }
 
-  render(workflow: ApiV1.GetWorkflowResp): void {
+  private async loadWorkflow(): Promise<{
+    workflow: ApiV1.GetWorkflowResp;
+    whoami: ApiV1.WhoamiResp;
+  }> {
+    const workflowResp = await this.apiV1.getWorkflow(this.props);
+
+    if (!isSuccessResp(workflowResp)) {
+      const message = formatErrorRespMessage(workflowResp);
+      ux.error(new ApiError(message));
+    }
+
+    const whoamiResp = await this.apiV1.whoami();
+
+    if (!isSuccessResp(whoamiResp)) {
+      const message = formatErrorRespMessage(whoamiResp);
+      ux.error(new ApiError(message));
+    }
+
+    return {
+      workflow: workflowResp.data,
+      whoami: whoamiResp.data,
+    };
+  }
+
+  render(workflow: ApiV1.GetWorkflowResp, whoami: ApiV1.WhoamiResp): void {
     const { workflowKey } = this.props.args;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
@@ -118,10 +147,12 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
       ref: {
         header: "Ref",
         minWidth: 18,
+        get: (step) => step.ref,
       },
       type: {
         header: "Type",
         minWidth: 12,
+        get: (step) => step.type,
       },
       summary: {
         header: "Summary",
@@ -129,9 +160,28 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
       },
       conditions: {
         header: "Conditions",
-        get: (step) =>
-          step.conditions ? Conditions.formatConditions(step.conditions) : "-",
+        get: (step) => {
+          if (step.type === Workflow.StepType.IfElse) return "-";
+          if (!step.conditions) return "-";
+
+          return Conditions.formatConditions(step.conditions);
+        },
       },
     });
+
+    const hasTopLevelIfElseStep = workflow.steps.some(
+      (step) => step.type === Workflow.StepType.IfElse,
+    );
+
+    const dashboardLinkMessage = hasTopLevelIfElseStep
+      ? `\n‣ This workflow has branches with nested steps, view the full workflow tree in the Knock Dashboard:`
+      : `\n‣ View the full workflow in the Knock Dashboard:`;
+
+    const viewWorkflowUrl = `https://dashboard.knock.app/${
+      whoami.account_slug
+    }/${env.toLowerCase()}/workflows/${workflow.key}`;
+
+    this.log(dashboardLinkMessage);
+    this.log(indentString(viewWorkflowUrl, 2));
   }
 }
