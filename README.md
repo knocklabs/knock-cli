@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.3 darwin-arm64 node-v16.14.0
+@knocklabs/cli/0.1.4 darwin-arm64 node-v18.16.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -70,7 +70,7 @@ FLAGS
   --service-token=<value>       (required) The service token to authenticate with.
 ```
 
-_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.3/dist/commands/commit/index.ts)_
+_See code: [dist/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.4/dist/commands/commit/index.ts)_
 
 ## `knock commit promote`
 
@@ -104,7 +104,7 @@ DESCRIPTION
   Display help for knock.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.9/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.11/src/commands/help.ts)_
 
 ## `knock plugins`
 
@@ -112,10 +112,13 @@ List installed plugins.
 
 ```
 USAGE
-  $ knock plugins [--core]
+  $ knock plugins [--json] [--core]
 
 FLAGS
   --core  Show core plugins.
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   List installed plugins.
@@ -124,7 +127,7 @@ EXAMPLES
   $ knock plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.0.1/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.1.6/src/commands/plugins/index.ts)_
 
 ## `knock plugins:install PLUGIN...`
 
@@ -469,7 +472,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [dist/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.3/dist/commands/whoami.ts)_
+_See code: [dist/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.4/dist/commands/whoami.ts)_
 
 ## `knock workflow activate WORKFLOWKEY`
 
@@ -574,7 +577,7 @@ FLAGS
 
 ## `knock workflow run WORKFLOWKEY`
 
-Test run a workflow using the latest version from Knock, or a local workflow directory.
+Test run a workflow using the latest version from Knock.
 
 ```
 USAGE
@@ -582,10 +585,11 @@ USAGE
     <value>] [--tenant <value>] [--data <value>]
 
 FLAGS
-  --actor=<value>          An actor id for the workflow run.
+  --actor=<value>          An actor id, or a JSON string of an actor object reference for the workflow run.
   --data=<value>           A JSON string of the data for this workflow
   --environment=<value>    [default: development] The environment in which to run the workflow
-  --recipients=<value>...  (required) One or more recipient ids for this workflow run, separated by comma.
+  --recipients=<value>     (required) One or more recipient user ids separated by comma, or a JSON string containing one
+                           or more recipient object references for this workflow run.
   --service-token=<value>  (required) The service token to authenticate with.
   --tenant=<value>         A tenant id for the workflow run.
 ```
