@@ -100,7 +100,7 @@ type HttpFetchStepData = WorkflowStepBase & {
 
 /* If-else step */
 
-export type WorkflowBranch<A extends MaybeWithAnnotation = unknown> = {
+type WorkflowBranch<A extends MaybeWithAnnotation = unknown> = {
   name: string;
   terminates: boolean;
   conditions?: Conditions;

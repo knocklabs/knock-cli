@@ -10,18 +10,6 @@ import { spinner } from "@/lib/helpers/ux";
 import * as Conditions from "@/lib/marshal/conditions";
 import * as Workflow from "@/lib/marshal/workflow";
 
-type WorkflowStepWithKey = Workflow.WorkflowStepData & { key: string };
-
-type WorkflowBranchWithKey = Workflow.WorkflowBranch & {
-  type: "branch";
-  isDefault: boolean;
-  key: string;
-};
-
-type WorkflowStepOrBranchWithKey = WorkflowStepWithKey | WorkflowBranchWithKey;
-
-const LOWERCASE_A_CHAR_CODE = 97;
-
 export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
   static summary = "Display a single workflow from an environment.";
 
@@ -149,98 +137,51 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
      * Workflow steps table
      */
 
-    const { stepsAndBranches, hasIfElseSteps } = this.flattenSteps(
-      workflow.steps,
-    );
+    const steps = workflow.steps.map((step, index) => ({ ...step, index }));
 
-    ux.table(stepsAndBranches, {
+    ux.table(steps, {
       index: {
         header: "Steps",
-        get: (stepOrBranch) => stepOrBranch.key,
+        get: (step) => step.index + 1,
       },
       ref: {
         header: "Ref",
         minWidth: 18,
-        get: (stepOrBranch) =>
-          stepOrBranch.type === "branch" ? "-" : stepOrBranch.ref,
+        get: (step) => step.ref,
       },
       type: {
         header: "Type",
         minWidth: 12,
-        get: (stepOrBranch) =>
-          stepOrBranch.type === "branch" ? "branch" : stepOrBranch.type,
+        get: (step) => step.type,
       },
       summary: {
         header: "Summary",
-        get: (stepOrBranch) =>
-          stepOrBranch.type === "branch"
-            ? Workflow.formatBranchSummary(stepOrBranch)
-            : Workflow.formatStepSummary(stepOrBranch),
+        get: (step) => Workflow.formatStepSummary(step),
       },
       conditions: {
         header: "Conditions",
-        get: (stepOrBranch) => {
-          if (stepOrBranch.type === Workflow.StepType.IfElse) return "-";
+        get: (step) => {
+          if (step.type === Workflow.StepType.IfElse) return "-";
+          if (!step.conditions) return "-";
 
-          if (stepOrBranch.type === "branch" && stepOrBranch.isDefault) {
-            return "Default branch";
-          }
-
-          if (!stepOrBranch.conditions) return "-";
-
-          return Conditions.formatConditions(stepOrBranch.conditions);
+          return Conditions.formatConditions(step.conditions);
         },
       },
     });
 
-    if (hasIfElseSteps) {
-      const viewWorkflowUrl = `https://dashboard.knock.app/${
-        whoami.account_slug
-      }/${env.toLowerCase()}/workflows/${workflow.key}`;
+    const hasTopLevelIfElseStep = workflow.steps.some(
+      (step) => step.type === Workflow.StepType.IfElse,
+    );
 
-      this.log(
-        `\n‣ This workflow has branches with nested steps, view the full workflow tree in the Knock Dashboard:`,
-      );
+    const dashboardLinkMessage = hasTopLevelIfElseStep
+      ? `\n‣ This workflow has branches with nested steps, view the full workflow tree in the Knock Dashboard:`
+      : `\n‣ View the full workflow in the Knock Dashboard:`;
 
-      this.log(indentString(viewWorkflowUrl, 2));
-    }
-  }
+    const viewWorkflowUrl = `https://dashboard.knock.app/${
+      whoami.account_slug
+    }/${env.toLowerCase()}/workflows/${workflow.key}`;
 
-  // Returns a steps list with any top-level if-else branches mixed in for
-  // display in the table
-  private flattenSteps(steps: Workflow.WorkflowStepData[]): {
-    stepsAndBranches: WorkflowStepOrBranchWithKey[];
-    hasIfElseSteps: boolean;
-  } {
-    const stepsAndBranches: WorkflowStepOrBranchWithKey[] = [];
-    let stepsCount = 0;
-    let hasIfElseSteps = false;
-
-    for (const step of steps) {
-      stepsCount += 1;
-
-      stepsAndBranches.push({ ...step, key: stepsCount.toString() });
-
-      if (step.type === Workflow.StepType.IfElse) {
-        for (let branchIdx = 0; branchIdx < step.branches.length; branchIdx++) {
-          const branch = step.branches[branchIdx];
-          const branchLetter = String.fromCharCode(
-            LOWERCASE_A_CHAR_CODE + branchIdx,
-          );
-
-          const branchWithKey: WorkflowBranchWithKey = {
-            ...branch,
-            type: "branch",
-            isDefault: branchIdx === step.branches.length - 1,
-            key: `> Branch ${stepsCount}${branchLetter}`,
-          };
-
-          stepsAndBranches.push(branchWithKey);
-          hasIfElseSteps = true;
-        }
-      }
-    }
-
-    return { stepsAndBranches, hasIfElseSteps };
+    this.log(dashboardLinkMessage);
+    this.log(indentString(viewWorkflowUrl, 2));
   }
 }

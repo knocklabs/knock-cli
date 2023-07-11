@@ -8,12 +8,7 @@ import { DirContext } from "@/lib/helpers/fs";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { RunContext, WorkflowDirContext } from "@/lib/run-context";
 
-import {
-  StepType,
-  WorkflowBranch,
-  WorkflowData,
-  WorkflowStepData,
-} from "./types";
+import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export const WORKFLOW_JSON = "workflow.json";
 export const VISUAL_BLOCKS_JSON = "visual_blocks.json";
@@ -133,8 +128,17 @@ const throttleStepSummaryLines = (step: WorkflowStepData) => {
   ];
 };
 
-const ifElseStepSummaryLines = (step: WorkflowStepData) =>
-  step.type === StepType.IfElse ? [`Branches: ${step.branches.length}`] : [];
+const ifElseStepSummaryLines = (step: WorkflowStepData) => {
+  if (step.type !== StepType.IfElse) return [];
+
+  let stepsCount = 0;
+
+  for (const branch of step.branches) {
+    stepsCount += doCountSteps(branch.steps);
+  }
+
+  return [`Branches: ${step.branches.length}`, `Steps: ${stepsCount}`];
+};
 
 const delayStepSummaryLines = (step: WorkflowStepData) => {
   if (step.type !== StepType.Delay) return [];
@@ -183,10 +187,6 @@ export const formatStepSummary = (step: WorkflowStepData): string => {
   ].filter((x) => x);
 
   return lines.join("\n");
-};
-
-export const formatBranchSummary = (branch: WorkflowBranch): string => {
-  return `Steps: ${branch.steps.length}`;
 };
 
 /*
