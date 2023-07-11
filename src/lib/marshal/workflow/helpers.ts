@@ -97,6 +97,7 @@ const batchStepSummaryLines = (step: WorkflowStepData) => {
     batch_key,
     batch_window_type,
     batch_window: duration,
+    batch_window_extension_limit,
     batch_until_field_path: field_path,
     batch_order,
   } = step.settings;
@@ -106,6 +107,8 @@ const batchStepSummaryLines = (step: WorkflowStepData) => {
     duration && `Batch window: ${duration.value} ${duration.unit}`,
     field_path && `Batch window: "${field_path}"`,
     `Batch window type: ${batch_window_type}`,
+    batch_window_extension_limit &&
+      `Batch window extension limit: ${batch_window_extension_limit.value} ${batch_window_extension_limit.unit}`,
     `Batch order: ${batch_order}`,
   ];
 };
