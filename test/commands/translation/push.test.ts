@@ -50,7 +50,7 @@ describe("commands/translation/push", () => {
           sinon.match(({ flags }) => {
             return isEqual(flags, {
               "service-token": "valid-token",
-              "api-origin": undefined,
+
               environment: "development",
             });
           }),
@@ -79,7 +79,7 @@ describe("commands/translation/push", () => {
             sinon.match(({ flags }) =>
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
                 commit: true,
                 "commit-message": "this is a commit comment!",
@@ -235,7 +235,7 @@ describe("commands/translation/push", () => {
           const expectedArgs = {};
           const expectedFlags = {
             "service-token": "valid-token",
-            "api-origin": undefined,
+
             environment: "development",
             all: true,
             "translations-dir": {

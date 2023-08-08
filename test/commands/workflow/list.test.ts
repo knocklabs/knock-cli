@@ -32,7 +32,7 @@ describe("commands/workflow/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
               }),
           ),
@@ -67,7 +67,7 @@ describe("commands/workflow/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 "hide-uncommitted-changes": true,
                 environment: "staging",
                 limit: 5,
@@ -158,7 +158,7 @@ describe("commands/workflow/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    "api-origin": undefined,
+
                     environment: "development",
                   }),
               ),
@@ -172,7 +172,7 @@ describe("commands/workflow/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    "api-origin": undefined,
+
                     environment: "development",
                     after: "xyz",
                   }),

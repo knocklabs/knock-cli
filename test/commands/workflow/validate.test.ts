@@ -52,7 +52,7 @@ describe("commands/workflow/validate (a single workflow)", () => {
               isEqual(args, { workflowKey: "new-comment" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
               }),
           ),
@@ -190,7 +190,7 @@ describe("commands/workflow/validate (all workflows)", () => {
         const expectedArgs = {};
         const expectedFlags = {
           "service-token": "valid-token",
-          "api-origin": undefined,
+
           environment: "development",
           all: true,
           "workflows-dir": {

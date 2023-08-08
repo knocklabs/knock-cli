@@ -51,7 +51,7 @@ describe("commands/workflow/activate", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "staging",
                 // True by default for activating a workflow.
                 status: true,
@@ -82,7 +82,7 @@ describe("commands/workflow/activate", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "staging",
                 // False for deactivating a workflow.
                 status: false,

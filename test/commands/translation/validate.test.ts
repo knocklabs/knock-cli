@@ -49,7 +49,7 @@ describe("commands/translation/validate (a single translation)", () => {
               isEqual(args, { translationRef: "en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
               }),
           ),
@@ -83,7 +83,7 @@ describe("commands/translation/validate (a single translation)", () => {
               isEqual(args, { translationRef: "admin.en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
               }),
           ),
@@ -231,7 +231,7 @@ describe("commands/translation/validate (all translations)", () => {
           const expectedArgs = {};
           const expectedFlags = {
             "service-token": "valid-token",
-            "api-origin": undefined,
+
             environment: "development",
             all: true,
             "translations-dir": {

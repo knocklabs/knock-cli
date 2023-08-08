@@ -99,7 +99,7 @@ describe("commands/translation/pull", () => {
                 exists: false,
               },
               "service-token": "valid-token",
-              "api-origin": undefined,
+
               environment: "development",
               limit: 100,
             }),
@@ -154,7 +154,7 @@ describe("commands/translation/pull", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
               }),
           ),
@@ -213,7 +213,7 @@ describe("commands/translation/pull", () => {
               isEqual(flags, {
                 all: true,
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
                 limit: 100,
               }),
