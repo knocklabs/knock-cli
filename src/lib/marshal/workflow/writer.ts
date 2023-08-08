@@ -229,7 +229,7 @@ const keyLocalWorkflowStepsByRef = (
 
     result[step.ref] = step;
 
-    if (step.type === StepType.IfElse && Array.isArray(step.branches)) {
+    if (step.type === StepType.Branch && Array.isArray(step.branches)) {
       for (const branch of step.branches) {
         if (!isPlainObject(branch)) continue;
 
@@ -322,7 +322,7 @@ const recursivelyBuildWorkflowDirBundle = (
     }
 
     // Lastly, recurse thru any branches that exist in the workflow tree
-    if (step.type === StepType.IfElse) {
+    if (step.type === StepType.Branch) {
       for (const branch of step.branches) {
         recursivelyBuildWorkflowDirBundle(
           bundle,
