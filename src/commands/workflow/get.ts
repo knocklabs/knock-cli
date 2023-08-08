@@ -161,7 +161,7 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
       conditions: {
         header: "Conditions",
         get: (step) => {
-          if (step.type === Workflow.StepType.IfElse) return "-";
+          if (step.type === Workflow.StepType.Branch) return "-";
           if (!step.conditions) return "-";
 
           return Conditions.formatConditions(step.conditions);
@@ -169,11 +169,11 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
       },
     });
 
-    const hasTopLevelIfElseStep = workflow.steps.some(
-      (step) => step.type === Workflow.StepType.IfElse,
+    const hasTopLevelBranchStep = workflow.steps.some(
+      (step) => step.type === Workflow.StepType.Branch,
     );
 
-    const dashboardLinkMessage = hasTopLevelIfElseStep
+    const dashboardLinkMessage = hasTopLevelBranchStep
       ? `\n‣ This workflow has branches with nested steps, view the full workflow tree in the Knock Dashboard:`
       : `\n‣ View the full workflow in the Knock Dashboard:`;
 

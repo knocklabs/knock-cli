@@ -75,8 +75,8 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
       },
     },
     {
-      ref: "if_else_1",
-      type: StepType.IfElse,
+      ref: "branch_1",
+      type: StepType.Branch,
       branches: [
         {
           name: "Branch 1",
@@ -84,7 +84,7 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
           conditions: {
             all: [
               {
-                variable: "data.if_else_1_enabled",
+                variable: "data.branch_1_enabled",
                 operator: "equal_to",
                 argument: "true",
               },
@@ -404,8 +404,8 @@ describe("lib/marshal/workflow/writer", () => {
                 },
               },
               {
-                ref: "if_else_1",
-                type: StepType.IfElse,
+                ref: "branch_1",
+                type: StepType.Branch,
                 branches: [
                   {
                     name: "Branch 1",
@@ -413,7 +413,7 @@ describe("lib/marshal/workflow/writer", () => {
                     conditions: {
                       all: [
                         {
-                          variable: "data.if_else_1_enabled",
+                          variable: "data.branch_1_enabled",
                           operator: "equal_to",
                           argument: "true",
                         },
@@ -541,8 +541,8 @@ describe("lib/marshal/workflow/writer", () => {
                 },
               },
               {
-                ref: "if_else_1",
-                type: StepType.IfElse,
+                ref: "branch_1",
+                type: StepType.Branch,
                 branches: [
                   {
                     name: "Branch 1",
@@ -550,7 +550,7 @@ describe("lib/marshal/workflow/writer", () => {
                     conditions: {
                       all: [
                         {
-                          variable: "data.if_else_1_enabled",
+                          variable: "data.branch_1_enabled",
                           operator: "equal_to",
                           argument: "true",
                         },

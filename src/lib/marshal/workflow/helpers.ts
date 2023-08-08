@@ -131,8 +131,8 @@ const throttleStepSummaryLines = (step: WorkflowStepData) => {
   ];
 };
 
-const ifElseStepSummaryLines = (step: WorkflowStepData) => {
-  if (step.type !== StepType.IfElse) return [];
+const branchStepSummaryLines = (step: WorkflowStepData) => {
+  if (step.type !== StepType.Branch) return [];
 
   let stepsCount = 0;
 
@@ -182,7 +182,7 @@ export const formatStepSummary = (step: WorkflowStepData): string => {
     ...batchStepSummaryLines(step),
     ...delayStepSummaryLines(step),
     ...httpFetchStepSummaryLines(step),
-    ...ifElseStepSummaryLines(step),
+    ...branchStepSummaryLines(step),
     ...throttleStepSummaryLines(step),
 
     // Extra line between step rows to make it easier on the eye.
@@ -297,7 +297,7 @@ const doCountSteps = (steps: WorkflowStepData[]): number => {
   for (const step of steps) {
     count += 1;
 
-    if (step.type === StepType.IfElse) {
+    if (step.type === StepType.Branch) {
       for (const branch of step.branches) {
         count += doCountSteps(branch.steps);
       }
