@@ -15,7 +15,7 @@ import { sequence } from "./helpers";
 export const gFlags = (attrs: Partial<BFlags> = {}): BFlags => {
   return {
     "service-token": "valid-token",
-    "api-origin": undefined,
+
     json: undefined,
     ...attrs,
   };

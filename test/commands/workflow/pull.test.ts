@@ -79,7 +79,7 @@ describe("commands/workflow/pull", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
                 annotate: true,
               }),
@@ -116,7 +116,7 @@ describe("commands/workflow/pull", () => {
                   exists: false,
                 },
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
                 annotate: true,
                 limit: 100,

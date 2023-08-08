@@ -27,7 +27,6 @@ describe("commands/commit/index", () => {
         sinon.match(({ flags }) =>
           isEqual(flags, {
             "service-token": "valid-token",
-            "api-origin": undefined,
             environment: "development",
             "commit-message": "commit all the changes!",
           }),

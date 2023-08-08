@@ -38,7 +38,7 @@ describe("commands/translation/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
               }),
           ),
@@ -82,7 +82,7 @@ describe("commands/translation/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 "hide-uncommitted-changes": true,
                 environment: "staging",
               }),

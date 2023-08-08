@@ -60,7 +60,7 @@ describe("commands/workflow/run", () => {
                 }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  "api-origin": undefined,
+
                   environment: "staging",
                   recipients: ["user1"],
                 }),
@@ -93,7 +93,7 @@ describe("commands/workflow/run", () => {
                 }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  "api-origin": undefined,
+
                   environment: "staging",
                   recipients: ["alice", "barry"],
                 }),
@@ -126,7 +126,7 @@ describe("commands/workflow/run", () => {
                 }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  "api-origin": undefined,
+
                   environment: "staging",
                   recipients: [{ id: "user1" }],
                 }),
@@ -159,7 +159,7 @@ describe("commands/workflow/run", () => {
                 }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  "api-origin": undefined,
+
                   environment: "staging",
                   recipients: [
                     {
@@ -200,7 +200,7 @@ describe("commands/workflow/run", () => {
                 }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  "api-origin": undefined,
+
                   environment: "staging",
                   recipients: [
                     "alice",
@@ -239,7 +239,7 @@ describe("commands/workflow/run", () => {
                 }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  "api-origin": undefined,
+
                   environment: "staging",
                   recipients: ["alice"],
                   actor: "bruce",
@@ -275,7 +275,7 @@ describe("commands/workflow/run", () => {
                 }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  "api-origin": undefined,
+
                   environment: "staging",
                   recipients: ["alice"],
                   actor: { id: "object-1", collection: "projects" },

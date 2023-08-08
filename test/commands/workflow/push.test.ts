@@ -76,7 +76,7 @@ describe("commands/workflow/push", () => {
               isEqual(args, { workflowKey: "new-comment" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
                 // Internally set flags
                 annotate: true,
@@ -108,7 +108,7 @@ describe("commands/workflow/push", () => {
               isEqual(args, { workflowKey: "new-comment" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                "api-origin": undefined,
+
                 environment: "development",
                 // Commit flags
                 commit: true,
@@ -273,7 +273,7 @@ describe("commands/workflow/push", () => {
         const expectedFlags = {
           annotate: true,
           "service-token": "valid-token",
-          "api-origin": undefined,
+
           environment: "development",
           all: true,
           "workflows-dir": {
