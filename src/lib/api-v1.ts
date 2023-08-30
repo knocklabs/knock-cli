@@ -271,6 +271,7 @@ export type ListTranslationResp = PaginatedResp<Translation.TranslationData>;
 export type GetTranslationResp = Translation.TranslationData;
 
 export type UpsertTranslationResp = {
+  had_changes: boolean;
   translation?: Translation.TranslationData;
   errors?: InputError[];
 };

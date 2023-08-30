@@ -82,7 +82,15 @@ export default class TranslationPush extends BaseCommand<
     spinner.stop();
 
     // 3. Finally push up each translation file, abort on the first error.
+    // When it's pushed, Control will check for whether the translation's content
+    // has changed for the most recent version. If it hasn't, it won't make a commit.
+    // We'll gather the translations that had changes and did not have changes to surface a helpful
+    // message back to the user.
+
     spinner.start(`‣ Pushing`);
+
+    const upsertedTranslations = [];
+    const unchangedTranslations = [];
 
     for (const translation of translations) {
       // eslint-disable-next-line no-await-in-loop
@@ -92,7 +100,16 @@ export default class TranslationPush extends BaseCommand<
         content: translation.content,
       });
 
-      if (isSuccessResp(resp)) continue;
+      if (isSuccessResp(resp)) {
+        resp.data.had_changes
+          ? upsertedTranslations.push(
+              resp.data.translation as Translation.TranslationData,
+            )
+          : unchangedTranslations.push(
+              resp.data.translation as Translation.TranslationData,
+            );
+        continue;
+      }
 
       const message = formatErrorRespMessage(resp);
       const error = new SourceError(message, translation.abspath, "ApiError");
@@ -102,12 +119,50 @@ export default class TranslationPush extends BaseCommand<
     spinner.stop();
 
     // 4. Display a success message.
-    const handledRefs = translations.map((t) => t.ref);
     const actioned = flags.commit ? "pushed and committed" : "pushed";
-
-    this.log(
-      `‣ Successfully ${actioned} ${translations.length} translation(s):\n` +
-        indentString(handledRefs.join("\n"), 4),
+    const { unchangedMessage, upsertedMessage } = generateSuccessLog(
+      upsertedTranslations,
+      unchangedTranslations,
+      actioned,
     );
+
+    if (upsertedTranslations.length > 0) {
+      this.log(upsertedMessage);
+    }
+
+    if (unchangedTranslations.length > 0) {
+      this.log(unchangedMessage);
+    }
   }
 }
+
+const generateSuccessLog = (
+  upsertedTranslations: Translation.TranslationData[],
+  unchangedTranslations: Translation.TranslationData[],
+  actioned: string,
+) => {
+  const upsertedCount = upsertedTranslations.length;
+  const upsertedRefs = upsertedTranslations.map((t) =>
+    generateTranslationRef(t),
+  );
+
+  const unchangedCount = unchangedTranslations.length;
+  const unchangedRefs = unchangedTranslations.map((t) =>
+    generateTranslationRef(t),
+  );
+
+  const upsertedMessage =
+    `‣ Successfully ${actioned} ${upsertedCount} translation(s):\n` +
+    indentString(upsertedRefs.join("\n"), 4);
+
+  const unchangedMessage =
+    `‣ No changes detected for ${unchangedCount} translation(s):\n` +
+    indentString(unchangedRefs.join("\n"), 4);
+
+  return { unchangedMessage, upsertedMessage };
+};
+
+const generateTranslationRef = (translation: Translation.TranslationData) => {
+  const namespace = translation?.namespace ? `${translation?.namespace}.` : "";
+  return `${namespace}${translation?.locale_code}`;
+};
