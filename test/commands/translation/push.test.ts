@@ -41,7 +41,7 @@ describe("commands/translation/push", () => {
       process.chdir(translationsDir);
     });
 
-    setupWithStub()
+    setupWithStub({ data: { had_changes: true } })
       .stdout()
       .command(["translation push", "admin.en"])
       .it("calls apiV1 upsertTranslation with expected props", () => {
@@ -62,7 +62,7 @@ describe("commands/translation/push", () => {
         );
       });
 
-    setupWithStub()
+    setupWithStub({ data: { had_changes: true } })
       .stdout()
       .command([
         "translation push",
@@ -214,7 +214,7 @@ describe("commands/translation/push", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub()
+    setupWithStub({ data: { had_changes: true } })
       .stdout()
       .command([
         "translation push",
