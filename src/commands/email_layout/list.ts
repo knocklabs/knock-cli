@@ -1,16 +1,16 @@
 import { Flags, ux } from "@oclif/core";
-import BaseCommand from "@/lib/base-command";
-import * as ApiV1 from "@/lib/api-v1";
+import { AxiosResponse } from "axios";
 
+import * as ApiV1 from "@/lib/api-v1";
+import BaseCommand from "@/lib/base-command";
+import { formatDate } from "@/lib/helpers/date";
+import { merge } from "@/lib/helpers/object";
 import {
   maybePromptPageAction,
   pageFlags,
   paramsForPageAction,
 } from "@/lib/helpers/page";
-import { AxiosResponse } from "axios";
-import { merge } from "lodash";
 import { withSpinner } from "@/lib/helpers/request";
-import { formatDate } from "@/lib/helpers/date";
 import * as EmailLayout from "@/lib/marshal/email_layout";
 
 export default class EmailLayoutList extends BaseCommand<
@@ -28,6 +28,8 @@ export default class EmailLayoutList extends BaseCommand<
     }),
     ...pageFlags,
   };
+
+  static enableJsonFlag = true;
 
   async run(): Promise<ApiV1.ListEmailLayoutResp | void> {
     const resp = await this.request();
