@@ -15,7 +15,7 @@ import * as EmailLayout from "@/lib/marshal/email_layout";
 
 export default class EmailLayoutList extends BaseCommand<
   typeof EmailLayoutList
->{
+> {
   static summary = "Display all email layouts for an environment.";
 
   static flags = {
@@ -35,9 +35,9 @@ export default class EmailLayoutList extends BaseCommand<
     const resp = await this.request();
 
     const { flags } = this.props;
-    if (flags.json) return resp.data
+    if (flags.json) return resp.data;
 
-    this.render(resp.data)
+    this.render(resp.data);
   }
 
   async request(
@@ -63,30 +63,30 @@ export default class EmailLayoutList extends BaseCommand<
     );
 
     /*
-    * Email layouts list table
-    */
+     * Email layouts list table
+     */
 
-    ux.table(entries,
-      {
-        key: {
-          header: "Key",
-        },
-        name: {
-          header: "Name",
-        },
-        footer_links: {
-          header: "Footer links",
-          get: (entry) => EmailLayout.formatFooterLinks(entry, { truncateAfter: 3 })
-        },
-        updated_at: {
-          header: "Updated at",
-          get: (entry) => formatDate(entry.updated_at),
-        },
-        created_at: {
-          header: "Created at",
-          get: (entry) => formatDate(entry.created_at),
-        },
-      });
+    ux.table(entries, {
+      key: {
+        header: "Key",
+      },
+      name: {
+        header: "Name",
+      },
+      footer_links: {
+        header: "Footer links",
+        get: (entry) =>
+          EmailLayout.formatFooterLinks(entry, { truncateAfter: 3 }),
+      },
+      updated_at: {
+        header: "Updated at",
+        get: (entry) => formatDate(entry.updated_at),
+      },
+      created_at: {
+        header: "Created at",
+        get: (entry) => formatDate(entry.created_at),
+      },
+    });
 
     return this.prompt(data);
   }

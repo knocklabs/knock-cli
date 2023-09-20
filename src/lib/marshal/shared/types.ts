@@ -16,7 +16,7 @@ export type ExtractionSettings = {
 export type Hyperlink = {
   text: string;
   url: string;
-}
+};
 
 type SchemaAnnotation = {
   readonly_fields: string[];
