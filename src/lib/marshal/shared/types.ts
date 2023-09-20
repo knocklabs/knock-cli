@@ -13,6 +13,11 @@ export type ExtractionSettings = {
   file_ext: string;
 };
 
+export type Hyperlink = {
+  text: string;
+  url: string;
+}
+
 type SchemaAnnotation = {
   readonly_fields: string[];
   extractable_fields: {

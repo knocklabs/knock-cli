@@ -11,6 +11,7 @@ import { AxiosResponse } from "axios";
 import { merge } from "lodash";
 import { withSpinner } from "@/lib/helpers/request";
 import { formatDate } from "@/lib/helpers/date";
+import * as EmailLayout from "@/lib/marshal/email_layout";
 
 export default class EmailLayoutList extends BaseCommand<
   typeof EmailLayoutList
@@ -71,14 +72,9 @@ export default class EmailLayoutList extends BaseCommand<
         name: {
           header: "Name",
         },
-        html_layout: {
-          header: "HTML layout"
-        },
-        text_layout: {
-          header: "Text layout"
-        },
         footer_links: {
-          header: "Footer links"
+          header: "Footer links",
+          get: (entry) => EmailLayout.formatFooterLinks(entry, { truncateAfter: 3 })
         },
         updated_at: {
           header: "Updated at",
