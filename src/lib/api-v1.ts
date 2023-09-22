@@ -226,6 +226,20 @@ export default class ApiV1 {
 
     return this.get("/email_layouts", { params });
   }
+
+  async getEmailLayout<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetEmailLayoutResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/email_layouts/${args.emailLayoutKey}`, { params });
+  }
+
   // By methods:
 
   async get(
@@ -297,6 +311,9 @@ export type ValidateTranslationResp = {
 
 export type ListEmailLayoutResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<EmailLayout.EmailLayoutData<A>>;
+
+export type GetEmailLayoutResp<A extends MaybeWithAnnotation = unknown> =
+  EmailLayout.EmailLayoutData<A>;
 
 export type CommitAllChangesResp = {
   result?: "success";
