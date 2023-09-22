@@ -132,7 +132,7 @@ export const emailLayout = (
   attrs: Partial<EmailLayoutData> = {},
 ): EmailLayoutData => {
   return {
-    key: "Transactional",
+    key: "transactional",
     name: "Transactional",
     html_layout: "<html><body> Content </body></html>",
     text_layout: "Text content",
