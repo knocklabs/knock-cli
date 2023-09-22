@@ -5,7 +5,6 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 
-
 describe("commands/email_layout/get", () => {
   describe("given no email layout key arg", () => {
     test
@@ -13,7 +12,7 @@ describe("commands/email_layout/get", () => {
       .command(["email_layout get"])
       .exit(2)
       .it("exists with status 2");
-  })
+  });
 
   describe("given an email layout key arg, and no flags", () => {
     test
@@ -110,5 +109,4 @@ describe("commands/email_layout/get", () => {
       .catch("The resource you requested does not exist")
       .it("throws an error for resource not found");
   });
-
-})
+});
