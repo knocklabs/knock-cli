@@ -4,7 +4,6 @@ import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
-import * as EmailLayout from "@/lib/marshal/email-layout";
 
 export default class EmailLayoutGet extends BaseCommand<typeof EmailLayoutGet> {
   static summary = "Display a single email layout from an environment.";
@@ -85,7 +84,11 @@ export default class EmailLayoutGet extends BaseCommand<typeof EmailLayoutGet> {
 
     this.log("");
     if (email_layout.footer_links) {
-      ux.table(EmailLayout.getFooterLinksList(email_layout), {
+      const footerLinks = (email_layout.footer_links || []).map((link) => ({
+        key: link.text,
+        value: link.url,
+      }));
+      ux.table(footerLinks, {
         key: {
           header: "Footer Links",
           minWidth: 24,
