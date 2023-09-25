@@ -15,6 +15,8 @@ import { withSpinner } from "@/lib/helpers/request";
 export default class EmailLayoutList extends BaseCommand<
   typeof EmailLayoutList
 > {
+  static aliases = ["email-layout:list", "email_layout:list"];
+
   static summary = "Display all email layouts for an environment.";
 
   static flags = {
@@ -62,7 +64,7 @@ export default class EmailLayoutList extends BaseCommand<
     );
 
     /*
-     * Email layouts list table
+     * Email layouts table
      */
 
     ux.table(entries, {

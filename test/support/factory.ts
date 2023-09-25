@@ -133,6 +133,7 @@ export const emailLayout = (
 ): EmailLayoutData => {
   return {
     key: "transactional",
+    key: "Transactional",
     name: "Transactional",
     html_layout: "<html><body> Content </body></html>",
     text_layout: "Text content",
