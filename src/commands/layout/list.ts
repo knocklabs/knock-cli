@@ -62,7 +62,7 @@ export default class EmailLayoutList extends BaseCommand<
     );
 
     /*
-     * Email layouts list table
+     * Email layouts table
      */
 
     ux.table(entries, {
