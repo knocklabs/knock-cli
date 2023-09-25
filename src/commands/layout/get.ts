@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
 
 export default class EmailLayoutGet extends BaseCommand<typeof EmailLayoutGet> {
+  static aliases = ["email-layout:get", "email_layout:get"]
   static summary = "Display a single email layout from an environment.";
 
   static flags = {
