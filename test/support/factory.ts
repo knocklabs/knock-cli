@@ -2,6 +2,7 @@ import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
+import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
@@ -121,6 +122,21 @@ export const translation = (
   return {
     locale_code: "en",
     content: '{"welcome":"Hello"}',
+    created_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    ...attrs,
+  };
+};
+
+export const emailLayout = (
+  attrs: Partial<EmailLayoutData> = {},
+): EmailLayoutData => {
+  return {
+    key: "transactional",
+    name: "Transactional",
+    html_layout: "<html><body> Content </body></html>",
+    text_layout: "Text content",
+    footer_links: [{ text: "Link1", url: "https://exampleUrl.com" }],
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",
     ...attrs,
