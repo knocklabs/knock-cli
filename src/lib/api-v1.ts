@@ -5,6 +5,7 @@ import { BFlags, Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
+import * as EmailLayout from "@/lib/marshal/email-layout";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
@@ -211,6 +212,20 @@ export default class ApiV1 {
     });
   }
 
+  // By resources: Email layouts
+
+  async listEmailLayouts<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListEmailLayoutResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      ...toPageParams(flags),
+    });
+
+    return this.get("/email_layouts", { params });
+  }
   // By methods:
 
   async get(
@@ -279,6 +294,9 @@ export type ValidateTranslationResp = {
   translation?: Translation.TranslationData;
   errors?: InputError[];
 };
+
+export type ListEmailLayoutResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<EmailLayout.EmailLayoutData<A>>;
 
 export type CommitAllChangesResp = {
   result?: "success";
