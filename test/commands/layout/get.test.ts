@@ -5,11 +5,11 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 
-describe("commands/email_layout/get", () => {
+describe("commands/layout/get", () => {
   describe("given no email layout key arg", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["email_layout get"])
+      .command(["layout get"])
       .exit(2)
       .it("exists with status 2");
   });
@@ -27,7 +27,7 @@ describe("commands/email_layout/get", () => {
         ),
       )
       .stdout()
-      .command(["email_layout get", "transactional"])
+      .command(["layout get", "transactional"])
       .it("calls apiV1 getEmailLayout with correct props", () => {
         sinon.assert.calledWith(
           KnockApiV1.prototype.getEmailLayout as any,
@@ -59,7 +59,7 @@ describe("commands/email_layout/get", () => {
       )
       .stdout()
       .command([
-        "email_layout get",
+        "layout get",
         "transactional",
         "--hide-uncommitted-changes",
         "--environment",
@@ -105,7 +105,7 @@ describe("commands/email_layout/get", () => {
         ),
       )
       .stdout()
-      .command(["email_layout get", "foo"])
+      .command(["layout get", "foo"])
       .catch("The resource you requested does not exist")
       .it("throws an error for resource not found");
   });

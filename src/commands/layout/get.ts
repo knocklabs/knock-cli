@@ -4,7 +4,7 @@ import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
-import * as EmailLayout from "@/lib/marshal/email_layout";
+import * as EmailLayout from "@/lib/marshal/email-layout";
 
 export default class EmailLayoutGet extends BaseCommand<typeof EmailLayoutGet> {
   static summary = "Display a single email layout from an environment.";
@@ -50,7 +50,7 @@ export default class EmailLayoutGet extends BaseCommand<typeof EmailLayoutGet> {
       `‣ Showing email layout \`${emailLayoutKey}\` in \`${env}\` environment ${qualifier}\n`,
     );
     /*
-     * Email layout list table
+     * Email layout table
      */
 
     const rows = [
