@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 
-describe("commands/email_layout/list", () => {
+describe("commands/layout/list", () => {
   const emptyEmailLayoutsListResp = factory.resp({
     data: {
       page_info: factory.pageInfo(),
@@ -23,7 +23,7 @@ describe("commands/email_layout/list", () => {
         sinon.stub().resolves(emptyEmailLayoutsListResp),
       )
       .stdout()
-      .command(["email_layout list"])
+      .command(["layout list"])
       .it("calls apiV1 listEmailLayouts with correct props", () => {
         sinon.assert.calledWith(
           KnockApiV1.prototype.listEmailLayouts as any,
@@ -50,7 +50,7 @@ describe("commands/email_layout/list", () => {
       )
       .stdout()
       .command([
-        "email_layout list",
+        "layout list",
         "--hide-uncommitted-changes",
         "--environment",
         "staging",
@@ -99,7 +99,7 @@ describe("commands/email_layout/list", () => {
         ),
       )
       .stdout()
-      .command(["email_layout list"])
+      .command(["layout list"])
       .it("displays the list of email layouts", (ctx) => {
         expect(ctx.stdout).to.contain("Showing 3 email layouts in");
         expect(ctx.stdout).to.contain("transactional-1");
@@ -142,7 +142,7 @@ describe("commands/email_layout/list", () => {
             .resolves({ input: "" }),
         )
         .stdout()
-        .command(["email_layout list"])
+        .command(["layout list"])
         .it(
           "calls apiV1 listEmailLayouts for the second time with page params",
           () => {
@@ -195,7 +195,7 @@ describe("commands/email_layout/list", () => {
           sinon.stub().onFirstCall().resolves({ input: "p" }),
         )
         .stdout()
-        .command(["email_layout list"])
+        .command(["layout list"])
         .it(
           "calls apiV1 listEmailLayouts once for the initial page only",
           () => {

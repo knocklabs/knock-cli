@@ -5,7 +5,7 @@ import { BFlags, Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
-import * as EmailLayout from "@/lib/marshal/email_layout";
+import * as EmailLayout from "@/lib/marshal/email-layout";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";

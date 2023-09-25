@@ -2,7 +2,7 @@ import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
-import { EmailLayoutData } from "@/lib/marshal/email_layout";
+import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
