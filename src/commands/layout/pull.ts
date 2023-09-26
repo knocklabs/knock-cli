@@ -90,7 +90,7 @@ export default class EmailLayoutPull extends BaseCommand<
       },
     );
 
-    await EmailLayout.writeEmailLayoutFile(dirContext.abspath, resp.data);
+    await EmailLayout.writeWorkflowDirFromData(dirContext, resp.data);
 
     const action = dirContext.exists ? "updated" : "created";
     this.log(
@@ -124,12 +124,11 @@ export default class EmailLayoutPull extends BaseCommand<
         dirPath,
         `${emailLayoutKey}.json`,
       );
-      const abspath = path.resolve(dirPath, `${emailLayoutKey}.json`);
 
       return {
         type: "email_layout",
         key: emailLayoutKey,
-        abspath: abspath,
+        abspath: dirPath,
         exists,
       };
     }
