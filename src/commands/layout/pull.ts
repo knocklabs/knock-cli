@@ -19,6 +19,8 @@ import {
 export default class EmailLayoutPull extends BaseCommand<
   typeof EmailLayoutPull
 > {
+  static aliases = ["email-layout:pull", "email_layout:pull"];
+
   static summary =
     "Pull one or more email layouts from an environment into a local file system.";
 
@@ -31,11 +33,11 @@ export default class EmailLayoutPull extends BaseCommand<
       summary:
         "Whether to pull all email layouts from the specified environment.",
     }),
-    "email- layout - dir": CustomFlags.dirPath({
+    "layout-dir": CustomFlags.dirPath({
       summary: "The target directory path to pull all email layouts into.",
       dependsOn: ["all"],
     }),
-    "hide - uncommitted - changes": Flags.boolean({
+    "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
     force: Flags.boolean({
@@ -51,6 +53,7 @@ export default class EmailLayoutPull extends BaseCommand<
 
   async run(): Promise<void> {
     const { args, flags } = this.props;
+
     if (flags.all && args.emailLayoutKey) {
       return this.error(
         `emailLayoutKey arg \`${args.emailLayoutKey}\` cannot also be provided when using --all`,
@@ -63,6 +66,7 @@ export default class EmailLayoutPull extends BaseCommand<
   /*
    * Pull one email layout
    */
+
   async pullOneEmailLayout(): Promise<void> {
     const { flags } = this.props;
 
@@ -97,6 +101,7 @@ export default class EmailLayoutPull extends BaseCommand<
   async getEmailLayoutDirContext(): Promise<EmailLayoutDirContext> {
     const { emailLayoutKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
+
     // Inside an existing resource dir, use it if valid for the target email layout.
     if (resourceDir) {
       const target: ResourceTarget = {
@@ -104,6 +109,7 @@ export default class EmailLayoutPull extends BaseCommand<
         type: "email_layout",
         key: emailLayoutKey,
       };
+
       return ensureResourceDirForTarget(
         resourceDir,
         target,
@@ -114,16 +120,21 @@ export default class EmailLayoutPull extends BaseCommand<
     // new email layout directory in the cwd, or update it if there is one already.
     if (emailLayoutKey) {
       const dirPath = path.resolve(runCwd, emailLayoutKey);
-      const exists = await EmailLayout.isEmailLayoutDir(dirPath);
+      const exists = await EmailLayout.isEmailLayoutDir(
+        dirPath,
+        `${emailLayoutKey}.json`,
+      );
+      const abspath = path.resolve(dirPath, `${emailLayoutKey}.json`);
+
       return {
         type: "email_layout",
         key: emailLayoutKey,
-        abspath: dirPath,
+        abspath: abspath,
         exists,
       };
     }
 
     // Not in any email layout directory, nor a email layout key arg was given so error.
-    return this.error("Missing 1 required arg: emailLayoutKey");
+    return this.error("Missing 1 required arg:\nemailLayoutKey");
   }
 }

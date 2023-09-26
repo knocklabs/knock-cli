@@ -5,12 +5,13 @@ import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { EmailLayoutData } from "./types";
 
 /*
- * Write a single email layout file.
+ * Write a single email layout file in a given path.
  */
+
 export const writeEmailLayoutFile = async (
-  emailLayoutFilePath: string,
+  emailLayoutAbsPath: string,
   emailLayout: EmailLayoutData,
 ): Promise<void> =>
-  fs.outputJson(emailLayoutFilePath, JSON.parse(emailLayout.html_layout), {
+  fs.outputJson(emailLayoutAbsPath, emailLayout, {
     spaces: DOUBLE_SPACES,
   });
