@@ -6,8 +6,8 @@ import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object";
-import { withSpinner } from "@/lib/helpers/request";
-import { promptToConfirm } from "@/lib/helpers/ux";
+import { formatErrorRespMessage, isSuccessResp, withSpinner } from "@/lib/helpers/request";
+import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import {
@@ -15,6 +15,8 @@ import {
   ensureResourceDirForTarget,
   ResourceTarget,
 } from "@/lib/run-context";
+import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { ApiError } from "@/lib/helpers/error";
 
 export default class EmailLayoutPull extends BaseCommand<
   typeof EmailLayoutPull
@@ -60,12 +62,10 @@ export default class EmailLayoutPull extends BaseCommand<
       );
     }
 
-    return this.pullOneEmailLayout();
+    return flags.all ? this.pullAllEmailLayouts() : this.pullOneEmailLayout();
   }
 
-  /*
-   * Pull one email layout
-   */
+  // Pull one email layout
 
   async pullOneEmailLayout(): Promise<void> {
     const { flags } = this.props;
@@ -90,12 +90,65 @@ export default class EmailLayoutPull extends BaseCommand<
       },
     );
 
-    await EmailLayout.writeWorkflowDirFromData(dirContext, resp.data);
+    await EmailLayout.writeEmailLayoutDirFromData(dirContext, resp.data);
 
     const action = dirContext.exists ? "updated" : "created";
     this.log(
       `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath}`,
     );
+  }
+
+  // Pull all email layout
+  async pullAllEmailLayouts(): Promise<void> {
+    const { flags } = this.props;
+
+    const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
+    const targetDirCtx = flags["layout-dir"] || defaultToCwd;
+
+    const prompt = targetDirCtx.exists
+      ? `Pull latest layouts into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`
+      : `Create a new layouts directory at ${targetDirCtx.abspath}?`;
+
+    const input = flags.force || (await promptToConfirm(prompt));
+    if (!input) return;
+
+    spinner.start(`‣ Loading`);
+
+    const emailLayouts = await this.listAllEmailLayouts();
+
+    await EmailLayout.writeEmailLayoutIndexDir(targetDirCtx, emailLayouts);
+    spinner.stop();
+
+    const action = targetDirCtx.exists ? "updated" : "created";
+    this.log(
+      `‣ Successfully ${action} the layouts directory at ${targetDirCtx.abspath}`,
+    );
+  }
+
+  async listAllEmailLayouts(
+    pageParams: Partial<PageInfo> = {},
+    emailLayoutsFetchedSoFar: EmailLayout.EmailLayoutData<WithAnnotation>[] = [],
+  ): Promise<EmailLayout.EmailLayoutData<WithAnnotation>[]> {
+    const props = merge(this.props, {
+      flags: {
+        ...pageParams,
+        annotate: true,
+        limit: MAX_PAGINATION_LIMIT,
+      },
+    });
+
+    const resp = await this.apiV1.listEmailLayouts<WithAnnotation>(props)
+    if (!isSuccessResp(resp)) {
+      const message = formatErrorRespMessage(resp);
+      this.error(new ApiError(message));
+    }
+
+    const { entries, page_info: pageInfo } = resp.data;
+    const emailLayouts = [...emailLayoutsFetchedSoFar, ...entries];
+
+    return pageInfo.after
+      ? this.listAllEmailLayouts({ after: pageInfo.after }, emailLayouts)
+      : emailLayouts;
   }
 
   async getEmailLayoutDirContext(): Promise<EmailLayoutDirContext> {

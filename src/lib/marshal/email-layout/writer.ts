@@ -16,6 +16,8 @@ import { EmailLayoutDirContext } from "@/lib/run-context";
 import { ExtractionSettings, WithAnnotation } from "../shared/types";
 import { FILEPATH_MARKED_RE } from "../workflow";
 import { EmailLayoutData } from "./types";
+import { DirContext } from "@/lib/helpers/fs";
+import { isEmailLayoutDir } from "./helpers";
 
 export type EmailLayoutDirBundle = {
   [relpath: string]: string;
@@ -61,7 +63,7 @@ const toEmailLayoutJson = (
 };
 
 // Builds an email layout dir bundle and writes it into a layout directory on local file system.
-export const writeWorkflowDirFromData = async (
+export const writeEmailLayoutDirFromData = async (
   emailLayoutDirCtx: EmailLayoutDirContext,
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): Promise<void> => {
@@ -150,3 +152,46 @@ const formatExtractedFilePath = (
 
   return path.join(...paths).toLowerCase();
 };
+
+
+// This bulk write function takes the fetched email layouts from KNOCK API and writes 
+// them into a `layout` index directoy.
+
+export const writeEmailLayoutIndexDir = async (
+  indexDirCtx: DirContext,
+  emailLayouts: EmailLayoutData<WithAnnotation>[],
+): Promise<void> => {
+  const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  try {
+    if (indexDirCtx.exists) {
+      await fs.copy(indexDirCtx.abspath, backupDirPath);
+    }
+
+    const writeEmailLayoutDirPromises = emailLayouts.map(async (emailLayout) => {
+      const emailLayoutDirPath = path.resolve(indexDirCtx.abspath, emailLayout.key);
+
+      const emailLayoutDirCtx: EmailLayoutDirContext = {
+        type: "email_layout",
+        key: emailLayout.key,
+        abspath: emailLayoutDirPath,
+        exists: indexDirCtx.exists ? await isEmailLayoutDir(emailLayoutDirPath, `${emailLayout.key}.json`) : false
+      };
+
+      return writeEmailLayoutDirFromData(emailLayoutDirCtx, emailLayout)
+    });
+
+    await Promise.all(writeEmailLayoutDirPromises)
+  } catch (error) {
+    if (indexDirCtx.exists) {
+      await fs.emptyDir(indexDirCtx.abspath);
+      await fs.copy(backupDirPath, indexDirCtx.abspath);
+    } else {
+      await fs.remove(indexDirCtx.abspath);
+    }
+
+    throw error;
+  } finally {
+    // Always clean up the backup directory in the temp sandbox.
+    await fs.remove(backupDirPath);
+  }
+}
