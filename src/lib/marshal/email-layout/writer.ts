@@ -4,6 +4,7 @@ import * as fs from "fs-extra";
 import { get, set, uniqueId } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
+import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import {
   mapValuesDeep,
@@ -15,9 +16,8 @@ import { EmailLayoutDirContext } from "@/lib/run-context";
 
 import { ExtractionSettings, WithAnnotation } from "../shared/types";
 import { FILEPATH_MARKED_RE } from "../workflow";
-import { EmailLayoutData } from "./types";
-import { DirContext } from "@/lib/helpers/fs";
 import { isEmailLayoutDir } from "./helpers";
+import { EmailLayoutData } from "./types";
 
 export type EmailLayoutDirBundle = {
   [relpath: string]: string;
@@ -153,8 +153,7 @@ const formatExtractedFilePath = (
   return path.join(...paths).toLowerCase();
 };
 
-
-// This bulk write function takes the fetched email layouts from KNOCK API and writes 
+// This bulk write function takes the fetched email layouts from KNOCK API and writes
 // them into a `layout` index directoy.
 
 export const writeEmailLayoutIndexDir = async (
@@ -162,25 +161,37 @@ export const writeEmailLayoutIndexDir = async (
   emailLayouts: EmailLayoutData<WithAnnotation>[],
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+
   try {
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+      await fs.emptyDir(indexDirCtx.abspath);
     }
 
-    const writeEmailLayoutDirPromises = emailLayouts.map(async (emailLayout) => {
-      const emailLayoutDirPath = path.resolve(indexDirCtx.abspath, emailLayout.key);
+    const writeEmailLayoutDirPromises = emailLayouts.map(
+      async (emailLayout) => {
+        const emailLayoutDirPath = path.resolve(
+          indexDirCtx.abspath,
+          emailLayout.key,
+        );
 
-      const emailLayoutDirCtx: EmailLayoutDirContext = {
-        type: "email_layout",
-        key: emailLayout.key,
-        abspath: emailLayoutDirPath,
-        exists: indexDirCtx.exists ? await isEmailLayoutDir(emailLayoutDirPath, `${emailLayout.key}.json`) : false
-      };
+        const emailLayoutDirCtx: EmailLayoutDirContext = {
+          type: "email_layout",
+          key: emailLayout.key,
+          abspath: emailLayoutDirPath,
+          exists: indexDirCtx.exists
+            ? await isEmailLayoutDir(
+                emailLayoutDirPath,
+                `${emailLayout.key}.json`,
+              )
+            : false,
+        };
 
-      return writeEmailLayoutDirFromData(emailLayoutDirCtx, emailLayout)
-    });
+        return writeEmailLayoutDirFromData(emailLayoutDirCtx, emailLayout);
+      },
+    );
 
-    await Promise.all(writeEmailLayoutDirPromises)
+    await Promise.all(writeEmailLayoutDirPromises);
   } catch (error) {
     if (indexDirCtx.exists) {
       await fs.emptyDir(indexDirCtx.abspath);
@@ -194,4 +205,4 @@ export const writeEmailLayoutIndexDir = async (
     // Always clean up the backup directory in the temp sandbox.
     await fs.remove(backupDirPath);
   }
-}
+};

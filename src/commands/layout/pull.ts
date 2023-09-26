@@ -4,9 +4,15 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object";
-import { formatErrorRespMessage, isSuccessResp, withSpinner } from "@/lib/helpers/request";
+import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import {
+  formatErrorRespMessage,
+  isSuccessResp,
+  withSpinner,
+} from "@/lib/helpers/request";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
@@ -15,8 +21,6 @@ import {
   ensureResourceDirForTarget,
   ResourceTarget,
 } from "@/lib/run-context";
-import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
-import { ApiError } from "@/lib/helpers/error";
 
 export default class EmailLayoutPull extends BaseCommand<
   typeof EmailLayoutPull
@@ -66,7 +70,6 @@ export default class EmailLayoutPull extends BaseCommand<
   }
 
   // Pull one email layout
-
   async pullOneEmailLayout(): Promise<void> {
     const { flags } = this.props;
 
@@ -98,7 +101,7 @@ export default class EmailLayoutPull extends BaseCommand<
     );
   }
 
-  // Pull all email layout
+  // Pull all email layouts
   async pullAllEmailLayouts(): Promise<void> {
     const { flags } = this.props;
 
@@ -137,7 +140,7 @@ export default class EmailLayoutPull extends BaseCommand<
       },
     });
 
-    const resp = await this.apiV1.listEmailLayouts<WithAnnotation>(props)
+    const resp = await this.apiV1.listEmailLayouts<WithAnnotation>(props);
     if (!isSuccessResp(resp)) {
       const message = formatErrorRespMessage(resp);
       this.error(new ApiError(message));
