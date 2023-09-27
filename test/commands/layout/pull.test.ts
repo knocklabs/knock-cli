@@ -93,7 +93,7 @@ describe("commands/layout/pull", () => {
       .command(["layout pull", "messages"])
       .it("writes an email layout dir to the file system", () => {
         const exists = fs.pathExistsSync(
-          path.resolve(sandboxDir, "messages", "messages.json"),
+          path.resolve(sandboxDir, "messages", "layout.json"),
         );
 
         expect(exists).to.equal(true);
@@ -139,7 +139,7 @@ describe("commands/layout/pull", () => {
             sandboxDir,
             "layouts",
             "default",
-            "default.json",
+            "layout.json",
           );
           expect(fs.pathExistsSync(path1)).to.equal(true);
 
@@ -147,7 +147,7 @@ describe("commands/layout/pull", () => {
             sandboxDir,
             "layouts",
             "messages",
-            "messages.json",
+            "layout.json",
           );
           expect(fs.pathExistsSync(path2)).to.equal(true);
 
@@ -155,7 +155,7 @@ describe("commands/layout/pull", () => {
             sandboxDir,
             "layouts",
             "transactional",
-            "transactional.json",
+            "layout.json",
           );
           expect(fs.pathExistsSync(path3)).to.equal(true);
         },

@@ -177,10 +177,7 @@ export default class EmailLayoutPull extends BaseCommand<
     // new email layout directory in the cwd, or update it if there is one already.
     if (emailLayoutKey) {
       const dirPath = path.resolve(runCwd, emailLayoutKey);
-      const exists = await EmailLayout.isEmailLayoutDir(
-        dirPath,
-        `${emailLayoutKey}.json`,
-      );
+      const exists = await EmailLayout.isEmailLayoutDir(dirPath);
 
       return {
         type: "email_layout",

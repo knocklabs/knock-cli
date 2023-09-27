@@ -11,6 +11,7 @@ import { AnyObj, split } from "@/lib/helpers/object";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
 import { ExtractionSettings, WithAnnotation } from "../shared/types";
+import { LAYOUT_JSON } from "./helpers";
 import { EmailLayoutData } from "./types";
 
 export type EmailLayoutDirBundle = {
@@ -43,7 +44,7 @@ const compileExtractionSettings = (
   return map;
 };
 
-/* Sanitize the email latyout content into a format that's appropriate for reading
+/* Sanitize the email layout content into a format that's appropriate for reading
    and writing, by stripping out any annotation fields and handling readonly
    fields.
 */
@@ -79,7 +80,7 @@ export const writeEmailLayoutDirFromData = async (
     const promises = Object.entries(bundle).map(([relpath, fileContent]) => {
       const filePath = path.resolve(emailLayoutDirCtx.abspath, relpath);
 
-      return relpath === `${emailLayout.key}.json`
+      return relpath === LAYOUT_JSON
         ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
         : fs.outputFile(filePath, fileContent);
     });
@@ -130,13 +131,10 @@ const buildEmailLayoutDirBundle = (
     set(bundle, [relpath], data);
   }
 
-  // At this point the bundle contains all extractable files, so we finally add the email layout
+  // At this point the bundle contains all extractable files, so we finally add the layout
   // JSON realtive path + the file content.
-  return set(
-    bundle,
-    [`${emailLayout.key}.json`],
-    toEmailLayoutJson(emailLayout),
-  );
+
+  return set(bundle, [LAYOUT_JSON], toEmailLayoutJson(emailLayout));
 };
 
 // This bulk write function takes the fetched email layouts data KNOCK API and writes

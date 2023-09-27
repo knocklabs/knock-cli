@@ -2,6 +2,8 @@ import * as path from "node:path";
 
 import * as fs from "fs-extra";
 
+export const LAYOUT_JSON = "layout.json";
+
 export type EmailLayoutFileContext = {
   key: string;
   abspath: string;
@@ -10,23 +12,19 @@ export type EmailLayoutFileContext = {
 
 /*
  * Evaluates whether the given directory path is an email layout directory, by
- * checking for the presence of `${email_layout_key}.json` file.
+ * checking for the presence of a `layout.json` file.
  */
-export const isEmailLayoutDir = async (
-  dirPath: string,
-  emailLayoutJson: string,
-): Promise<boolean> =>
-  Boolean(await isEmailLayoutJson(dirPath, emailLayoutJson));
+export const isEmailLayoutDir = async (dirPath: string): Promise<boolean> =>
+  Boolean(await isEmailLayoutJson(dirPath));
 
 /*
- * Check for the existance of`${email_layout_key}.json` file in the directory.
+ * Check for `layout.json` file and return the file path if present.
  */
 
 export const isEmailLayoutJson = async (
   dirPath: string,
-  emailLayoutJson: string,
 ): Promise<string | undefined> => {
-  const emailLayoutJsonPath = path.resolve(dirPath, emailLayoutJson);
+  const emailLayoutJsonPath = path.resolve(dirPath, LAYOUT_JSON);
 
   const exists = await fs.pathExists(emailLayoutJsonPath);
   return exists ? emailLayoutJsonPath : undefined;
