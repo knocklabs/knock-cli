@@ -39,10 +39,10 @@ export default class EmailLayoutPull extends BaseCommand<
       summary:
         "Whether to pull all email layouts from the specified environment.",
     }),
-    "layout-dir": CustomFlags.dirPath({
+    "layouts-dir": CustomFlags.dirPath({
       summary: "The target directory path to pull all email layouts into.",
       dependsOn: ["all"],
-      aliases: ["email-layout-dir"],
+      aliases: ["email-layouts-dir"],
     }),
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
@@ -107,7 +107,7 @@ export default class EmailLayoutPull extends BaseCommand<
     const { flags } = this.props;
 
     const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags["layout-dir"] || defaultToCwd;
+    const targetDirCtx = flags["layouts-dir"] || defaultToCwd;
 
     const prompt = targetDirCtx.exists
       ? `Pull latest layouts into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`
