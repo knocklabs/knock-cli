@@ -133,7 +133,7 @@ describe("commands/layout/pull", () => {
       .stdout()
       .command(["layout pull", "--all", "--layouts-dir", "./layouts"])
       .it(
-        "writes a layout dir to the file system (+ the layout JSON file), with individual layouts dirs inside",
+        "writes a layout dir to the file system, with individual layouts dirs inside (plus a layout JSON file)",
         () => {
           const path1 = path.resolve(
             sandboxDir,

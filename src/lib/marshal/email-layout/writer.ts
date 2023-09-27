@@ -103,8 +103,8 @@ export const writeEmailLayoutDirFromData = async (
 };
 
 /* For a given email layout payload, this function builds a "email layout directoy bundle".
-   This is an object which contains an `email_layout_key.json` file and all extractable fields.
-   Those extractable fields are extracted out and added to the bundle as separate files.
+   This is an object which contains all the relative paths and its file content.
+   It includes the extractable fields, which are extracted out and added to the bundle as separate files.
 */
 const buildEmailLayoutDirBundle = (
   emailLayout: EmailLayoutData<WithAnnotation>,
@@ -130,7 +130,8 @@ const buildEmailLayoutDirBundle = (
     set(bundle, [relpath], data);
   }
 
-  // At this point the bundle contains all extractable files, so we finally add the email layout JSON file.
+  // At this point the bundle contains all extractable files, so we finally add the email layout
+  // JSON realtive path + the file content.
   return set(
     bundle,
     [`${emailLayout.key}.json`],
