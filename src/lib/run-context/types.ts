@@ -27,7 +27,7 @@ export type WorkflowDirContext = ResourceDirContextBase & {
   type: "workflow";
 };
 
-type LayoutDirContext = ResourceDirContextBase & {
+export type LayoutDirContext = ResourceDirContextBase & {
   type: "layout";
 };
 

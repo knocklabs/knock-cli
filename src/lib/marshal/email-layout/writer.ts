@@ -8,7 +8,7 @@ import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { ObjKeyOrArrayIdx, omitDeep } from "@/lib/helpers/object";
 import { AnyObj, split } from "@/lib/helpers/object";
-import { EmailLayoutDirContext } from "@/lib/run-context";
+import { LayoutDirContext } from "@/lib/run-context";
 
 import { ExtractionSettings, WithAnnotation } from "../shared/types";
 import { LAYOUT_JSON } from "./helpers";
@@ -64,7 +64,7 @@ const toEmailLayoutJson = (
    Then writes them into a layout directory on a local file system.
 */
 export const writeEmailLayoutDirFromData = async (
-  emailLayoutDirCtx: EmailLayoutDirContext,
+  emailLayoutDirCtx: LayoutDirContext,
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
@@ -158,8 +158,8 @@ export const writeEmailLayoutIndexDir = async (
           emailLayout.key,
         );
 
-        const emailLayoutDirCtx: EmailLayoutDirContext = {
-          type: "email_layout",
+        const emailLayoutDirCtx: LayoutDirContext = {
+          type: "layout",
           key: emailLayout.key,
           abspath: emailLayoutDirPath,
           exists: false,

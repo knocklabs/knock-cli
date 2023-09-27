@@ -17,7 +17,7 @@ import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import {
-  EmailLayoutDirContext,
+  LayoutDirContext,
   ensureResourceDirForTarget,
   ResourceTarget,
 } from "@/lib/run-context";
@@ -155,7 +155,7 @@ export default class EmailLayoutPull extends BaseCommand<
       : emailLayouts;
   }
 
-  async getEmailLayoutDirContext(): Promise<EmailLayoutDirContext> {
+  async getEmailLayoutDirContext(): Promise<LayoutDirContext> {
     const { emailLayoutKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
 
@@ -170,7 +170,7 @@ export default class EmailLayoutPull extends BaseCommand<
       return ensureResourceDirForTarget(
         resourceDir,
         target,
-      ) as EmailLayoutDirContext;
+      ) as LayoutDirContext;
     }
 
     // Not inside any existing email layout directory, which means either create a
