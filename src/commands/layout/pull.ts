@@ -180,7 +180,7 @@ export default class EmailLayoutPull extends BaseCommand<
       const exists = await EmailLayout.isEmailLayoutDir(dirPath);
 
       return {
-        type: "email_layout",
+        type: "layout",
         key: emailLayoutKey,
         abspath: dirPath,
         exists,
