@@ -42,7 +42,9 @@ const setupWithListLayoutsStub = (
       sinon.stub().resolves(
         factory.resp({
           data: {
-            entries: manyLayoutsAttrs.map((attrs) => factory.emailLayout(attrs)),
+            entries: manyLayoutsAttrs.map((attrs) =>
+              factory.emailLayout(attrs),
+            ),
             page_info: factory.pageInfo(),
           },
         }),
@@ -127,18 +129,34 @@ describe("commands/layout/pull", () => {
       { key: "default" },
       { key: "messages" },
       { key: "transactional" },
-    ).stdout()
+    )
+      .stdout()
       .command(["layout pull", "--all", "--layouts-dir", "./layouts"])
       .it(
         "writes a layout dir to the file system (+ the layout JSON file), with individual layouts dirs inside",
         () => {
-          const path1 = path.resolve(sandboxDir, "layouts", "default", "default.json");
+          const path1 = path.resolve(
+            sandboxDir,
+            "layouts",
+            "default",
+            "default.json",
+          );
           expect(fs.pathExistsSync(path1)).to.equal(true);
 
-          const path2 = path.resolve(sandboxDir, "layouts", "messages", "messages.json");
+          const path2 = path.resolve(
+            sandboxDir,
+            "layouts",
+            "messages",
+            "messages.json",
+          );
           expect(fs.pathExistsSync(path2)).to.equal(true);
 
-          const path3 = path.resolve(sandboxDir, "layouts", "transactional", "transactional.json");
+          const path3 = path.resolve(
+            sandboxDir,
+            "layouts",
+            "transactional",
+            "transactional.json",
+          );
           expect(fs.pathExistsSync(path3)).to.equal(true);
         },
       );
@@ -154,5 +172,4 @@ describe("commands/layout/pull", () => {
       )
       .it("throws an error");
   });
-
 });
