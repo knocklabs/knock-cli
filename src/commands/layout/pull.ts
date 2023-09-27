@@ -163,7 +163,7 @@ export default class EmailLayoutPull extends BaseCommand<
     if (resourceDir) {
       const target: ResourceTarget = {
         commandId: BaseCommand.id,
-        type: "email_layout",
+        type: "layout",
         key: emailLayoutKey,
       };
 
