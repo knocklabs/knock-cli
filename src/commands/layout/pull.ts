@@ -42,6 +42,7 @@ export default class EmailLayoutPull extends BaseCommand<
     "layout-dir": CustomFlags.dirPath({
       summary: "The target directory path to pull all email layouts into.",
       dependsOn: ["all"],
+      aliases: ["email-layout-dir"],
     }),
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",

@@ -6,29 +6,22 @@ import { get, set, uniqueId } from "lodash";
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
-import {
-  mapValuesDeep,
-  ObjKeyOrArrayIdx,
-  omitDeep,
-} from "@/lib/helpers/object";
+import { ObjKeyOrArrayIdx, omitDeep } from "@/lib/helpers/object";
 import { AnyObj, split } from "@/lib/helpers/object";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
 import { ExtractionSettings, WithAnnotation } from "../shared/types";
-import { FILEPATH_MARKED_RE } from "../workflow";
-import { isEmailLayoutDir } from "./helpers";
 import { EmailLayoutData } from "./types";
 
 export type EmailLayoutDirBundle = {
   [relpath: string]: string;
 };
-/*
- * Sanitize the email latyout content into a format that's appropriate for reading
- * and writing, by stripping out any annotation fields and handling readonly
- * fields.
- */
+
 type CompiledExtractionSettings = Map<ObjKeyOrArrayIdx[], ExtractionSettings>;
 
+/* Traverse a given email layout data and compile extraction settings of every extractable
+   field into a sorted map.
+*/
 const compileExtractionSettings = (
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): CompiledExtractionSettings => {
@@ -50,6 +43,10 @@ const compileExtractionSettings = (
   return map;
 };
 
+/* Sanitize the email latyout content into a format that's appropriate for reading
+   and writing, by stripping out any annotation fields and handling readonly
+   fields.
+*/
 const toEmailLayoutJson = (
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): AnyObj => {
@@ -62,14 +59,16 @@ const toEmailLayoutJson = (
   return omitDeep(emailLayoutjson, ["__annotation"]);
 };
 
-// Builds an email layout dir bundle and writes it into a layout directory on local file system.
+/* Builds an email layout dir bundle, which consist of the email layout JSON + the extractable files.
+   Then writes them into a layout directory on a local file system.
+*/
 export const writeEmailLayoutDirFromData = async (
   emailLayoutDirCtx: EmailLayoutDirContext,
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
-
   const bundle = buildEmailLayoutDirBundle(emailLayout);
+
   try {
     // We store a backup in case there's an error.
     if (emailLayoutDirCtx.exists) {
@@ -84,6 +83,7 @@ export const writeEmailLayoutDirFromData = async (
         ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
         : fs.outputFile(filePath, fileContent);
     });
+
     await Promise.all(promises);
   } catch (error) {
     // In case of any error, wipe the target directory that is likely in a bad
@@ -102,40 +102,35 @@ export const writeEmailLayoutDirFromData = async (
   }
 };
 
-// For a given email layout payload, this function builds an "layout directoy bundle".
-// This is an object which contains an `email_layout_key.json` file and all extractable fields.
-// Those extractable fields are extracted out and added to the bundle as separate files.
+/* For a given email layout payload, this function builds a "email layout directoy bundle".
+   This is an object which contains an `email_layout_key.json` file and all extractable fields.
+   Those extractable fields are extracted out and added to the bundle as separate files.
+*/
 const buildEmailLayoutDirBundle = (
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): EmailLayoutDirBundle => {
   const bundle: EmailLayoutDirBundle = {};
 
-  // A compiled map of extraction settings of every field in the email layout
+  // A map of extraction settings of every field in the email layout
   const compiledExtractionSettings = compileExtractionSettings(emailLayout);
 
   // Iterate through each extractable field, determine whether we need to
   // extract the field content, and if so, perform the
   // extraction.
-  for (const [objPathParts, extractionSettings] of compiledExtractionSettings) {
+  for (const [objPath, extractionSettings] of compiledExtractionSettings) {
     const { default: extractByDefault, file_ext: fileExt } = extractionSettings;
+
     if (!extractByDefault) continue;
+
     // Extract the field and its content
-    let data = get(emailLayout, objPathParts);
-    const relpath = formatExtractedFilePath(objPathParts, fileExt);
-
-    data = mapValuesDeep(data, (value, key) => {
-      if (!FILEPATH_MARKED_RE.test(key)) return value;
-
-      const rebaseRootDir = path.dirname(relpath);
-      const rebasedFilePath = path.relative(rebaseRootDir, value);
-
-      return rebasedFilePath;
-    });
+    const data = get(emailLayout, objPath);
+    const fileName = objPath.pop();
+    const relpath = `${fileName}.${fileExt}`;
 
     set(bundle, [relpath], data);
   }
 
-  // At this point the bundles contains all extractable fields, so we finally add the email layout JSON file.
+  // At this point the bundle contains all extractable files, so we finally add the email layout JSON file.
   return set(
     bundle,
     [`${emailLayout.key}.json`],
@@ -143,19 +138,8 @@ const buildEmailLayoutDirBundle = (
   );
 };
 
-const formatExtractedFilePath = (
-  objPathParts: ObjKeyOrArrayIdx[],
-  fileExt: string,
-): string => {
-  const fileName = objPathParts.pop();
-  const paths = [`${fileName}.${fileExt}`];
-
-  return path.join(...paths).toLowerCase();
-};
-
-// This bulk write function takes the fetched email layouts from KNOCK API and writes
-// them into a `layout` index directoy.
-
+// This bulk write function takes the fetched email layouts data KNOCK API and writes
+// them into a directory.
 export const writeEmailLayoutIndexDir = async (
   indexDirCtx: DirContext,
   emailLayouts: EmailLayoutData<WithAnnotation>[],
@@ -179,12 +163,7 @@ export const writeEmailLayoutIndexDir = async (
           type: "email_layout",
           key: emailLayout.key,
           abspath: emailLayoutDirPath,
-          exists: indexDirCtx.exists
-            ? await isEmailLayoutDir(
-                emailLayoutDirPath,
-                `${emailLayout.key}.json`,
-              )
-            : false,
+          exists: false,
         };
 
         return writeEmailLayoutDirFromData(emailLayoutDirCtx, emailLayout);
