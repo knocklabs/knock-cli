@@ -1,16 +1,17 @@
 import path from "node:path";
 
 import * as fs from "fs-extra";
-import { get, set, uniqueId } from "lodash";
+import { get, set, uniqueId, unset } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
-import { ObjKeyOrArrayIdx, omitDeep } from "@/lib/helpers/object";
+import { ObjKeyOrArrayIdx, ObjPath, omitDeep } from "@/lib/helpers/object";
 import { AnyObj, split } from "@/lib/helpers/object";
 import { LayoutDirContext } from "@/lib/run-context";
 
 import { ExtractionSettings, WithAnnotation } from "../shared/types";
+import { FILEPATH_MARKER } from "../workflow";
 import { LAYOUT_JSON } from "./helpers";
 import { EmailLayoutData } from "./types";
 
@@ -119,16 +120,22 @@ const buildEmailLayoutDirBundle = (
   // extract the field content, and if so, perform the
   // extraction.
   for (const [objPath, extractionSettings] of compiledExtractionSettings) {
+    const objPathStr = ObjPath.stringify(objPath);
     const { default: extractByDefault, file_ext: fileExt } = extractionSettings;
 
     if (!extractByDefault) continue;
-
-    // Extract the field and its content
+    // By this point, we have a field where we need to extract its content.
     const data = get(emailLayout, objPath);
     const fileName = objPath.pop();
     const relpath = `${fileName}.${fileExt}`;
 
+    // Perform the extraction by adding the content and its file path to the
+    // bundle for writing to the file system later. Then replace the field
+    // content with the extracted file path and mark the field as extracted
+    // with @ suffix.
     set(bundle, [relpath], data);
+    set(emailLayout, `${objPathStr}${FILEPATH_MARKER}`, relpath);
+    unset(emailLayout, objPathStr);
   }
 
   // At this point the bundle contains all extractable files, so we finally add the layout
