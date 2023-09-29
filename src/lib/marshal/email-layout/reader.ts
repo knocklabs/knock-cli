@@ -56,7 +56,7 @@ export const readAllForCommandTarget = async (
 
   switch (targetType) {
     case "layoutDir": {
-      return readLayoutsDirs([targetCtx], opts);
+      return readEmailLayoutsDirs([targetCtx], opts);
     }
 
     case "layoutsIndexDir": {
@@ -79,7 +79,7 @@ export const readAllForCommandTarget = async (
         (layoutDirCtx) => layoutDirCtx.exists,
       );
 
-      return readLayoutsDirs(layoutDirCtxs, opts);
+      return readEmailLayoutsDirs(layoutDirCtxs, opts);
     }
 
     default:
@@ -91,7 +91,7 @@ export const readAllForCommandTarget = async (
  * For the given list of layout directory contexts, read each layout dir and
  * return layout directory data.
  */
-const readLayoutsDirs = async (
+const readEmailLayoutsDirs = async (
   layoutDirCtxs: EmailLayoutDirContext[],
   opts: ReadLayoutDirOpts = {},
 ): Promise<[EmailLayoutDirData[], SourceError[]]> => {
@@ -100,7 +100,7 @@ const readLayoutsDirs = async (
 
   for (const layoutDirCtx of layoutDirCtxs) {
     // eslint-disable-next-line no-await-in-loop
-    const [layout, readErrors] = await readLayoutDir(layoutDirCtx, opts);
+    const [layout, readErrors] = await readEmailLayoutDir(layoutDirCtx, opts);
 
     if (readErrors.length > 0) {
       const layoutJsonPath = path.resolve(layoutDirCtx.abspath, LAYOUT_JSON);
@@ -120,7 +120,7 @@ const readLayoutsDirs = async (
  * The main read function that takes the layout directory context, then reads
  * the layout json from the file system and returns the layout data obj.
  */
-export const readLayoutDir = async (
+export const readEmailLayoutDir = async (
   layoutDirCtx: EmailLayoutDirContext,
   opts: ReadLayoutDirOpts = {},
 ): Promise<ParseJsonResult | JoinExtractedFilesResult> => {

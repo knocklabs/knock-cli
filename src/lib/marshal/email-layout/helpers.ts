@@ -4,7 +4,7 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
-import { LayoutDirContext, RunContext } from "@/lib/run-context";
+import { EmailLayoutDirContext, RunContext } from "@/lib/run-context";
 
 export const LAYOUT_JSON = "layout.json";
 
@@ -14,8 +14,9 @@ export type EmailLayoutFileContext = {
   exists: boolean;
 };
 
-export const emailLayoutJsonPath = (layoutDirCtx: LayoutDirContext): string =>
-  path.resolve(layoutDirCtx.abspath, LAYOUT_JSON);
+export const emailLayoutJsonPath = (
+  layoutDirCtx: EmailLayoutDirContext,
+): string => path.resolve(layoutDirCtx.abspath, LAYOUT_JSON);
 
 /*
  * Evaluates whether the given directory path is an email layout directory, by
@@ -51,7 +52,7 @@ type CommandTargetProps = {
 };
 type LayoutDirTarget = {
   type: "layoutDir";
-  context: LayoutDirContext;
+  context: EmailLayoutDirContext;
 };
 type LayoutsIndexDirTarget = {
   type: "layoutsIndexDir";
@@ -69,7 +70,7 @@ export const ensureValidCommandTarget = async (
 
   // If the target resource is a different type than the current resource dir
   // type, error out.
-  if (resourceDirCtx && resourceDirCtx.type !== "layout") {
+  if (resourceDirCtx && resourceDirCtx.type !== "email_layout") {
     return ux.error(
       `Cannot run ${commandId} inside a ${resourceDirCtx.type} directory`,
     );
@@ -109,8 +110,8 @@ export const ensureValidCommandTarget = async (
       ? resourceDirCtx.abspath
       : path.resolve(runCwd, args.emailLayoutKey);
 
-    const layoutDirCtx: LayoutDirContext = {
-      type: "layout",
+    const layoutDirCtx: EmailLayoutDirContext = {
+      type: "email_layout",
       key: args.emailLayoutKey,
       abspath: targetDirPath,
       exists: await isEmailLayoutDir(targetDirPath),

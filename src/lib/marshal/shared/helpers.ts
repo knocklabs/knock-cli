@@ -33,6 +33,7 @@ export const readExtractedFileSync = (
 ): ReadExtractedFileResult => {
   // Check if the file actually exists at the given file path.
   const abspath = path.resolve(dirCtx.abspath, relpath);
+
   const exists = fs.pathExistsSync(abspath);
   if (!exists) {
     const error = new JsonDataError(
