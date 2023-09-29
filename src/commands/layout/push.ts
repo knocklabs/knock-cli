@@ -2,22 +2,14 @@ import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import {
-  formatError,
-  formatErrors,
-  SourceError,
-} from "@/lib/helpers/error";
+import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object";
-import {
-  formatErrorRespMessage,
-  isSuccessResp,
-} from "@/lib/helpers/request";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
-
 
 export default class EmailLayoutPush extends BaseCommand<
   typeof EmailLayoutPush
@@ -66,7 +58,7 @@ export default class EmailLayoutPush extends BaseCommand<
       this.runContext,
     );
 
-    const [layouts, readErrors] = await EmailLayout.readAllCommandTarget(
+    const [layouts, readErrors] = await EmailLayout.readAllForCommandTarget(
       target,
       { withExtractedFiles: true },
     );
@@ -112,7 +104,7 @@ export default class EmailLayoutPush extends BaseCommand<
 
     this.log(
       `‣ Successfully ${actioned} ${layouts.length} layout(s):\n` +
-      indentString(layoutKeys.join("\n"), 4),
+        indentString(layoutKeys.join("\n"), 4),
     );
   }
 }

@@ -1,11 +1,21 @@
 import * as path from "node:path";
 
+import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
+
 import { DirContext } from "@/lib/helpers/fs";
 import { LayoutDirContext, RunContext } from "@/lib/run-context";
-import { ux } from "@oclif/core";
 
 export const LAYOUT_JSON = "layout.json";
+
+export type EmailLayoutFileContext = {
+  key: string;
+  abspath: string;
+  exists: boolean;
+};
+
+export const emailLayoutJsonPath = (layoutDirCtx: LayoutDirContext): string =>
+  path.resolve(layoutDirCtx.abspath, LAYOUT_JSON);
 
 /*
  * Evaluates whether the given directory path is an email layout directory, by
@@ -25,7 +35,6 @@ export const lsEmailLayoutJson = async (
   const exists = await fs.pathExists(emailLayoutJsonPath);
   return exists ? emailLayoutJsonPath : undefined;
 };
-
 
 /*
  * Validate the provided args and flags with the current run context, to first
@@ -58,7 +67,6 @@ export const ensureValidCommandTarget = async (
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
 
-
   // If the target resource is a different type than the current resource dir
   // type, error out.
   if (resourceDirCtx && resourceDirCtx.type !== "layout") {
@@ -80,6 +88,7 @@ export const ensureValidCommandTarget = async (
     if (resourceDirCtx && !flags["layouts-dir"]) {
       return ux.error("Missing required flag layouts-dir");
     }
+
     // Targeting all layout dirs in the layouts index dir.
     // TODO: Default to the knock project config first if present before cwd.
     const defaultToCwd = { abspath: runCwd, exists: true };
@@ -87,6 +96,7 @@ export const ensureValidCommandTarget = async (
 
     return { type: "layoutsIndexDir", context: indexDirCtx };
   }
+
   // Email layout key arg is given, which means no --all flag.
   if (args.emailLayoutKey) {
     if (resourceDirCtx && resourceDirCtx.key !== args.emailLayoutKey) {
@@ -115,5 +125,5 @@ export const ensureValidCommandTarget = async (
     return { type: "layoutDir", context: resourceDirCtx };
   }
 
-  return ux.error("Missing 1 required arg:\emailLayoutKey");
-}
+  return ux.error("Missing 1 required arg:emailLayoutKey");
+};

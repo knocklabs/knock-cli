@@ -1,9 +1,10 @@
 import path from "node:path";
 
+import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 import { hasIn, set } from "lodash";
 
-import { JsonDataError } from "@/lib/helpers/error";
+import { formatErrors, JsonDataError, SourceError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
 import { AnyObj, mapValuesDeep, ObjPath, omitDeep } from "@/lib/helpers/object";
 import {
@@ -13,9 +14,19 @@ import {
 } from "@/lib/marshal/shared/helpers";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
-import { LAYOUT_JSON, lsEmailLayoutJson } from "./helpers";
+import {
+  isEmailLayoutDir,
+  LAYOUT_JSON,
+  LayoutCommandTarget,
+  lsEmailLayoutJson,
+} from "./helpers";
 
 type JoinExtractedFilesResult = [AnyObj, JsonDataError[]];
+
+// Hydrated layout directory context with its content.
+export type EmailLayoutDirData = EmailLayoutDirContext & {
+  content: AnyObj;
+};
 
 type ReadLayoutDirOpts = {
   withExtractedFiles?: boolean;
@@ -23,10 +34,93 @@ type ReadLayoutDirOpts = {
 };
 
 /*
+
+ * List and read all layout directories found for the given command target.
+ *
+ * Note, it assumes the valid command target.
+ */
+export const readAllForCommandTarget = async (
+  target: LayoutCommandTarget,
+  opts: ReadLayoutDirOpts = {},
+): Promise<[EmailLayoutDirData[], SourceError[]]> => {
+  const { type: targetType, context: targetCtx } = target;
+
+  if (!targetCtx.exists) {
+    const subject =
+      targetType === "layoutDir"
+        ? "a layout directory at"
+        : "layout directories in";
+
+    return ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
+  }
+
+  switch (targetType) {
+    case "layoutDir": {
+      return readLayoutsDirs([targetCtx], opts);
+    }
+
+    case "layoutsIndexDir": {
+      const dirents = await fs.readdir(targetCtx.abspath, {
+        withFileTypes: true,
+      });
+
+      const promises = dirents.map(async (dirent) => {
+        const abspath = path.resolve(targetCtx.abspath, dirent.name);
+        const layoutDirCtx: EmailLayoutDirContext = {
+          type: "email_layout",
+          key: dirent.name,
+          abspath,
+          exists: await isEmailLayoutDir(abspath),
+        };
+        return layoutDirCtx;
+      });
+
+      const layoutDirCtxs = (await Promise.all(promises)).filter(
+        (layoutDirCtx) => layoutDirCtx.exists,
+      );
+
+      return readLayoutsDirs(layoutDirCtxs, opts);
+    }
+
+    default:
+      throw new Error(`Invalid layout command target: ${target}`);
+  }
+};
+
+/*
+ * For the given list of layout directory contexts, read each layout dir and
+ * return layout directory data.
+ */
+const readLayoutsDirs = async (
+  layoutDirCtxs: EmailLayoutDirContext[],
+  opts: ReadLayoutDirOpts = {},
+): Promise<[EmailLayoutDirData[], SourceError[]]> => {
+  const layouts: EmailLayoutDirData[] = [];
+  const errors: SourceError[] = [];
+
+  for (const layoutDirCtx of layoutDirCtxs) {
+    // eslint-disable-next-line no-await-in-loop
+    const [layout, readErrors] = await readLayoutDir(layoutDirCtx, opts);
+
+    if (readErrors.length > 0) {
+      const layoutJsonPath = path.resolve(layoutDirCtx.abspath, LAYOUT_JSON);
+
+      const e = new SourceError(formatErrors(readErrors), layoutJsonPath);
+      errors.push(e);
+      continue;
+    }
+
+    layouts.push({ ...layoutDirCtx, content: layout! });
+  }
+
+  return [layouts, errors];
+};
+
+/*
  * The main read function that takes the layout directory context, then reads
  * the layout json from the file system and returns the layout data obj.
  */
-export const readEmailLayoutDir = async (
+export const readLayoutDir = async (
   layoutDirCtx: EmailLayoutDirContext,
   opts: ReadLayoutDirOpts = {},
 ): Promise<ParseJsonResult | JoinExtractedFilesResult> => {
@@ -40,6 +134,7 @@ export const readEmailLayoutDir = async (
   if (!layoutJsonPath) throw new Error(`${abspath} is not a layout directory`);
 
   const result = await readJson(layoutJsonPath);
+
   if (!result[0]) return result;
 
   let [layoutJson] = result;
@@ -97,6 +192,7 @@ const joinExtractedFiles = async (
     }
 
     // By this point we have a valid extracted file path, so attempt to read the file.
+
     const [content, readExtractedFileError] = readExtractedFileSync(
       relpath,
       layoutDirCtx,
