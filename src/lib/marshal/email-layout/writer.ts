@@ -22,7 +22,7 @@ export type EmailLayoutDirBundle = {
 type CompiledExtractionSettings = Map<ObjKeyOrArrayIdx[], ExtractionSettings>;
 
 /* Traverse a given email layout data and compile extraction settings of every extractable
-   field into a sorted map.
+ * field into a sorted map.
 */
 const compileExtractionSettings = (
   emailLayout: EmailLayoutData<WithAnnotation>,
@@ -46,8 +46,8 @@ const compileExtractionSettings = (
 };
 
 /* Sanitize the email layout content into a format that's appropriate for reading
-   and writing, by stripping out any annotation fields and handling readonly
-   fields.
+ * and writing, by stripping out any annotation fields and handling readonly
+ * fields.
 */
 const toEmailLayoutJson = (
   emailLayout: EmailLayoutData<WithAnnotation>,
@@ -62,7 +62,7 @@ const toEmailLayoutJson = (
 };
 
 /* Builds an email layout dir bundle, which consist of the email layout JSON + the extractable files.
-   Then writes them into a layout directory on a local file system.
+ * Then writes them into a layout directory on a local file system.
 */
 export const writeEmailLayoutDirFromData = async (
   emailLayoutDirCtx: EmailLayoutDirContext,
@@ -105,8 +105,8 @@ export const writeEmailLayoutDirFromData = async (
 };
 
 /* For a given email layout payload, this function builds a "email layout directoy bundle".
-   This is an object which contains all the relative paths and its file content.
-   It includes the extractable fields, which are extracted out and added to the bundle as separate files.
+ * This is an object which contains all the relative paths and its file content.
+ * It includes the extractable fields, which are extracted out and added to the bundle as separate files.
 */
 const buildEmailLayoutDirBundle = (
   emailLayout: EmailLayoutData<WithAnnotation>,
