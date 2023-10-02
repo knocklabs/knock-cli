@@ -20,7 +20,6 @@ export const isEmailLayoutDir = async (dirPath: string): Promise<boolean> =>
 /*
  * Check for `layout.json` file and return the file path if present.
  */
-
 export const isEmailLayoutJson = async (
   dirPath: string,
 ): Promise<string | undefined> => {
