@@ -26,6 +26,17 @@ const evaluateRecursively = async (
     };
   }
 
+  // Check if we are inside a layout directory, and if so update the context.
+  const isLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
+  if (!ctx.resourceDir && isLayoutDir) {
+    ctx.resourceDir = {
+      type: "layout",
+      key: path.basename(currDir),
+      abspath: currDir,
+      exists: true,
+    };
+  }
+
   // NOTE: Must keep this check as last in the order of directory-type checks
   // since the `isTranslationDir` only checks that the directory name is a
   // valid locale name.
@@ -33,17 +44,6 @@ const evaluateRecursively = async (
   if (!ctx.resourceDir && isTranslationDir) {
     ctx.resourceDir = {
       type: "translation",
-      key: path.basename(currDir),
-      abspath: currDir,
-      exists: true,
-    };
-  }
-
-  // Check if we are inside a layout directory, and if so update the context.
-  const isLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
-  if (!ctx.resourceDir && isLayoutDir) {
-    ctx.resourceDir = {
-      type: "layout",
       key: path.basename(currDir),
       abspath: currDir,
       exists: true,
