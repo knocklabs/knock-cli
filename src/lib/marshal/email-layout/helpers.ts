@@ -4,12 +4,6 @@ import * as fs from "fs-extra";
 
 export const LAYOUT_JSON = "layout.json";
 
-export type EmailLayoutFileContext = {
-  key: string;
-  abspath: string;
-  exists: boolean;
-};
-
 /*
  * Evaluates whether the given directory path is an email layout directory, by
  * checking for the presence of a `layout.json` file.
