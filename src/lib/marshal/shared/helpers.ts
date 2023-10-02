@@ -51,7 +51,7 @@ export const readExtractedFileSync = (
   if (liquidParseError) {
     const error = new JsonDataError(
       `points to a file that contains invalid liquid syntax (${relpath})\n\n` +
-        formatErrors([liquidParseError], { indentBy: 2 }),
+      formatErrors([liquidParseError], { indentBy: 2 }),
       objPathToFieldStr,
     );
 
@@ -70,7 +70,7 @@ export const readExtractedFileSync = (
   if (jsonParseErrors.length > 0) {
     const error = new JsonDataError(
       `points to a file with invalid content (${relpath})\n\n` +
-        formatErrors(jsonParseErrors, { indentBy: 2 }),
+      formatErrors(jsonParseErrors, { indentBy: 2 }),
       objPathToFieldStr,
     );
 
