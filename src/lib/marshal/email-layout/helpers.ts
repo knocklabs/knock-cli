@@ -15,12 +15,12 @@ export type EmailLayoutFileContext = {
  * checking for the presence of a `layout.json` file.
  */
 export const isEmailLayoutDir = async (dirPath: string): Promise<boolean> =>
-  Boolean(await isEmailLayoutJson(dirPath));
+  Boolean(await lsEmailLayoutJson(dirPath));
 
 /*
  * Check for `layout.json` file and return the file path if present.
  */
-export const isEmailLayoutJson = async (
+export const lsEmailLayoutJson = async (
   dirPath: string,
 ): Promise<string | undefined> => {
   const emailLayoutJsonPath = path.resolve(dirPath, LAYOUT_JSON);
