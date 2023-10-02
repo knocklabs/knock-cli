@@ -30,7 +30,7 @@ const evaluateRecursively = async (
   const isLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
   if (!ctx.resourceDir && isLayoutDir) {
     ctx.resourceDir = {
-      type: "layout",
+      type: "email_layout",
       key: path.basename(currDir),
       abspath: currDir,
       exists: true,

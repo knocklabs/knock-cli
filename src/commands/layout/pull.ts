@@ -18,7 +18,7 @@ import * as EmailLayout from "@/lib/marshal/email-layout";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import {
   ensureResourceDirForTarget,
-  LayoutDirContext,
+  EmailLayoutDirContext,
   ResourceTarget,
 } from "@/lib/run-context";
 
@@ -155,7 +155,7 @@ export default class EmailLayoutPull extends BaseCommand<
       : emailLayouts;
   }
 
-  async getEmailLayoutDirContext(): Promise<LayoutDirContext> {
+  async getEmailLayoutDirContext(): Promise<EmailLayoutDirContext> {
     const { emailLayoutKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
 
@@ -163,14 +163,14 @@ export default class EmailLayoutPull extends BaseCommand<
     if (resourceDir) {
       const target: ResourceTarget = {
         commandId: BaseCommand.id,
-        type: "layout",
+        type: "email_layout",
         key: emailLayoutKey,
       };
 
       return ensureResourceDirForTarget(
         resourceDir,
         target,
-      ) as LayoutDirContext;
+      ) as EmailLayoutDirContext;
     }
 
     // Not inside any existing email layout directory, which means either create a
@@ -180,7 +180,7 @@ export default class EmailLayoutPull extends BaseCommand<
       const exists = await EmailLayout.isEmailLayoutDir(dirPath);
 
       return {
-        type: "layout",
+        type: "email_layout",
         key: emailLayoutKey,
         abspath: dirPath,
         exists,
