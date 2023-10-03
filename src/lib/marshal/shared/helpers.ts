@@ -78,3 +78,50 @@ export const readExtractedFileSync = (
 
   return [content!, undefined];
 };
+
+/*
+ * Validate the file path format of an extracted field. The file path must be:
+ *
+ * 1) Expressed as a relative path.
+ *
+ *    For exmaple:
+ *      subject@: "email_1/subject.html"              // GOOD
+ *      subject@: "./email_1/subject.html"            // GOOD
+ *      subject@: "/workflow-x/email_1/subject.html"  // BAD
+ *
+ * 2) The resolved path must be contained inside the directory
+ *
+ *    For exmaple (workflow-y is a different workflow dir in this example):
+ *      subject@: "./email_1/subject.html"              // GOOD
+ *      subject@: "../workflow-y/email_1/subject.html"  // BAD
+ *
+ * Note: does not validate the presence of the file nor the uniqueness of the
+ * file path.
+ *
+ * Options:
+ * - withAbsolutePaths: it will return non absoulte paths as valid.
+ *   For example:
+ *     html_layout@: "html_layout.html"
+ *
+ */
+type CheckValidExtractedFilePathOptions = {
+  withAbsolutePaths?: boolean;
+};
+
+export const checkIfValidExtractedFilePathFormat = (
+  relpath: unknown,
+  sourceFileAbspath: string,
+  opts: CheckValidExtractedFilePathOptions = {},
+): boolean => {
+  const { withAbsolutePaths = false } = opts;
+  if (typeof relpath !== "string") return false;
+  // If the option for allowing absolute paths was passed, and the path is indeed absolute, then it's valid.
+  if (withAbsolutePaths && !path.isAbsolute(relpath)) return true;
+
+  if (path.isAbsolute(relpath)) return false;
+
+  const extractedFileAbspath = path.resolve(sourceFileAbspath, relpath);
+  const pathDiff = path.relative(sourceFileAbspath, extractedFileAbspath);
+
+  return !pathDiff.startsWith("..");
+};

@@ -72,7 +72,7 @@ export const writeEmailLayoutDirFromData = async (
   // If the layout directory exists on the file system (i.e. previously
   // pulled before), then read the layout file to use as a reference.
   const [localEmailLayout] = emailLayoutDirCtx.exists
-    ? await readEmailLayoutDir(emailLayoutDirCtx)
+    ? await readEmailLayoutDir(emailLayoutDirCtx, { withExtractedFiles: true })
     : [];
 
   const bundle = buildEmailLayoutDirBundle(remoteEmailLayout, localEmailLayout);

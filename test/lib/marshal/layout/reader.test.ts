@@ -8,12 +8,68 @@ import { sandboxDir } from "@/lib/helpers/const";
 import { JsonDataError } from "@/lib/helpers/error";
 import { LAYOUT_JSON } from "@/lib/marshal/email-layout";
 import { readEmailLayoutDir } from "@/lib/marshal/email-layout/reader";
-import { readExtractedFileSync } from "@/lib/marshal/shared/helpers";
+import {
+  checkIfValidExtractedFilePathFormat,
+  readExtractedFileSync,
+} from "@/lib/marshal/shared/helpers";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
 const currCwd = process.cwd();
 
 describe("lib/marshal/layout/reader", () => {
+  describe("checkIfValidExtractedFilePathFormat", () => {
+    const emailLayoutDirCtx = {
+      type: "email_layout",
+      key: "transactional",
+      abspath: "/layouts/transactional",
+      exists: true,
+    } as EmailLayoutDirContext;
+
+    describe("given an absolute path", () => {
+      it("returns true as it's valid", () => {
+        const abspath = "html_layout.html";
+
+        const result = checkIfValidExtractedFilePathFormat(
+          abspath,
+          emailLayoutDirCtx.abspath,
+          { withAbsolutePaths: true },
+        );
+
+        expect(result).to.equal(true);
+      });
+    });
+
+    describe("given an relative path that resolves outside the layouts dir", () => {
+      it("returns false as it is invalid", () => {
+        const relpath = "../foo";
+
+        const result = checkIfValidExtractedFilePathFormat(
+          relpath,
+          emailLayoutDirCtx.abspath,
+        );
+
+        expect(result).to.equal(false);
+      });
+    });
+
+    describe("given an relative path that resolves inside the layout dir", () => {
+      it("returns true as it is valid", () => {
+        const relpath1 = "text-layouts/text_layout.txt";
+        const result1 = checkIfValidExtractedFilePathFormat(
+          relpath1,
+          emailLayoutDirCtx.abspath,
+        );
+        expect(result1).to.equal(true);
+
+        const relpath2 = "./text-layouts/text_layout.txt";
+        const result2 = checkIfValidExtractedFilePathFormat(
+          relpath2,
+          emailLayoutDirCtx.abspath,
+        );
+        expect(result2).to.equal(true);
+      });
+    });
+  });
   describe("readExtractedFileSync", () => {
     const emailLayoutDirCtx: EmailLayoutDirContext = {
       type: "email_layout",

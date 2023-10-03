@@ -14,6 +14,7 @@ import {
   omitDeep,
 } from "@/lib/helpers/object";
 import {
+  checkIfValidExtractedFilePathFormat,
   FILEPATH_MARKED_RE,
   readExtractedFileSync,
 } from "@/lib/marshal/shared/helpers";
@@ -34,38 +35,6 @@ export type WorkflowDirData = WorkflowDirContext & {
 // For now we support up to two levels of content extraction in workflow.json.
 // (e.g. workflow.json, then visual_blocks.json)
 const MAX_EXTRACTION_LEVEL = 2;
-
-/*
- * Validate the file path format of an extracted field. The file path must be:
- *
- * 1) Expressed as a relative path.
- *
- *    For exmaple:
- *      subject@: "email_1/subject.html"              // GOOD
- *      subject@: "./email_1/subject.html"            // GOOD
- *      subject@: "/workflow-x/email_1/subject.html"  // BAD
- *
- * 2) The resolved path must be contained inside the workflow directory
- *
- *    For exmaple (workflow-y is a different workflow dir in this example):
- *      subject@: "./email_1/subject.html"              // GOOD
- *      subject@: "../workflow-y/email_1/subject.html"  // BAD
- *
- * Note: does not validate the presence of the file nor the uniqueness of the
- * file path.
- */
-const checkIfValidExtractedFilePathFormat = (
-  relpath: unknown,
-  sourceFileAbspath: string,
-): boolean => {
-  if (typeof relpath !== "string") return false;
-  if (path.isAbsolute(relpath)) return false;
-
-  const extractedFileAbspath = path.resolve(sourceFileAbspath, relpath);
-  const pathDiff = path.relative(sourceFileAbspath, extractedFileAbspath);
-
-  return !pathDiff.startsWith("..");
-};
 
 /*
  * Validate the extracted file path based on its format and uniqueness (but not
@@ -99,7 +68,6 @@ const validateExtractedFilePath = (
   // Keep track of all the valid extracted file paths that have been seen, so
   // we can validate each file path's uniqueness as we traverse.
   uniqueFilePaths[val] = true;
-
   return undefined;
 };
 
@@ -352,6 +320,3 @@ export const readAllForCommandTarget = async (
       throw new Error(`Invalid workflow command target: ${target}`);
   }
 };
-
-// Exported for tests.
-export { checkIfValidExtractedFilePathFormat };
