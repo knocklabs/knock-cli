@@ -4,13 +4,12 @@ import { expect } from "@oclif/test";
 import * as fs from "fs-extra";
 import { get } from "lodash";
 
-import { xpath } from "@/../test/support";
 import { sandboxDir } from "@/lib/helpers/const";
 import { JsonDataError } from "@/lib/helpers/error";
 import { LAYOUT_JSON } from "@/lib/marshal/email-layout";
+import { readEmailLayoutDir } from "@/lib/marshal/email-layout/reader";
 import { readExtractedFileSync } from "@/lib/marshal/shared/helpers";
 import { EmailLayoutDirContext } from "@/lib/run-context";
-import { readEmailLayoutDir } from "@/lib/marshal/email-layout/reader";
 
 const currCwd = process.cwd();
 
@@ -129,14 +128,15 @@ describe("lib/marshal/layout/reader", () => {
       fs.removeSync(sandboxDir);
     });
 
-
     describe("by default without any opts", () => {
       it("reads layout.json without the readonly field and extracted files joined", async () => {
         const [layout] = await readEmailLayoutDir(emailLayoutDirCtx);
 
         expect(get(layout, ["name"])).to.equal("Transactional");
         expect(get(layout, ["html_layout@"])).to.equal("html_layout.html");
-        expect(get(layout, ["text_layout@"])).to.equal("text-layout-examples/text_layout.txt");
+        expect(get(layout, ["text_layout@"])).to.equal(
+          "text-layout-examples/text_layout.txt",
+        );
       });
     });
 
@@ -148,13 +148,15 @@ describe("lib/marshal/layout/reader", () => {
 
         expect(get(layout, ["name"])).to.equal("Transactional");
         expect(get(layout, ["html_layout@"])).to.equal("html_layout.html");
-        expect(get(layout, ["text_layout@"])).to.equal("text-layout-examples/text_layout.txt");
+        expect(get(layout, ["text_layout@"])).to.equal(
+          "text-layout-examples/text_layout.txt",
+        );
 
         expect(get(layout, ["__readonly"])).to.eql({
           key: "transactional",
           environment: "development",
           created_at: "2023-09-18T18:32:18.398053Z",
-          updated_at: "2023-10-02T19:24:48.714630Z"
+          updated_at: "2023-10-02T19:24:48.714630Z",
         });
       });
 
@@ -167,13 +169,14 @@ describe("lib/marshal/layout/reader", () => {
           expect(get(layout, ["name"])).to.equal("Transactional");
 
           // HTML layout content should be inlined into layout data
-          expect(get(layout, ["html_layout"])).to.contain("<html><body><p> example </p></body></html>");
+          expect(get(layout, ["html_layout"])).to.contain(
+            "<html><body><p> example </p></body></html>",
+          );
 
           // Text layout content should be inlined into layout data
           expect(get(layout, ["text_layout"])).to.contains("foo {{content}}");
         });
       });
-
     });
   });
 });
