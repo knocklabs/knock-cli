@@ -120,9 +120,7 @@ const validateExtractedFilePath = (
   const layoutJsonPath = path.resolve(emailLayoutDirCtx.abspath, LAYOUT_JSON);
   // Validate the file path format, and that it is unique per workflow.
   if (
-    !checkIfValidExtractedFilePathFormat(val, layoutJsonPath, {
-      withAbsolutePaths: true,
-    }) ||
+    !checkIfValidExtractedFilePathFormat(val, layoutJsonPath) ||
     typeof val !== "string"
   ) {
     const error = new JsonDataError(

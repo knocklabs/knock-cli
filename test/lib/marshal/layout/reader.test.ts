@@ -32,7 +32,6 @@ describe("lib/marshal/layout/reader", () => {
         const result = checkIfValidExtractedFilePathFormat(
           abspath,
           emailLayoutDirCtx.abspath,
-          { withAbsolutePaths: true },
         );
 
         expect(result).to.equal(true);

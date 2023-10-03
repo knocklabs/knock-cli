@@ -97,26 +97,13 @@ export const readExtractedFileSync = (
  *
  * Note: does not validate the presence of the file nor the uniqueness of the
  * file path.
- *
- * Options:
- * - withAbsolutePaths: it will return non absoulte paths as valid.
- *   For example:
- *     html_layout@: "html_layout.html"
- *
  */
-type CheckValidExtractedFilePathOptions = {
-  withAbsolutePaths?: boolean;
-};
 
 export const checkIfValidExtractedFilePathFormat = (
   relpath: unknown,
   sourceFileAbspath: string,
-  opts: CheckValidExtractedFilePathOptions = {},
 ): boolean => {
-  const { withAbsolutePaths = false } = opts;
   if (typeof relpath !== "string") return false;
-  // If the option for allowing absolute paths was passed, and the path is indeed absolute, then it's valid.
-  if (withAbsolutePaths && !path.isAbsolute(relpath)) return true;
 
   if (path.isAbsolute(relpath)) return false;
 
