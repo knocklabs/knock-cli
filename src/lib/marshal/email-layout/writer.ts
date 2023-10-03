@@ -75,11 +75,7 @@ export const writeEmailLayoutDirFromData = async (
     ? await readEmailLayoutDir(emailLayoutDirCtx)
     : [];
 
-  const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
-  const bundle = buildEmailLayoutDirBundle(
-    mutRemoteEmailLayout,
-    localEmailLayout,
-  );
+  const bundle = buildEmailLayoutDirBundle(remoteEmailLayout, localEmailLayout);
 
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
   try {
@@ -124,17 +120,18 @@ const buildEmailLayoutDirBundle = (
   localEmailLayout: AnyObj = {},
 ): EmailLayoutDirBundle => {
   const bundle: EmailLayoutDirBundle = {};
+  const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
 
   // A map of extraction settings of every field in the email layout
   const compiledExtractionSettings =
-    compileExtractionSettings(remoteEmailLayout);
+    compileExtractionSettings(mutRemoteEmailLayout);
 
   // Iterate through each extractable field, determine whether we need to
   // extract the field content, and if so, perform the
   // extraction.
   for (const [objPath, extractionSettings] of compiledExtractionSettings) {
     // If this layout doesn't have this field path, then we don't extract.
-    if (!has(remoteEmailLayout, objPath)) continue;
+    if (!has(mutRemoteEmailLayout, objPath)) continue;
 
     // If the field at this path is extracted in the local layout, then
     // always extract; otherwise extract based on the field settings default.
@@ -149,7 +146,7 @@ const buildEmailLayoutDirBundle = (
     if (!extractedFilePath && !extractByDefault) continue;
 
     // By this point, we have a field where we need to extract its content.
-    const data = get(remoteEmailLayout, objPath);
+    const data = get(mutRemoteEmailLayout, objPath);
     const fileName = objPath.pop();
 
     // If we have an extracted file path from the local layout, we use that. In the other
@@ -164,14 +161,14 @@ const buildEmailLayoutDirBundle = (
     // content with the extracted file path and mark the field as extracted
     // with @ suffix.
     set(bundle, [relpath], data);
-    set(remoteEmailLayout, `${objPathStr}${FILEPATH_MARKER}`, relpath);
-    unset(remoteEmailLayout, objPathStr);
+    set(mutRemoteEmailLayout, `${objPathStr}${FILEPATH_MARKER}`, relpath);
+    unset(mutRemoteEmailLayout, objPathStr);
   }
 
   // At this point the bundle contains all extractable files, so we finally add the layout
   // JSON realtive path + the file content.
 
-  return set(bundle, [LAYOUT_JSON], toEmailLayoutJson(remoteEmailLayout));
+  return set(bundle, [LAYOUT_JSON], toEmailLayoutJson(mutRemoteEmailLayout));
 };
 
 // This bulk write function takes the fetched email layouts data KNOCK API and writes
@@ -257,3 +254,6 @@ const pruneLayoutsIndexDir = async (
 
   await Promise.all(promises);
 };
+
+// Exported for tests
+export { buildEmailLayoutDirBundle, pruneLayoutsIndexDir, toEmailLayoutJson };
