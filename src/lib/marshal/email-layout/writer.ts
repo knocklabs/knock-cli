@@ -1,7 +1,7 @@
 import path from "node:path";
 
 import * as fs from "fs-extra";
-import { get, set, uniqueId, unset } from "lodash";
+import { cloneDeep, get, set, uniqueId, unset } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
@@ -75,7 +75,8 @@ export const writeEmailLayoutDirFromData = async (
     ? await readEmailLayoutDir(emailLayoutDirCtx)
     : [];
 
-  const bundle = buildEmailLayoutDirBundle(remoteEmailLayout, localEmailLayout);
+  const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
+  const bundle = buildEmailLayoutDirBundle(mutRemoteEmailLayout, localEmailLayout);
 
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
   try {
