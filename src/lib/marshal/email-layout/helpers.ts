@@ -8,12 +8,6 @@ import { EmailLayoutDirContext, RunContext } from "@/lib/run-context";
 
 export const LAYOUT_JSON = "layout.json";
 
-export type EmailLayoutFileContext = {
-  key: string;
-  abspath: string;
-  exists: boolean;
-};
-
 export const emailLayoutJsonPath = (
   layoutDirCtx: EmailLayoutDirContext,
 ): string => path.resolve(layoutDirCtx.abspath, LAYOUT_JSON);
