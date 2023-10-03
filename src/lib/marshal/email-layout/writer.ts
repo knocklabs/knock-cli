@@ -13,8 +13,8 @@ import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
 import { isEmailLayoutDir, LAYOUT_JSON } from "./helpers";
-import { readEmailLayoutDir } from "./reader";
 import { EmailLayoutData } from "./types";
+import { readEmailLayoutDir } from "./reader";
 
 export type EmailLayoutDirBundle = {
   [relpath: string]: string;
