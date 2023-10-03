@@ -12,7 +12,7 @@ import { FILEPATH_MARKER } from "@/lib/marshal/shared/helpers";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
-import { LAYOUT_JSON } from "./helpers";
+import { isEmailLayoutDir, LAYOUT_JSON } from "./helpers";
 import { readEmailLayoutDir } from "./reader";
 import { EmailLayoutData } from "./types";
 
@@ -76,7 +76,10 @@ export const writeEmailLayoutDirFromData = async (
     : [];
 
   const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
-  const bundle = buildEmailLayoutDirBundle(mutRemoteEmailLayout, localEmailLayout);
+  const bundle = buildEmailLayoutDirBundle(
+    mutRemoteEmailLayout,
+    localEmailLayout,
+  );
 
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
   try {
@@ -123,7 +126,8 @@ const buildEmailLayoutDirBundle = (
   const bundle: EmailLayoutDirBundle = {};
 
   // A map of extraction settings of every field in the email layout
-  const compiledExtractionSettings = compileExtractionSettings(remoteEmailLayout);
+  const compiledExtractionSettings =
+    compileExtractionSettings(remoteEmailLayout);
 
   // Iterate through each extractable field, determine whether we need to
   // extract the field content, and if so, perform the
@@ -171,34 +175,39 @@ const buildEmailLayoutDirBundle = (
 };
 
 // This bulk write function takes the fetched email layouts data KNOCK API and writes
-// them into a directory.
+// them into a layouts "index" directory.
 export const writeEmailLayoutIndexDir = async (
   indexDirCtx: DirContext,
-  emailLayouts: EmailLayoutData<WithAnnotation>[],
+  remoteEmailLayouts: EmailLayoutData<WithAnnotation>[],
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
   try {
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
-      await fs.emptyDir(indexDirCtx.abspath);
+      await pruneLayoutsIndexDir(indexDirCtx, remoteEmailLayouts);
     }
 
-    const writeEmailLayoutDirPromises = emailLayouts.map(
-      async (emailLayout) => {
+    const writeEmailLayoutDirPromises = remoteEmailLayouts.map(
+      async (remoteEmailLayout) => {
         const emailLayoutDirPath = path.resolve(
           indexDirCtx.abspath,
-          emailLayout.key,
+          remoteEmailLayout.key,
         );
 
         const emailLayoutDirCtx: EmailLayoutDirContext = {
           type: "email_layout",
-          key: emailLayout.key,
+          key: remoteEmailLayout.key,
           abspath: emailLayoutDirPath,
-          exists: false,
+          exists: indexDirCtx.exists
+            ? await isEmailLayoutDir(emailLayoutDirPath)
+            : false,
         };
 
-        return writeEmailLayoutDirFromData(emailLayoutDirCtx, emailLayout);
+        return writeEmailLayoutDirFromData(
+          emailLayoutDirCtx,
+          remoteEmailLayout,
+        );
       },
     );
 
@@ -216,4 +225,35 @@ export const writeEmailLayoutIndexDir = async (
     // Always clean up the backup directory in the temp sandbox.
     await fs.remove(backupDirPath);
   }
+};
+
+/*
+ * Prunes the index directory by removing any files, or directories that aren't
+ * layout dirs found in fetched layouts. We want to preserve any layout
+ * dirs that are going to be updated with remote layouts, so extracted links
+ * can be respected.
+ */
+const pruneLayoutsIndexDir = async (
+  indexDirCtx: DirContext,
+  remoteEmailLayouts: EmailLayoutData<WithAnnotation>[],
+): Promise<void> => {
+  const emailLayoutsByKey = Object.fromEntries(
+    remoteEmailLayouts.map((e) => [e.key.toLowerCase(), e]),
+  );
+
+  const dirents = await fs.readdir(indexDirCtx.abspath, {
+    withFileTypes: true,
+  });
+  const promises = dirents.map(async (dirent) => {
+    const direntName = dirent.name.toLowerCase();
+    const direntPath = path.resolve(indexDirCtx.abspath, direntName);
+
+    if ((await isEmailLayoutDir(direntPath)) && emailLayoutsByKey[direntName]) {
+      return;
+    }
+
+    await fs.remove(direntPath);
+  });
+
+  await Promise.all(promises);
 };
