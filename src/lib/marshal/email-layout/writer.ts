@@ -13,6 +13,7 @@ import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
 import { LAYOUT_JSON } from "./helpers";
+import { readEmailLayoutDir } from "./reader";
 import { EmailLayoutData } from "./types";
 
 export type EmailLayoutDirBundle = {
@@ -68,9 +69,15 @@ export const writeEmailLayoutDirFromData = async (
   emailLayoutDirCtx: EmailLayoutDirContext,
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): Promise<void> => {
-  const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
-  const bundle = buildEmailLayoutDirBundle(emailLayout);
+  // If the layout directory exists on the file system (i.e. previously
+  // pulled before), then read the layout file to use as a reference.
+  const [localEmailLayout] = emailLayoutDirCtx.exists
+    ? await readEmailLayoutDir(emailLayoutDirCtx)
+    : [];
 
+  const bundle = buildEmailLayoutDirBundle(emailLayout, localEmailLayout);
+
+  const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
   try {
     // We store a backup in case there's an error.
     if (emailLayoutDirCtx.exists) {
@@ -110,6 +117,7 @@ export const writeEmailLayoutDirFromData = async (
  */
 const buildEmailLayoutDirBundle = (
   emailLayout: EmailLayoutData<WithAnnotation>,
+  localEmailLayout: AnyObj = {},
 ): EmailLayoutDirBundle => {
   const bundle: EmailLayoutDirBundle = {};
 
@@ -120,14 +128,28 @@ const buildEmailLayoutDirBundle = (
   // extract the field content, and if so, perform the
   // extraction.
   for (const [objPath, extractionSettings] of compiledExtractionSettings) {
+    // If the field at this path is extracted in the local layout, then
+    // always extract; otherwise extract based on the field settings default.
     const objPathStr = ObjPath.stringify(objPath);
+
+    const extractedFilePath = get(
+      localEmailLayout,
+      `${objPathStr}${FILEPATH_MARKER}`,
+    );
     const { default: extractByDefault, file_ext: fileExt } = extractionSettings;
 
-    if (!extractByDefault) continue;
+    if (!extractedFilePath && !extractByDefault) continue;
+
     // By this point, we have a field where we need to extract its content.
     const data = get(emailLayout, objPath);
     const fileName = objPath.pop();
-    const relpath = `${fileName}.${fileExt}`;
+
+    // If we have an extracted file path from the local layout, we use that. In the other
+    // case we use the default path.
+    const relpath =
+      typeof extractedFilePath === "string"
+        ? extractedFilePath
+        : `${fileName}.${fileExt}`;
 
     // Perform the extraction by adding the content and its file path to the
     // bundle for writing to the file system later. Then replace the field
