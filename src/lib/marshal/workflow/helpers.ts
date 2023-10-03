@@ -16,12 +16,6 @@ export const VISUAL_BLOCKS_JSON = "visual_blocks.json";
 export const workflowJsonPath = (workflowDirCtx: WorkflowDirContext): string =>
   path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON);
 
-// Mark any template fields we are extracting out with this suffix as a rule,
-// so we can reliably interpret the field value.
-// TODO: Move this up to a top level directory when re-used for other resources.
-export const FILEPATH_MARKER = "@";
-export const FILEPATH_MARKED_RE = new RegExp(`${FILEPATH_MARKER}$`);
-
 /*
  * Validates a string input for a workflow key, and returns an error reason
  * if invalid.

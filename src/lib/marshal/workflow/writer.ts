@@ -22,15 +22,14 @@ import {
   omitDeep,
   split,
 } from "@/lib/helpers/object";
-import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
-import { WorkflowDirContext } from "@/lib/run-context";
-
 import {
   FILEPATH_MARKED_RE,
   FILEPATH_MARKER,
-  isWorkflowDir,
-  WORKFLOW_JSON,
-} from "./helpers";
+} from "@/lib/marshal/shared/helpers";
+import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
+import { WorkflowDirContext } from "@/lib/run-context";
+
+import { isWorkflowDir, WORKFLOW_JSON } from "./helpers";
 import { readWorkflowDir } from "./reader";
 import { StepType, WorkflowData, WorkflowStepData } from "./types";
 

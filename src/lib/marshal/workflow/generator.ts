@@ -2,9 +2,10 @@ import * as path from "node:path";
 
 import { assign, get, zip } from "lodash";
 
+import { FILEPATH_MARKER } from "@/lib/marshal/shared/helpers";
 import { WorkflowDirContext } from "@/lib/run-context";
 
-import { FILEPATH_MARKER, WORKFLOW_JSON } from "./helpers";
+import { WORKFLOW_JSON } from "./helpers";
 import { StepType, WorkflowStepData } from "./types";
 import { WorkflowDirBundle, writeWorkflowDirFromBundle } from "./writer";
 

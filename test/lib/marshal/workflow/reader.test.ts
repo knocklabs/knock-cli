@@ -7,9 +7,9 @@ import { get } from "lodash";
 import { xpath } from "@/../test/support";
 import { sandboxDir } from "@/lib/helpers/const";
 import { JsonDataError } from "@/lib/helpers/error";
+import { readExtractedFileSync } from "@/lib/marshal/shared/helpers";
 import {
   checkIfValidExtractedFilePathFormat,
-  readExtractedFileSync,
   readWorkflowDir,
   VISUAL_BLOCKS_JSON,
   WORKFLOW_JSON,

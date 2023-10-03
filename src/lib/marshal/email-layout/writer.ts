@@ -8,10 +8,10 @@ import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { ObjKeyOrArrayIdx, ObjPath, omitDeep } from "@/lib/helpers/object";
 import { AnyObj, split } from "@/lib/helpers/object";
+import { FILEPATH_MARKER } from "@/lib/marshal/shared/helpers";
+import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
-import { ExtractionSettings, WithAnnotation } from "../shared/types";
-import { FILEPATH_MARKER } from "../workflow";
 import { LAYOUT_JSON } from "./helpers";
 import { EmailLayoutData } from "./types";
 
@@ -23,7 +23,7 @@ type CompiledExtractionSettings = Map<ObjKeyOrArrayIdx[], ExtractionSettings>;
 
 /* Traverse a given email layout data and compile extraction settings of every extractable
  * field into a sorted map.
-*/
+ */
 const compileExtractionSettings = (
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): CompiledExtractionSettings => {
@@ -48,7 +48,7 @@ const compileExtractionSettings = (
 /* Sanitize the email layout content into a format that's appropriate for reading
  * and writing, by stripping out any annotation fields and handling readonly
  * fields.
-*/
+ */
 const toEmailLayoutJson = (
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): AnyObj => {
@@ -63,7 +63,7 @@ const toEmailLayoutJson = (
 
 /* Builds an email layout dir bundle, which consist of the email layout JSON + the extractable files.
  * Then writes them into a layout directory on a local file system.
-*/
+ */
 export const writeEmailLayoutDirFromData = async (
   emailLayoutDirCtx: EmailLayoutDirContext,
   emailLayout: EmailLayoutData<WithAnnotation>,
@@ -107,7 +107,7 @@ export const writeEmailLayoutDirFromData = async (
 /* For a given email layout payload, this function builds a "email layout directoy bundle".
  * This is an object which contains all the relative paths and its file content.
  * It includes the extractable fields, which are extracted out and added to the bundle as separate files.
-*/
+ */
 const buildEmailLayoutDirBundle = (
   emailLayout: EmailLayoutData<WithAnnotation>,
 ): EmailLayoutDirBundle => {
