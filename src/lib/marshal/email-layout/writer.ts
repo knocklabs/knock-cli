@@ -1,7 +1,7 @@
 import path from "node:path";
 
 import * as fs from "fs-extra";
-import { cloneDeep, get, set, uniqueId, unset } from "lodash";
+import { cloneDeep, get, has, set, uniqueId, unset } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
@@ -129,6 +129,9 @@ const buildEmailLayoutDirBundle = (
   // extract the field content, and if so, perform the
   // extraction.
   for (const [objPath, extractionSettings] of compiledExtractionSettings) {
+    // If this layout doesn't have this field path, then we don't extract.
+    if (!has(remoteEmailLayout, objPath)) continue;
+
     // If the field at this path is extracted in the local layout, then
     // always extract; otherwise extract based on the field settings default.
     const objPathStr = ObjPath.stringify(objPath);
