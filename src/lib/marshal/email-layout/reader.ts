@@ -1,5 +1,5 @@
 import * as fs from "fs-extra";
-import { set } from "lodash";
+import { hasIn, set } from "lodash";
 
 import { JsonDataError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
@@ -59,6 +59,7 @@ const joinExtractedFiles = async (
   layoutDirCtx: EmailLayoutDirContext,
   layoutJson: AnyObj,
 ): Promise<JoinExtractedFilesResult> => {
+  // Tracks any errors encountered during traversal. Mutated in place.
   const errors: JsonDataError[] = [];
 
   // Tracks each new valid extracted file path seen (rebased to be relative to
@@ -72,6 +73,9 @@ const joinExtractedFiles = async (
 
     const objPathToFieldStr = ObjPath.stringify(parts);
     const inlinObjPathStr = objPathToFieldStr.replace(FILEPATH_MARKED_RE, "");
+
+    // If there is inlined content present already, then nothing more to do.
+    if (hasIn(layoutJson, inlinObjPathStr)) return;
 
     // Check if the extracted path found at the current field path is valid
     const invalidFilePathError = validateExtractedFilePath(
