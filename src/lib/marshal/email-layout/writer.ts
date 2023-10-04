@@ -24,6 +24,8 @@ type CompiledExtractionSettings = Map<ObjKeyOrArrayIdx[], ExtractionSettings>;
 
 /* Traverse a given email layout data and compile extraction settings of every extractable
  * field into a sorted map.
+ * 
+ * NOTE: Currently we do NOT support content extraction at nested levels for email layouts. 
  */
 const compileExtractionSettings = (
   emailLayout: EmailLayoutData<WithAnnotation>,
