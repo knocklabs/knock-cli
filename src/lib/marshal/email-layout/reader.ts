@@ -1,11 +1,11 @@
 import path from "node:path";
 
 import * as fs from "fs-extra";
-import { mapValues, set, unset } from "lodash";
+import { set } from "lodash";
 
 import { JsonDataError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
-import { AnyObj, omitDeep } from "@/lib/helpers/object";
+import { AnyObj, mapValuesDeep, ObjPath, omitDeep } from "@/lib/helpers/object";
 import {
   checkIfValidExtractedFilePathFormat,
   FILEPATH_MARKED_RE,
@@ -63,11 +63,12 @@ const joinExtractedFiles = async (
 ): Promise<JoinExtractedFilesResult> => {
   const errors: JsonDataError[] = [];
 
-  mapValues(layoutJson, (relpath: string, key: string) => {
+  mapValuesDeep(layoutJson, (relpath: string, key: string, parts) => {
     // If not marked with the @suffix, there's nothing to do.
     if (!FILEPATH_MARKED_RE.test(key)) return;
 
-    const objPathStr = key.replace(FILEPATH_MARKED_RE, "");
+    const objPathToFieldStr = ObjPath.stringify(parts);
+    const inlinObjPathStr = objPathToFieldStr.replace(FILEPATH_MARKED_RE, "");
 
     // Check if the extracted path found at the current field path is valid
     const invalidFilePathError = validateExtractedFilePath(
@@ -79,12 +80,12 @@ const joinExtractedFiles = async (
       // Wipe the invalid file path in the node so the final layout json
       // object ends up with only valid file paths, this way layout writer
       // can see only valid file paths and use those when pulling.
-      set(layoutJson, key, undefined);
-
+      set(layoutJson, inlinObjPathStr, undefined);
+      set(layoutJson, objPathToFieldStr, undefined);
       return;
     }
 
-    // By this point we have a valid extracted file path, so attempt to read the file
+    // By this point we have a valid extracted file path, so attempt to read the file.
     const [content, readExtractedFileError] = readExtractedFileSync(
       relpath,
       layoutDirCtx,
@@ -94,12 +95,17 @@ const joinExtractedFiles = async (
     if (readExtractedFileError) {
       errors.push(readExtractedFileError);
 
+      // If there's an error, replace the extracted file path with the original one, and set the
+      // inlined field path in layout object with empty content, so we know
+      // we do not need to try inlining again.
+      set(layoutJson, objPathToFieldStr, relpath);
+      set(layoutJson, inlinObjPathStr, undefined);
       return;
     }
 
     // Inline the file content and remove the extracted file path
-    set(layoutJson, objPathStr, content);
-    unset(layoutJson, key);
+    set(layoutJson, objPathToFieldStr, relpath);
+    set(layoutJson, inlinObjPathStr, content);
   });
 
   return [layoutJson, errors];
