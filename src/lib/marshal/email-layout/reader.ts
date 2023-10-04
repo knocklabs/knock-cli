@@ -109,9 +109,6 @@ const joinExtractedFiles = async (
 /*
  * Validate the extracted file path based on its format and uniqueness (but not
  * the presence).
- *
- * Note, the uniqueness check is based on reading from and writing to
- * uniqueFilePaths, which is MUTATED in place.
  */
 const validateExtractedFilePath = (
   val: unknown,
