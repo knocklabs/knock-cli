@@ -109,7 +109,7 @@ const joinExtractedFiles = async (
       return;
     }
 
-    // Inline the file content and remove the extracted file path
+    // Inline the file content and remove the extracted file path.
     set(layoutJson, objPathToFieldStr, relpath);
     set(layoutJson, inlinObjPathStr, content);
   });
