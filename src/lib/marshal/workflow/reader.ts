@@ -138,7 +138,6 @@ const joinExtractedFiles = async (
         workflowDirCtx,
         objPathToFieldStr,
       );
-
       if (readExtractedFileError) {
         errors.push(readExtractedFileError);
 

@@ -134,7 +134,6 @@ export const readEmailLayoutDir = async (
   if (!layoutJsonPath) throw new Error(`${abspath} is not a layout directory`);
 
   const result = await readJson(layoutJsonPath);
-
   if (!result[0]) return result;
 
   let [layoutJson] = result;
@@ -192,7 +191,6 @@ const joinExtractedFiles = async (
     }
 
     // By this point we have a valid extracted file path, so attempt to read the file.
-
     const [content, readExtractedFileError] = readExtractedFileSync(
       relpath,
       layoutDirCtx,
