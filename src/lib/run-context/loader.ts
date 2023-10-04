@@ -5,6 +5,7 @@
  */
 import * as path from "node:path";
 
+import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
@@ -19,6 +20,17 @@ const evaluateRecursively = async (
   if (!ctx.resourceDir && isWorkflowDir) {
     ctx.resourceDir = {
       type: "workflow",
+      key: path.basename(currDir),
+      abspath: currDir,
+      exists: true,
+    };
+  }
+
+  // Check if we are inside a layout directory, and if so update the context.
+  const isEmailLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
+  if (!ctx.resourceDir && isEmailLayoutDir) {
+    ctx.resourceDir = {
+      type: "email_layout",
       key: path.basename(currDir),
       abspath: currDir,
       exists: true,

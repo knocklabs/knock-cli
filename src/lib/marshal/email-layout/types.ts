@@ -7,6 +7,7 @@ export type EmailLayoutData<A extends MaybeWithAnnotation = unknown> = A & {
   html_layout: string;
   text_layout: string;
   footer_links?: Hyperlink[];
+  environment: string;
   updated_at: string;
   created_at: string;
 };
