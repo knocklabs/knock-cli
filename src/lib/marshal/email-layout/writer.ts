@@ -72,7 +72,7 @@ export const writeEmailLayoutDirFromData = async (
   // If the layout directory exists on the file system (i.e. previously
   // pulled before), then read the layout file to use as a reference.
   const [localEmailLayout] = emailLayoutDirCtx.exists
-    ? await readEmailLayoutDir(emailLayoutDirCtx, { withExtractedFiles: true })
+    ? await readEmailLayoutDir(emailLayoutDirCtx)
     : [];
 
   const bundle = buildEmailLayoutDirBundle(remoteEmailLayout, localEmailLayout);
@@ -121,7 +121,6 @@ const buildEmailLayoutDirBundle = (
 ): EmailLayoutDirBundle => {
   const bundle: EmailLayoutDirBundle = {};
   const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
-
   // A map of extraction settings of every field in the email layout
   const compiledExtractionSettings =
     compileExtractionSettings(mutRemoteEmailLayout);
@@ -141,6 +140,7 @@ const buildEmailLayoutDirBundle = (
       localEmailLayout,
       `${objPathStr}${FILEPATH_MARKER}`,
     );
+
     const { default: extractByDefault, file_ext: fileExt } = extractionSettings;
 
     if (!extractedFilePath && !extractByDefault) continue;
