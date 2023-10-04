@@ -113,8 +113,7 @@ const joinExtractedFiles = async (
 
       const invalidFilePathError = validateExtractedFilePath(
         rebasedFilePath,
-        workflowDirCtx.abspath,
-        WORKFLOW_JSON,
+        path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON),
         uniqueFilePaths,
         objPathToFieldStr,
       );

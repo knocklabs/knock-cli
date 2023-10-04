@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import * as fs from "fs-extra";
 import { hasIn, set } from "lodash";
 
@@ -80,8 +82,7 @@ const joinExtractedFiles = async (
     // Check if the extracted path found at the current field path is valid
     const invalidFilePathError = validateExtractedFilePath(
       relpath,
-      layoutDirCtx.abspath,
-      LAYOUT_JSON,
+      path.resolve(layoutDirCtx.abspath, LAYOUT_JSON),
       uniqueFilePaths,
       objPathToFieldStr,
     );

@@ -86,19 +86,15 @@ export const readExtractedFileSync = (
  * Note, the uniqueness check is based on reading from and writing to
  * uniqueFilePaths, which is MUTATED in place.
  */
-
-/* eslint-disable max-params */
 export const validateExtractedFilePath = (
   val: unknown,
   sourceFileAbspath: string,
-  sourceJson: string,
   uniqueFilePaths: Record<string, boolean>,
   objPathToFieldStr: string,
 ): JsonDataError | undefined => {
-  const jsonPath = path.resolve(sourceFileAbspath, sourceJson);
   // Validate the file path format, and that it is unique per entity.
   if (
-    !checkIfValidExtractedFilePathFormat(val, jsonPath) ||
+    !checkIfValidExtractedFilePathFormat(val, sourceFileAbspath) ||
     typeof val !== "string" ||
     val in uniqueFilePaths
   ) {
