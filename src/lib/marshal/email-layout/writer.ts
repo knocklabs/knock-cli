@@ -130,13 +130,13 @@ const buildEmailLayoutDirBundle = (
   // Iterate through each extractable field, determine whether we need to
   // extract the field content, and if so, perform the
   // extraction.
-  for (const [objPath, extractionSettings] of compiledExtractionSettings) {
+  for (const [objPathParts, extractionSettings] of compiledExtractionSettings) {
     // If this layout doesn't have this field path, then we don't extract.
-    if (!has(mutRemoteEmailLayout, objPath)) continue;
+    if (!has(mutRemoteEmailLayout, objPathParts)) continue;
 
     // If the field at this path is extracted in the local layout, then
     // always extract; otherwise extract based on the field settings default.
-    const objPathStr = ObjPath.stringify(objPath);
+    const objPathStr = ObjPath.stringify(objPathParts);
 
     const extractedFilePath = get(
       localEmailLayout,
@@ -148,8 +148,8 @@ const buildEmailLayoutDirBundle = (
     if (!extractedFilePath && !extractByDefault) continue;
 
     // By this point, we have a field where we need to extract its content.
-    const data = get(mutRemoteEmailLayout, objPath);
-    const fileName = objPath.pop();
+    const data = get(mutRemoteEmailLayout, objPathParts);
+    const fileName = objPathParts.pop();
 
     // If we have an extracted file path from the local layout, we use that. In the other
     // case we use the default path.
