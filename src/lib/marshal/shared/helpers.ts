@@ -98,7 +98,6 @@ export const readExtractedFileSync = (
  * Note: does not validate the presence of the file nor the uniqueness of the
  * file path.
  */
-
 export const checkIfValidExtractedFilePathFormat = (
   relpath: unknown,
   sourceFileAbspath: string,

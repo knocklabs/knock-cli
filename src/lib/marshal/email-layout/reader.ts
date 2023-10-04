@@ -37,7 +37,6 @@ export const readEmailLayoutDir = async (
   if (!dirExists) throw new Error(`${abspath} does not exist`);
 
   const layoutJsonPath = await lsEmailLayoutJson(abspath);
-
   if (!layoutJsonPath) throw new Error(`${abspath} is not a layout directory`);
 
   const result = await readJson(layoutJsonPath);
