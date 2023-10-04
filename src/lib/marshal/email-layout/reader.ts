@@ -1,5 +1,3 @@
-import path from "node:path";
-
 import * as fs from "fs-extra";
 import { set } from "lodash";
 
@@ -7,9 +5,9 @@ import { JsonDataError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
 import { AnyObj, mapValuesDeep, ObjPath, omitDeep } from "@/lib/helpers/object";
 import {
-  checkIfValidExtractedFilePathFormat,
   FILEPATH_MARKED_RE,
   readExtractedFileSync,
+  validateExtractedFilePath,
 } from "@/lib/marshal/shared/helpers";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
@@ -63,6 +61,11 @@ const joinExtractedFiles = async (
 ): Promise<JoinExtractedFilesResult> => {
   const errors: JsonDataError[] = [];
 
+  // Tracks each new valid extracted file path seen (rebased to be relative to
+  // layout.json) in the layout json node. Mutated in place, and used
+  // to validate the uniqueness of an extracted path encountered.
+  const uniqueFilePaths = {};
+
   mapValuesDeep(layoutJson, (relpath: string, key: string, parts) => {
     // If not marked with the @suffix, there's nothing to do.
     if (!FILEPATH_MARKED_RE.test(key)) return;
@@ -73,7 +76,10 @@ const joinExtractedFiles = async (
     // Check if the extracted path found at the current field path is valid
     const invalidFilePathError = validateExtractedFilePath(
       relpath,
-      layoutDirCtx,
+      layoutDirCtx.abspath,
+      LAYOUT_JSON,
+      uniqueFilePaths,
+      objPathToFieldStr,
     );
     if (invalidFilePathError) {
       errors.push(invalidFilePathError);
@@ -109,29 +115,4 @@ const joinExtractedFiles = async (
   });
 
   return [layoutJson, errors];
-};
-
-/*
- * Validate the extracted file path based on its format and uniqueness (but not
- * the presence).
- */
-const validateExtractedFilePath = (
-  val: unknown,
-  emailLayoutDirCtx: EmailLayoutDirContext,
-): JsonDataError | undefined => {
-  const layoutJsonPath = path.resolve(emailLayoutDirCtx.abspath, LAYOUT_JSON);
-  // Validate the file path format, and that it is unique per layout.
-  if (
-    !checkIfValidExtractedFilePathFormat(val, layoutJsonPath) ||
-    typeof val !== "string"
-  ) {
-    const error = new JsonDataError(
-      "must be a relative path string to a unique file within the directory",
-      String(val),
-    );
-
-    return error;
-  }
-
-  return undefined;
 };

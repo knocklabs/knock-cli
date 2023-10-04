@@ -14,9 +14,9 @@ import {
   omitDeep,
 } from "@/lib/helpers/object";
 import {
-  checkIfValidExtractedFilePathFormat,
   FILEPATH_MARKED_RE,
   readExtractedFileSync,
+  validateExtractedFilePath,
 } from "@/lib/marshal/shared/helpers";
 import { WorkflowDirContext } from "@/lib/run-context";
 
@@ -35,41 +35,6 @@ export type WorkflowDirData = WorkflowDirContext & {
 // For now we support up to two levels of content extraction in workflow.json.
 // (e.g. workflow.json, then visual_blocks.json)
 const MAX_EXTRACTION_LEVEL = 2;
-
-/*
- * Validate the extracted file path based on its format and uniqueness (but not
- * the presence).
- *
- * Note, the uniqueness check is based on reading from and writing to
- * uniqueFilePaths, which is MUTATED in place.
- */
-const validateExtractedFilePath = (
-  val: unknown,
-  workflowDirCtx: WorkflowDirContext,
-  uniqueFilePaths: Record<string, boolean>,
-  objPathToFieldStr: string,
-): JsonDataError | undefined => {
-  const workflowJsonPath = path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON);
-
-  // Validate the file path format, and that it is unique per workflow.
-  if (
-    !checkIfValidExtractedFilePathFormat(val, workflowJsonPath) ||
-    typeof val !== "string" ||
-    val in uniqueFilePaths
-  ) {
-    const error = new JsonDataError(
-      "must be a relative path string to a unique file within the directory",
-      objPathToFieldStr,
-    );
-
-    return error;
-  }
-
-  // Keep track of all the valid extracted file paths that have been seen, so
-  // we can validate each file path's uniqueness as we traverse.
-  uniqueFilePaths[val] = true;
-  return undefined;
-};
 
 /*
  * Given a workflow json object, compiles all referenced extracted files from it
@@ -148,7 +113,8 @@ const joinExtractedFiles = async (
 
       const invalidFilePathError = validateExtractedFilePath(
         rebasedFilePath,
-        workflowDirCtx,
+        workflowDirCtx.abspath,
+        WORKFLOW_JSON,
         uniqueFilePaths,
         objPathToFieldStr,
       );

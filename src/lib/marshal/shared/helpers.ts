@@ -80,6 +80,43 @@ export const readExtractedFileSync = (
 };
 
 /*
+ * Validate the extracted file path based on its format and uniqueness (but not
+ * the presence).
+ *
+ * Note, the uniqueness check is based on reading from and writing to
+ * uniqueFilePaths, which is MUTATED in place.
+ */
+
+/* eslint-disable max-params */
+export const validateExtractedFilePath = (
+  val: unknown,
+  sourceFileAbspath: string,
+  sourceJson: string,
+  uniqueFilePaths: Record<string, boolean>,
+  objPathToFieldStr: string,
+): JsonDataError | undefined => {
+  const jsonPath = path.resolve(sourceFileAbspath, sourceJson);
+  // Validate the file path format, and that it is unique per entity.
+  if (
+    !checkIfValidExtractedFilePathFormat(val, jsonPath) ||
+    typeof val !== "string" ||
+    val in uniqueFilePaths
+  ) {
+    const error = new JsonDataError(
+      "must be a relative path string to a unique file within the directory",
+      objPathToFieldStr,
+    );
+
+    return error;
+  }
+
+  // Keep track of all the valid extracted file paths that have been seen, so
+  // we can validate each file path's uniqueness as we traverse.
+  uniqueFilePaths[val] = true;
+  return undefined;
+};
+
+/*
  * Validate the file path format of an extracted field. The file path must be:
  *
  * 1) Expressed as a relative path.
