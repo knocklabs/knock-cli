@@ -32,6 +32,7 @@ export default class EmailLayoutPush extends BaseCommand<
     "layouts-dir": CustomFlags.dirPath({
       summary: "The target directory path to find all layouts to push.",
       dependsOn: ["all"],
+      aliases: ["email-layouts-dir"],
     }),
     commit: Flags.boolean({
       summary: "Push and commit the layout(s) at the same time",
