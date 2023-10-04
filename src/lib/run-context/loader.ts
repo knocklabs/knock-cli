@@ -27,8 +27,8 @@ const evaluateRecursively = async (
   }
 
   // Check if we are inside a layout directory, and if so update the context.
-  const isLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
-  if (!ctx.resourceDir && isLayoutDir) {
+  const isEmailLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
+  if (!ctx.resourceDir && isEmailLayoutDir) {
     ctx.resourceDir = {
       type: "email_layout",
       key: path.basename(currDir),
