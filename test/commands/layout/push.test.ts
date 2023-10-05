@@ -16,13 +16,14 @@ const layoutJsonFile = "default/layout.json";
 const mockEmailLayoutData: EmailLayoutData<WithAnnotation> = {
   key: "default",
   name: "Default",
-  html_layout:
-    "<!doctype html>\n" +
-    "<html>\n" +
-    " <body>\n" +
-    "  <p>This is some example text</p>\n" +
-    "  </body>\n" +
-    "</html>",
+  html_layout: `
+    <!doctype html> 
+    <html>
+    <body>
+    <p>This is some example text</p>
+    </body>
+    </html>
+    `.trimStart(),
   text_layout: "Text {{ content }}",
   footer_links: [],
   environment: "development",
