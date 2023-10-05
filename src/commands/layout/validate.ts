@@ -81,14 +81,14 @@ export default class EmailLayoutValidate extends BaseCommand<
 
     this.log(
       `‣ Successfully validated ${layouts.length} layout(s):\n` +
-        indentString(layoutsKey.join("\n"), 4),
+      indentString(layoutsKey.join("\n"), 4),
     );
   }
 
   static async validateAll(
     api: ApiV1.T,
     props: Props<typeof EmailLayoutValidate | typeof EmailLayoutPush>,
-    layouts: EmailLayout.LayoutDirData[],
+    layouts: EmailLayout.EmailLayoutDirData[],
   ): Promise<SourceError[]> {
     const errorPromises = layouts.map(async (layout) => {
       const resp = await api.validateEmailLayout(props, {
