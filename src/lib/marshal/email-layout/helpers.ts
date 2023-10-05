@@ -44,21 +44,21 @@ type CommandTargetProps = {
     emailLayoutKey: string | undefined;
   };
 };
-type LayoutDirTarget = {
-  type: "layoutDir";
+type EmailLayoutDirTarget = {
+  type: "emailLayoutDir";
   context: EmailLayoutDirContext;
 };
-type LayoutsIndexDirTarget = {
-  type: "layoutsIndexDir";
+type EmailLayoutsIndexDirTarget = {
+  type: "emailLayoutsIndexDir";
   context: DirContext;
 };
 
-export type LayoutCommandTarget = LayoutDirTarget | LayoutsIndexDirTarget;
+export type EmailLayoutCommandTarget = EmailLayoutDirTarget | EmailLayoutsIndexDirTarget;
 
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
-): Promise<LayoutCommandTarget> => {
+): Promise<EmailLayoutCommandTarget> => {
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
 
@@ -89,7 +89,7 @@ export const ensureValidCommandTarget = async (
     const defaultToCwd = { abspath: runCwd, exists: true };
     const indexDirCtx = flags["layouts-dir"] || defaultToCwd;
 
-    return { type: "layoutsIndexDir", context: indexDirCtx };
+    return { type: "emailLayoutsIndexDir", context: indexDirCtx };
   }
 
   // Email layout key arg is given, which means no --all flag.
@@ -111,13 +111,13 @@ export const ensureValidCommandTarget = async (
       exists: await isEmailLayoutDir(targetDirPath),
     };
 
-    return { type: "layoutDir", context: layoutDirCtx };
+    return { type: "emailLayoutDir", context: layoutDirCtx };
   }
 
   // From this point on, we have neither an email layout key arg nor --all flag.
   // If running inside a layout directory, then use that.
   if (resourceDirCtx) {
-    return { type: "layoutDir", context: resourceDirCtx };
+    return { type: "emailLayoutsIndexDir", context: resourceDirCtx };
   }
 
   return ux.error("Missing 1 required arg:emailLayoutKey");

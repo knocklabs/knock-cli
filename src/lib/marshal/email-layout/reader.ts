@@ -17,7 +17,7 @@ import { EmailLayoutDirContext } from "@/lib/run-context";
 import {
   isEmailLayoutDir,
   LAYOUT_JSON,
-  LayoutCommandTarget,
+  EmailLayoutCommandTarget,
   lsEmailLayoutJson,
 } from "./helpers";
 
@@ -40,14 +40,14 @@ type ReadLayoutDirOpts = {
  * Note, it assumes the valid command target.
  */
 export const readAllForCommandTarget = async (
-  target: LayoutCommandTarget,
+  target: EmailLayoutCommandTarget,
   opts: ReadLayoutDirOpts = {},
 ): Promise<[EmailLayoutDirData[], SourceError[]]> => {
   const { type: targetType, context: targetCtx } = target;
 
   if (!targetCtx.exists) {
     const subject =
-      targetType === "layoutDir"
+      targetType === "emailLayoutDir"
         ? "a layout directory at"
         : "layout directories in";
 
@@ -55,11 +55,11 @@ export const readAllForCommandTarget = async (
   }
 
   switch (targetType) {
-    case "layoutDir": {
+    case "emailLayoutDir": {
       return readEmailLayoutsDirs([targetCtx], opts);
     }
 
-    case "layoutsIndexDir": {
+    case "emailLayoutsIndexDir": {
       const dirents = await fs.readdir(targetCtx.abspath, {
         withFileTypes: true,
       });
