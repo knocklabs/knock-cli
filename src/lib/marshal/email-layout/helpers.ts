@@ -53,7 +53,9 @@ type EmailLayoutsIndexDirTarget = {
   context: DirContext;
 };
 
-export type EmailLayoutCommandTarget = EmailLayoutDirTarget | EmailLayoutsIndexDirTarget;
+export type EmailLayoutCommandTarget =
+  | EmailLayoutDirTarget
+  | EmailLayoutsIndexDirTarget;
 
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
