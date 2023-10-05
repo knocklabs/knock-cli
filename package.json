@@ -75,6 +75,9 @@
       },
       "translation": {
         "description": "Manage translation files."
+      },
+      "layout": {
+        "description": "Manage email layouts."
       }
     }
   },
