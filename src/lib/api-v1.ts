@@ -255,6 +255,20 @@ export default class ApiV1 {
     return this.put(`/email_layouts/${layout.key}`, data, { params });
   }
 
+  async validateEmailLayout(
+    { flags }: Props,
+    layout: EmailLayout.EmailLayoutInput,
+  ): Promise<AxiosResponse<ValidateEmailLayoutResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+    const data = { email_layout: layout };
+
+    return this.put(`/email_layouts/${layout.key}/validate`, data, {
+      params,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -332,6 +346,11 @@ export type GetEmailLayoutResp<A extends MaybeWithAnnotation = unknown> =
 
 export type UpsertEmailLayoutResp<A extends MaybeWithAnnotation = unknown> = {
   email_layout?: EmailLayout.EmailLayoutData<A>;
+  errors?: InputError[];
+};
+
+export type ValidateEmailLayoutResp = {
+  email_layout?: EmailLayout.EmailLayoutData;
   errors?: InputError[];
 };
 

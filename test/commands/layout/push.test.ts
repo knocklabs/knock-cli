@@ -6,6 +6,7 @@ import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
+import EmailLayoutValidate from "@/commands/layout/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { EmailLayoutData, LAYOUT_JSON } from "@/lib/marshal/email-layout";
@@ -41,6 +42,7 @@ const mockEmailLayoutData: EmailLayoutData<WithAnnotation> = {
 const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(EmailLayoutValidate, "validateAll", sinon.stub().resolves([]))
     .stub(
       KnockApiV1.prototype,
       "upsertEmailLayout",
@@ -271,8 +273,12 @@ describe("commands/layout/push", () => {
       .stdout()
       .command(["layout push", "--all", "--layouts-dir", "layouts"])
       .it("calls apiV1 upserted with expected props twice", () => {
-        const stub = KnockApiV1.prototype.upsertEmailLayout as any;
-        sinon.assert.calledTwice(stub);
+        // Validate all first
+        const stub1 = EmailLayoutValidate.validateAll as any;
+        sinon.assert.calledOnce(stub1);
+
+        const stub2 = KnockApiV1.prototype.upsertEmailLayout as any;
+        sinon.assert.calledTwice(stub2);
 
         const expectedArgs = {};
         const expectedFlags = {
@@ -288,7 +294,7 @@ describe("commands/layout/push", () => {
 
         // First upsert call
         sinon.assert.calledWith(
-          stub.firstCall,
+          stub2.firstCall,
           sinon.match(
             ({ args, flags }) =>
               isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
@@ -300,7 +306,7 @@ describe("commands/layout/push", () => {
 
         // Second upsert call
         sinon.assert.calledWith(
-          stub.secondCall,
+          stub2.secondCall,
           sinon.match(
             ({ args, flags }) =>
               isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),

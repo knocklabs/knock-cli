@@ -11,6 +11,8 @@ import { spinner } from "@/lib/helpers/ux";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
+import EmailLayoutValidate from "./validate";
+
 export default class EmailLayoutPush extends BaseCommand<
   typeof EmailLayoutPush
 > {
@@ -74,7 +76,20 @@ export default class EmailLayoutPush extends BaseCommand<
       this.error(`No layout directories found in ${target.context.abspath}`);
     }
 
-    // 2.TODO: Validate the layouts before upserting
+    // 2. Then validate them all ahead of pushing them.
+    spinner.start(`‣ Validating`);
+
+    const apiErrors = await EmailLayoutValidate.validateAll(
+      this.apiV1,
+      this.props,
+      layouts,
+    );
+
+    if (apiErrors.length > 0) {
+      this.error(formatErrors(apiErrors, { prependBy: "\n\n" }));
+    }
+
+    spinner.stop();
 
     // 3. Finally push up each layout, abort on the first error.
     spinner.start(`‣ Pushing`);
