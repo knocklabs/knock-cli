@@ -59,16 +59,16 @@ export default class EmailLayoutPush extends BaseCommand<
       this.runContext,
     );
 
-    const [layouts, readErrors] = await EmailLayout.readAllForCommandTarget(
-      target,
-      { withExtractedFiles: true },
-    );
+    const [emailLayouts, readErrors] =
+      await EmailLayout.readAllForCommandTarget(target, {
+        withExtractedFiles: true,
+      });
 
     if (readErrors.length > 0) {
       this.error(formatErrors(readErrors, { prependBy: "\n\n" }));
     }
 
-    if (layouts.length === 0) {
+    if (emailLayouts.length === 0) {
       this.error(`No layout directories found in ${target.context.abspath}`);
     }
 
@@ -77,20 +77,29 @@ export default class EmailLayoutPush extends BaseCommand<
     // 3. Finally push up each layout, abort on the first error.
     spinner.start(`‣ Pushing`);
 
-    for (const layout of layouts) {
+    for (const emailLayout of emailLayouts) {
       const props = merge(this.props, { flags: { annotate: true } });
 
       // eslint-disable-next-line no-await-in-loop
       const resp = await this.apiV1.upsertEmailLayout<WithAnnotation>(props, {
-        ...layout.content,
-        key: layout.key,
+        ...emailLayout.content,
+        key: emailLayout.key,
       });
 
-      if (isSuccessResp(resp)) continue;
+      if (isSuccessResp(resp)) {
+        // Update the layout directory with the successfully pushed layout
+        // payload from the server.
+        // eslint-disable-next-line no-await-in-loop
+        await EmailLayout.writeEmailLayoutDirFromData(
+          emailLayout,
+          resp.data.email_layout!,
+        );
+        continue;
+      }
 
       const error = new SourceError(
         formatErrorRespMessage(resp),
-        EmailLayout.emailLayoutJsonPath(layout),
+        EmailLayout.emailLayoutJsonPath(emailLayout),
         "ApiError",
       );
 
@@ -100,11 +109,11 @@ export default class EmailLayoutPush extends BaseCommand<
     spinner.stop();
 
     // 4. Display a success message.
-    const layoutKeys = layouts.map((l) => l.key);
+    const layoutKeys = emailLayouts.map((l) => l.key);
     const actioned = flags.commit ? "pushed and committed" : "pushed";
 
     this.log(
-      `‣ Successfully ${actioned} ${layouts.length} layout(s):\n` +
+      `‣ Successfully ${actioned} ${emailLayouts.length} layout(s):\n` +
         indentString(layoutKeys.join("\n"), 4),
     );
   }

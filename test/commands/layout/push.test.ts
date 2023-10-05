@@ -124,6 +124,27 @@ describe("commands/layout/push", () => {
           );
         },
       );
+
+    setupWithStub({ data: { email_layout: mockEmailLayoutData } })
+      .stdout()
+      .command(["layout push", "default"])
+      .it("writes the upserted layout data into layout.json", () => {
+        const abspath = path.resolve(sandboxDir, layoutJsonFile);
+        const emailLayoutJson = fs.readJsonSync(abspath);
+
+        expect(emailLayoutJson).to.eql({
+          name: "Default",
+          footer_links: [],
+          "html_layout@": "html_layout.html",
+          "text_layout@": "text_layout.txt",
+          __readonly: {
+            key: "default",
+            environment: "development",
+            created_at: "2023-09-18T18:32:18.398053Z",
+            updated_at: "2023-09-29T19:08:04.129228Z",
+          },
+        });
+      });
   });
 
   describe("given a layout.json file, with syntax errors", () => {
