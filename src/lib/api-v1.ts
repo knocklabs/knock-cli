@@ -350,7 +350,7 @@ export type UpsertEmailLayoutResp<A extends MaybeWithAnnotation = unknown> = {
 };
 
 export type ValidateEmailLayoutResp = {
-  emailLayout?: EmailLayout.EmailLayoutData;
+  email_layout?: EmailLayout.EmailLayoutData;
   errors?: InputError[];
 };
 
