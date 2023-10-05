@@ -240,6 +240,21 @@ export default class ApiV1 {
     return this.get(`/email_layouts/${args.emailLayoutKey}`, { params });
   }
 
+  async upsertEmailLayout<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    layout: EmailLayout.EmailLayoutInput,
+  ): Promise<AxiosResponse<UpsertEmailLayoutResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+    });
+    const data = { email_layout: layout };
+
+    return this.put(`/email_layouts/${layout.key}`, data, { params });
+  }
+
   // By methods:
 
   async get(
@@ -314,6 +329,11 @@ export type ListEmailLayoutResp<A extends MaybeWithAnnotation = unknown> =
 
 export type GetEmailLayoutResp<A extends MaybeWithAnnotation = unknown> =
   EmailLayout.EmailLayoutData<A>;
+
+export type UpsertEmailLayoutResp<A extends MaybeWithAnnotation = unknown> = {
+  email_layout?: EmailLayout.EmailLayoutData<A>;
+  errors?: InputError[];
+};
 
 export type CommitAllChangesResp = {
   result?: "success";

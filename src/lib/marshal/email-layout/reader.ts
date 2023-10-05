@@ -1,9 +1,10 @@
 import path from "node:path";
 
+import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 import { hasIn, set } from "lodash";
 
-import { JsonDataError } from "@/lib/helpers/error";
+import { formatErrors, JsonDataError, SourceError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
 import { AnyObj, mapValuesDeep, ObjPath, omitDeep } from "@/lib/helpers/object";
 import {
@@ -13,13 +14,106 @@ import {
 } from "@/lib/marshal/shared/helpers";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
-import { LAYOUT_JSON, lsEmailLayoutJson } from "./helpers";
+import {
+  EmailLayoutCommandTarget,
+  isEmailLayoutDir,
+  LAYOUT_JSON,
+  lsEmailLayoutJson,
+} from "./helpers";
 
 type JoinExtractedFilesResult = [AnyObj, JsonDataError[]];
+
+// Hydrated layout directory context with its content.
+export type EmailLayoutDirData = EmailLayoutDirContext & {
+  content: AnyObj;
+};
 
 type ReadLayoutDirOpts = {
   withExtractedFiles?: boolean;
   withReadonlyField?: boolean;
+};
+
+/*
+
+ * List and read all layout directories found for the given command target.
+ *
+ * Note, it assumes the valid command target.
+ */
+export const readAllForCommandTarget = async (
+  target: EmailLayoutCommandTarget,
+  opts: ReadLayoutDirOpts = {},
+): Promise<[EmailLayoutDirData[], SourceError[]]> => {
+  const { type: targetType, context: targetCtx } = target;
+
+  if (!targetCtx.exists) {
+    const subject =
+      targetType === "emailLayoutDir"
+        ? "a layout directory at"
+        : "layout directories in";
+
+    return ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
+  }
+
+  switch (targetType) {
+    case "emailLayoutDir": {
+      return readEmailLayoutsDirs([targetCtx], opts);
+    }
+
+    case "emailLayoutsIndexDir": {
+      const dirents = await fs.readdir(targetCtx.abspath, {
+        withFileTypes: true,
+      });
+
+      const promises = dirents.map(async (dirent) => {
+        const abspath = path.resolve(targetCtx.abspath, dirent.name);
+        const layoutDirCtx: EmailLayoutDirContext = {
+          type: "email_layout",
+          key: dirent.name,
+          abspath,
+          exists: await isEmailLayoutDir(abspath),
+        };
+        return layoutDirCtx;
+      });
+
+      const layoutDirCtxs = (await Promise.all(promises)).filter(
+        (layoutDirCtx) => layoutDirCtx.exists,
+      );
+
+      return readEmailLayoutsDirs(layoutDirCtxs, opts);
+    }
+
+    default:
+      throw new Error(`Invalid layout command target: ${target}`);
+  }
+};
+
+/*
+ * For the given list of layout directory contexts, read each layout dir and
+ * return layout directory data.
+ */
+const readEmailLayoutsDirs = async (
+  layoutDirCtxs: EmailLayoutDirContext[],
+  opts: ReadLayoutDirOpts = {},
+): Promise<[EmailLayoutDirData[], SourceError[]]> => {
+  const layouts: EmailLayoutDirData[] = [];
+  const errors: SourceError[] = [];
+
+  for (const layoutDirCtx of layoutDirCtxs) {
+    // eslint-disable-next-line no-await-in-loop
+    const [layout, readErrors] = await readEmailLayoutDir(layoutDirCtx, opts);
+
+    if (readErrors.length > 0) {
+      const layoutJsonPath = path.resolve(layoutDirCtx.abspath, LAYOUT_JSON);
+
+      const e = new SourceError(formatErrors(readErrors), layoutJsonPath);
+      errors.push(e);
+      continue;
+    }
+
+    layouts.push({ ...layoutDirCtx, content: layout! });
+  }
+
+  return [layouts, errors];
 };
 
 /*
