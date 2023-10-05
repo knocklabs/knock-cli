@@ -119,7 +119,7 @@ export const ensureValidCommandTarget = async (
   // From this point on, we have neither an email layout key arg nor --all flag.
   // If running inside a layout directory, then use that.
   if (resourceDirCtx) {
-    return { type: "emailLayoutsIndexDir", context: resourceDirCtx };
+    return { type: "emailLayoutDir", context: resourceDirCtx };
   }
 
   return ux.error("Missing 1 required arg:emailLayoutKey");
