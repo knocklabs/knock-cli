@@ -32,6 +32,7 @@ export default class EmailLayoutValidate extends BaseCommand<
     "layouts-dir": CustomFlags.dirPath({
       summary: "The target directory path to find all layouts to validate.",
       dependsOn: ["all"],
+      aliases: ["email-layouts-dir"],
     }),
   };
 
