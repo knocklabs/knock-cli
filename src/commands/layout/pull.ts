@@ -25,8 +25,6 @@ import {
 export default class EmailLayoutPull extends BaseCommand<
   typeof EmailLayoutPull
 > {
-  static aliases = ["email-layout:pull", "email_layout:pull"];
-
   static summary =
     "Pull one or more email layouts from an environment into a local file system.";
 
