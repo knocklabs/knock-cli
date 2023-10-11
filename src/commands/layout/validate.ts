@@ -15,8 +15,6 @@ import EmailLayoutPush from "./push";
 export default class EmailLayoutValidate extends BaseCommand<
   typeof EmailLayoutValidate
 > {
-  static aliases = ["email-layout:validate", "email_layout:validate"];
-
   static summary = "Validate one or more layouts from a local file system.";
 
   static flags = {

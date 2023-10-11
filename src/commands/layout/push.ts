@@ -16,8 +16,6 @@ import EmailLayoutValidate from "./validate";
 export default class EmailLayoutPush extends BaseCommand<
   typeof EmailLayoutPush
 > {
-  static aliases = ["email-layout:push", "email_layout:push"];
-
   static summary =
     "Push one or more email layouts from a local file system to Knock.";
 
