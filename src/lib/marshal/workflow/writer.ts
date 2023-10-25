@@ -358,7 +358,7 @@ const recursivelyBuildWorkflowDirBundle = (
  *    extracted out contains extracted file paths, then those file paths get
  *    rebased to relative to the referenced file.
  */
-const buildWorkflowDirBundle = (
+export const buildWorkflowDirBundle = (
   remoteWorkflow: WorkflowData<WithAnnotation>,
   localWorkflow: AnyObj = {},
 ): WorkflowDirBundle => {
@@ -535,7 +535,6 @@ export const writeWorkflowsIndexDir = async (
 
 // Exported for tests.
 export {
-  buildWorkflowDirBundle,
   formatExtractedFilePath,
   pruneWorkflowsIndexDir,
   toWorkflowJson,
