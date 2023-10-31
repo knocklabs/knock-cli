@@ -148,7 +148,7 @@ export const emailLayout = (
 export const commit = (attrs: Partial<CommitData> = {}): CommitData => {
   return {
     id: "commit-id-example",
-    target: { type: "workflow", identifier: "new-comment" },
+    resource: { type: "workflow", identifier: "new-comment" },
     author: {
       email: "john.doe@example.com",
       name: "John Doe",

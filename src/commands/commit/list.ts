@@ -11,7 +11,7 @@ import {
   paramsForPageAction,
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
-import { formatCommitAuthor, formatCommitTarget } from "@/lib/marshal/commit";
+import { formatCommitAuthor, formatCommitResource } from "@/lib/marshal/commit";
 
 export default class CommitList extends BaseCommand<typeof CommitList> {
   static summary = "Display all commit for an environment";
@@ -73,9 +73,9 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       id: {
         header: "ID",
       },
-      target: {
-        header: "Target",
-        get: (entry) => formatCommitTarget(entry),
+      resource: {
+        header: "Resource",
+        get: (entry) => formatCommitResource(entry),
       },
       author: {
         header: "Author",
