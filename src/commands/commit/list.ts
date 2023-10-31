@@ -58,7 +58,7 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
     }
 
     if (env === "development" && promoted === false) {
-      qualifier === "(showing unpromoted)";
+      qualifier = "(showing unpromoted)";
     }
 
     this.log(

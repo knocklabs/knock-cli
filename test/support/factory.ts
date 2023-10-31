@@ -2,6 +2,7 @@ import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
+import { CommitData } from "@/lib/marshal/commit";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
@@ -16,7 +17,7 @@ import { sequence } from "./helpers";
 export const gFlags = (attrs: Partial<BFlags> = {}): BFlags => {
   return {
     "service-token": "valid-token",
-
+    "api-origin": undefined,
     json: undefined,
     ...attrs,
   };
@@ -133,13 +134,28 @@ export const emailLayout = (
 ): EmailLayoutData => {
   return {
     key: "transactional",
-    key: "Transactional",
     name: "Transactional",
     html_layout: "<html><body> Content </body></html>",
     text_layout: "Text content",
     footer_links: [{ text: "Link1", url: "https://exampleUrl.com" }],
+    environment: "development",
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",
+    ...attrs,
+  };
+};
+
+export const commit = (attrs: Partial<CommitData> = {}): CommitData => {
+  return {
+    id: "commit-id-example",
+    target: { type: "workflow", identifier: "new-comment" },
+    author: {
+      email: "john.doe@example.com",
+      name: "John Doe",
+    },
+    commit_message: "This is a commit message",
+    created_at: "2022-12-31T12:00:00.000000Z",
+    environment: "development",
     ...attrs,
   };
 };
