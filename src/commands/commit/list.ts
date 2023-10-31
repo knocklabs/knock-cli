@@ -13,20 +13,20 @@ import {
 import { withSpinner } from "@/lib/helpers/request";
 import { formatCommitAuthor, formatCommitTarget } from "@/lib/marshal/commit";
 
-export default class CommitList extends BaseCommand<typeof CommitList>{
-  static summary = "Display all commit for an environment"
+export default class CommitList extends BaseCommand<typeof CommitList> {
+  static summary = "Display all commit for an environment";
 
   static flags = {
     environment: Flags.string({
       default: "development",
       summary: "The environment to use.",
     }),
-    "promoted": Flags.boolean({
+    promoted: Flags.boolean({
       summary: "Show only promoted or unpromoted changes.",
-      allowNo: true
+      allowNo: true,
     }),
     ...pageFlags,
-  }
+  };
 
   static enableJsonFlag = true;
 
@@ -39,9 +39,7 @@ export default class CommitList extends BaseCommand<typeof CommitList>{
     this.render(resp.data);
   }
 
-  async request(
-    pageParams = {},
-  ): Promise<AxiosResponse<ApiV1.ListCommitResp>> {
+  async request(pageParams = {}): Promise<AxiosResponse<ApiV1.ListCommitResp>> {
     const props = merge(this.props, { flags: { ...pageParams } });
 
     return withSpinner<ApiV1.ListCommitResp>(() =>
@@ -51,17 +49,16 @@ export default class CommitList extends BaseCommand<typeof CommitList>{
 
   async render(data: ApiV1.ListCommitResp): Promise<void> {
     const { entries } = data;
-    const { environment: env, "promoted": promoted } =
-      this.props.flags;
+    const { environment: env, promoted } = this.props.flags;
 
-    let qualifier = ""
+    let qualifier = "";
 
     if (env === "development" && promoted) {
-      qualifier = "(showing promoted)"
+      qualifier = "(showing promoted)";
     }
 
-    if (env === "development" && promoted == false) {
-      qualifier == "(showing unpromoted)"
+    if (env === "development" && promoted === false) {
+      qualifier === "(showing unpromoted)";
     }
 
     this.log(
@@ -69,8 +66,8 @@ export default class CommitList extends BaseCommand<typeof CommitList>{
     );
 
     /*
-    * Commits table
-    */
+     * Commits table
+     */
 
     ux.table(entries, {
       id: {
@@ -78,11 +75,11 @@ export default class CommitList extends BaseCommand<typeof CommitList>{
       },
       target: {
         header: "Target",
-        get: (entry) => formatCommitTarget(entry)
+        get: (entry) => formatCommitTarget(entry),
       },
       author: {
         header: "Author",
-        get: (entry) => formatCommitAuthor(entry)
+        get: (entry) => formatCommitAuthor(entry),
       },
       commit_message: {
         header: "Commit message",
@@ -101,8 +98,8 @@ export default class CommitList extends BaseCommand<typeof CommitList>{
       const { page_info } = data;
 
       const pageAction = await maybePromptPageAction(page_info);
-      const pageParams = pageAction && paramsForPageAction(pageAction, page_info);
-
+      const pageParams =
+        pageAction && paramsForPageAction(pageAction, page_info);
 
       if (pageParams) {
         this.log("\n");
