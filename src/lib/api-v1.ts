@@ -9,6 +9,7 @@ import * as EmailLayout from "@/lib/marshal/email-layout";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
+import * as Commit from "@/lib/marshal/commit";
 
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
@@ -127,6 +128,18 @@ export default class ApiV1 {
   }
 
   // By resources: Commits
+
+  async listCommits({
+    flags,
+  }: Props): Promise<AxiosResponse<ListCommitResp>> {
+    const params = prune({
+      environment: flags.environment,
+      promoted: flags["promoted"],
+      ...toPageParams(flags),
+    });
+
+    return this.get("/commits", { params });
+  }
 
   async commitAllChanges({
     flags,
@@ -353,6 +366,8 @@ export type ValidateEmailLayoutResp = {
   email_layout?: EmailLayout.EmailLayoutData;
   errors?: InputError[];
 };
+
+export type ListCommitResp = PaginatedResp<Commit.CommitData>
 
 export type CommitAllChangesResp = {
   result?: "success";
