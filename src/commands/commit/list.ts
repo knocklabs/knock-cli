@@ -94,19 +94,16 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
   }
 
   async prompt(data: ApiV1.ListCommitResp): Promise<void> {
-    if (data.page_info) {
-      const { page_info } = data;
+    const { page_info } = data;
 
-      const pageAction = await maybePromptPageAction(page_info);
-      const pageParams =
-        pageAction && paramsForPageAction(pageAction, page_info);
+    const pageAction = await maybePromptPageAction(page_info);
+    const pageParams = pageAction && paramsForPageAction(pageAction, page_info);
 
-      if (pageParams) {
-        this.log("\n");
+    if (pageParams) {
+      this.log("\n");
 
-        const resp = await this.request(pageParams);
-        return this.render(resp.data);
-      }
+      const resp = await this.request(pageParams);
+      return this.render(resp.data);
     }
   }
 }
