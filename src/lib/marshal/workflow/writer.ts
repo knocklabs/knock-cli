@@ -534,8 +534,4 @@ export const writeWorkflowsIndexDir = async (
 };
 
 // Exported for tests.
-export {
-  formatExtractedFilePath,
-  pruneWorkflowsIndexDir,
-  toWorkflowJson,
-};
+export { formatExtractedFilePath, pruneWorkflowsIndexDir, toWorkflowJson };
