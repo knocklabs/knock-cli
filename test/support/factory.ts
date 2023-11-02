@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 import { BFlags, Props } from "@/lib/base-command";
@@ -147,7 +149,7 @@ export const emailLayout = (
 
 export const commit = (attrs: Partial<CommitData> = {}): CommitData => {
   return {
-    id: "commit-id-example",
+    id: randomUUID(),
     resource: { type: "workflow", identifier: "new-comment" },
     author: {
       email: "john.doe@example.com",
