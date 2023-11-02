@@ -22,7 +22,8 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       summary: "The environment to use.",
     }),
     promoted: Flags.boolean({
-      summary: "Show only promoted or unpromoted changes between the given environment and the subsequent environment.",
+      summary:
+        "Show only promoted or unpromoted changes between the given environment and the subsequent environment.",
       allowNo: true,
     }),
     ...pageFlags,
@@ -53,12 +54,12 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
 
     let qualifier = "";
 
-    if (env === "development" && promoted) {
-      qualifier = "(showing promoted)";
+    if (promoted) {
+      qualifier = "(showing only promoted)";
     }
 
-    if (env === "development" && promoted === false) {
-      qualifier = "(showing unpromoted)";
+    if (promoted === false) {
+      qualifier = "(showing only unpromoted)";
     }
 
     this.log(

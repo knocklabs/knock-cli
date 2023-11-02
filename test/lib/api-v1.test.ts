@@ -223,8 +223,8 @@ describe("lib/api-v1", () => {
       sinon.assert.calledWith(stub, "/v1/commits", { params });
 
       stub.restore();
-    })
-  })
+    });
+  });
 
   describe("commitAllChanges", () => {
     it("makes a PUT request to /v1/commits with supported params", async () => {
