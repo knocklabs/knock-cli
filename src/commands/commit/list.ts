@@ -14,7 +14,7 @@ import { withSpinner } from "@/lib/helpers/request";
 import { formatCommitAuthor, formatCommitResource } from "@/lib/marshal/commit";
 
 export default class CommitList extends BaseCommand<typeof CommitList> {
-  static summary = "Display all commit for an environment";
+  static summary = "Display all commits in an environment";
 
   static flags = {
     environment: Flags.string({
@@ -22,7 +22,7 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       summary: "The environment to use.",
     }),
     promoted: Flags.boolean({
-      summary: "Show only promoted or unpromoted changes.",
+      summary: "Show only promoted or unpromoted changes between the given environment and the subsequent environment.",
       allowNo: true,
     }),
     ...pageFlags,
