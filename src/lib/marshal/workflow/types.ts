@@ -1,4 +1,4 @@
-import { AnyObj } from "@/lib/helpers/object";
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import type { Conditions } from "@/lib/marshal/conditions";
 import {
   Duration,

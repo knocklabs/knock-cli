@@ -1,0 +1,202 @@
+{
+  "name": "my-first-workflow",
+  "sha": "kXtazP7bLEyZ1Um0Pwlm6MbS5W5a2lpiZcRAGXtV3nI=",
+  "steps": [
+    {
+      "ref": "delay_1",
+      "settings": {
+        "delay_until_field_path": "data.foo"
+      },
+      "type": "delay"
+    },
+    {
+      "ref": "batch_1",
+      "settings": {
+        "batch_items_max_limit": 15,
+        "batch_order": "asc",
+        "batch_window": {
+          "unit": "minutes",
+          "value": 30
+        },
+        "batch_window_type": "fixed"
+      },
+      "type": "batch"
+    },
+    {
+      "branches": [
+        {
+          "conditions": {
+            "all": [
+              {
+                "argument": "1",
+                "operator": "equal_to",
+                "variable": "data.one"
+              }
+            ]
+          },
+          "name": "Branch 1",
+          "steps": [
+            {
+              "ref": "throttle_1",
+              "settings": {
+                "throttle_limit": 1,
+                "throttle_window_field_path": "data.foo"
+              },
+              "type": "throttle"
+            },
+            {
+              "channel_key": "knock",
+              "ref": "in_app_feed_1",
+              "template": {
+                "action_url": "{{ vars.app_url }}",
+                "markdown_body@": "in_app_feed_1/markdown_body.md"
+              },
+              "type": "channel"
+            },
+            {
+              "channel_key": "twilio",
+              "ref": "sms_1",
+              "template": {
+                "text_body@": "sms_1/text_body.txt"
+              },
+              "type": "channel"
+            }
+          ],
+          "terminates": false
+        },
+        {
+          "name": "Default",
+          "steps": [
+            {
+              "channel_key": "webhook",
+              "ref": "http_1",
+              "type": "channel"
+            },
+            {
+              "branches": [
+                {
+                  "conditions": {
+                    "all": [
+                      {
+                        "argument": "2",
+                        "operator": "equal_to",
+                        "variable": "data.one"
+                      }
+                    ]
+                  },
+                  "name": "Branch 1",
+                  "steps": [
+                    {
+                      "conditions": {
+                        "all": [
+                          {
+                            "argument": "2",
+                            "operator": "equal_to",
+                            "variable": "data.two"
+                          }
+                        ]
+                      },
+                      "ref": "batch_2",
+                      "settings": {
+                        "batch_items_max_limit": 5,
+                        "batch_items_render_limit": 15,
+                        "batch_key": "hey",
+                        "batch_order": "asc",
+                        "batch_until_field_path": "data.bar",
+                        "batch_window_type": "fixed"
+                      },
+                      "type": "batch"
+                    }
+                  ],
+                  "terminates": false
+                },
+                {
+                  "name": "Default",
+                  "steps": [
+                    {
+                      "ref": "delay_2",
+                      "settings": {
+                        "delay_for": {
+                          "unit": "seconds",
+                          "value": 30
+                        }
+                      },
+                      "type": "delay"
+                    }
+                  ],
+                  "terminates": false
+                }
+              ],
+              "ref": "branch_2",
+              "type": "branch"
+            },
+            {
+              "channel_key": "postmark",
+              "ref": "email_2",
+              "template": {
+                "settings": {
+                  "layout_key": "default"
+                },
+                "subject": "New activity",
+                "visual_blocks@": "email_2/visual_blocks.json"
+              },
+              "type": "channel"
+            },
+            {
+              "conditions": {
+                "all": [
+                  {
+                    "argument": "2",
+                    "operator": "equal_to",
+                    "variable": "data.one"
+                  }
+                ]
+              },
+              "ref": "throttle_2",
+              "settings": {
+                "throttle_key": "hey",
+                "throttle_limit": 1,
+                "throttle_window": {
+                  "unit": "minutes",
+                  "value": 1
+                }
+              },
+              "type": "throttle"
+            }
+          ],
+          "terminates": false
+        }
+      ],
+      "ref": "branch_1",
+      "type": "branch"
+    },
+    {
+      "channel_key": "postmark",
+      "ref": "email_1",
+      "template": {
+        "settings": {
+          "layout_key": "default"
+        },
+        "subject": "New activity",
+        "visual_blocks@": "email_1/visual_blocks.json"
+      },
+      "type": "channel"
+    },
+    {
+      "channel_key": "slack",
+      "ref": "chat_1",
+      "template": {
+        "markdown_body@": "chat_1/markdown_body.md"
+      },
+      "type": "channel"
+    }
+  ],
+  "__readonly": {
+    "environment": "development",
+    "key": "my-first-workflow",
+    "active": true,
+    "valid": true,
+    "created_at": "2023-02-04T23:26:41.301008Z",
+    "updated_at": "2023-11-01T16:33:37.083033Z"
+  }
+}

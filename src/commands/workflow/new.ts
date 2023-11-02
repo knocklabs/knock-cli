@@ -4,7 +4,7 @@ import { Args, Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
-import { merge } from "@/lib/helpers/object";
+import { merge } from "@/lib/helpers/object.isomorphic";
 import { spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
 import { WorkflowDirContext } from "@/lib/run-context";

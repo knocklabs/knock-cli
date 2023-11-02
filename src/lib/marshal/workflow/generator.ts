@@ -2,12 +2,12 @@ import * as path from "node:path";
 
 import { assign, get, zip } from "lodash";
 
-import { FILEPATH_MARKER } from "@/lib/marshal/shared/helpers";
+import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { WorkflowDirContext } from "@/lib/run-context";
 
-import { WORKFLOW_JSON } from "./helpers";
+import { WorkflowDirBundle, WORKFLOW_JSON } from "./processor.isomorphic";
 import { StepType, WorkflowStepData } from "./types";
-import { WorkflowDirBundle, writeWorkflowDirFromBundle } from "./writer";
+import { writeWorkflowDirFromBundle } from "./writer";
 
 const newTemplateFilePath = (
   stepRef: string,

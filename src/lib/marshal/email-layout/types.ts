@@ -1,4 +1,4 @@
-import { AnyObj } from "@/lib/helpers/object";
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import { Hyperlink, MaybeWithAnnotation } from "../shared/types";
 

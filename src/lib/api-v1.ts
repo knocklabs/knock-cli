@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { BFlags, Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
-import { prune } from "@/lib/helpers/object";
+import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";

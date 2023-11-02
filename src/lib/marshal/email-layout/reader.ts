@@ -6,12 +6,17 @@ import { hasIn, set } from "lodash";
 
 import { formatErrors, JsonDataError, SourceError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
-import { AnyObj, mapValuesDeep, ObjPath, omitDeep } from "@/lib/helpers/object";
 import {
-  FILEPATH_MARKED_RE,
+  AnyObj,
+  mapValuesDeep,
+  ObjPath,
+  omitDeep,
+} from "@/lib/helpers/object.isomorphic";
+import {
   readExtractedFileSync,
   validateExtractedFilePath,
 } from "@/lib/marshal/shared/helpers";
+import { FILEPATH_MARKED_RE } from "@/lib/marshal/shared/const.isomorphic";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
 import {

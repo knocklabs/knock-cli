@@ -8,7 +8,7 @@ import {
   omitDeep,
   prune,
   split,
-} from "@/lib/helpers/object";
+} from "@/lib/helpers/object.isomorphic";
 
 describe("lib/helpers/object", () => {
   describe("split", () => {

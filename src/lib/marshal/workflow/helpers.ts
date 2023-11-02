@@ -9,9 +9,7 @@ import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { RunContext, WorkflowDirContext } from "@/lib/run-context";
 
 import { StepType, WorkflowData, WorkflowStepData } from "./types";
-
-export const WORKFLOW_JSON = "workflow.json";
-export const VISUAL_BLOCKS_JSON = "visual_blocks.json";
+import { WORKFLOW_JSON } from "./processor.isomorphic";
 
 export const workflowJsonPath = (workflowDirCtx: WorkflowDirContext): string =>
   path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON);
