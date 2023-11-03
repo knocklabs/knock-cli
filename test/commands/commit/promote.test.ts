@@ -1,4 +1,4 @@
-import { test } from "@oclif/test";
+import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
@@ -25,8 +25,12 @@ describe("commands/commit/promote", () => {
     setupWithStub()
       .stdout()
       .command(["commit promote"])
-      .exit(2)
-      .it("exists with status 2");
+      .catch((error) =>
+        expect(error.message).to.match(
+          /^You must specify either the `--to` or `--only` flag./,
+        ),
+      )
+      .it("throws an error");
   });
 
   describe("given a target `to` environment flag", () => {
