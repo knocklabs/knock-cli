@@ -6,7 +6,8 @@ import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
-  static summary = "Promote a single commit to the subsequent environment or all changes to the destination environment.";
+  static summary =
+    "Promote a single commit to the subsequent environment or all changes to the destination environment.";
 
   static flags = {
     to: Flags.string({
