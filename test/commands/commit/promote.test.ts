@@ -20,14 +20,40 @@ const setupWithStub = () =>
       sinon.stub().onFirstCall().resolves({ input: "y" }),
     );
 
+const setupWithStubPromoteCommit = () =>
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(
+      KnockApiV1.prototype,
+      "promoteCommitChanges",
+      sinon.stub().resolves(factory.resp({ data: "success" })),
+    )
+    .stub(
+      enquirer.prototype,
+      "prompt",
+      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    );
+
 describe("commands/commit/promote", () => {
-  describe("given no `to` environment flag", () => {
+  describe("given no `to` or `only` environment flag", () => {
     setupWithStub()
       .stdout()
       .command(["commit promote"])
       .catch((error) =>
         expect(error.message).to.match(
           /^You must specify either the `--to` or `--only` flag./,
+        ),
+      )
+      .it("throws an error");
+  });
+
+  describe("given both `to` and `only` flags,", () => {
+    setupWithStub()
+      .stdout()
+      .command(["commit promote", "--to", "staging", "--only", "example-id"])
+      .catch((error) =>
+        expect(error.message).to.match(
+          /^The flags `--to` and `--only` cannot be used together./,
         ),
       )
       .it("throws an error");
@@ -45,6 +71,23 @@ describe("commands/commit/promote", () => {
               "service-token": "valid-token",
 
               to: "staging",
+            }),
+          ),
+        );
+      });
+  });
+
+  describe("given an `only` commit ID flag", () => {
+    setupWithStubPromoteCommit()
+      .stdout()
+      .command(["commit promote", "--only", "exampe-id"])
+      .it("calls apiV1 promoteCommitChanges with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.promoteCommitChanges as any,
+          sinon.match(({ flags }) =>
+            isEqual(flags, {
+              "service-token": "valid-token",
+              only: "exampe-id"
             }),
           ),
         );
