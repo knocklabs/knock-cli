@@ -282,6 +282,29 @@ describe("lib/api-v1", () => {
     });
   });
 
+  describe("promoteCommitChanges", () => {
+    it("makes a PUT request to /v1/commits/promote/:id with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          data: { result: "success" },
+        }),
+      );
+      const args = {};
+      const flags = {
+        only: "example-id",
+        "rogue-flag": "hey",
+        ...factory.gFlags(),
+      };
+      await apiV1.promoteCommitChanges(factory.props({ args, flags }));
+
+      sinon.assert.calledWith(stub, `/v1/commits/promote/${flags.only}`, {}, {});
+
+      stub.restore();
+    })
+  })
+
   describe("listTranslations", () => {
     const flags = {
       environment: "staging",
