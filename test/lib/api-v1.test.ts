@@ -299,11 +299,16 @@ describe("lib/api-v1", () => {
       };
       await apiV1.promoteCommitChanges(factory.props({ args, flags }));
 
-      sinon.assert.calledWith(stub, `/v1/commits/promote/${flags.only}`, {}, {});
+      sinon.assert.calledWith(
+        stub,
+        `/v1/commits/promote/${flags.only}`,
+        {},
+        {},
+      );
 
       stub.restore();
-    })
-  })
+    });
+  });
 
   describe("listTranslations", () => {
     const flags = {

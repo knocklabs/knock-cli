@@ -87,7 +87,7 @@ describe("commands/commit/promote", () => {
           sinon.match(({ flags }) =>
             isEqual(flags, {
               "service-token": "valid-token",
-              only: "exampe-id"
+              only: "exampe-id",
             }),
           ),
         );
