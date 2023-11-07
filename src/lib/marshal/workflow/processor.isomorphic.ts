@@ -1,20 +1,20 @@
 import * as path from "node:path";
 
-import { cloneDeep, get, has, set, unset, isPlainObject } from "lodash";
+import { cloneDeep, get, has, isPlainObject, set, unset } from "lodash";
 
 import {
-  ObjKeyOrArrayIdx,
-  split,
   AnyObj,
   mapValuesDeep,
+  ObjKeyOrArrayIdx,
   ObjPath,
   omitDeep,
+  split,
 } from "@/lib/helpers/object.isomorphic";
-import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 import {
   FILEPATH_MARKED_RE,
   FILEPATH_MARKER,
 } from "@/lib/marshal/shared/const.isomorphic";
+import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { StepType, WorkflowData, WorkflowStepData } from "./types";
 

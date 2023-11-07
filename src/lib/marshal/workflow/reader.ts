@@ -13,11 +13,11 @@ import {
   ObjPath,
   omitDeep,
 } from "@/lib/helpers/object.isomorphic";
+import { FILEPATH_MARKED_RE } from "@/lib/marshal/shared/const.isomorphic";
 import {
   readExtractedFileSync,
   validateExtractedFilePath,
 } from "@/lib/marshal/shared/helpers";
-import { FILEPATH_MARKED_RE } from "@/lib/marshal/shared/const.isomorphic";
 import { WorkflowDirContext } from "@/lib/run-context";
 
 import {

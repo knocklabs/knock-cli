@@ -5,7 +5,7 @@ import { assign, get, zip } from "lodash";
 import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { WorkflowDirContext } from "@/lib/run-context";
 
-import { WorkflowDirBundle, WORKFLOW_JSON } from "./processor.isomorphic";
+import { WORKFLOW_JSON, WorkflowDirBundle } from "./processor.isomorphic";
 import { StepType, WorkflowStepData } from "./types";
 import { writeWorkflowDirFromBundle } from "./writer";
 

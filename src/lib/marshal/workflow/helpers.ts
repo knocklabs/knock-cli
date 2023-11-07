@@ -8,8 +8,8 @@ import { DirContext } from "@/lib/helpers/fs";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { RunContext, WorkflowDirContext } from "@/lib/run-context";
 
-import { StepType, WorkflowData, WorkflowStepData } from "./types";
 import { WORKFLOW_JSON } from "./processor.isomorphic";
+import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export const workflowJsonPath = (workflowDirCtx: WorkflowDirContext): string =>
   path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON);

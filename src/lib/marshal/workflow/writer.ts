@@ -9,12 +9,12 @@ import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { WorkflowDirContext } from "@/lib/run-context";
 
-import {
-  WorkflowDirBundle,
-  WORKFLOW_JSON,
-  buildWorkflowDirBundle,
-} from "./processor.isomorphic";
 import { isWorkflowDir } from "./helpers";
+import {
+  buildWorkflowDirBundle,
+  WORKFLOW_JSON,
+  WorkflowDirBundle,
+} from "./processor.isomorphic";
 import { readWorkflowDir } from "./reader";
 import { WorkflowData } from "./types";
 
