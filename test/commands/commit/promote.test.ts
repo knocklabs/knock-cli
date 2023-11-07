@@ -25,7 +25,7 @@ const setupWithStubPromoteCommit = () =>
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(
       KnockApiV1.prototype,
-      "promoteCommitChanges",
+      "promoteChange",
       sinon.stub().resolves(factory.resp({ data: "success" })),
     )
     .stub(
@@ -81,9 +81,9 @@ describe("commands/commit/promote", () => {
     setupWithStubPromoteCommit()
       .stdout()
       .command(["commit promote", "--only", "exampe-id"])
-      .it("calls apiV1 promoteCommitChanges with expected props", () => {
+      .it("calls apiV1 promoteChange with expected props", () => {
         sinon.assert.calledWith(
-          KnockApiV1.prototype.promoteCommitChanges as any,
+          KnockApiV1.prototype.promoteChange as any,
           sinon.match(({ flags }) =>
             isEqual(flags, {
               "service-token": "valid-token",

@@ -282,7 +282,7 @@ describe("lib/api-v1", () => {
     });
   });
 
-  describe("promoteCommitChanges", () => {
+  describe("promoteChange", () => {
     it("makes a PUT request to /v1/commits/promote/:id with supported params", async () => {
       const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
 
@@ -297,7 +297,7 @@ describe("lib/api-v1", () => {
         "rogue-flag": "hey",
         ...factory.gFlags(),
       };
-      await apiV1.promoteCommitChanges(factory.props({ args, flags }));
+      await apiV1.promoteChange(factory.props({ args, flags }));
 
       sinon.assert.calledWith(
         stub,

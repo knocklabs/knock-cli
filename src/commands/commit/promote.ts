@@ -62,7 +62,7 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
       if (!input) return;
 
       await withSpinner<ApiV1.PromoteChangesResp>(() =>
-        this.apiV1.promoteCommitChanges(this.props),
+        this.apiV1.promoteChange(this.props),
       );
 
       this.log(`‣ Successfully promoted commit \`${flags.only}\` `);
