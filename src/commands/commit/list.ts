@@ -88,7 +88,8 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       },
       commit_message: {
         header: "Commit message",
-        get: (entry) => entry.commit_message?.trim(),
+        get: (entry) =>
+          entry.commit_message ? entry.commit_message.trim() : "",
       },
       created_at: {
         header: "Created at",
