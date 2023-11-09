@@ -26,7 +26,11 @@ const setupWithStubPromoteCommit = () =>
     .stub(
       KnockApiV1.prototype,
       "promoteChange",
-      sinon.stub().resolves(factory.resp({ data: { commit: factory.commit({ id: "example-id" }), } })),
+      sinon.stub().resolves(
+        factory.resp({
+          data: { commit: factory.commit({ id: "example-id" }) },
+        }),
+      ),
     )
     .stub(
       enquirer.prototype,

@@ -2,9 +2,13 @@ import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
-import { formatErrorRespMessage, isSuccessResp, withSpinner } from "@/lib/helpers/request";
-import { promptToConfirm } from "@/lib/helpers/ux";
 import { ApiError } from "@/lib/helpers/error";
+import {
+  formatErrorRespMessage,
+  isSuccessResp,
+  withSpinner,
+} from "@/lib/helpers/request";
+import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
   static summary =
@@ -69,8 +73,10 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
         return this.error(new ApiError(message));
       }
 
-      const { commit: commit } = resp.data;
-      this.log(`‣ Successfully promoted commit \`${flags.only}\` into \`${commit?.environment}\` environment`);
+      const { commit } = resp.data;
+      this.log(
+        `‣ Successfully promoted commit \`${flags.only}\` into \`${commit?.environment}\` environment`,
+      );
       this.log(`‣ New commit ID: \`${commit?.id}\``);
     }
   }

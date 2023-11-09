@@ -384,6 +384,6 @@ export type PromoteAllChangesResp = {
 };
 
 export type PromoteChangeResp = {
-  commit?: Commit.CommitData
+  commit?: Commit.CommitData;
   errors?: InputError[];
-}
+};
