@@ -2,8 +2,9 @@ import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
-import { withSpinner } from "@/lib/helpers/request";
+import { formatErrorRespMessage, isSuccessResp, withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
+import { ApiError } from "@/lib/helpers/error";
 
 export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
   static summary =
@@ -29,7 +30,6 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
     // * --to : Promotes all changes to the destination environment.
     // * --only: Promotes one commit to the subsequent enviroment
     // The absence or presence of both flags will result in an error.
-
     if (flags.to && flags.only) {
       throw new Error(
         "The flags `--to` and `--only` cannot be used together.\n See more help with --help",
@@ -49,7 +49,7 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
       const input = flags.force || (await promptToConfirm(prompt));
       if (!input) return;
 
-      await withSpinner<ApiV1.PromoteChangesResp>(() =>
+      await withSpinner<ApiV1.PromoteAllChangesResp>(() =>
         this.apiV1.promoteAllChanges(this.props),
       );
 
@@ -61,11 +61,17 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
       const input = flags.force || (await promptToConfirm(prompt));
       if (!input) return;
 
-      await withSpinner<ApiV1.PromoteChangesResp>(() =>
+      const resp = await withSpinner<ApiV1.PromoteChangeResp>(() =>
         this.apiV1.promoteChange(this.props),
       );
+      if (!isSuccessResp(resp)) {
+        const message = formatErrorRespMessage(resp);
+        return this.error(new ApiError(message));
+      }
 
-      this.log(`‣ Successfully promoted commit \`${flags.only}\` `);
+      const { commit: commit } = resp.data;
+      this.log(`‣ Successfully promoted commit \`${flags.only}\` into \`${commit?.environment}\` environment`);
+      this.log(`‣ New commit ID: \`${commit?.id}\``);
     }
   }
 }

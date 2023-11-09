@@ -26,7 +26,7 @@ const setupWithStubPromoteCommit = () =>
     .stub(
       KnockApiV1.prototype,
       "promoteChange",
-      sinon.stub().resolves(factory.resp({ data: "success" })),
+      sinon.stub().resolves(factory.resp({ data: { commit: factory.commit({ id: "example-id" }), } })),
     )
     .stub(
       enquirer.prototype,
@@ -80,14 +80,19 @@ describe("commands/commit/promote", () => {
   describe("given an `only` commit ID flag", () => {
     setupWithStubPromoteCommit()
       .stdout()
-      .command(["commit promote", "--only", "exampe-id"])
+      .command(["commit promote", "--only", "example-id"])
       .it("calls apiV1 promoteChange with expected props", () => {
         sinon.assert.calledWith(
           KnockApiV1.prototype.promoteChange as any,
           sinon.match(({ flags }) =>
             isEqual(flags, {
               "service-token": "valid-token",
-              only: "exampe-id",
+              only: "example-id",
+            }),
+          ),
+          sinon.match((commit) =>
+            isEqual(commit, {
+              id: "example-id",
             }),
           ),
         );

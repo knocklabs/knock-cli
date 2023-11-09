@@ -283,7 +283,7 @@ describe("lib/api-v1", () => {
   });
 
   describe("promoteChange", () => {
-    it("makes a PUT request to /v1/commits/promote/:id with supported params", async () => {
+    it("makes a PUT request to /v1/commits/:id/promote with supported params", async () => {
       const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
@@ -301,7 +301,7 @@ describe("lib/api-v1", () => {
 
       sinon.assert.calledWith(
         stub,
-        `/v1/commits/promote/${flags.only}`,
+        `/v1/commits/${flags.only}/promote`,
         {},
         {},
       );

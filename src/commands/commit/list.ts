@@ -54,7 +54,6 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
 
     let qualifier = "";
 
-
     if (promoted === true) {
       qualifier = "(showing only promoted)";
     }

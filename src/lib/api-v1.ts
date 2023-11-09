@@ -152,7 +152,7 @@ export default class ApiV1 {
 
   async promoteAllChanges({
     flags,
-  }: Props): Promise<AxiosResponse<PromoteChangesResp>> {
+  }: Props): Promise<AxiosResponse<PromoteAllChangesResp>> {
     const params = prune({
       to_environment: flags.to,
     });
@@ -162,8 +162,8 @@ export default class ApiV1 {
 
   async promoteChange({
     flags,
-  }: Props): Promise<AxiosResponse<PromoteChangesResp>> {
-    return this.put(`/commits/promote/${flags.only}`, {}, {});
+  }: Props): Promise<AxiosResponse<PromoteChangeResp>> {
+    return this.put(`/commits/${flags.only}/promote`, {}, {});
   }
 
   // By resources: Translations
@@ -378,7 +378,12 @@ export type CommitAllChangesResp = {
   errors?: InputError[];
 };
 
-export type PromoteChangesResp = {
+export type PromoteAllChangesResp = {
   result?: "success";
   errors?: InputError[];
 };
+
+export type PromoteChangeResp = {
+  commit?: Commit.CommitData
+  errors?: InputError[];
+}
