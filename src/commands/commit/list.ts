@@ -54,7 +54,8 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
 
     let qualifier = "";
 
-    if (promoted) {
+
+    if (promoted === true) {
       qualifier = "(showing only promoted)";
     }
 
@@ -88,6 +89,11 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       },
       commit_message: {
         header: "Commit message",
+<<<<<<< HEAD
+=======
+        get: (entry) =>
+          entry.commit_message ? entry.commit_message.trim() : "",
+>>>>>>> main
       },
       created_at: {
         header: "Created at",
