@@ -5,6 +5,7 @@ import { BFlags, Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
+import * as Commit from "@/lib/marshal/commit";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
@@ -127,6 +128,16 @@ export default class ApiV1 {
   }
 
   // By resources: Commits
+
+  async listCommits({ flags }: Props): Promise<AxiosResponse<ListCommitResp>> {
+    const params = prune({
+      environment: flags.environment,
+      promoted: flags.promoted,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/commits", { params });
+  }
 
   async commitAllChanges({
     flags,
@@ -353,6 +364,8 @@ export type ValidateEmailLayoutResp = {
   email_layout?: EmailLayout.EmailLayoutData;
   errors?: InputError[];
 };
+
+export type ListCommitResp = PaginatedResp<Commit.CommitData>;
 
 export type CommitAllChangesResp = {
   result?: "success";

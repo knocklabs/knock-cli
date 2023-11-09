@@ -190,6 +190,42 @@ describe("lib/api-v1", () => {
     });
   });
 
+  describe("listCommits", () => {
+    it("makes a GET request to /v1/commits with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          status: 200,
+          data: {
+            entries: [],
+            page_info: factory.pageInfo(),
+          },
+        }),
+      );
+
+      const flags = {
+        environment: "development",
+        promoted: true,
+        after: "foo",
+        limit: 3,
+        ...factory.gFlags(),
+      };
+      await apiV1.listCommits(factory.props({ flags }));
+
+      const params = {
+        environment: "development",
+        promoted: true,
+        after: "foo",
+        limit: 3,
+      };
+
+      sinon.assert.calledWith(stub, "/v1/commits", { params });
+
+      stub.restore();
+    });
+  });
+
   describe("commitAllChanges", () => {
     it("makes a PUT request to /v1/commits with supported params", async () => {
       const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
