@@ -31,17 +31,18 @@ export default class CommitGet extends BaseCommand<typeof CommitGet>{
 
   render(commit: ApiV1.GetCommitResp): void {
 
+    this.log(
+      `‣ Showing commit \`${commit.id}\` in \`${commit.environment}\` environment`,
+    );
+
     /*
     * Commit table
     */
+
     const rows = [
       {
         key: "ID",
         value: commit.id,
-      },
-      {
-        key: "Environment",
-        value: commit.environment,
       },
       {
         key: "Resource",
