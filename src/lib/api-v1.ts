@@ -140,7 +140,7 @@ export default class ApiV1 {
   }
 
   async getCommit({ args }: Props): Promise<AxiosResponse<GetCommitResp>> {
-    return this.get(`/commits/${args.id}`, {})
+    return this.get(`/commits/${args.id}`, {});
   }
 
   async commitAllChanges({
@@ -377,7 +377,7 @@ export type ValidateEmailLayoutResp = {
 
 export type ListCommitResp = PaginatedResp<Commit.CommitData>;
 
-export type GetCommitResp = Commit.CommitData
+export type GetCommitResp = Commit.CommitData;
 
 export type CommitAllChangesResp = {
   result?: "success";

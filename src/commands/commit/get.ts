@@ -6,14 +6,14 @@ import { formatDate } from "@/lib/helpers/date";
 import { withSpinner } from "@/lib/helpers/request";
 import { formatCommitAuthor } from "@/lib/marshal/commit";
 
-export default class CommitGet extends BaseCommand<typeof CommitGet>{
-  static summary = "Display a single commit based on an ID"
+export default class CommitGet extends BaseCommand<typeof CommitGet> {
+  static summary = "Display a single commit based on an ID";
 
   static args = {
     id: Args.string({
-      required: true
-    })
-  }
+      required: true,
+    }),
+  };
 
   static enableJsonFlag = true;
 
@@ -21,23 +21,21 @@ export default class CommitGet extends BaseCommand<typeof CommitGet>{
     const { flags } = this.props;
 
     const resp = await withSpinner<ApiV1.GetCommitResp>(() =>
-      this.apiV1.getCommit(this.props)
+      this.apiV1.getCommit(this.props),
     );
 
     if (flags.json) return resp.data;
     this.render(resp.data);
-
   }
 
   render(commit: ApiV1.GetCommitResp): void {
-
     this.log(
       `‣ Showing commit \`${commit.id}\` in \`${commit.environment}\` environment`,
     );
 
     /*
-    * Commit table
-    */
+     * Commit table
+     */
 
     const rows = [
       {
@@ -62,7 +60,7 @@ export default class CommitGet extends BaseCommand<typeof CommitGet>{
       },
       {
         key: "Created at",
-        value: formatDate(commit.created_at)
+        value: formatDate(commit.created_at),
       },
     ];
 

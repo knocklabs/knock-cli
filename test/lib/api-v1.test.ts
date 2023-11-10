@@ -236,14 +236,14 @@ describe("lib/api-v1", () => {
         }),
       );
 
-      const args = { id: "foo" }
-      await apiV1.getCommit(factory.props({ args }))
+      const args = { id: "foo" };
+      await apiV1.getCommit(factory.props({ args }));
 
       sinon.assert.calledWith(stub, "/v1/commits/foo", {});
 
       stub.restore();
-    })
-  })
+    });
+  });
 
   describe("commitAllChanges", () => {
     it("makes a PUT request to /v1/commits with supported params", async () => {
