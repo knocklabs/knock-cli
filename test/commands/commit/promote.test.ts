@@ -94,11 +94,6 @@ describe("commands/commit/promote", () => {
               only: "example-id",
             }),
           ),
-          sinon.match((commit) =>
-            isEqual(commit, {
-              id: "example-id",
-            }),
-          ),
         );
       });
   });

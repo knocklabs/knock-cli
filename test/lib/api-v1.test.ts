@@ -288,9 +288,10 @@ describe("lib/api-v1", () => {
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
-          data: { result: "success" },
+          data: { commit: factory.commit() },
         }),
       );
+
       const args = {};
       const flags = {
         only: "example-id",
