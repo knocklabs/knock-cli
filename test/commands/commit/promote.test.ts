@@ -45,7 +45,7 @@ describe("commands/commit/promote", () => {
       .command(["commit promote"])
       .catch((error) =>
         expect(error.message).to.match(
-          /^You must specify either the `--to` or `--only` flag./,
+          /^You must specify either `--to` or `--only` flag./,
         ),
       )
       .it("throws an error");
@@ -57,7 +57,7 @@ describe("commands/commit/promote", () => {
       .command(["commit promote", "--to", "staging", "--only", "example-id"])
       .catch((error) =>
         expect(error.message).to.match(
-          /^The flags `--to` and `--only` cannot be used together./,
+          /^`--to` and `--only` flags cannot be used together./,
         ),
       )
       .it("throws an error");

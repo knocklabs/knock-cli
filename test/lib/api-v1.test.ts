@@ -300,10 +300,7 @@ describe("lib/api-v1", () => {
       };
       await apiV1.promoteChange(factory.props({ args, flags }));
 
-      sinon.assert.calledWith(
-        stub,
-        `/v1/commits/${flags.only}/promote`
-      );
+      sinon.assert.calledWith(stub, `/v1/commits/${flags.only}/promote`);
 
       stub.restore();
     });

@@ -1,7 +1,7 @@
 import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
-import BaseCommand from "@/lib/base-command";
+import BaseCommand, { TFlags } from "@/lib/base-command";
 import { ApiError } from "@/lib/helpers/error";
 import {
   formatErrorRespMessage,
@@ -36,7 +36,7 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
     // The absence or presence of both flags will result in an error.
     if (flags.to && flags.only) {
       throw new Error(
-        "`--to` and `--only` flags cannot be used together.\n See more help with --help",,
+        "`--to` and `--only` flags cannot be used together.\n See more help with --help",
       );
     }
 
@@ -46,38 +46,46 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
       );
     }
 
-    if (flags.to) {
-      // Confirm first as we are about to promote changes to go live in the target
-      // environment, unless forced.
-      const prompt = `Promote all changes to \`${flags.to}\` environment?`;
-      const input = flags.force || (await promptToConfirm(prompt));
-      if (!input) return;
+    return flags.only
+      ? this.promoteOneChange(flags)
+      : this.promoteAllChanges(flags);
+  }
 
-      await withSpinner<ApiV1.PromoteAllChangesResp>(() =>
-        this.apiV1.promoteAllChanges(this.props),
-      );
+  async promoteOneChange(flags: TFlags<typeof CommitPromote>): Promise<void> {
+    // Confirm first as we are about to promote the commit, unless forced.
+    const prompt = `Promote commit \`${flags.only}\` ?`;
+    const input = flags.force || (await promptToConfirm(prompt));
+    if (!input) return;
 
-      this.log(
-        `‣ Successfully promoted all changes to \`${flags.to}\` environment`,
-      );
-    } else {
-      const prompt = `Promote commit \`${flags.only}\` ?`;
-      const input = flags.force || (await promptToConfirm(prompt));
-      if (!input) return;
-
-      const resp = await withSpinner<ApiV1.PromoteChangeResp>(() =>
-        this.apiV1.promoteChange(this.props),
-      );
-      if (!isSuccessResp(resp)) {
-        const message = formatErrorRespMessage(resp);
-        return this.error(new ApiError(message));
-      }
-
-      const { commit } = resp.data;
-      this.log(
-        `‣ Successfully promoted commit \`${flags.only}\` into \`${commit?.environment}\` environment`,
-      );
-      this.log(`‣ New commit ID: \`${commit?.id}\``);
+    const resp = await withSpinner<ApiV1.PromoteChangeResp>(() =>
+      this.apiV1.promoteChange(this.props),
+    );
+    if (!isSuccessResp(resp)) {
+      const message = formatErrorRespMessage(resp);
+      return this.error(new ApiError(message));
     }
+
+    const { commit } = resp.data;
+
+    this.log(
+      `‣ Successfully promoted commit \`${flags.only}\` into \`${commit?.environment}\` environment`,
+    );
+    this.log(`‣ New commit ID: \`${commit?.id}\``);
+  }
+
+  async promoteAllChanges(flags: TFlags<typeof CommitPromote>): Promise<void> {
+    // Confirm first as we are about to promote changes to go live in the target
+    // environment, unless forced.
+    const prompt = `Promote all changes to \`${flags.to}\` environment?`;
+    const input = flags.force || (await promptToConfirm(prompt));
+    if (!input) return;
+
+    await withSpinner<ApiV1.PromoteAllChangesResp>(() =>
+      this.apiV1.promoteAllChanges(this.props),
+    );
+
+    this.log(
+      `‣ Successfully promoted all changes to \`${flags.to}\` environment`,
+    );
   }
 }
