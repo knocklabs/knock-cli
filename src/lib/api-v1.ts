@@ -160,6 +160,12 @@ export default class ApiV1 {
     return this.put(`/commits/promote`, {}, { params });
   }
 
+  async promoteOneChange({
+    flags,
+  }: Props): Promise<AxiosResponse<PromoteOneChangeResp>> {
+    return this.put(`/commits/${flags.only}/promote`);
+  }
+
   // By resources: Translations
 
   async listTranslations(
@@ -374,5 +380,10 @@ export type CommitAllChangesResp = {
 
 export type PromoteAllChangesResp = {
   result?: "success";
+  errors?: InputError[];
+};
+
+export type PromoteOneChangeResp = {
+  commit?: Commit.CommitData;
   errors?: InputError[];
 };
