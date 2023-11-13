@@ -8,6 +8,7 @@ import {
   isSuccessResp,
   withSpinner,
 } from "@/lib/helpers/request";
+import { indentString } from "@/lib/helpers/string";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
@@ -72,7 +73,7 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
         commit!.environment
       }\` environment`,
     );
-    this.log(`‣ New commit ID: \`${commit?.id}\``);
+    this.log(indentString(`Commit id: ${commit!.id}`, 4));
   }
 
   async promoteAllChanges(flags: TFlags<typeof CommitPromote>): Promise<void> {
