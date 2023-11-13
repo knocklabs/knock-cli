@@ -55,10 +55,6 @@ export default class CommitGet extends BaseCommand<typeof CommitGet> {
         value: formatCommitAuthor(commit),
       },
       {
-        key: "Commit message",
-        value: commit.commit_message ? commit.commit_message.trim() : "",
-      },
-      {
         key: "Created at",
         value: formatDate(commit.created_at),
       },
@@ -78,5 +74,10 @@ export default class CommitGet extends BaseCommand<typeof CommitGet> {
     });
 
     this.log("");
+
+    if (commit.commit_message) {
+      ux.info(commit.commit_message)
+      this.log("");
+    }
   }
 }
