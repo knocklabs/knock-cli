@@ -226,6 +226,25 @@ describe("lib/api-v1", () => {
     });
   });
 
+  describe("getCommit", () => {
+    it("makes a GET request to /v1/commits/:id with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          data: factory.commit(),
+        }),
+      );
+
+      const args = { id: "foo" };
+      await apiV1.getCommit(factory.props({ args }));
+
+      sinon.assert.calledWith(stub, "/v1/commits/foo");
+
+      stub.restore();
+    });
+  });
+
   describe("commitAllChanges", () => {
     it("makes a PUT request to /v1/commits with supported params", async () => {
       const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
