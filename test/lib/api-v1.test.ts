@@ -239,7 +239,7 @@ describe("lib/api-v1", () => {
       const args = { id: "foo" };
       await apiV1.getCommit(factory.props({ args }));
 
-      sinon.assert.calledWith(stub, "/v1/commits/foo", {});
+      sinon.assert.calledWith(stub, "/v1/commits/foo");
 
       stub.restore();
     });
