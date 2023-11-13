@@ -10,9 +10,7 @@ export type BFlags = Interfaces.InferredFlags<
   (typeof BaseCommand)["baseFlags"]
 >;
 
-export type TFlags<T extends typeof Command> = Interfaces.InferredFlags<
-  T["flags"]
-> &
+type TFlags<T extends typeof Command> = Interfaces.InferredFlags<T["flags"]> &
   BFlags;
 
 type TArgs<T extends typeof Command> = Interfaces.InferredArgs<T["args"]>;

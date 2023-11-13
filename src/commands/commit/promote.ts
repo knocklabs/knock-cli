@@ -1,7 +1,7 @@
 import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
-import BaseCommand, { TFlags } from "@/lib/base-command";
+import BaseCommand from "@/lib/base-command";
 import { ApiError } from "@/lib/helpers/error";
 import {
   formatErrorRespMessage,
@@ -12,8 +12,7 @@ import { indentString } from "@/lib/helpers/string";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
-  static summary =
-    "Promote a single commit to the subsequent environment or all changes to the destination environment.";
+  static summary = "Promote one or all commits to the subsequent environment.";
 
   static flags = {
     to: Flags.string({
@@ -24,7 +23,7 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
       summary: "Remove the confirmation prompt.",
     }),
     only: Flags.string({
-      summary: "The ID of the commit to promote to the subsequent environment",
+      summary: "The target commit id to promote to the subsequent environment",
     }),
   };
 
@@ -47,12 +46,12 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
       );
     }
 
-    return flags.only
-      ? this.promoteOneChange(flags)
-      : this.promoteAllChanges(flags);
+    return flags.only ? this.promoteOneChange() : this.promoteAllChanges();
   }
 
-  async promoteOneChange(flags: TFlags<typeof CommitPromote>): Promise<void> {
+  async promoteOneChange(): Promise<void> {
+    const { flags } = this.props;
+
     // Confirm first as we are about to promote the commit, unless forced.
     const prompt = `Promote the commit \`${flags.only}\` ?`;
     const input = flags.force || (await promptToConfirm(prompt));
@@ -76,7 +75,9 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
     this.log(indentString(`Commit id: ${commit!.id}`, 4));
   }
 
-  async promoteAllChanges(flags: TFlags<typeof CommitPromote>): Promise<void> {
+  async promoteAllChanges(): Promise<void> {
+    const { flags } = this.props;
+
     // Confirm first as we are about to promote changes to go live in the target
     // environment, unless forced.
     const prompt = `Promote all changes to \`${flags.to}\` environment?`;
