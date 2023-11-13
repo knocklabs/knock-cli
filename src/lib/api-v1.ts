@@ -140,7 +140,7 @@ export default class ApiV1 {
   }
 
   async getCommit({ args }: Props): Promise<AxiosResponse<GetCommitResp>> {
-    return this.get(`/commits/${args.id}`, {});
+    return this.get(`/commits/${args.id}`);
   }
 
   async commitAllChanges({
