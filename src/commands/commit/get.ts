@@ -7,7 +7,7 @@ import { withSpinner } from "@/lib/helpers/request";
 import { formatCommitAuthor } from "@/lib/marshal/commit";
 
 export default class CommitGet extends BaseCommand<typeof CommitGet> {
-  static summary = "Display a single commit based on an ID";
+  static summary = "Display a single commit";
 
   static args = {
     id: Args.string({
@@ -76,7 +76,7 @@ export default class CommitGet extends BaseCommand<typeof CommitGet> {
     this.log("");
 
     if (commit.commit_message) {
-      ux.info(commit.commit_message);
+      this.log(commit.commit_message);
       this.log("");
     }
   }
