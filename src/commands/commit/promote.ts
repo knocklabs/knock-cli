@@ -68,7 +68,9 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
     const { commit } = resp.data;
 
     this.log(
-      `‣ Successfully promoted the commit \`${flags.only}\` into \`${commit!.environment}\` environment`,
+      `‣ Successfully promoted the commit \`${flags.only}\` into \`${
+        commit!.environment
+      }\` environment`,
     );
     this.log(`‣ New commit ID: \`${commit?.id}\``);
   }
