@@ -76,7 +76,7 @@ export default class CommitGet extends BaseCommand<typeof CommitGet> {
     this.log("");
 
     if (commit.commit_message) {
-      ux.info(commit.commit_message)
+      ux.info(commit.commit_message);
       this.log("");
     }
   }
