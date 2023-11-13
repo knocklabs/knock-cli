@@ -160,9 +160,9 @@ export default class ApiV1 {
     return this.put(`/commits/promote`, {}, { params });
   }
 
-  async promoteChange({
+  async promoteOneChange({
     flags,
-  }: Props): Promise<AxiosResponse<PromoteChangeResp>> {
+  }: Props): Promise<AxiosResponse<PromoteOneChangeResp>> {
     return this.put(`/commits/${flags.only}/promote`);
   }
 
@@ -383,7 +383,7 @@ export type PromoteAllChangesResp = {
   errors?: InputError[];
 };
 
-export type PromoteChangeResp = {
+export type PromoteOneChangeResp = {
   commit?: Commit.CommitData;
   errors?: InputError[];
 };

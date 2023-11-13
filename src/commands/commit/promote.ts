@@ -53,12 +53,12 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
 
   async promoteOneChange(flags: TFlags<typeof CommitPromote>): Promise<void> {
     // Confirm first as we are about to promote the commit, unless forced.
-    const prompt = `Promote commit \`${flags.only}\` ?`;
+    const prompt = `Promote the commit \`${flags.only}\` ?`;
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
-    const resp = await withSpinner<ApiV1.PromoteChangeResp>(() =>
-      this.apiV1.promoteChange(this.props),
+    const resp = await withSpinner<ApiV1.PromoteOneChangeResp>(() =>
+      this.apiV1.promoteOneChange(this.props),
     );
     if (!isSuccessResp(resp)) {
       const message = formatErrorRespMessage(resp);
@@ -68,7 +68,7 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
     const { commit } = resp.data;
 
     this.log(
-      `‣ Successfully promoted commit \`${flags.only}\` into \`${commit?.environment}\` environment`,
+      `‣ Successfully promoted the commit \`${flags.only}\` into \`${commit!.environment}\` environment`,
     );
     this.log(`‣ New commit ID: \`${commit?.id}\``);
   }
