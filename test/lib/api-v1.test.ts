@@ -302,9 +302,7 @@ describe("lib/api-v1", () => {
 
       sinon.assert.calledWith(
         stub,
-        `/v1/commits/${flags.only}/promote`,
-        {},
-        {},
+        `/v1/commits/${flags.only}/promote`
       );
 
       stub.restore();

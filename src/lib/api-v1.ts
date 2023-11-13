@@ -163,7 +163,7 @@ export default class ApiV1 {
   async promoteChange({
     flags,
   }: Props): Promise<AxiosResponse<PromoteChangeResp>> {
-    return this.put(`/commits/${flags.only}/promote`, {}, {});
+    return this.put(`/commits/${flags.only}/promote`);
   }
 
   // By resources: Translations

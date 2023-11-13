@@ -36,13 +36,13 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
     // The absence or presence of both flags will result in an error.
     if (flags.to && flags.only) {
       throw new Error(
-        "The flags `--to` and `--only` cannot be used together.\n See more help with --help",
+        "`--to` and `--only` flags cannot be used together.\n See more help with --help",,
       );
     }
 
     if (!flags.to && !flags.only) {
       throw new Error(
-        "You must specify either the `--to` or `--only` flag.\n See more help with --help",
+        "You must specify either `--to` or `--only` flag.\n See more help with --help",
       );
     }
 
