@@ -1,1 +1,0 @@
-Hey **{{ recipient.name | split: ' ' | first }}** 👋 - {{ actor.name }} completed an activity.
