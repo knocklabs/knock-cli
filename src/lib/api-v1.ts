@@ -5,6 +5,7 @@ import { BFlags, Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
+import * as Commit from "@/lib/marshal/commit";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
@@ -128,6 +129,20 @@ export default class ApiV1 {
 
   // By resources: Commits
 
+  async listCommits({ flags }: Props): Promise<AxiosResponse<ListCommitResp>> {
+    const params = prune({
+      environment: flags.environment,
+      promoted: flags.promoted,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/commits", { params });
+  }
+
+  async getCommit({ args }: Props): Promise<AxiosResponse<GetCommitResp>> {
+    return this.get(`/commits/${args.id}`);
+  }
+
   async commitAllChanges({
     flags,
   }: Props): Promise<AxiosResponse<CommitAllChangesResp>> {
@@ -147,6 +162,12 @@ export default class ApiV1 {
     });
 
     return this.put(`/commits/promote`, {}, { params });
+  }
+
+  async promoteOneChange({
+    flags,
+  }: Props): Promise<AxiosResponse<PromoteOneChangeResp>> {
+    return this.put(`/commits/${flags.only}/promote`);
   }
 
   // By resources: Translations
@@ -354,6 +375,10 @@ export type ValidateEmailLayoutResp = {
   errors?: InputError[];
 };
 
+export type ListCommitResp = PaginatedResp<Commit.CommitData>;
+
+export type GetCommitResp = Commit.CommitData;
+
 export type CommitAllChangesResp = {
   result?: "success";
   errors?: InputError[];
@@ -361,5 +386,10 @@ export type CommitAllChangesResp = {
 
 export type PromoteAllChangesResp = {
   result?: "success";
+  errors?: InputError[];
+};
+
+export type PromoteOneChangeResp = {
+  commit?: Commit.CommitData;
   errors?: InputError[];
 };

@@ -190,6 +190,61 @@ describe("lib/api-v1", () => {
     });
   });
 
+  describe("listCommits", () => {
+    it("makes a GET request to /v1/commits with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          status: 200,
+          data: {
+            entries: [],
+            page_info: factory.pageInfo(),
+          },
+        }),
+      );
+
+      const flags = {
+        environment: "development",
+        promoted: true,
+        after: "foo",
+        limit: 3,
+        ...factory.gFlags(),
+      };
+      await apiV1.listCommits(factory.props({ flags }));
+
+      const params = {
+        environment: "development",
+        promoted: true,
+        after: "foo",
+        limit: 3,
+      };
+
+      sinon.assert.calledWith(stub, "/v1/commits", { params });
+
+      stub.restore();
+    });
+  });
+
+  describe("getCommit", () => {
+    it("makes a GET request to /v1/commits/:id with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          data: factory.commit(),
+        }),
+      );
+
+      const args = { id: "foo" };
+      await apiV1.getCommit(factory.props({ args }));
+
+      sinon.assert.calledWith(stub, "/v1/commits/foo");
+
+      stub.restore();
+    });
+  });
+
   describe("commitAllChanges", () => {
     it("makes a PUT request to /v1/commits with supported params", async () => {
       const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
@@ -241,6 +296,30 @@ describe("lib/api-v1", () => {
         to_environment: "staging",
       };
       sinon.assert.calledWith(stub, "/v1/commits/promote", {}, { params });
+
+      stub.restore();
+    });
+  });
+
+  describe("promoteOneChange", () => {
+    it("makes a PUT request to /v1/commits/:id/promote with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          data: { commit: factory.commit() },
+        }),
+      );
+
+      const args = {};
+      const flags = {
+        only: "example-id",
+        "rogue-flag": "hey",
+        ...factory.gFlags(),
+      };
+      await apiV1.promoteOneChange(factory.props({ args, flags }));
+
+      sinon.assert.calledWith(stub, `/v1/commits/${flags.only}/promote`);
 
       stub.restore();
     });
