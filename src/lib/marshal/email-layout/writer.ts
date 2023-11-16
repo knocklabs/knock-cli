@@ -6,9 +6,13 @@ import { cloneDeep, get, has, set, uniqueId, unset } from "lodash";
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
-import { ObjKeyOrArrayIdx, ObjPath, omitDeep } from "@/lib/helpers/object";
-import { AnyObj, split } from "@/lib/helpers/object";
-import { FILEPATH_MARKER } from "@/lib/marshal/shared/helpers";
+import {
+  ObjKeyOrArrayIdx,
+  ObjPath,
+  omitDeep,
+} from "@/lib/helpers/object.isomorphic";
+import { AnyObj, split } from "@/lib/helpers/object.isomorphic";
+import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 

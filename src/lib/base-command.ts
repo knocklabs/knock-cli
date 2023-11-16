@@ -1,6 +1,6 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
 
-import { AnyObj } from "@/lib/helpers/object";
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import KnockApiV1 from "./api-v1";
 import * as RunContext from "./run-context";

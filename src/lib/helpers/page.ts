@@ -2,7 +2,7 @@ import { Flags } from "@oclif/core";
 import enquirer from "enquirer";
 import { pick } from "lodash";
 
-import { AnyObj } from "@/lib/helpers/object";
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 export const MAX_PAGINATION_LIMIT = 100;
 

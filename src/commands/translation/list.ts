@@ -4,7 +4,7 @@ import { AxiosResponse } from "axios";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
-import { merge } from "@/lib/helpers/object";
+import { merge } from "@/lib/helpers/object.isomorphic";
 import {
   maybePromptPageAction,
   pageFlags,

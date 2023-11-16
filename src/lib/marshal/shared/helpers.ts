@@ -8,11 +8,6 @@ import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 import { VISUAL_BLOCKS_JSON } from "@/lib/marshal/workflow";
 import { EmailLayoutDirContext, WorkflowDirContext } from "@/lib/run-context";
 
-// Mark any template fields we are extracting out with this suffix as a rule,
-// so we can reliably interpret the field value.
-export const FILEPATH_MARKER = "@";
-export const FILEPATH_MARKED_RE = new RegExp(`${FILEPATH_MARKER}$`);
-
 /*
  * Read the file at the given path if it exists, validate the content as
  * applicable, and return the content string or an error.

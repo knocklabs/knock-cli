@@ -14,5 +14,18 @@
     "node/no-missing-import": "off",
     "no-warning-comments": "off",
     "camelcase": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.isomorphic.ts"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [{
+            "group": ["node:*", "!node:path"],
+            "message": "See https://github.com/knocklabs/knock-cli/pull/257 for more details."
+          }]
+        }]
+      }
+    }
+  ]
 }

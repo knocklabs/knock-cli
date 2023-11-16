@@ -2,7 +2,7 @@ import * as jsonlint from "@prantlf/jsonlint";
 import * as fs from "fs-extra";
 
 import { JsonSyntaxError } from "@/lib/helpers/error";
-import { AnyObj } from "@/lib/helpers/object";
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 // Use double spaces (instead of tabs) when writing a json file, this matches
 // how jsonlint parses and prints out human readable error messages in the

@@ -5,7 +5,7 @@ import BaseCommand from "@/lib/base-command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
-import { merge } from "@/lib/helpers/object";
+import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
 import {
   formatErrorRespMessage,

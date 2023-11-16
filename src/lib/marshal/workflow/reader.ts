@@ -12,9 +12,9 @@ import {
   mapValuesDeep,
   ObjPath,
   omitDeep,
-} from "@/lib/helpers/object";
+} from "@/lib/helpers/object.isomorphic";
+import { FILEPATH_MARKED_RE } from "@/lib/marshal/shared/const.isomorphic";
 import {
-  FILEPATH_MARKED_RE,
   readExtractedFileSync,
   validateExtractedFilePath,
 } from "@/lib/marshal/shared/helpers";
@@ -23,9 +23,9 @@ import { WorkflowDirContext } from "@/lib/run-context";
 import {
   isWorkflowDir,
   lsWorkflowJson,
-  WORKFLOW_JSON,
   WorkflowCommandTarget,
 } from "./helpers";
+import { WORKFLOW_JSON } from "./processor.isomorphic";
 
 // Hydrated workflow directory context with its content.
 export type WorkflowDirData = WorkflowDirContext & {

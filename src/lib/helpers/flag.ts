@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import { DirContext } from "@/lib/helpers/fs";
 
 import { tryJsonParse } from "./json";
-import { AnyObj } from "./object";
+import { AnyObj } from "./object.isomorphic";
 
 /*
  * Takes a flag input of 'true' or 'false' as a string, then cast to a boolean
