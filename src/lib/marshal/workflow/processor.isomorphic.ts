@@ -1,3 +1,11 @@
+/*
+ * IMPORTANT:
+ *
+ * This file is suffixed with `.isomorphic` because the code in this file is
+ * meant to run not just in a nodejs environment but also in a browser. For this
+ * reason there are some restrictions for which nodejs imports are allowed in
+ * this module. See `.eslintrc.json` for more details.
+ */
 import * as path from "node:path";
 
 import { cloneDeep, get, has, isPlainObject, set, unset } from "lodash";
