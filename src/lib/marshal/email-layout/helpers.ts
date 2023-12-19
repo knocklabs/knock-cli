@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import { DirContext } from "@/lib/helpers/fs";
 import { EmailLayoutDirContext, RunContext } from "@/lib/run-context";
 
-export const LAYOUT_JSON = "layout.json";
+import { LAYOUT_JSON } from "./processor.isomorphic";
 
 export const emailLayoutJsonPath = (
   layoutDirCtx: EmailLayoutDirContext,

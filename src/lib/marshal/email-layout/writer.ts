@@ -1,75 +1,23 @@
 import path from "node:path";
 
 import * as fs from "fs-extra";
-import { cloneDeep, get, has, set, uniqueId, unset } from "lodash";
+import { uniqueId } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
-import {
-  ObjKeyOrArrayIdx,
-  ObjPath,
-  omitDeep,
-} from "@/lib/helpers/object.isomorphic";
-import { AnyObj, split } from "@/lib/helpers/object.isomorphic";
-import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
-import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
+import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
-import { isEmailLayoutDir, LAYOUT_JSON } from "./helpers";
+import { isEmailLayoutDir } from "./helpers";
+import { buildEmailLayoutDirBundle, LAYOUT_JSON } from "./processor.isomorphic";
 import { readEmailLayoutDir } from "./reader";
 import { EmailLayoutData } from "./types";
 
-export type EmailLayoutDirBundle = {
-  [relpath: string]: string;
-};
-
-type CompiledExtractionSettings = Map<ObjKeyOrArrayIdx[], ExtractionSettings>;
-
-/* Traverse a given email layout data and compile extraction settings of every extractable
- * field into a sorted map.
- *
- * NOTE: Currently we do NOT support content extraction at nested levels for email layouts.
- */
-const compileExtractionSettings = (
-  emailLayout: EmailLayoutData<WithAnnotation>,
-): CompiledExtractionSettings => {
-  const extractableFields = get(
-    emailLayout,
-    ["__annotation", "extractable_fields"],
-    {},
-  );
-  const map: CompiledExtractionSettings = new Map();
-
-  for (const [key] of Object.entries(emailLayout)) {
-    // If the field we are on is extractable, then add its extraction
-    // settings to the map with the current object path.
-    if (key in extractableFields) {
-      map.set([key], extractableFields[key]);
-    }
-  }
-
-  return map;
-};
-
-/* Sanitize the email layout content into a format that's appropriate for reading
- * and writing, by stripping out any annotation fields and handling readonly
- * fields.
- */
-const toEmailLayoutJson = (
-  emailLayout: EmailLayoutData<WithAnnotation>,
-): AnyObj => {
-  // Move read only field under the dedicated field "__readonly".
-  const readonlyFields = emailLayout.__annotation?.readonly_fields || [];
-  const [readonly, remainder] = split(emailLayout, readonlyFields);
-  const emailLayoutjson = { ...remainder, __readonly: readonly };
-
-  // Strip out all schema annotations, so not to expose them to end users.
-  return omitDeep(emailLayoutjson, ["__annotation"]);
-};
-
-/* Builds an email layout dir bundle, which consist of the email layout JSON + the extractable files.
- * Then writes them into a layout directory on a local file system.
+/*
+ * Builds an email layout dir bundle, which consist of the email layout JSON +
+ * the extractable files.  Then writes them into a layout directory on a local
+ * file system.
  */
 export const writeEmailLayoutDirFromData = async (
   emailLayoutDirCtx: EmailLayoutDirContext,
@@ -117,68 +65,10 @@ export const writeEmailLayoutDirFromData = async (
   }
 };
 
-/* For a given email layout payload, this function builds a "email layout directoy bundle".
- * This is an object which contains all the relative paths and its file content.
- * It includes the extractable fields, which are extracted out and added to the bundle as separate files.
+/*
+ * This bulk write function takes the fetched email layouts data KNOCK API and
+ * writes them into a layouts "index" directory.
  */
-const buildEmailLayoutDirBundle = (
-  remoteEmailLayout: EmailLayoutData<WithAnnotation>,
-  localEmailLayout: AnyObj = {},
-): EmailLayoutDirBundle => {
-  const bundle: EmailLayoutDirBundle = {};
-  const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
-  // A map of extraction settings of every field in the email layout
-  const compiledExtractionSettings =
-    compileExtractionSettings(mutRemoteEmailLayout);
-
-  // Iterate through each extractable field, determine whether we need to
-  // extract the field content, and if so, perform the
-  // extraction.
-  for (const [objPathParts, extractionSettings] of compiledExtractionSettings) {
-    // If this layout doesn't have this field path, then we don't extract.
-    if (!has(mutRemoteEmailLayout, objPathParts)) continue;
-
-    // If the field at this path is extracted in the local layout, then
-    // always extract; otherwise extract based on the field settings default.
-    const objPathStr = ObjPath.stringify(objPathParts);
-
-    const extractedFilePath = get(
-      localEmailLayout,
-      `${objPathStr}${FILEPATH_MARKER}`,
-    );
-
-    const { default: extractByDefault, file_ext: fileExt } = extractionSettings;
-
-    if (!extractedFilePath && !extractByDefault) continue;
-
-    // By this point, we have a field where we need to extract its content.
-    const data = get(mutRemoteEmailLayout, objPathParts);
-    const fileName = objPathParts.pop();
-
-    // If we have an extracted file path from the local layout, we use that. In the other
-    // case we use the default path.
-    const relpath =
-      typeof extractedFilePath === "string"
-        ? extractedFilePath
-        : `${fileName}.${fileExt}`;
-
-    // Perform the extraction by adding the content and its file path to the
-    // bundle for writing to the file system later. Then replace the field
-    // content with the extracted file path and mark the field as extracted
-    // with @ suffix.
-    set(bundle, [relpath], data);
-    set(mutRemoteEmailLayout, `${objPathStr}${FILEPATH_MARKER}`, relpath);
-    unset(mutRemoteEmailLayout, objPathStr);
-  }
-
-  // At this point the bundle contains all extractable files, so we finally add the layout
-  // JSON realtive path + the file content.
-
-  return set(bundle, [LAYOUT_JSON], toEmailLayoutJson(mutRemoteEmailLayout));
-};
-
-// This bulk write function takes the fetched email layouts data KNOCK API and writes
-// them into a layouts "index" directory.
 export const writeEmailLayoutIndexDir = async (
   indexDirCtx: DirContext,
   remoteEmailLayouts: EmailLayoutData<WithAnnotation>[],
@@ -262,4 +152,4 @@ const pruneLayoutsIndexDir = async (
 };
 
 // Exported for tests
-export { buildEmailLayoutDirBundle, pruneLayoutsIndexDir, toEmailLayoutJson };
+export { pruneLayoutsIndexDir };
