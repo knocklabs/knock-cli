@@ -10,9 +10,9 @@ import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
 import { isEmailLayoutDir } from "./helpers";
+import { buildEmailLayoutDirBundle, LAYOUT_JSON } from "./processor.isomorphic";
 import { readEmailLayoutDir } from "./reader";
 import { EmailLayoutData } from "./types";
-import { buildEmailLayoutDirBundle, LAYOUT_JSON } from "./processor.isomorphic";
 
 /*
  * Builds an email layout dir bundle, which consist of the email layout JSON +

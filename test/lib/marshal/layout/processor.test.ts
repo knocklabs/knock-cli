@@ -1,10 +1,10 @@
-import { get } from "lodash";
 import { expect } from "chai";
+import { get } from "lodash";
 
 import {
   buildEmailLayoutDirBundle,
-  toEmailLayoutJson,
   EmailLayoutData,
+  toEmailLayoutJson,
 } from "@/lib/marshal/email-layout";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 

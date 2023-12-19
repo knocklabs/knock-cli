@@ -1,15 +1,15 @@
 import { cloneDeep, get, has, set, unset } from "lodash";
 
 import { AnyObj, split } from "@/lib/helpers/object.isomorphic";
-import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import {
   ObjKeyOrArrayIdx,
   ObjPath,
   omitDeep,
 } from "@/lib/helpers/object.isomorphic";
+import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
+import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { EmailLayoutData } from "./types";
-import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 export const LAYOUT_JSON = "layout.json";
 
