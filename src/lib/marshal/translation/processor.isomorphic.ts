@@ -44,13 +44,13 @@ export const buildTranslationDirBundle = (
     return Object.fromEntries(
       translations.map((translation) => [
         formatFileName(translation),
-        translation.content,
+        JSON.parse(translation.content),
       ]),
     );
   }
 
   const translation = input;
   return {
-    [formatFileName(translation)]: translation.content,
+    [formatFileName(translation)]: JSON.parse(translation.content),
   };
 };
