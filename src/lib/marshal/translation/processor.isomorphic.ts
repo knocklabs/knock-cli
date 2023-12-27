@@ -30,8 +30,8 @@ export const formatFileName = (input: string | TranslationData): string => {
  * directory bundle". This is an object which contains all the relative paths of
  * the translation file(s) and its file content.
  *
- * Note, all given translation(s) in a single directory bundle should be of the
- * same locale, and this is assumed so here without further validations in this
+ * Note: all given translation(s) in a single directory bundle should be of the
+ * same locale, and this is assumed for the input without further validations.
  */
 type OneOrMoreTranslationData = TranslationData | TranslationData[];
 
