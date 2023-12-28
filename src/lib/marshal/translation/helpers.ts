@@ -7,6 +7,7 @@ import localeData from "locale-codes";
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
+import { formatFileName, formatRef } from "./processor.isomorphic";
 import { TranslationData } from "./types";
 
 export const translationRefDescription = `
@@ -37,15 +38,6 @@ export const formatLanguage = (translation: TranslationData): string => {
 };
 
 /*
- * Returns a formatted translation "ref".
- */
-export const formatRef = ({
-  locale_code,
-  namespace,
-}: TranslationData): string =>
-  namespace ? `${namespace}.${locale_code}` : locale_code;
-
-/*
  * Evaluates whether the string is a valid locale name
  */
 export const isValidLocale = (localeCode: string): boolean =>
@@ -70,8 +62,9 @@ export const buildTranslationFileCtx = async (
   localeCode: string,
   namespace: string | undefined,
 ): Promise<TranslationFileContext> => {
-  const ref = namespace ? `${namespace}.${localeCode}` : localeCode;
-  const abspath = path.resolve(dirPath, `${ref}.json`);
+  const ref = formatRef(localeCode, namespace);
+  const filename = formatFileName(ref);
+  const abspath = path.resolve(dirPath, filename);
   const exists = await fs.pathExists(abspath);
 
   return {

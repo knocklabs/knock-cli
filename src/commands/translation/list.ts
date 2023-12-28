@@ -69,7 +69,8 @@ export default class TranslationList extends BaseCommand<
     ux.table(entries, {
       ref: {
         header: "Ref",
-        get: (entry) => Translation.formatRef(entry),
+        get: (entry) =>
+          Translation.formatRef(entry.locale_code, entry.namespace),
       },
       language_name: {
         header: "Language",
