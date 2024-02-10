@@ -9,15 +9,11 @@ import KnockApiV1 from "@/lib/api-v1";
 const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "activateWorkflow",
-      sinon.stub().resolves(factory.resp(attrs)),
+    .stub(KnockApiV1.prototype, "activateWorkflow", (stub) =>
+      stub.resolves(factory.resp(attrs)),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 describe("commands/workflow/activate", () => {

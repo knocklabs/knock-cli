@@ -23,13 +23,11 @@ describe("commands/workflow/get", () => {
   describe("given a workflow key arg, and no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "whoami", () =>
-        factory.resp({ data: whoami }),
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: whoami })),
       )
-      .stub(
-        KnockApiV1.prototype,
-        "getWorkflow",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getWorkflow", (stub) =>
+        stub.resolves(
           factory.resp({
             data: factory.workflow(),
           }),
@@ -58,13 +56,11 @@ describe("commands/workflow/get", () => {
   describe("given a workflow key arg, and flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "whoami", () =>
-        factory.resp({ data: whoami }),
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: whoami })),
       )
-      .stub(
-        KnockApiV1.prototype,
-        "getWorkflow",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getWorkflow", (stub) =>
+        stub.resolves(
           factory.resp({
             data: factory.workflow(),
           }),
@@ -100,13 +96,11 @@ describe("commands/workflow/get", () => {
   describe("given a workflow key that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "whoami", () =>
-        factory.resp({ data: whoami }),
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: whoami })),
       )
-      .stub(
-        KnockApiV1.prototype,
-        "getWorkflow",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getWorkflow", (stub) =>
+        stub.resolves(
           factory.resp({
             status: 404,
             statusText: "Not found",

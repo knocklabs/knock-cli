@@ -15,10 +15,8 @@ const workflowJsonFile = "new-comment/workflow.json";
 const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "validateWorkflow",
-      sinon.stub().resolves(factory.resp(attrs)),
+    .stub(KnockApiV1.prototype, "validateWorkflow", (stub) =>
+      stub.resolves(factory.resp(attrs)),
     );
 
 const currCwd = process.cwd();
@@ -240,11 +238,8 @@ describe("commands/workflow/validate (all workflows)", () => {
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "validateWorkflow",
-        sinon
-          .stub()
+      .stub(KnockApiV1.prototype, "validateWorkflow", (stub) =>
+        stub
           .onFirstCall()
           .resolves(
             factory.resp({

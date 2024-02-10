@@ -17,10 +17,8 @@ describe("commands/commit/get", () => {
   describe("given a commit ID arg, and no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getCommit",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getCommit", (stub) =>
+        stub.resolves(
           factory.resp({
             data: factory.commit(),
           }),
@@ -47,10 +45,8 @@ describe("commands/commit/get", () => {
   describe("given a commit ID arg, and flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getCommit",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getCommit", (stub) =>
+        stub.resolves(
           factory.resp({
             data: factory.commit(),
           }),
@@ -78,10 +74,8 @@ describe("commands/commit/get", () => {
   describe("given a commit that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getCommit",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getCommit", (stub) =>
+        stub.resolves(
           factory.resp({
             status: 404,
             statusText: "Not found",

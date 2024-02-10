@@ -18,10 +18,8 @@ const setupWithListTranslationsStub = (
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "listTranslations",
-      sinon.stub().resolves(
+    .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
+      stub.resolves(
         factory.resp({
           data: {
             entries: manyTranslationsAttrs.map((attrs) =>
@@ -32,24 +30,18 @@ const setupWithListTranslationsStub = (
         }),
       ),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 const setupWithGetTranslationStub = (attrs: Partial<TranslationData>) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "getTranslation",
-      sinon.stub().resolves(factory.resp({ data: factory.translation(attrs) })),
+    .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
+      stub.resolves(factory.resp({ data: factory.translation(attrs) })),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 describe("commands/translation/pull", () => {

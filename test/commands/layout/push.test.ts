@@ -18,7 +18,7 @@ const mockEmailLayoutData: EmailLayoutData<WithAnnotation> = {
   key: "default",
   name: "Default",
   html_layout: `
-    <!doctype html> 
+    <!doctype html>
     <html>
     <body>
     <p>This is some example text</p>
@@ -42,11 +42,9 @@ const mockEmailLayoutData: EmailLayoutData<WithAnnotation> = {
 const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(EmailLayoutValidate, "validateAll", sinon.stub().resolves([]))
-    .stub(
-      KnockApiV1.prototype,
-      "upsertEmailLayout",
-      sinon.stub().resolves(factory.resp(attrs)),
+    .stub(EmailLayoutValidate, "validateAll", (stub) => stub.resolves([]))
+    .stub(KnockApiV1.prototype, "upsertEmailLayout", (stub) =>
+      stub.resolves(factory.resp(attrs)),
     );
 
 const currCwd = process.cwd();

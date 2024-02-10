@@ -12,10 +12,8 @@ import { sandboxDir } from "@/lib/helpers/const";
 const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "validateTranslation",
-      sinon.stub().resolves(factory.resp(attrs)),
+    .stub(KnockApiV1.prototype, "validateTranslation", (stub) =>
+      stub.resolves(factory.resp(attrs)),
     );
 
 const currCwd = process.cwd();
