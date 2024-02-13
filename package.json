@@ -95,7 +95,7 @@
     "version": "oclif readme && git add README.md"
   },
   "engines": {
-    "node": ">=18.16.0"
+    "node": ">=18.17.0"
   },
   "bugs": "https://github.com/knocklabs/knock-cli/issues",
   "keywords": [
