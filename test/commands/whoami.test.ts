@@ -12,7 +12,9 @@ describe("commands/whoami", () => {
 
   describe("given a valid service token via flag", () => {
     test
-      .stub(KnockApiV1.prototype, "whoami", () => factory.resp({ data }))
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data })),
+      )
       .stdout()
       .command(["whoami", "--service-token", "valid-token"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -24,7 +26,9 @@ describe("commands/whoami", () => {
   describe("given a valid service token via env var", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "whoami", () => factory.resp({ data }))
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data })),
+      )
       .stdout()
       .command(["whoami"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -35,8 +39,12 @@ describe("commands/whoami", () => {
 
   describe("given a valid service token via user config", () => {
     test
-      .stub(UserConfig, "get", () => ({ serviceToken: "valid-token" }))
-      .stub(KnockApiV1.prototype, "whoami", () => factory.resp({ data }))
+      .stub(UserConfig, "get", (stub) =>
+        stub.returns({ serviceToken: "valid-token" }),
+      )
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data })),
+      )
       .stdout()
       .command(["whoami"])
       .it("runs the command to make a whoami request", (ctx) => {

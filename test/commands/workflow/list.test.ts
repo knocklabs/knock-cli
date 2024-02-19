@@ -17,10 +17,8 @@ describe("commands/workflow/list", () => {
   describe("given no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "listWorkflows",
-        sinon.stub().resolves(emptyWorkflowsListResp),
+      .stub(KnockApiV1.prototype, "listWorkflows", (stub) =>
+        stub.resolves(emptyWorkflowsListResp),
       )
       .stdout()
       .command(["workflow list"])
@@ -43,10 +41,8 @@ describe("commands/workflow/list", () => {
   describe("given flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "listWorkflows",
-        sinon.stub().resolves(emptyWorkflowsListResp),
+      .stub(KnockApiV1.prototype, "listWorkflows", (stub) =>
+        stub.resolves(emptyWorkflowsListResp),
       )
       .stdout()
       .command([
@@ -81,10 +77,8 @@ describe("commands/workflow/list", () => {
   describe("given a list of workflows in response", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "listWorkflows",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "listWorkflows", (stub) =>
+        stub.resolves(
           factory.resp({
             data: {
               page_info: factory.pageInfo(),
@@ -126,16 +120,11 @@ describe("commands/workflow/list", () => {
     describe("plus a next page action from the prompt input", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(
-          KnockApiV1.prototype,
-          "listWorkflows",
-          sinon.stub().resolves(paginatedWorkflowsResp),
+        .stub(KnockApiV1.prototype, "listWorkflows", (stub) =>
+          stub.resolves(paginatedWorkflowsResp),
         )
-        .stub(
-          enquirer.prototype,
-          "prompt",
-          sinon
-            .stub()
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub
             .onFirstCall()
             .resolves({ input: "n" })
             .onSecondCall()
@@ -185,15 +174,11 @@ describe("commands/workflow/list", () => {
     describe("plus a previous page action input from the prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(
-          KnockApiV1.prototype,
-          "listWorkflows",
-          sinon.stub().resolves(paginatedWorkflowsResp),
+        .stub(KnockApiV1.prototype, "listWorkflows", (stub) =>
+          stub.resolves(paginatedWorkflowsResp),
         )
-        .stub(
-          enquirer.prototype,
-          "prompt",
-          sinon.stub().onFirstCall().resolves({ input: "p" }),
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.onFirstCall().resolves({ input: "p" }),
         )
         .stdout()
         .command(["workflow list"])

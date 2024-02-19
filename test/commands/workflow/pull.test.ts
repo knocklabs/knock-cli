@@ -16,19 +16,15 @@ const currCwd = process.cwd();
 const setupWithGetWorkflowStub = (workflowAttrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "getWorkflow",
-      sinon.stub().resolves(
+    .stub(KnockApiV1.prototype, "getWorkflow", (stub) =>
+      stub.resolves(
         factory.resp({
           data: factory.workflow(workflowAttrs),
         }),
       ),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 const setupWithListWorkflowsStub = (
@@ -36,10 +32,8 @@ const setupWithListWorkflowsStub = (
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "listWorkflows",
-      sinon.stub().resolves(
+    .stub(KnockApiV1.prototype, "listWorkflows", (stub) =>
+      stub.resolves(
         factory.resp({
           data: {
             entries: manyWorkflowAttrs.map((attrs) => factory.workflow(attrs)),
@@ -48,10 +42,8 @@ const setupWithListWorkflowsStub = (
         }),
       ),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 describe("commands/workflow/pull", () => {

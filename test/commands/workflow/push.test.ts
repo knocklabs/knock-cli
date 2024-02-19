@@ -38,11 +38,9 @@ const mockWorkflowData: WorkflowData<WithAnnotation> = {
 const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(WorkflowValidate, "validateAll", sinon.stub().resolves([]))
-    .stub(
-      KnockApiV1.prototype,
-      "upsertWorkflow",
-      sinon.stub().resolves(factory.resp(attrs)),
+    .stub(WorkflowValidate, "validateAll", (stub) => stub.resolves([]))
+    .stub(KnockApiV1.prototype, "upsertWorkflow", (stub) =>
+      stub.resolves(factory.resp(attrs)),
     );
 
 const currCwd = process.cwd();

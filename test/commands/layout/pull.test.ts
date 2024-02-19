@@ -16,19 +16,15 @@ const currCwd = process.cwd();
 const setupWithGetLayoutStub = (emailLayoutAttrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "getEmailLayout",
-      sinon.stub().resolves(
+    .stub(KnockApiV1.prototype, "getEmailLayout", (stub) =>
+      stub.resolves(
         factory.resp({
           data: factory.emailLayout(emailLayoutAttrs),
         }),
       ),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 const setupWithListLayoutsStub = (
@@ -36,10 +32,8 @@ const setupWithListLayoutsStub = (
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "listEmailLayouts",
-      sinon.stub().resolves(
+    .stub(KnockApiV1.prototype, "listEmailLayouts", (stub) =>
+      stub.resolves(
         factory.resp({
           data: {
             entries: manyLayoutsAttrs.map((attrs) =>
@@ -50,10 +44,8 @@ const setupWithListLayoutsStub = (
         }),
       ),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 describe("commands/layout/pull", () => {

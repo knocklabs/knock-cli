@@ -2,7 +2,6 @@ import * as path from "node:path";
 
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
-import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
@@ -15,16 +14,12 @@ const setupWithStub = (workflow?: any) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stdout()
-    .stub(
-      KnockApiV1.prototype,
-      "getWorkflow",
-      sinon
-        .stub()
-        .resolves(
-          workflow
-            ? factory.resp({ status: 200, data: workflow })
-            : factory.resp({ status: 404 }),
-        ),
+    .stub(KnockApiV1.prototype, "getWorkflow", (stub) =>
+      stub.resolves(
+        workflow
+          ? factory.resp({ status: 200, data: workflow })
+          : factory.resp({ status: 404 }),
+      ),
     );
 
 describe("commands/workflow/new", () => {

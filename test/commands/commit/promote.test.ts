@@ -9,33 +9,25 @@ import KnockApiV1 from "@/lib/api-v1";
 const setupWithStub = () =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "promoteAllChanges",
-      sinon.stub().resolves(factory.resp({ data: "success" })),
+    .stub(KnockApiV1.prototype, "promoteAllChanges", (stub) =>
+      stub.resolves(factory.resp({ data: "success" })),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 const setupWithStubPromoteCommit = () =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(
-      KnockApiV1.prototype,
-      "promoteOneChange",
-      sinon.stub().resolves(
+    .stub(KnockApiV1.prototype, "promoteOneChange", (stub) =>
+      stub.resolves(
         factory.resp({
           data: { commit: factory.commit({ id: "example-id" }) },
         }),
       ),
     )
-    .stub(
-      enquirer.prototype,
-      "prompt",
-      sinon.stub().onFirstCall().resolves({ input: "y" }),
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.onFirstCall().resolves({ input: "y" }),
     );
 
 describe("commands/commit/promote", () => {

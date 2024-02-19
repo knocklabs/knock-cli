@@ -17,10 +17,8 @@ describe("commands/translation/get", () => {
   describe("given a translation ref arg, and no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getTranslation",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
+        stub.resolves(
           factory.resp({
             data: factory.translation(),
           }),
@@ -55,10 +53,8 @@ describe("commands/translation/get", () => {
   describe("given a translation ref arg, and flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getTranslation",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
+        stub.resolves(
           factory.resp({
             data: factory.translation(),
           }),
@@ -100,10 +96,8 @@ describe("commands/translation/get", () => {
   describe("given a translation ref that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getTranslation",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
+        stub.resolves(
           factory.resp({
             status: 404,
             statusText: "Not found",

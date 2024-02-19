@@ -17,10 +17,8 @@ describe("commands/layout/get", () => {
   describe("given an email layout key arg, and no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getEmailLayout",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getEmailLayout", (stub) =>
+        stub.resolves(
           factory.resp({
             data: factory.emailLayout(),
           }),
@@ -48,10 +46,8 @@ describe("commands/layout/get", () => {
   describe("given an email layout key arg, and flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getEmailLayout",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getEmailLayout", (stub) =>
+        stub.resolves(
           factory.resp({
             data: factory.emailLayout(),
           }),
@@ -88,10 +84,8 @@ describe("commands/layout/get", () => {
   describe("given an email layout that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "getEmailLayout",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "getEmailLayout", (stub) =>
+        stub.resolves(
           factory.resp({
             status: 404,
             statusText: "Not found",

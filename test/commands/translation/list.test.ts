@@ -17,10 +17,8 @@ describe("commands/translation/list", () => {
   describe("given no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "listTranslations",
-        sinon.stub().resolves(emptyTranslationListResp),
+      .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
+        stub.resolves(emptyTranslationListResp),
       )
       .stdout()
       .command(["translation list"])
@@ -43,10 +41,8 @@ describe("commands/translation/list", () => {
   describe("given flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "listTranslations",
-        sinon.stub().resolves(emptyTranslationListResp),
+      .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
+        stub.resolves(emptyTranslationListResp),
       )
       .stdout()
       .command([
@@ -67,7 +63,6 @@ describe("commands/translation/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-
                 "hide-uncommitted-changes": true,
                 environment: "staging",
                 limit: 5,
@@ -81,10 +76,8 @@ describe("commands/translation/list", () => {
   describe("given a list of translations in response", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(
-        KnockApiV1.prototype,
-        "listTranslations",
-        sinon.stub().resolves(
+      .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
+        stub.resolves(
           factory.resp({
             data: {
               page_info: factory.pageInfo(),
@@ -126,16 +119,11 @@ describe("commands/translation/list", () => {
     describe("plus a next page action from the prompt input", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(
-          KnockApiV1.prototype,
-          "listTranslations",
-          sinon.stub().resolves(paginatedTranslationsResp),
+        .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
+          stub.resolves(paginatedTranslationsResp),
         )
-        .stub(
-          enquirer.prototype,
-          "prompt",
-          sinon
-            .stub()
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub
             .onFirstCall()
             .resolves({ input: "n" })
             .onSecondCall()
@@ -186,15 +174,11 @@ describe("commands/translation/list", () => {
     describe("plus a previous page action input from the prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(
-          KnockApiV1.prototype,
-          "listTranslations",
-          sinon.stub().resolves(paginatedTranslationsResp),
+        .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
+          stub.resolves(paginatedTranslationsResp),
         )
-        .stub(
-          enquirer.prototype,
-          "prompt",
-          sinon.stub().onFirstCall().resolves({ input: "p" }),
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.onFirstCall().resolves({ input: "p" }),
         )
         .stdout()
         .command(["translation list"])
