@@ -16,6 +16,8 @@ If a translation has no namespace, it is the same as the locale, e.g. \`en\`.
 If namespaced, it is formatted as namespace.locale, e.g. \`admin.en\`.
 `.trim();
 
+export const SYSTEM_NAMESPACE = "system";
+
 // Minimum data required to identify a single unique translation.
 export type TranslationIdentifier = {
   localeCode: string;
