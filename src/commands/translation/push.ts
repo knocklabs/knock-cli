@@ -85,7 +85,7 @@ export default class TranslationPush extends BaseCommand<
     spinner.start(`‣ Pushing`);
 
     for (const translation of translations) {
-      if (translation.namespace === "system") continue;
+      if (translation.namespace === Translation.SYSTEM_NAMESPACE) continue;
 
       // eslint-disable-next-line no-await-in-loop
       const resp = await this.apiV1.upsertTranslation(this.props, {
