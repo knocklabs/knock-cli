@@ -4,7 +4,7 @@
   "description": "Knock CLI",
   "author": "@knocklabs",
   "bin": {
-    "knock": "./bin/run"
+    "knock": "./bin/run.js"
   },
   "homepage": "https://github.com/knocklabs/knock-cli",
   "license": "MIT",
