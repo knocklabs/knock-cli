@@ -10,9 +10,9 @@ import {
   isTranslationDir,
   lsTranslationDir,
   parseTranslationRef,
+  SYSTEM_NAMESPACE,
   TranslationCommandTarget,
   TranslationFileContext,
-  SYSTEM_NAMESPACE,
 } from "./helpers";
 
 // Hydrated translation file context with its content.

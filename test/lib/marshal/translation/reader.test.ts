@@ -4,10 +4,8 @@ import { expect } from "@oclif/test";
 import * as fs from "fs-extra";
 
 import { sandboxDir } from "@/lib/helpers/const";
-// import { JsonDataError } from "@/lib/helpers/error";
-// import { LAYOUT_JSON } from "@/lib/marshal/email-layout";
-import { readAllForCommandTarget } from "@/lib/marshal/translation/reader";
 import { SYSTEM_NAMESPACE } from "@/lib/marshal/translation/helpers";
+import { readAllForCommandTarget } from "@/lib/marshal/translation/reader";
 import { TranslationDirContext } from "@/lib/run-context";
 
 const currCwd = process.cwd();
