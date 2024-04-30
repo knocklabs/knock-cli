@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.12 darwin-arm64 node-v18.17.0
+@knocklabs/cli/0.1.13 darwin-arm64 node-v18.17.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
