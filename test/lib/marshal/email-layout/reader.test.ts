@@ -69,6 +69,7 @@ describe("lib/marshal/layout/reader", () => {
       });
     });
   });
+
   describe("readExtractedFileSync", () => {
     const emailLayoutDirCtx: EmailLayoutDirContext = {
       type: "email_layout",
@@ -110,7 +111,7 @@ describe("lib/marshal/layout/reader", () => {
         const fileContent = `
           {{ vars.app_name }} ({{ vars.app_url }})
           <p>
-          Hello {{ recipient.name 
+          Hello {{ recipient.name
           </p>
        `.trimStart();
 

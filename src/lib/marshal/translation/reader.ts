@@ -12,6 +12,7 @@ import {
   parseTranslationRef,
   TranslationCommandTarget,
   TranslationFileContext,
+  SYSTEM_NAMESPACE,
 } from "./helpers";
 
 // Hydrated translation file context with its content.
@@ -40,6 +41,12 @@ const readTranslationFiles = async (
     if (!parsedRef) continue;
 
     const { localeCode, namespace } = parsedRef;
+
+    // Skip the system translation file when reading from the disk by default,
+    // as it is not user editable and should be excluded from the validate or
+    // push commands. Consider making this an option in the future.
+    if (namespace === SYSTEM_NAMESPACE) continue;
+
     // eslint-disable-next-line no-await-in-loop
     const [content, readJsonErrors] = await readJson(abspath);
 
