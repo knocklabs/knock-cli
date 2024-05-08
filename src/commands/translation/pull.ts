@@ -96,7 +96,7 @@ export default class TranslationPull extends BaseCommand<
       this.apiV1.getTranslation(this.props, targetCtx),
     );
 
-    await Translation.writeTranslationFile(targetCtx, resp.data);
+    await Translation.writeTranslationFile(targetCtx, resp.data, flags.format);
 
     const actioned = targetCtx.exists ? "updated" : "created";
     this.log(
@@ -125,7 +125,11 @@ export default class TranslationPull extends BaseCommand<
 
     const filters = { localeCode: targetCtx.key };
     const translations = await this.listAllTranslations(filters);
-    await Translation.writeTranslationFiles(targetCtx, translations);
+    await Translation.writeTranslationFiles(
+      targetCtx,
+      translations,
+      flags.format,
+    );
     spinner.stop();
 
     const actioned = targetCtx.exists ? "updated" : "created";
@@ -151,7 +155,11 @@ export default class TranslationPull extends BaseCommand<
     spinner.start(`‣ Loading`);
 
     const translations = await this.listAllTranslations();
-    await Translation.writeTranslationFiles(targetCtx, translations);
+    await Translation.writeTranslationFiles(
+      targetCtx,
+      translations,
+      flags.format,
+    );
     spinner.stop();
 
     const action = targetCtx.exists ? "updated" : "created";

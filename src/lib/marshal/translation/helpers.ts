@@ -63,9 +63,10 @@ export const buildTranslationFileCtx = async (
   dirPath: string,
   localeCode: string,
   namespace: string | undefined,
+  format: string | undefined,
 ): Promise<TranslationFileContext> => {
   const ref = formatRef(localeCode, namespace);
-  const filename = formatFileName(ref);
+  const filename = formatFileName(ref, format);
   const abspath = path.resolve(dirPath, filename);
   const exists = await fs.pathExists(abspath);
 
@@ -116,6 +117,7 @@ type CommandTargetProps = {
   flags: {
     all: boolean | undefined;
     "translations-dir": DirContext | undefined;
+    format: string | undefined;
   };
   args: {
     translationRef: string | undefined;
@@ -200,6 +202,7 @@ export const ensureValidCommandTarget = async (
       targetDirPath,
       localeCode,
       namespace,
+      flags.format,
     );
     return { type: "translationFile", context: translationFileCtx };
   }

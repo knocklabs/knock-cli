@@ -16,13 +16,18 @@ export const formatRef = (
  * Returns a formatted translation file name based on the given translation ref
  * or payload.
  */
-export const formatFileName = (input: string | TranslationData): string => {
+export const formatFileName = (
+  input: string | TranslationData,
+  format: string | undefined,
+): string => {
   const ref =
     typeof input === "string"
       ? input
       : formatRef(input.locale_code, input.namespace);
 
-  return `${ref}.json`;
+  const extension = format === "po" ? "po" : "json";
+
+  return `${ref}.${extension}`;
 };
 
 /*

@@ -17,10 +17,16 @@ import { TranslationData } from "./types";
 export const writeTranslationFile = async (
   translationFileCtx: TranslationFileContext,
   translation: TranslationData,
-): Promise<void> =>
-  fs.outputJson(translationFileCtx.abspath, JSON.parse(translation.content), {
-    spaces: DOUBLE_SPACES,
-  });
+  format: string | undefined,
+): Promise<void> => {
+  if (format === "po") {
+    fs.outputFile(translationFileCtx.abspath, translation.content);
+  } else {
+    fs.outputJson(translationFileCtx.abspath, JSON.parse(translation.content), {
+      spaces: DOUBLE_SPACES,
+    });
+  }
+};
 
 /*
  * The bulk write function that takes the fetched translations data from Knock
@@ -30,6 +36,7 @@ export const writeTranslationFile = async (
 export const writeTranslationFiles = async (
   targetDirCtx: TranslationDirContext | DirContext,
   translations: TranslationData[],
+  format: string | undefined,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
@@ -56,9 +63,10 @@ export const writeTranslationFiles = async (
           localeDirPath,
           translation.locale_code,
           translation.namespace,
+          format,
         );
 
-        return writeTranslationFile(translationFileCtx, translation);
+        return writeTranslationFile(translationFileCtx, translation, format);
       },
     );
 
