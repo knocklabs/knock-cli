@@ -41,6 +41,11 @@ export default class TranslationPull extends BaseCommand<
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
+    format: Flags.string({
+      summary: "Specify the output format of the returned translations.",
+      options: ["json", "po"],
+      default: "json",
+    }),
   };
 
   static args = {
