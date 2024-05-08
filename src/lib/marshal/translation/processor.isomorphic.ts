@@ -42,20 +42,23 @@ type OneOrMoreTranslationData = TranslationData | TranslationData[];
 
 export const buildTranslationDirBundle = (
   input: OneOrMoreTranslationData,
+  format: string | undefined,
 ): TranslationDirBundle => {
   if (Array.isArray(input)) {
     const translations = input;
 
     return Object.fromEntries(
       translations.map((translation) => [
-        formatFileName(translation),
+        formatFileName(translation, format),
         JSON.parse(translation.content),
       ]),
     );
   }
 
   const translation = input;
+  const content =
+    format === "po" ? translation.content : JSON.parse(translation.content);
   return {
-    [formatFileName(translation)]: JSON.parse(translation.content),
+    [formatFileName(translation, format)]: content,
   };
 };

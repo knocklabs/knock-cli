@@ -117,7 +117,7 @@ type CommandTargetProps = {
   flags: {
     all: boolean | undefined;
     "translations-dir": DirContext | undefined;
-    format: string | undefined;
+    format?: string | undefined;
   };
   args: {
     translationRef: string | undefined;
