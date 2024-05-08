@@ -36,8 +36,8 @@ describe("commands/translation/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-
                 environment: "development",
+                format: "json",
               }),
           ),
           sinon.match((translation) =>
@@ -78,9 +78,9 @@ describe("commands/translation/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-
                 "hide-uncommitted-changes": true,
                 environment: "staging",
+                format: "json",
               }),
           ),
           sinon.match((translation) =>
