@@ -68,6 +68,7 @@ describe("commands/translation/pull", () => {
       .it("throws an error");
   });
 
+  // Testing windows ci
   describe("given a --all flag only", () => {
     setupWithListTranslationsStub(
       { locale_code: "en" },
