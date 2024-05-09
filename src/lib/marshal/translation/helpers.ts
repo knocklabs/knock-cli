@@ -30,6 +30,10 @@ export type TranslationFileContext = TranslationIdentifier & {
   exists: boolean;
 };
 
+export type TranslationFormat = "json" | "po";
+
+export const DEFAULT_TRANSLATION_FORMAT = "json";
+
 /*
  * Returns a human readable language for the given locale code.
  */
@@ -61,19 +65,23 @@ export const isTranslationDir = (dirPath: string): boolean => {
  */
 export const buildTranslationFileCtx = async (
   dirPath: string,
-  localeCode: string,
-  namespace: string | undefined,
-  format: string | undefined,
+  translationIdentifier: TranslationIdentifier,
+  options?: {
+    format?: TranslationFormat;
+  },
 ): Promise<TranslationFileContext> => {
-  const ref = formatRef(localeCode, namespace);
-  const filename = formatFileName(ref, format);
+  const ref = formatRef(
+    translationIdentifier.localeCode,
+    translationIdentifier.namespace,
+  );
+  const filename = formatFileName(ref, { format: options?.format });
   const abspath = path.resolve(dirPath, filename);
   const exists = await fs.pathExists(abspath);
 
   return {
     ref,
-    localeCode,
-    namespace,
+    localeCode: translationIdentifier.localeCode,
+    namespace: translationIdentifier.namespace,
     abspath,
     exists,
   };
@@ -117,7 +125,7 @@ type CommandTargetProps = {
   flags: {
     all: boolean | undefined;
     "translations-dir": DirContext | undefined;
-    format?: string | undefined;
+    format?: TranslationFormat;
   };
   args: {
     translationRef: string | undefined;
@@ -200,9 +208,8 @@ export const ensureValidCommandTarget = async (
   if (!flags.all) {
     const translationFileCtx = await buildTranslationFileCtx(
       targetDirPath,
-      localeCode,
-      namespace,
-      flags.format,
+      { localeCode, namespace },
+      { format: flags.format },
     );
     return { type: "translationFile", context: translationFileCtx };
   }

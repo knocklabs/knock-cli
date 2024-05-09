@@ -17,11 +17,11 @@ export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
-    format: Flags.string({
+    format: Flags.option({
       summary: "Specify the output format of the returned translations.",
-      options: ["json", "po"],
+      options: ["json", "po"] as const,
       default: "json",
-    }),
+    })(),
   };
 
   static args = {
@@ -105,10 +105,10 @@ export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
     });
 
     this.log("");
-    if (format === "po") {
-      ux.log(translation.content);
-    } else {
+    if (format === "json") {
       ux.styledJSON(JSON.parse(translation.content));
+    } else {
+      ux.log(translation.content);
     }
   }
 }

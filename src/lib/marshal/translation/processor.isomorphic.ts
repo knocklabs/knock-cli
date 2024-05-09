@@ -1,3 +1,4 @@
+import { DEFAULT_TRANSLATION_FORMAT, TranslationFormat } from "./helpers";
 import { TranslationData } from "./types";
 
 type TranslationDirBundle = {
@@ -18,14 +19,15 @@ export const formatRef = (
  */
 export const formatFileName = (
   input: string | TranslationData,
-  format: string | undefined,
+  options?: {
+    format?: TranslationFormat;
+  },
 ): string => {
+  const extension = options?.format ?? DEFAULT_TRANSLATION_FORMAT;
   const ref =
     typeof input === "string"
       ? input
       : formatRef(input.locale_code, input.namespace);
-
-  const extension = format === "po" ? "po" : "json";
 
   return `${ref}.${extension}`;
 };
@@ -42,14 +44,17 @@ type OneOrMoreTranslationData = TranslationData | TranslationData[];
 
 export const buildTranslationDirBundle = (
   input: OneOrMoreTranslationData,
-  format: string | undefined,
+  options?: {
+    format?: TranslationFormat;
+  },
 ): TranslationDirBundle => {
+  const format = options?.format ?? DEFAULT_TRANSLATION_FORMAT;
   if (Array.isArray(input)) {
     const translations = input;
 
     return Object.fromEntries(
       translations.map((translation) => [
-        formatFileName(translation, format),
+        formatFileName(translation, { format }),
         JSON.parse(translation.content),
       ]),
     );
@@ -59,6 +64,6 @@ export const buildTranslationDirBundle = (
   const content =
     format === "po" ? translation.content : JSON.parse(translation.content);
   return {
-    [formatFileName(translation, format)]: content,
+    [formatFileName(translation, { format })]: content,
   };
 };

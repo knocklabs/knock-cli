@@ -41,11 +41,11 @@ export default class TranslationPull extends BaseCommand<
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
-    format: Flags.string({
+    format: Flags.option({
       summary: "Specify the output format of the returned translations.",
-      options: ["json", "po"],
+      options: ["json", "po"] as const,
       default: "json",
-    }),
+    })(),
   };
 
   static args = {
@@ -96,7 +96,9 @@ export default class TranslationPull extends BaseCommand<
       this.apiV1.getTranslation(this.props, targetCtx),
     );
 
-    await Translation.writeTranslationFile(targetCtx, resp.data, flags.format);
+    await Translation.writeTranslationFile(targetCtx, resp.data, {
+      format: flags.format,
+    });
 
     const actioned = targetCtx.exists ? "updated" : "created";
     this.log(
@@ -125,11 +127,9 @@ export default class TranslationPull extends BaseCommand<
 
     const filters = { localeCode: targetCtx.key };
     const translations = await this.listAllTranslations(filters);
-    await Translation.writeTranslationFiles(
-      targetCtx,
-      translations,
-      flags.format,
-    );
+    await Translation.writeTranslationFiles(targetCtx, translations, {
+      format: flags.format,
+    });
     spinner.stop();
 
     const actioned = targetCtx.exists ? "updated" : "created";
@@ -155,11 +155,9 @@ export default class TranslationPull extends BaseCommand<
     spinner.start(`‣ Loading`);
 
     const translations = await this.listAllTranslations();
-    await Translation.writeTranslationFiles(
-      targetCtx,
-      translations,
-      flags.format,
-    );
+    await Translation.writeTranslationFiles(targetCtx, translations, {
+      format: flags.format,
+    });
     spinner.stop();
 
     const action = targetCtx.exists ? "updated" : "created";

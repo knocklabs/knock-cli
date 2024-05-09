@@ -8,8 +8,16 @@ import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { TranslationDirContext } from "@/lib/run-context";
 
-import { buildTranslationFileCtx, TranslationFileContext } from "./helpers";
+import {
+  buildTranslationFileCtx,
+  TranslationFileContext,
+  TranslationFormat,
+} from "./helpers";
 import { TranslationData } from "./types";
+
+type WriteTranslationFileOpts = {
+  format?: TranslationFormat;
+};
 
 /*
  * Write a single translation file.
@@ -17,14 +25,21 @@ import { TranslationData } from "./types";
 export const writeTranslationFile = async (
   translationFileCtx: TranslationFileContext,
   translation: TranslationData,
-  format: string | undefined,
+  options?: WriteTranslationFileOpts,
 ): Promise<void> => {
-  if (format === "po") {
-    fs.outputFile(translationFileCtx.abspath, translation.content);
-  } else {
-    fs.outputJson(translationFileCtx.abspath, JSON.parse(translation.content), {
-      spaces: DOUBLE_SPACES,
-    });
+  switch (options?.format) {
+    case "json":
+      return fs.outputJson(
+        translationFileCtx.abspath,
+        JSON.parse(translation.content),
+        {
+          spaces: DOUBLE_SPACES,
+        },
+      );
+    case "po":
+      return fs.outputFile(translationFileCtx.abspath, translation.content);
+    default:
+      throw new Error(`Invalid translation file format: ${options?.format}`);
   }
 };
 
@@ -36,7 +51,7 @@ export const writeTranslationFile = async (
 export const writeTranslationFiles = async (
   targetDirCtx: TranslationDirContext | DirContext,
   translations: TranslationData[],
-  format: string | undefined,
+  options?: WriteTranslationFileOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
@@ -61,12 +76,14 @@ export const writeTranslationFiles = async (
 
         const translationFileCtx = await buildTranslationFileCtx(
           localeDirPath,
-          translation.locale_code,
-          translation.namespace,
-          format,
+          {
+            localeCode: translation.locale_code,
+            namespace: translation.namespace,
+          },
+          options,
         );
 
-        return writeTranslationFile(translationFileCtx, translation, format);
+        return writeTranslationFile(translationFileCtx, translation, options);
       },
     );
 
