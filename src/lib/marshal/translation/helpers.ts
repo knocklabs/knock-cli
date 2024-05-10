@@ -7,7 +7,11 @@ import localeData from "locale-codes";
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
-import { formatFileName, formatRef } from "./processor.isomorphic";
+import {
+  formatFileName,
+  formatRef,
+  TranslationFormat,
+} from "./processor.isomorphic";
 import { TranslationData } from "./types";
 
 export const translationRefDescription = `
@@ -29,10 +33,6 @@ export type TranslationFileContext = TranslationIdentifier & {
   abspath: string;
   exists: boolean;
 };
-
-export type TranslationFormat = "json" | "po";
-
-export const DEFAULT_TRANSLATION_FORMAT = "json";
 
 /*
  * Returns a human readable language for the given locale code.
@@ -74,7 +74,7 @@ export const buildTranslationFileCtx = async (
     translationIdentifier.localeCode,
     translationIdentifier.namespace,
   );
-  const filename = formatFileName(ref, { format: options?.format });
+  const filename = formatFileName(ref, options);
   const abspath = path.resolve(dirPath, filename);
   const exists = await fs.pathExists(abspath);
 

@@ -8,13 +8,14 @@ import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { TranslationDirContext } from "@/lib/run-context";
 
+import { buildTranslationFileCtx, TranslationFileContext } from "./helpers";
 import {
-  buildTranslationFileCtx,
-  TranslationFileContext,
+  DEFAULT_TRANSLATION_FORMAT,
   TranslationFormat,
-} from "./helpers";
+} from "./processor.isomorphic";
 import { TranslationData } from "./types";
 
+// TODO: Extend and use this type everywhere rather than re-defining opts.
 type WriteTranslationFileOpts = {
   format?: TranslationFormat;
 };
@@ -27,7 +28,9 @@ export const writeTranslationFile = async (
   translation: TranslationData,
   options?: WriteTranslationFileOpts,
 ): Promise<void> => {
-  switch (options?.format) {
+  const format = options?.format ?? DEFAULT_TRANSLATION_FORMAT;
+
+  switch (format) {
     case "json":
       return fs.outputJson(
         translationFileCtx.abspath,

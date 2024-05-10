@@ -1,9 +1,12 @@
-import { DEFAULT_TRANSLATION_FORMAT, TranslationFormat } from "./helpers";
 import { TranslationData } from "./types";
 
 type TranslationDirBundle = {
   [relpath: string]: string;
 };
+
+export type TranslationFormat = "json" | "po";
+
+export const DEFAULT_TRANSLATION_FORMAT = "json";
 
 /*
  * Returns a formatted translation "ref".
@@ -62,7 +65,7 @@ export const buildTranslationDirBundle = (
 
   const translation = input;
   const content =
-    format === "po" ? translation.content : JSON.parse(translation.content);
+    format === "json" ? JSON.parse(translation.content) : translation.content;
   return {
     [formatFileName(translation, { format })]: content,
   };
