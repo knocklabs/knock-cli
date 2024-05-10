@@ -9,7 +9,16 @@ import { DOUBLE_SPACES } from "@/lib/helpers/json";
 import { TranslationDirContext } from "@/lib/run-context";
 
 import { buildTranslationFileCtx, TranslationFileContext } from "./helpers";
+import {
+  DEFAULT_TRANSLATION_FORMAT,
+  TranslationFormat,
+} from "./processor.isomorphic";
 import { TranslationData } from "./types";
+
+// TODO: Extend and use this type everywhere rather than re-defining opts.
+type WriteTranslationFileOpts = {
+  format?: TranslationFormat;
+};
 
 /*
  * Write a single translation file.
@@ -17,10 +26,25 @@ import { TranslationData } from "./types";
 export const writeTranslationFile = async (
   translationFileCtx: TranslationFileContext,
   translation: TranslationData,
-): Promise<void> =>
-  fs.outputJson(translationFileCtx.abspath, JSON.parse(translation.content), {
-    spaces: DOUBLE_SPACES,
-  });
+  options?: WriteTranslationFileOpts,
+): Promise<void> => {
+  const format = options?.format ?? DEFAULT_TRANSLATION_FORMAT;
+
+  switch (format) {
+    case "json":
+      return fs.outputJson(
+        translationFileCtx.abspath,
+        JSON.parse(translation.content),
+        {
+          spaces: DOUBLE_SPACES,
+        },
+      );
+    case "po":
+      return fs.outputFile(translationFileCtx.abspath, translation.content);
+    default:
+      throw new Error(`Invalid translation file format: ${options?.format}`);
+  }
+};
 
 /*
  * The bulk write function that takes the fetched translations data from Knock
@@ -30,6 +54,7 @@ export const writeTranslationFile = async (
 export const writeTranslationFiles = async (
   targetDirCtx: TranslationDirContext | DirContext,
   translations: TranslationData[],
+  options?: WriteTranslationFileOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
@@ -54,11 +79,14 @@ export const writeTranslationFiles = async (
 
         const translationFileCtx = await buildTranslationFileCtx(
           localeDirPath,
-          translation.locale_code,
-          translation.namespace,
+          {
+            localeCode: translation.locale_code,
+            namespace: translation.namespace,
+          },
+          options,
         );
 
-        return writeTranslationFile(translationFileCtx, translation);
+        return writeTranslationFile(translationFileCtx, translation, options);
       },
     );
 

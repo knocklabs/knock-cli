@@ -17,6 +17,11 @@ export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
+    format: Flags.option({
+      summary: "Specify the output format of the returned translations.",
+      options: ["json", "po"] as const,
+      default: "json",
+    })(),
   };
 
   static args = {
@@ -48,8 +53,11 @@ export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
 
   render(translation: ApiV1.GetTranslationResp): void {
     const { translationRef } = this.props.args;
-    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
-      this.props.flags;
+    const {
+      environment: env,
+      "hide-uncommitted-changes": commitedOnly,
+      format,
+    } = this.props.flags;
 
     const qualifier =
       env === "development" && !commitedOnly ? "(including uncommitted)" : "";
@@ -97,6 +105,10 @@ export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
     });
 
     this.log("");
-    ux.styledJSON(JSON.parse(translation.content));
+    if (format === "json") {
+      ux.styledJSON(JSON.parse(translation.content));
+    } else {
+      ux.log(translation.content);
+    }
   }
 }

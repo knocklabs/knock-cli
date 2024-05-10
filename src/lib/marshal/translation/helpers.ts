@@ -7,7 +7,11 @@ import localeData from "locale-codes";
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
-import { formatFileName, formatRef } from "./processor.isomorphic";
+import {
+  formatFileName,
+  formatRef,
+  TranslationFormat,
+} from "./processor.isomorphic";
 import { TranslationData } from "./types";
 
 export const translationRefDescription = `
@@ -61,18 +65,23 @@ export const isTranslationDir = (dirPath: string): boolean => {
  */
 export const buildTranslationFileCtx = async (
   dirPath: string,
-  localeCode: string,
-  namespace: string | undefined,
+  translationIdentifier: TranslationIdentifier,
+  options?: {
+    format?: TranslationFormat;
+  },
 ): Promise<TranslationFileContext> => {
-  const ref = formatRef(localeCode, namespace);
-  const filename = formatFileName(ref);
+  const ref = formatRef(
+    translationIdentifier.localeCode,
+    translationIdentifier.namespace,
+  );
+  const filename = formatFileName(ref, options);
   const abspath = path.resolve(dirPath, filename);
   const exists = await fs.pathExists(abspath);
 
   return {
     ref,
-    localeCode,
-    namespace,
+    localeCode: translationIdentifier.localeCode,
+    namespace: translationIdentifier.namespace,
     abspath,
     exists,
   };
@@ -116,6 +125,7 @@ type CommandTargetProps = {
   flags: {
     all: boolean | undefined;
     "translations-dir": DirContext | undefined;
+    format?: TranslationFormat;
   };
   args: {
     translationRef: string | undefined;
@@ -198,8 +208,8 @@ export const ensureValidCommandTarget = async (
   if (!flags.all) {
     const translationFileCtx = await buildTranslationFileCtx(
       targetDirPath,
-      localeCode,
-      namespace,
+      { localeCode, namespace },
+      { format: flags.format },
     );
     return { type: "translationFile", context: translationFileCtx };
   }

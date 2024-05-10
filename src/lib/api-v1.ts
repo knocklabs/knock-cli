@@ -181,6 +181,7 @@ export default class ApiV1 {
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       locale_code: filters.localeCode,
       namespace: filters.namespace,
+      format: flags.format,
       ...toPageParams(flags),
     });
 
@@ -195,6 +196,7 @@ export default class ApiV1 {
       environment: flags.environment,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       namespace: translation.namespace,
+      format: flags.format,
     });
 
     return this.get(`/translations/${translation.localeCode}`, { params });

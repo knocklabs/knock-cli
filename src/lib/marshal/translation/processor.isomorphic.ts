@@ -4,6 +4,10 @@ type TranslationDirBundle = {
   [relpath: string]: string;
 };
 
+export type TranslationFormat = "json" | "po";
+
+export const DEFAULT_TRANSLATION_FORMAT = "json";
+
 /*
  * Returns a formatted translation "ref".
  */
@@ -16,13 +20,19 @@ export const formatRef = (
  * Returns a formatted translation file name based on the given translation ref
  * or payload.
  */
-export const formatFileName = (input: string | TranslationData): string => {
+export const formatFileName = (
+  input: string | TranslationData,
+  options?: {
+    format?: TranslationFormat;
+  },
+): string => {
+  const extension = options?.format ?? DEFAULT_TRANSLATION_FORMAT;
   const ref =
     typeof input === "string"
       ? input
       : formatRef(input.locale_code, input.namespace);
 
-  return `${ref}.json`;
+  return `${ref}.${extension}`;
 };
 
 /*
@@ -37,20 +47,26 @@ type OneOrMoreTranslationData = TranslationData | TranslationData[];
 
 export const buildTranslationDirBundle = (
   input: OneOrMoreTranslationData,
+  options?: {
+    format?: TranslationFormat;
+  },
 ): TranslationDirBundle => {
+  const format = options?.format ?? DEFAULT_TRANSLATION_FORMAT;
   if (Array.isArray(input)) {
     const translations = input;
 
     return Object.fromEntries(
       translations.map((translation) => [
-        formatFileName(translation),
+        formatFileName(translation, { format }),
         JSON.parse(translation.content),
       ]),
     );
   }
 
   const translation = input;
+  const content =
+    format === "json" ? JSON.parse(translation.content) : translation.content;
   return {
-    [formatFileName(translation)]: JSON.parse(translation.content),
+    [formatFileName(translation, { format })]: content,
   };
 };
