@@ -1266,7 +1266,7 @@
   dependencies:
     "@oclif/core" "^3.26.2"
 
-"@oclif/plugin-not-found@^3.0.14":
+"@oclif/plugin-not-found@^3.1.8":
   version "3.1.8"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-not-found/-/plugin-not-found-3.1.8.tgz#5fc871019868f425bbf301437630afaebaa914e5"
   integrity sha512-TbpMJ7PODaXuodSivqJo9cFxiVxNUmkCCl1BTdMpLuy82nxMv6aON0W1DVJryJ/OQjM4RKXvH3x3qCB7Xn0U8g==
@@ -1291,16 +1291,16 @@
     validate-npm-package-name "^5.0.0"
     yarn "^1.22.21"
 
-"@oclif/plugin-warn-if-update-available@^3.0.14":
-  version "3.0.16"
-  resolved "https://registry.yarnpkg.com/@oclif/plugin-warn-if-update-available/-/plugin-warn-if-update-available-3.0.16.tgz#fd73c419312356cbbf8e369a42b81564db4aaa89"
-  integrity sha512-RNEOE/bcTZ4sBbNc/ZxHzLMDEy7syAphMuO5FUVip8YWCronqioSTwRa+ZUDgohUEXSG0CEfwRZpQhDwk1IpGQ==
+"@oclif/plugin-warn-if-update-available@^3.0.17":
+  version "3.0.18"
+  resolved "https://registry.yarnpkg.com/@oclif/plugin-warn-if-update-available/-/plugin-warn-if-update-available-3.0.18.tgz#a6814d0d117ffc7c451aea8bf9d41c2bf1545e8b"
+  integrity sha512-/orir9yIW8hZYx9kI8vpwxjuMPfJBZ5ZcY2OnKFP7OrI0yA0n+slYsFOKrsWOOEXMmKLFJmH4fRw8/xKCWSX8g==
   dependencies:
     "@oclif/core" "^3.26.0"
     chalk "^5.3.0"
     debug "^4.1.0"
     http-call "^5.2.2"
-    lodash.template "^4.5.0"
+    lodash "^4.17.21"
 
 "@oclif/test@^3":
   version "3.2.10"
@@ -3007,7 +3007,7 @@ date-fns@^2.30.0:
   dependencies:
     "@babel/runtime" "^7.21.0"
 
-debug@4, debug@4.3.4, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.3, debug@^4.3.4:
+debug@4, debug@4.3.4, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.4:
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
   integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
@@ -3829,10 +3829,10 @@ git-hooks-list@^3.0.0:
   resolved "https://registry.yarnpkg.com/git-hooks-list/-/git-hooks-list-3.1.0.tgz#386dc531dcc17474cf094743ff30987a3d3e70fc"
   integrity sha512-LF8VeHeR7v+wAbXqfgRlTSX/1BJR9Q1vEMR8JAz1cEg6GX07+zyj3sAdDvYjj/xnlIfVuGgj4qBei1K3hKH+PA==
 
-github-slugger@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/github-slugger/-/github-slugger-1.5.0.tgz#17891bbc73232051474d68bd867a34625c955f7d"
-  integrity sha512-wIh+gKBI9Nshz2o46B0B3f5k/W+WI9ZAv6y5Dn5WJ5SK1t0TnDimB4WE5rmTD05ZAIn8HALCZVmCsvj0w0v0lw==
+github-slugger@^2:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/github-slugger/-/github-slugger-2.0.0.tgz#52cf2f9279a21eb6c59dd385b410f0c0adda8f1a"
+  integrity sha512-IaOQ9puYtjrkq7Y0Ygl9KDZnrf/aiUJYUpVf89y8kyaxbRG7Y1SrX/jaumrv81vc61+kiMempujsM3Yw7w5qcw==
 
 glob-parent@^5.1.2, glob-parent@~5.1.2:
   version "5.1.2"
@@ -3999,13 +3999,6 @@ hosted-git-info@^2.1.4:
   version "2.8.9"
   resolved "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz"
   integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
-
-hosted-git-info@^4.0.1:
-  version "4.0.2"
-  resolved "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.0.2.tgz"
-  integrity sha512-c9OGXbZ3guC/xOlCg1Ci/VgWlwsqDv1yMQL1CWqXDL0hDjXuNcq0zuR4xqPSuasI3kqFDhqSyTjREz5gzq0fXg==
-  dependencies:
-    lru-cache "^6.0.0"
 
 hosted-git-info@^7.0.0, hosted-git-info@^7.0.1:
   version "7.0.1"
@@ -4210,7 +4203,7 @@ is-cidr@^5.0.3:
   dependencies:
     cidr-regex "4.0.3"
 
-is-core-module@^2.2.0, is-core-module@^2.5.0:
+is-core-module@^2.2.0:
   version "2.8.0"
   resolved "https://registry.npmjs.org/is-core-module/-/is-core-module-2.8.0.tgz"
   integrity sha512-vd15qHsaqrRL7dtH6QNuy0ndJmRDrS9HAM1CAiSifNUFv4x1a0CCVsj18hJ1mShxIG6T2i1sO78MkP56r0nYRw==
@@ -4642,11 +4635,6 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
-lodash._reinterpolate@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/lodash._reinterpolate/-/lodash._reinterpolate-3.0.0.tgz#0ccf2d89166af03b3663c796538b75ac6e114d9d"
-  integrity sha512-xYHt68QRoYGjeeM/XOE1uJtvXQAgvszfBhjV4yvsQH0u2i9I6cI6c6/eG4Hh3UAOVn0y/xAXwmTzEay49Q//HA==
-
 lodash.get@^4.4.2:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
@@ -4656,21 +4644,6 @@ lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.npmjs.org/lodash.merge/-/lodash.merge-4.6.2.tgz"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
-
-lodash.template@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/lodash.template/-/lodash.template-4.5.0.tgz#f976195cf3f347d0d5f52483569fe8031ccce8ab"
-  integrity sha512-84vYFxIkmidUiFxidA/KjjH9pAycqW+h980j7Fuz5qxRtO9pgB7MDFTdys1N7A5mcucRiDyEq4fusljItR1T/A==
-  dependencies:
-    lodash._reinterpolate "^3.0.0"
-    lodash.templatesettings "^4.0.0"
-
-lodash.templatesettings@^4.0.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/lodash.templatesettings/-/lodash.templatesettings-4.2.0.tgz#e481310f049d3cf6d47e912ad09313b154f0fb33"
-  integrity sha512-stgLz+i3Aa9mZgnjr/O+v9ruKZsPsndy7qPZOchbqk2cnTU1ZaldKK+v7m54WoKIyxiuMZTKT2H81F8BeAc3ZQ==
-  dependencies:
-    lodash._reinterpolate "^3.0.0"
 
 lodash.truncate@^4.4.2:
   version "4.4.2"
@@ -5092,20 +5065,10 @@ normalize-package-data@^2.5.0:
     semver "2 || 3 || 4 || 5"
     validate-npm-package-license "^3.0.1"
 
-normalize-package-data@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/normalize-package-data/-/normalize-package-data-3.0.3.tgz#dbcc3e2da59509a0983422884cd172eefdfa525e"
-  integrity sha512-p2W1sgqij3zMMyRC067Dg16bfzVH+w7hyegmpIvZ4JNjqtGOVAIvLmjBx3yP7YTe9vKJgkoNOPjwQGogDoMXFA==
-  dependencies:
-    hosted-git-info "^4.0.1"
-    is-core-module "^2.5.0"
-    semver "^7.3.4"
-    validate-npm-package-license "^3.0.1"
-
-normalize-package-data@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/normalize-package-data/-/normalize-package-data-6.0.0.tgz#68a96b3c11edd462af7189c837b6b1064a484196"
-  integrity sha512-UL7ELRVxYBHBgYEtZCXjxuD5vPxnmvMGq0jp/dGPKKrN7tfsBh2IY7TlJ15WWwdjRWD3RJbnsygUurTK3xkPkg==
+normalize-package-data@^6, normalize-package-data@^6.0.0:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/normalize-package-data/-/normalize-package-data-6.0.1.tgz#fa69e9452210f0fabf4d79ee08d0c2870c51ed88"
+  integrity sha512-6rvCfeRW+OEZagAB4lMLSNuTNYZWLVtKccK79VSTf//yTY5VOCgcpH80O+bZK8Neps7pUnd5G+QlMg1yV/2iZQ==
   dependencies:
     hosted-git-info "^7.0.0"
     is-core-module "^2.8.1"
@@ -5317,9 +5280,9 @@ object-treeify@^1.1.33:
   integrity sha512-EFVjAYfzWqWsBMRHPMAXLCDIJnpMhdWAqR7xG6M6a2cs6PMFpl/+Z20w9zDW4vkxOFfddegBKq9Rehd0bxWE7A==
 
 oclif@^4:
-  version "4.10.4"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.10.4.tgz#2f7612c9e4e8965792d5bbd5e5aeeb6fff34bc38"
-  integrity sha512-whFWLhANyPFP17R+jRGR68nzwSjDxDzNQ7BvYpW0GvPmnHCTjqf9n2eYRDJnpNbavtfCA6p9tSOmUs/ek8YB6w==
+  version "4.10.7"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.10.7.tgz#42845d78e5fc4e97193d3f0689adbc7c94391c14"
+  integrity sha512-ZyfNT4DbtFwqq7fh0xrHrctjqxR2O4mkclvj//SiRkylAk154Nytl1D+JlMQDewqcqzKK07bHd04JUzAlOWKSA==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.569.0"
     "@aws-sdk/client-s3" "^3.569.0"
@@ -5328,21 +5291,22 @@ oclif@^4:
     "@inquirer/select" "^2.3.2"
     "@oclif/core" "^3.26.5"
     "@oclif/plugin-help" "^6.0.21"
-    "@oclif/plugin-not-found" "^3.0.14"
-    "@oclif/plugin-warn-if-update-available" "^3.0.14"
+    "@oclif/plugin-not-found" "^3.1.8"
+    "@oclif/plugin-warn-if-update-available" "^3.0.17"
     async-retry "^1.3.3"
     chalk "^4"
     change-case "^4"
-    debug "^4.3.3"
+    debug "^4.3.4"
     ejs "^3.1.10"
     find-yarn-workspace-root "^2.0.0"
     fs-extra "^8.1"
-    github-slugger "^1.5.0"
+    github-slugger "^2"
     got "^13"
-    lodash.template "^4.5.0"
-    normalize-package-data "^3.0.3"
+    lodash "^4.17.21"
+    normalize-package-data "^6"
     semver "^7.6.0"
     sort-package-json "^2.10.0"
+    tiny-jsonc "^1.0.1"
     validate-npm-package-name "^5.0.0"
 
 once@^1.3.0, once@^1.3.1, once@^1.4.0:
@@ -5961,7 +5925,7 @@ semver@^6.0.0, semver@^6.1.0, semver@^6.3.0:
   resolved "https://registry.npmjs.org/semver/-/semver-6.3.0.tgz"
   integrity sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
 
-semver@^7.0.0, semver@^7.1.1, semver@^7.2.1, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.3, semver@^7.6.0:
+semver@^7.0.0, semver@^7.1.1, semver@^7.2.1, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.3, semver@^7.6.0:
   version "7.6.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.6.0.tgz#1a46a4db4bffcccd97b743b5005c8325f23d4e2d"
   integrity sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==
@@ -6402,6 +6366,11 @@ tiny-case@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/tiny-case/-/tiny-case-1.0.3.tgz#d980d66bc72b5d5a9ca86fb7c9ffdb9c898ddd03"
   integrity sha512-Eet/eeMhkO6TX8mnUteS9zgPbUMQa4I6Kkp5ORiBD5476/m+PIRiumP5tmh5ioJpH7k51Kehawy2UDfsnxxY8Q==
+
+tiny-jsonc@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/tiny-jsonc/-/tiny-jsonc-1.0.1.tgz#71de47c9d812b411e87a9f3ab4a5fe42cd8d8f9c"
+  integrity sha512-ik6BCxzva9DoiEfDX/li0L2cWKPPENYvixUprFdl3YPi4bZZUhDnNI9YUkacrv+uIG90dnxR5mNqaoD6UhD6Bw==
 
 tiny-relative-date@^1.3.0:
   version "1.3.0"
