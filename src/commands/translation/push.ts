@@ -39,6 +39,11 @@ export default class TranslationPush extends BaseCommand<
       char: "m",
       dependsOn: ["commit"],
     }),
+    format: Flags.option({
+      summary: "Specify the output format of the returned translations.",
+      options: ["json", "po"] as const,
+      default: "json",
+    })(),
   };
 
   static args = {

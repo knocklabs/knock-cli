@@ -8,6 +8,7 @@ import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
 import {
+  DEFAULT_TRANSLATION_FORMAT,
   formatFileName,
   formatRef,
   TranslationFormat,
@@ -125,7 +126,7 @@ type CommandTargetProps = {
   flags: {
     all: boolean | undefined;
     "translations-dir": DirContext | undefined;
-    format?: TranslationFormat;
+    format: TranslationFormat;
   };
   args: {
     translationRef: string | undefined;
@@ -134,14 +135,17 @@ type CommandTargetProps = {
 type TranslationFileTarget = {
   type: "translationFile";
   context: TranslationFileContext;
+  format: TranslationFormat;
 };
 type TranslationDirTarget = {
   type: "translationDir";
   context: TranslationDirContext;
+  format: TranslationFormat;
 };
 type TranslationsIndexDirTarget = {
   type: "translationsIndexDir";
   context: DirContext;
+  format: TranslationFormat;
 };
 export type TranslationCommandTarget =
   | TranslationFileTarget
@@ -154,6 +158,7 @@ export const ensureValidCommandTarget = async (
 ): Promise<TranslationCommandTarget> => {
   const { flags, args } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
+  const format = flags.format ?? DEFAULT_TRANSLATION_FORMAT;
 
   // Error, trying to run the command not in a translation directory.
   if (resourceDirCtx && resourceDirCtx.type !== "translation") {
@@ -171,7 +176,7 @@ export const ensureValidCommandTarget = async (
   if (!args.translationRef) {
     // Targeting all translation files in the current locale directory.
     if (resourceDirCtx && !flags["translations-dir"]) {
-      return { type: "translationDir", context: resourceDirCtx };
+      return { type: "translationDir", context: resourceDirCtx, format };
     }
 
     // Targeting all translation files in the translations index dir.
@@ -179,7 +184,7 @@ export const ensureValidCommandTarget = async (
     const defaultToCwd = { abspath: runCwd, exists: true };
     const indexDirCtx = flags["translations-dir"] || defaultToCwd;
 
-    return { type: "translationsIndexDir", context: indexDirCtx };
+    return { type: "translationsIndexDir", context: indexDirCtx, format };
   }
 
   // From this point on, we have translationRef so parse and validate the format.
@@ -211,7 +216,7 @@ export const ensureValidCommandTarget = async (
       { localeCode, namespace },
       { format: flags.format },
     );
-    return { type: "translationFile", context: translationFileCtx };
+    return { type: "translationFile", context: translationFileCtx, format };
   }
 
   // From this point on, we have both translationRef and --all flag used
@@ -228,7 +233,7 @@ export const ensureValidCommandTarget = async (
     abspath: targetDirPath,
     exists: await isDirectory(targetDirPath),
   };
-  return { type: "translationDir", context: translationDirCtx };
+  return { type: "translationDir", context: translationDirCtx, format };
 };
 
 /*
@@ -242,6 +247,9 @@ export const ensureValidCommandTarget = async (
  */
 export const lsTranslationDir = async (
   pathToDir: string,
+  options?: {
+    format?: TranslationFormat;
+  },
 ): Promise<string[]> => {
   const localeCode = path.basename(pathToDir).toLowerCase();
   const dirents = await fs.readdir(pathToDir, { withFileTypes: true });
@@ -251,7 +259,8 @@ export const lsTranslationDir = async (
       if (dirent.isDirectory()) return false;
 
       const filename = dirent.name.toLowerCase();
-      if (!filename.endsWith(`${localeCode}.json`)) return false;
+      const extension = options?.format ?? DEFAULT_TRANSLATION_FORMAT;
+      if (!filename.endsWith(`${localeCode}.${extension}`)) return false;
 
       const { name: translationRef } = path.parse(filename);
       const parsedRef = parseTranslationRef(translationRef);

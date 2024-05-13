@@ -227,6 +227,7 @@ export default class ApiV1 {
     const params = prune({
       environment: flags.environment,
       namespace: translation.namespace,
+      format: flags.format,
     });
     const data = { translation };
 

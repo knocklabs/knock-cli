@@ -14,6 +14,7 @@ import {
   TranslationCommandTarget,
   TranslationFileContext,
 } from "./helpers";
+import { TranslationFormat } from "./processor.isomorphic";
 
 // Hydrated translation file context with its content.
 export type TranslationFileData = TranslationFileContext & {
@@ -31,6 +32,9 @@ export type TranslationFileData = TranslationFileContext & {
  */
 const readTranslationFiles = async (
   filePaths: string[],
+  options?: {
+    format?: TranslationFormat;
+  },
 ): Promise<[TranslationFileData[], SourceError[]]> => {
   const translations: TranslationFileData[] = [];
   const errors: SourceError[] = [];
@@ -47,13 +51,27 @@ const readTranslationFiles = async (
     // push commands. Consider making this an option in the future.
     if (namespace === SYSTEM_NAMESPACE) continue;
 
-    // eslint-disable-next-line no-await-in-loop
-    const [content, readJsonErrors] = await readJson(abspath);
+    let content = "";
+    if (options?.format === "json") {
+      // eslint-disable-next-line no-await-in-loop
+      const [jsonContent, readErrors] = await readJson(abspath);
 
-    if (readJsonErrors.length > 0) {
-      const e = new SourceError(formatErrors(readJsonErrors), abspath);
-      errors.push(e);
-      continue;
+      if (readErrors.length > 0) {
+        const e = new SourceError(formatErrors(readErrors), abspath);
+        errors.push(e);
+        continue;
+      }
+
+      content = JSON.stringify(jsonContent);
+    } else {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        content = await fs.readFile(abspath, "utf8");
+      } catch (error) {
+        const e = new SourceError((error as Error).message, abspath);
+        errors.push(e);
+        continue;
+      }
     }
 
     translations.push({
@@ -62,7 +80,7 @@ const readTranslationFiles = async (
       namespace,
       abspath,
       exists: true,
-      content: JSON.stringify(content),
+      content,
     });
   }
 
@@ -77,7 +95,7 @@ const readTranslationFiles = async (
 export const readAllForCommandTarget = async (
   target: TranslationCommandTarget,
 ): Promise<[TranslationFileData[], SourceError[]]> => {
-  const { type: targetType, context: targetCtx } = target;
+  const { type: targetType, context: targetCtx, format: targetFormat } = target;
 
   if (!targetCtx.exists) {
     const subject =
@@ -90,12 +108,18 @@ export const readAllForCommandTarget = async (
 
   switch (targetType) {
     case "translationFile": {
-      return readTranslationFiles([targetCtx.abspath]);
+      return readTranslationFiles([targetCtx.abspath], {
+        format: targetFormat,
+      });
     }
 
     case "translationDir": {
-      const translationFilePaths = await lsTranslationDir(targetCtx.abspath);
-      return readTranslationFiles(translationFilePaths);
+      const translationFilePaths = await lsTranslationDir(targetCtx.abspath, {
+        format: targetFormat,
+      });
+      return readTranslationFiles(translationFilePaths, {
+        format: targetFormat,
+      });
     }
 
     case "translationsIndexDir": {
@@ -111,11 +135,15 @@ export const readAllForCommandTarget = async (
 
       const translationFilePaths = (
         await Promise.all(
-          translationDirPaths.map(async (abspath) => lsTranslationDir(abspath)),
+          translationDirPaths.map(async (abspath) =>
+            lsTranslationDir(abspath, { format: targetFormat }),
+          ),
         )
       ).flat();
 
-      return readTranslationFiles(translationFilePaths);
+      return readTranslationFiles(translationFilePaths, {
+        format: targetFormat,
+      });
     }
 
     default:
