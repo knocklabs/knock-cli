@@ -211,6 +211,7 @@ export default class ApiV1 {
       commit: flags.commit,
       commit_message: flags["commit-message"],
       namespace: translation.namespace,
+      format: flags.format,
     });
 
     return this.put(
