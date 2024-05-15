@@ -47,7 +47,6 @@ describe("commands/translation/validate (a single translation)", () => {
               isEqual(args, { translationRef: "en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                format: "json",
                 environment: "development",
               }),
           ),
@@ -56,6 +55,7 @@ describe("commands/translation/validate (a single translation)", () => {
               locale_code: "en",
               namespace: undefined,
               content: '{"hello":"Heyyyy"}',
+              format: "json",
             }),
           ),
         );
@@ -81,7 +81,6 @@ describe("commands/translation/validate (a single translation)", () => {
               isEqual(args, { translationRef: "admin.en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                format: "json",
                 environment: "development",
               }),
           ),
@@ -90,6 +89,7 @@ describe("commands/translation/validate (a single translation)", () => {
               locale_code: "en",
               namespace: "admin",
               content: '{"hello":"Heyyyy"}',
+              format: "json",
             }),
           ),
         );
@@ -229,7 +229,6 @@ describe("commands/translation/validate (all translations)", () => {
           const expectedArgs = {};
           const expectedFlags = {
             "service-token": "valid-token",
-            format: "json",
             environment: "development",
             all: true,
             "translations-dir": {
@@ -250,6 +249,7 @@ describe("commands/translation/validate (all translations)", () => {
                 locale_code: "en",
                 namespace: "admin",
                 content: '{"admin":"foo"}',
+                format: "json",
               }),
             ),
           );
@@ -266,6 +266,7 @@ describe("commands/translation/validate (all translations)", () => {
                 locale_code: "en",
                 namespace: undefined,
                 content: '{"hello":"Heyyyy"}',
+                format: "json",
               }),
             ),
           );
@@ -282,6 +283,7 @@ describe("commands/translation/validate (all translations)", () => {
                 locale_code: "es",
                 namespace: "tasks",
                 content: '{"hello":"Hola"}',
+                format: "json",
               }),
             ),
           );

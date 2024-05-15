@@ -211,7 +211,6 @@ export default class ApiV1 {
       commit: flags.commit,
       commit_message: flags["commit-message"],
       namespace: translation.namespace,
-      format: flags.format,
     });
 
     return this.put(
@@ -228,7 +227,6 @@ export default class ApiV1 {
     const params = prune({
       environment: flags.environment,
       namespace: translation.namespace,
-      format: flags.format,
     });
     const data = { translation };
 

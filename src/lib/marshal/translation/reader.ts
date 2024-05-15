@@ -14,7 +14,11 @@ import {
   TranslationCommandTarget,
   TranslationFileContext,
 } from "./helpers";
-import { TranslationFormat } from "./processor.isomorphic";
+import {
+  DEFAULT_TRANSLATION_FORMAT,
+  SUPPORTED_TRANSLATION_FORMATS,
+  TranslationFormat,
+} from "./processor.isomorphic";
 
 // Hydrated translation file context with its content.
 export type TranslationFileData = TranslationFileContext & {
@@ -32,9 +36,6 @@ export type TranslationFileData = TranslationFileContext & {
  */
 const readTranslationFiles = async (
   filePaths: string[],
-  options?: {
-    format?: TranslationFormat;
-  },
 ): Promise<[TranslationFileData[], SourceError[]]> => {
   const translations: TranslationFileData[] = [];
   const errors: SourceError[] = [];
@@ -51,8 +52,11 @@ const readTranslationFiles = async (
     // push commands. Consider making this an option in the future.
     if (namespace === SYSTEM_NAMESPACE) continue;
 
+    // Get translation format from file extension
+    const format = getFormatFromFilename(abspath);
+
     let content = "";
-    if (options?.format === "json") {
+    if (format === "json") {
       // eslint-disable-next-line no-await-in-loop
       const [jsonContent, readErrors] = await readJson(abspath);
 
@@ -81,10 +85,20 @@ const readTranslationFiles = async (
       abspath,
       exists: true,
       content,
+      format,
     });
   }
 
   return [translations, errors];
+};
+
+const getFormatFromFilename = (filePath: string): TranslationFormat => {
+  const parts = filePath.split(".");
+  const extension = parts.length > 1 ? parts.at(-1) : "";
+
+  return SUPPORTED_TRANSLATION_FORMATS.includes(extension as TranslationFormat)
+    ? (extension as TranslationFormat)
+    : DEFAULT_TRANSLATION_FORMAT;
 };
 
 /*
@@ -95,7 +109,7 @@ const readTranslationFiles = async (
 export const readAllForCommandTarget = async (
   target: TranslationCommandTarget,
 ): Promise<[TranslationFileData[], SourceError[]]> => {
-  const { type: targetType, context: targetCtx, format: targetFormat } = target;
+  const { type: targetType, context: targetCtx } = target;
 
   if (!targetCtx.exists) {
     const subject =
@@ -108,18 +122,12 @@ export const readAllForCommandTarget = async (
 
   switch (targetType) {
     case "translationFile": {
-      return readTranslationFiles([targetCtx.abspath], {
-        format: targetFormat,
-      });
+      return readTranslationFiles([targetCtx.abspath]);
     }
 
     case "translationDir": {
-      const translationFilePaths = await lsTranslationDir(targetCtx.abspath, {
-        format: targetFormat,
-      });
-      return readTranslationFiles(translationFilePaths, {
-        format: targetFormat,
-      });
+      const translationFilePaths = await lsTranslationDir(targetCtx.abspath);
+      return readTranslationFiles(translationFilePaths);
     }
 
     case "translationsIndexDir": {
@@ -135,15 +143,11 @@ export const readAllForCommandTarget = async (
 
       const translationFilePaths = (
         await Promise.all(
-          translationDirPaths.map(async (abspath) =>
-            lsTranslationDir(abspath, { format: targetFormat }),
-          ),
+          translationDirPaths.map(async (abspath) => lsTranslationDir(abspath)),
         )
       ).flat();
 
-      return readTranslationFiles(translationFilePaths, {
-        format: targetFormat,
-      });
+      return readTranslationFiles(translationFilePaths);
     }
 
     default:

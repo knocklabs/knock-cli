@@ -34,11 +34,6 @@ export default class TranslationValidate extends BaseCommand<
         "The target directory path to find all translations to validate.",
       dependsOn: ["all"],
     }),
-    format: Flags.option({
-      summary: "Specify the output format of the returned translations.",
-      options: ["json", "po"] as const,
-      default: "json",
-    })(),
   };
 
   static args = {
@@ -98,6 +93,7 @@ export default class TranslationValidate extends BaseCommand<
         locale_code: translation.localeCode,
         namespace: translation.namespace,
         content: translation.content,
+        format: translation.format,
       });
 
       if (isSuccessResp(resp)) return;

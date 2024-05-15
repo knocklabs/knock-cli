@@ -127,6 +127,7 @@ export const translation = (
     content: '{"welcome":"Hello"}',
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",
+    format: "json",
     ...attrs,
   };
 };

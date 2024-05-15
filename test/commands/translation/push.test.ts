@@ -48,7 +48,6 @@ describe("commands/translation/push", () => {
           sinon.match(({ flags }) => {
             return isEqual(flags, {
               "service-token": "valid-token",
-              format: "json",
               environment: "development",
             });
           }),
@@ -56,6 +55,7 @@ describe("commands/translation/push", () => {
             content: '{"welcome":"hello!"}',
             locale_code: "en",
             namespace: "admin",
+            format: "json",
           }),
         );
       });
@@ -77,7 +77,6 @@ describe("commands/translation/push", () => {
             sinon.match(({ flags }) =>
               isEqual(flags, {
                 "service-token": "valid-token",
-                format: "json",
                 environment: "development",
                 commit: true,
                 "commit-message": "this is a commit comment!",
@@ -87,6 +86,7 @@ describe("commands/translation/push", () => {
               content: '{"welcome":"hello!"}',
               locale_code: "en",
               namespace: "admin",
+              format: "json",
             }),
           );
         },
@@ -233,7 +233,6 @@ describe("commands/translation/push", () => {
           const expectedArgs = {};
           const expectedFlags = {
             "service-token": "valid-token",
-            format: "json",
             environment: "development",
             all: true,
             "translations-dir": {
@@ -254,6 +253,7 @@ describe("commands/translation/push", () => {
                 locale_code: "en",
                 namespace: "admin",
                 content: '{"admin":"foo"}',
+                format: "json",
               }),
             ),
           );
@@ -270,6 +270,7 @@ describe("commands/translation/push", () => {
                 locale_code: "en",
                 namespace: undefined,
                 content: '{"hello":"Heyyyy"}',
+                format: "json",
               }),
             ),
           );
@@ -286,6 +287,7 @@ describe("commands/translation/push", () => {
                 locale_code: "es",
                 namespace: "tasks",
                 content: '{"hello":"Hola"}',
+                format: "json",
               }),
             ),
           );
