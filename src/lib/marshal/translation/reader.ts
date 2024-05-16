@@ -76,7 +76,7 @@ const readTranslationFiles = async (
 const readTranslationFile = async (
   filePath: string,
 ): Promise<
-  [string, format: TranslationFormat | undefined, SourceError | undefined]
+  [string, TranslationFormat | undefined, SourceError | undefined]
 > => {
   // Get translation format from file extension
   const format = getFormatFromFilePath(filePath);

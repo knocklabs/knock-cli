@@ -7,7 +7,7 @@ export type TranslationData = {
   content: string;
   created_at: string;
   updated_at: string;
-  format: TranslationFormat;
+  format?: TranslationFormat;
 };
 
 // Translation input data we can send to the API.
