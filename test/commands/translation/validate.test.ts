@@ -132,6 +132,43 @@ describe("commands/translation/validate (a single translation)", () => {
       .exit(2)
       .it("exists with status 2");
   });
+
+  describe("given a valid en translation file in po format", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, "en", "en.po");
+      fs.outputFileSync(
+        abspath,
+        `msgid ""\nmsgstr ""\n"Project-Id-Version: "\n"PO-Revision-Date: "\n"Language: en"\n"Content-Type: text/plain; charset=UTF-8"\n"Content-Transfer-Encoding: 8bit"\n"Plural-Forms: nplurals=2; plural=(n != 1);"\nmsgid "Primary"\nmsgstr "Primary"`,
+      );
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["translation validate", "en"])
+      .it("calls apiV1 validateTranslation with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.validateTranslation as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { translationRef: "en" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+              }),
+          ),
+          sinon.match((translation) =>
+            isEqual(translation, {
+              locale_code: "en",
+              namespace: undefined,
+              content: `msgid ""\nmsgstr ""\n"Project-Id-Version: "\n"PO-Revision-Date: "\n"Language: en"\n"Content-Type: text/plain; charset=UTF-8"\n"Content-Transfer-Encoding: 8bit"\n"Plural-Forms: nplurals=2; plural=(n != 1);"\nmsgid "Primary"\nmsgstr "Primary"`,
+              format: "po",
+            }),
+          ),
+        );
+      });
+  });
 });
 
 describe("commands/translation/validate (all translations)", () => {

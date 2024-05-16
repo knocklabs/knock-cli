@@ -294,4 +294,38 @@ describe("commands/translation/push", () => {
         },
       );
   });
+
+  describe("given a po translation file exists for locale code and namespace", () => {
+    beforeEach(() => {
+      const translationsDir = path.resolve(sandboxDir, "translations");
+      const abspath = path.resolve(translationsDir, "en", "admin.en.po");
+      fs.outputFileSync(
+        abspath,
+        `msgid ""\nmsgstr ""\n"Project-Id-Version: "\n"PO-Revision-Date: "\n"Language: en"\n"Content-Type: text/plain; charset=UTF-8"\n"Content-Transfer-Encoding: 8bit"\n"Plural-Forms: nplurals=2; plural=(n != 1);"\nmsgid "Primary"\nmsgstr "Primary"`,
+      );
+
+      process.chdir(translationsDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["translation push", "admin.en"])
+      .it("calls apiV1 upsertTranslation with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertTranslation as any,
+          sinon.match(({ flags }) => {
+            return isEqual(flags, {
+              "service-token": "valid-token",
+              environment: "development",
+            });
+          }),
+          sinon.match({
+            content: `msgid ""\nmsgstr ""\n"Project-Id-Version: "\n"PO-Revision-Date: "\n"Language: en"\n"Content-Type: text/plain; charset=UTF-8"\n"Content-Transfer-Encoding: 8bit"\n"Plural-Forms: nplurals=2; plural=(n != 1);"\nmsgid "Primary"\nmsgstr "Primary"`,
+            locale_code: "en",
+            namespace: "admin",
+            format: "po",
+          }),
+        );
+      });
+  });
 });
