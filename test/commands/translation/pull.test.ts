@@ -157,6 +157,7 @@ describe("commands/translation/pull", () => {
               namespace: "hello",
               abspath: path.resolve(sandboxDir, "es-MX", "hello.es-MX.json"),
               exists: false,
+              format: "json",
             }),
           ),
         );

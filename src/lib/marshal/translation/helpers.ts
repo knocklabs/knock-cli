@@ -210,24 +210,38 @@ export const ensureValidCommandTarget = async (
   // Got translationRef arg but no --all flag, which means target only a single
   // translation file.
   if (!flags.all) {
-    // Try to get the translation file for all supported formats
-    // Start with the specified format then fallback to other options
-    const formatsToLookup = [
-      flags.format,
-      ...SUPPORTED_TRANSLATION_FORMATS,
-    ].filter((x) => Boolean(x));
+    const isPushOrValidate = [
+      "translation:validate",
+      "translation:push",
+    ].includes(commandId ?? "");
+    if (isPushOrValidate) {
+      // Try to get the translation file for all supported formats when validating or pushing
+      // Start with the specified format then fallback to other options
+      const formatsToLookup = [
+        flags.format,
+        ...SUPPORTED_TRANSLATION_FORMATS,
+      ].filter((x) => Boolean(x));
 
-    for await (const format of formatsToLookup) {
-      const translationFileCtx = await buildTranslationFileCtx(
-        targetDirPath,
-        { localeCode, namespace },
-        { format },
-      );
+      let translationFileCtx: TranslationFileContext;
+      for await (const format of formatsToLookup) {
+        translationFileCtx = await buildTranslationFileCtx(
+          targetDirPath,
+          { localeCode, namespace },
+          { format },
+        );
 
-      if (translationFileCtx.exists) {
-        return { type: "translationFile", context: translationFileCtx };
+        if (translationFileCtx.exists) {
+          return { type: "translationFile", context: translationFileCtx };
+        }
       }
     }
+
+    const translationFileCtx = await buildTranslationFileCtx(
+      targetDirPath,
+      { localeCode, namespace },
+      { format: flags.format },
+    );
+    return { type: "translationFile", context: translationFileCtx };
   }
 
   // From this point on, we have both translationRef and --all flag used
