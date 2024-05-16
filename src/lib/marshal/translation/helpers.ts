@@ -34,7 +34,6 @@ export type TranslationFileContext = TranslationIdentifier & {
   ref: string;
   abspath: string;
   exists: boolean;
-  format: TranslationFormat;
 };
 
 /*
@@ -87,7 +86,6 @@ export const buildTranslationFileCtx = async (
     namespace: translationIdentifier.namespace,
     abspath,
     exists,
-    format: options?.format ?? DEFAULT_TRANSLATION_FORMAT,
   };
 };
 
@@ -210,38 +208,32 @@ export const ensureValidCommandTarget = async (
   // Got translationRef arg but no --all flag, which means target only a single
   // translation file.
   if (!flags.all) {
-    const isPushOrValidate = [
-      "translation:validate",
-      "translation:push",
-    ].includes(commandId ?? "");
-    if (isPushOrValidate) {
-      // Try to get the translation file for all supported formats when validating or pushing
-      // Start with the specified format then fallback to other options
-      const formatsToLookup = [
-        flags.format,
-        ...SUPPORTED_TRANSLATION_FORMATS,
-      ].filter((x) => Boolean(x));
+    // If specified, check the given format; otherwise check for all supported formats
+    const formats = flags.format
+      ? [flags.format]
+      : SUPPORTED_TRANSLATION_FORMATS;
 
-      let translationFileCtx: TranslationFileContext;
-      for await (const format of formatsToLookup) {
-        translationFileCtx = await buildTranslationFileCtx(
+    const translationFileCtxs = await Promise.all(
+      formats.map(async (format) =>
+        buildTranslationFileCtx(
           targetDirPath,
           { localeCode, namespace },
           { format },
-        );
-
-        if (translationFileCtx.exists) {
-          return { type: "translationFile", context: translationFileCtx };
-        }
-      }
+        ),
+      ),
+    );
+    if (flags.format) {
+      return { type: "translationFile", context: translationFileCtxs[0] };
     }
 
-    const translationFileCtx = await buildTranslationFileCtx(
-      targetDirPath,
-      { localeCode, namespace },
-      { format: flags.format },
-    );
-    return { type: "translationFile", context: translationFileCtx };
+    // If no format is specified, look for the first existing file and return that context
+    const existingFileCtx = translationFileCtxs.find((ctx) => ctx.exists);
+    if (existingFileCtx) {
+      return { type: "translationFile", context: existingFileCtx };
+    }
+
+    // If no file exists, fall back to the file context with the default format (json)
+    return { type: "translationFile", context: translationFileCtxs[0] };
   }
 
   // From this point on, we have both translationRef and --all flag used
@@ -281,10 +273,10 @@ export const lsTranslationDir = async (
       if (dirent.isDirectory()) return false;
 
       const filename = dirent.name.toLowerCase();
-      const validExtension = SUPPORTED_TRANSLATION_FORMATS.some((extension) =>
+      const isValidExtension = SUPPORTED_TRANSLATION_FORMATS.some((extension) =>
         filename.endsWith(`${localeCode}.${extension}`),
       );
-      if (!validExtension) return false;
+      if (!isValidExtension) return false;
 
       const { name: translationRef } = path.parse(filename);
       const parsedRef = parseTranslationRef(translationRef);

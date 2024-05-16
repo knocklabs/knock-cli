@@ -15,7 +15,6 @@ import {
   TranslationFileContext,
 } from "./helpers";
 import {
-  DEFAULT_TRANSLATION_FORMAT,
   SUPPORTED_TRANSLATION_FORMATS,
   TranslationFormat,
 } from "./processor.isomorphic";
@@ -23,6 +22,7 @@ import {
 // Hydrated translation file context with its content.
 export type TranslationFileData = TranslationFileContext & {
   content: string;
+  format: TranslationFormat | undefined;
 };
 
 /*
@@ -52,30 +52,11 @@ const readTranslationFiles = async (
     // push commands. Consider making this an option in the future.
     if (namespace === SYSTEM_NAMESPACE) continue;
 
-    // Get translation format from file extension
-    const format = getFormatFromFilename(abspath);
-
-    let content = "";
-    if (format === "json") {
-      // eslint-disable-next-line no-await-in-loop
-      const [jsonContent, readErrors] = await readJson(abspath);
-
-      if (readErrors.length > 0) {
-        const e = new SourceError(formatErrors(readErrors), abspath);
-        errors.push(e);
-        continue;
-      }
-
-      content = JSON.stringify(jsonContent);
-    } else {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        content = await fs.readFile(abspath, "utf8");
-      } catch (error) {
-        const e = new SourceError((error as Error).message, abspath);
-        errors.push(e);
-        continue;
-      }
+    // eslint-disable-next-line no-await-in-loop
+    const [content, format, sourceError] = await readTranslationFile(abspath);
+    if (sourceError) {
+      errors.push(sourceError);
+      continue;
     }
 
     translations.push({
@@ -92,13 +73,57 @@ const readTranslationFiles = async (
   return [translations, errors];
 };
 
-const getFormatFromFilename = (filePath: string): TranslationFormat => {
-  const parts = filePath.split(".");
-  const extension = parts.length > 1 ? parts.at(-1) : "";
+const readTranslationFile = async (
+  filePath: string,
+): Promise<
+  [string, format: TranslationFormat | undefined, SourceError | undefined]
+> => {
+  // Get translation format from file extension
+  const format = getFormatFromFilePath(filePath);
+
+  switch (format) {
+    case "json": {
+      const [jsonContent, readErrors] = await readJson(filePath);
+
+      if (readErrors.length > 0) {
+        const e = new SourceError(formatErrors(readErrors), filePath);
+        return ["", undefined, e];
+      }
+
+      const content = JSON.stringify(jsonContent);
+
+      return [content, format, undefined];
+    }
+
+    case "po": {
+      try {
+        const content = await fs.readFile(filePath, "utf8");
+        return [content, format, undefined];
+      } catch (error) {
+        const e = new SourceError((error as Error).message, filePath);
+        return ["", undefined, e];
+      }
+    }
+
+    default:
+      return [
+        "",
+        undefined,
+        new SourceError("Unsupported file extension", filePath),
+      ];
+  }
+};
+
+const getFormatFromFilePath = (
+  filePath: string,
+): TranslationFormat | undefined => {
+  // Path.extname returns the extension with a period (e.g. .json)
+  // so we use slice to get just the name
+  const extension = path.extname(filePath).slice(1);
 
   return SUPPORTED_TRANSLATION_FORMATS.includes(extension as TranslationFormat)
     ? (extension as TranslationFormat)
-    : DEFAULT_TRANSLATION_FORMAT;
+    : undefined;
 };
 
 /*
