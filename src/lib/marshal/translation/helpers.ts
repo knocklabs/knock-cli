@@ -8,7 +8,6 @@ import { DirContext, isDirectory } from "@/lib/helpers/fs";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
 import {
-  DEFAULT_TRANSLATION_FORMAT,
   formatFileName,
   formatRef,
   SUPPORTED_TRANSLATION_FORMATS,
