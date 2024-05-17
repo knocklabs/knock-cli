@@ -59,10 +59,6 @@ const readTranslationFiles = async (
       continue;
     }
 
-    if (!content) {
-      continue;
-    }
-
     translations.push({
       ref: translationRef,
       localeCode,
@@ -80,7 +76,8 @@ const readTranslationFiles = async (
 const readTranslationFile = async (
   filePath: string,
 ): Promise<
-  [string | undefined, SourceError | undefined, TranslationFormat]
+  | [string, undefined, TranslationFormat]
+  | [undefined, SourceError, TranslationFormat]
 > => {
   // Get translation format from file extension
   const format = getFormatFromFilePath(filePath);
