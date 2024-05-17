@@ -14,10 +14,15 @@ import {
   TranslationCommandTarget,
   TranslationFileContext,
 } from "./helpers";
+import {
+  SUPPORTED_TRANSLATION_FORMATS,
+  TranslationFormat,
+} from "./processor.isomorphic";
 
 // Hydrated translation file context with its content.
 export type TranslationFileData = TranslationFileContext & {
   content: string;
+  format: TranslationFormat;
 };
 
 /*
@@ -48,11 +53,9 @@ const readTranslationFiles = async (
     if (namespace === SYSTEM_NAMESPACE) continue;
 
     // eslint-disable-next-line no-await-in-loop
-    const [content, readJsonErrors] = await readJson(abspath);
-
-    if (readJsonErrors.length > 0) {
-      const e = new SourceError(formatErrors(readJsonErrors), abspath);
-      errors.push(e);
+    const [content, sourceError, format] = await readTranslationFile(abspath);
+    if (sourceError) {
+      errors.push(sourceError);
       continue;
     }
 
@@ -62,11 +65,62 @@ const readTranslationFiles = async (
       namespace,
       abspath,
       exists: true,
-      content: JSON.stringify(content),
+      content,
+      format,
     });
   }
 
   return [translations, errors];
+};
+
+const readTranslationFile = async (
+  filePath: string,
+): Promise<
+  | [string, undefined, TranslationFormat]
+  | [undefined, SourceError, TranslationFormat]
+> => {
+  // Get translation format from file extension
+  const format = getFormatFromFilePath(filePath);
+
+  switch (format) {
+    case "json": {
+      const [jsonContent, readErrors] = await readJson(filePath);
+
+      if (readErrors.length > 0) {
+        const e = new SourceError(formatErrors(readErrors), filePath);
+        return [undefined, e, format];
+      }
+
+      const content = JSON.stringify(jsonContent);
+
+      return [content, undefined, format];
+    }
+
+    case "po": {
+      try {
+        const content = await fs.readFile(filePath, "utf8");
+        return [content, undefined, format];
+      } catch (error) {
+        const e = new SourceError((error as Error).message, filePath);
+        return [undefined, e, format];
+      }
+    }
+
+    default:
+      throw new Error(`unsupported translation file extension: ${filePath}`);
+  }
+};
+
+const getFormatFromFilePath = (
+  filePath: string,
+): TranslationFormat | undefined => {
+  // Path.extname returns the extension with a period (e.g. .json)
+  // so we use slice to get just the name
+  const extension = path.extname(filePath).slice(1);
+
+  return SUPPORTED_TRANSLATION_FORMATS.includes(extension as TranslationFormat)
+    ? (extension as TranslationFormat)
+    : undefined;
 };
 
 /*

@@ -48,7 +48,6 @@ describe("commands/translation/push", () => {
           sinon.match(({ flags }) => {
             return isEqual(flags, {
               "service-token": "valid-token",
-
               environment: "development",
             });
           }),
@@ -56,6 +55,7 @@ describe("commands/translation/push", () => {
             content: '{"welcome":"hello!"}',
             locale_code: "en",
             namespace: "admin",
+            format: "json",
           }),
         );
       });
@@ -77,7 +77,6 @@ describe("commands/translation/push", () => {
             sinon.match(({ flags }) =>
               isEqual(flags, {
                 "service-token": "valid-token",
-
                 environment: "development",
                 commit: true,
                 "commit-message": "this is a commit comment!",
@@ -87,6 +86,7 @@ describe("commands/translation/push", () => {
               content: '{"welcome":"hello!"}',
               locale_code: "en",
               namespace: "admin",
+              format: "json",
             }),
           );
         },
@@ -233,7 +233,6 @@ describe("commands/translation/push", () => {
           const expectedArgs = {};
           const expectedFlags = {
             "service-token": "valid-token",
-
             environment: "development",
             all: true,
             "translations-dir": {
@@ -254,6 +253,7 @@ describe("commands/translation/push", () => {
                 locale_code: "en",
                 namespace: "admin",
                 content: '{"admin":"foo"}',
+                format: "json",
               }),
             ),
           );
@@ -270,6 +270,7 @@ describe("commands/translation/push", () => {
                 locale_code: "en",
                 namespace: undefined,
                 content: '{"hello":"Heyyyy"}',
+                format: "json",
               }),
             ),
           );
@@ -286,10 +287,45 @@ describe("commands/translation/push", () => {
                 locale_code: "es",
                 namespace: "tasks",
                 content: '{"hello":"Hola"}',
+                format: "json",
               }),
             ),
           );
         },
       );
+  });
+
+  describe("given a po translation file exists for locale code and namespace", () => {
+    beforeEach(() => {
+      const translationsDir = path.resolve(sandboxDir, "translations");
+      const abspath = path.resolve(translationsDir, "en", "admin.en.po");
+      fs.outputFileSync(
+        abspath,
+        `msgid ""\nmsgstr ""\n"Project-Id-Version: "\n"PO-Revision-Date: "\n"Language: en"\n"Content-Type: text/plain; charset=UTF-8"\n"Content-Transfer-Encoding: 8bit"\n"Plural-Forms: nplurals=2; plural=(n != 1);"\nmsgid "Primary"\nmsgstr "Primary"`,
+      );
+
+      process.chdir(translationsDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["translation push", "admin.en"])
+      .it("calls apiV1 upsertTranslation with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertTranslation as any,
+          sinon.match(({ flags }) => {
+            return isEqual(flags, {
+              "service-token": "valid-token",
+              environment: "development",
+            });
+          }),
+          sinon.match({
+            content: `msgid ""\nmsgstr ""\n"Project-Id-Version: "\n"PO-Revision-Date: "\n"Language: en"\n"Content-Type: text/plain; charset=UTF-8"\n"Content-Transfer-Encoding: 8bit"\n"Plural-Forms: nplurals=2; plural=(n != 1);"\nmsgid "Primary"\nmsgstr "Primary"`,
+            locale_code: "en",
+            namespace: "admin",
+            format: "po",
+          }),
+        );
+      });
   });
 });

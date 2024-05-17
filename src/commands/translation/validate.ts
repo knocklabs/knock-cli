@@ -93,6 +93,7 @@ export default class TranslationValidate extends BaseCommand<
         locale_code: translation.localeCode,
         namespace: translation.namespace,
         content: translation.content,
+        format: translation.format,
       });
 
       if (isSuccessResp(resp)) return;

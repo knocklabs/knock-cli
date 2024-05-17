@@ -5,7 +5,12 @@ type TranslationDirBundle = {
 };
 
 export type TranslationFormat = "json" | "po";
-
+// Note: json should be the first option so that in cases where the array is used
+// and order matters, json (the default format) is first.
+export const SUPPORTED_TRANSLATION_FORMATS: Readonly<TranslationFormat[]> = [
+  "json",
+  "po",
+] as const;
 export const DEFAULT_TRANSLATION_FORMAT = "json";
 
 /*
