@@ -22,7 +22,7 @@ import {
 // Hydrated translation file context with its content.
 export type TranslationFileData = TranslationFileContext & {
   content: string;
-  format: TranslationFormat | undefined;
+  format: TranslationFormat;
 };
 
 /*
@@ -53,9 +53,13 @@ const readTranslationFiles = async (
     if (namespace === SYSTEM_NAMESPACE) continue;
 
     // eslint-disable-next-line no-await-in-loop
-    const [content, format, sourceError] = await readTranslationFile(abspath);
+    const [content, sourceError, format] = await readTranslationFile(abspath);
     if (sourceError) {
       errors.push(sourceError);
+      continue;
+    }
+
+    if (!content) {
       continue;
     }
 
@@ -76,7 +80,7 @@ const readTranslationFiles = async (
 const readTranslationFile = async (
   filePath: string,
 ): Promise<
-  [string, TranslationFormat | undefined, SourceError | undefined]
+  [string | undefined, SourceError | undefined, TranslationFormat]
 > => {
   // Get translation format from file extension
   const format = getFormatFromFilePath(filePath);
@@ -87,30 +91,26 @@ const readTranslationFile = async (
 
       if (readErrors.length > 0) {
         const e = new SourceError(formatErrors(readErrors), filePath);
-        return ["", undefined, e];
+        return [undefined, e, format];
       }
 
       const content = JSON.stringify(jsonContent);
 
-      return [content, format, undefined];
+      return [content, undefined, format];
     }
 
     case "po": {
       try {
         const content = await fs.readFile(filePath, "utf8");
-        return [content, format, undefined];
+        return [content, undefined, format];
       } catch (error) {
         const e = new SourceError((error as Error).message, filePath);
-        return ["", undefined, e];
+        return [undefined, e, format];
       }
     }
 
     default:
-      return [
-        "",
-        undefined,
-        new SourceError("Unsupported file extension", filePath),
-      ];
+      throw new Error(`unsupported translation file extension: ${filePath}`);
   }
 };
 
