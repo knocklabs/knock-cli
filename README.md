@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.1.14 darwin-arm64 node-v18.17.0
+@knocklabs/cli/0.1.15 darwin-arm64 node-v20.10.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -31,7 +31,7 @@ USAGE
 * [`knock commit get ID`](#knock-commit-get-id)
 * [`knock commit list`](#knock-commit-list)
 * [`knock commit promote`](#knock-commit-promote)
-* [`knock help [COMMANDS]`](#knock-help-commands)
+* [`knock help [COMMAND]`](#knock-help-command)
 * [`knock layout get EMAILLAYOUTKEY`](#knock-layout-get-emaillayoutkey)
 * [`knock layout list`](#knock-layout-list)
 * [`knock layout pull [EMAILLAYOUTKEY]`](#knock-layout-pull-emaillayoutkey)
@@ -78,7 +78,7 @@ FLAGS
       --service-token=<value>   (required) The service token to authenticate with.
 ```
 
-_See code: [src/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/commit/index.ts)_
+_See code: [src/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/commit/index.ts)_
 
 ## `knock commit get ID`
 
@@ -95,7 +95,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/commit/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/commit/get.ts)_
+_See code: [src/commands/commit/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/commit/get.ts)_
 
 ## `knock commit list`
 
@@ -119,7 +119,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/commit/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/commit/list.ts)_
+_See code: [src/commands/commit/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/commit/list.ts)_
 
 ## `knock commit promote`
 
@@ -136,18 +136,18 @@ FLAGS
   --to=<value>             The destination environment to promote all changes from the preceding environment.
 ```
 
-_See code: [src/commands/commit/promote.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/commit/promote.ts)_
+_See code: [src/commands/commit/promote.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/commit/promote.ts)_
 
-## `knock help [COMMANDS]`
+## `knock help [COMMAND]`
 
 Display help for knock.
 
 ```
 USAGE
-  $ knock help [COMMANDS...] [-n]
+  $ knock help [COMMAND...] [-n]
 
 ARGUMENTS
-  COMMANDS...  Command to show help for.
+  COMMAND...  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
@@ -156,7 +156,7 @@ DESCRIPTION
   Display help for knock.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.14/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.21/src/commands/help.ts)_
 
 ## `knock layout get EMAILLAYOUTKEY`
 
@@ -176,7 +176,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/layout/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/layout/get.ts)_
+_See code: [src/commands/layout/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/layout/get.ts)_
 
 ## `knock layout list`
 
@@ -199,7 +199,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/layout/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/layout/list.ts)_
+_See code: [src/commands/layout/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/layout/list.ts)_
 
 ## `knock layout pull [EMAILLAYOUTKEY]`
 
@@ -219,7 +219,7 @@ FLAGS
   --service-token=<value>     (required) The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/layout/pull.ts)_
+_See code: [src/commands/layout/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/layout/pull.ts)_
 
 ## `knock layout push [EMAILLAYOUTKEY]`
 
@@ -241,7 +241,7 @@ FLAGS
       --service-token=<value>   (required) The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/layout/push.ts)_
+_See code: [src/commands/layout/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/layout/push.ts)_
 
 ## `knock layout validate [EMAILLAYOUTKEY]`
 
@@ -260,7 +260,7 @@ FLAGS
   --service-token=<value>  (required) The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/layout/validate.ts)_
+_See code: [src/commands/layout/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/layout/validate.ts)_
 
 ## `knock plugins`
 
@@ -548,7 +548,7 @@ Display a single translation from an environment.
 ```
 USAGE
   $ knock translation get TRANSLATIONREF --service-token <value> [--json] [--environment <value>]
-    [--hide-uncommitted-changes]
+    [--hide-uncommitted-changes] [--format json|po]
 
 ARGUMENTS
   TRANSLATIONREF  Translation ref is a identifier string that refers to a unique translation.
@@ -557,6 +557,8 @@ ARGUMENTS
 
 FLAGS
   --environment=<value>       [default: development] The environment to use.
+  --format=<option>           [default: json] Specify the output format of the returned translations.
+                              <options: json|po>
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --service-token=<value>     (required) The service token to authenticate with.
 
@@ -564,7 +566,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/translation/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/translation/get.ts)_
+_See code: [src/commands/translation/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/translation/get.ts)_
 
 ## `knock translation list`
 
@@ -587,7 +589,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/translation/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/translation/list.ts)_
+_See code: [src/commands/translation/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/translation/list.ts)_
 
 ## `knock translation pull [TRANSLATIONREF]`
 
@@ -596,7 +598,7 @@ Pull one or more translations from an environment into a local file system.
 ```
 USAGE
   $ knock translation pull [TRANSLATIONREF] --service-token <value> [--environment <value>] [--translations-dir
-    <value> --all] [--hide-uncommitted-changes] [--force]
+    <value> --all] [--hide-uncommitted-changes] [--force] [--format json|po]
 
 ARGUMENTS
   TRANSLATIONREF  Translation ref is a identifier string that refers to a unique translation.
@@ -607,12 +609,14 @@ FLAGS
   --all                       Whether to pull all translations from the specified environment.
   --environment=<value>       [default: development] The environment to use.
   --force                     Remove the confirmation prompt.
+  --format=<option>           [default: json] Specify the output format of the returned translations.
+                              <options: json|po>
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --service-token=<value>     (required) The service token to authenticate with.
   --translations-dir=<value>  The target directory path to pull all translations into.
 ```
 
-_See code: [src/commands/translation/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/translation/pull.ts)_
+_See code: [src/commands/translation/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/translation/pull.ts)_
 
 ## `knock translation push [TRANSLATIONREF]`
 
@@ -639,7 +643,7 @@ FLAGS
       --translations-dir=<value>  The target directory path to find all translations to push.
 ```
 
-_See code: [src/commands/translation/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/translation/push.ts)_
+_See code: [src/commands/translation/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/translation/push.ts)_
 
 ## `knock translation validate [TRANSLATIONREF]`
 
@@ -664,7 +668,7 @@ FLAGS
   --translations-dir=<value>  The target directory path to find all translations to validate.
 ```
 
-_See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/translation/validate.ts)_
+_See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/translation/validate.ts)_
 
 ## `knock whoami`
 
@@ -681,7 +685,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/whoami.ts)_
+_See code: [src/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/whoami.ts)_
 
 ## `knock workflow activate WORKFLOWKEY`
 
@@ -708,7 +712,7 @@ DESCRIPTION
   with `false` in order to deactivate it.
 ```
 
-_See code: [src/commands/workflow/activate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/workflow/activate.ts)_
+_See code: [src/commands/workflow/activate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/workflow/activate.ts)_
 
 ## `knock workflow get WORKFLOWKEY`
 
@@ -728,7 +732,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/workflow/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/workflow/get.ts)_
+_See code: [src/commands/workflow/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/workflow/get.ts)_
 
 ## `knock workflow list`
 
@@ -751,7 +755,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/workflow/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/workflow/list.ts)_
+_See code: [src/commands/workflow/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/workflow/list.ts)_
 
 ## `knock workflow pull [WORKFLOWKEY]`
 
@@ -771,7 +775,7 @@ FLAGS
   --workflows-dir=<value>     The target directory path to pull all workflows into.
 ```
 
-_See code: [src/commands/workflow/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/workflow/pull.ts)_
+_See code: [src/commands/workflow/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/workflow/pull.ts)_
 
 ## `knock workflow push [WORKFLOWKEY]`
 
@@ -792,7 +796,7 @@ FLAGS
       --workflows-dir=<value>   The target directory path to find all workflows to push.
 ```
 
-_See code: [src/commands/workflow/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/workflow/push.ts)_
+_See code: [src/commands/workflow/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/workflow/push.ts)_
 
 ## `knock workflow run WORKFLOWKEY`
 
@@ -813,7 +817,7 @@ FLAGS
   --tenant=<value>         A tenant id for the workflow run.
 ```
 
-_See code: [src/commands/workflow/run.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/workflow/run.ts)_
+_See code: [src/commands/workflow/run.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/workflow/run.ts)_
 
 ## `knock workflow validate [WORKFLOWKEY]`
 
@@ -832,5 +836,5 @@ FLAGS
   --workflows-dir=<value>  The target directory path to find all workflows to validate.
 ```
 
-_See code: [src/commands/workflow/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.14/src/commands/workflow/validate.ts)_
+_See code: [src/commands/workflow/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.15/src/commands/workflow/validate.ts)_
 <!-- commandsstop -->
