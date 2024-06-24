@@ -17,7 +17,6 @@ const disabled = {
   },
 } as any;
 
-engine.registerTag("render", disabled);
 engine.registerTag("include", disabled);
 
 /*
