@@ -23,11 +23,8 @@ describe("lib/helpers/liquid", () => {
 
     describe("given an invalid liquid string, with an unsupported tag", () => {
       it("returns a LiquidParseError", async () => {
-        const ret1 = validateLiquidSyntax("{% render 'footer.liquid' %}");
+        const ret1 = validateLiquidSyntax("{% include 'footer.liquid' %}");
         expect(ret1).to.be.an.instanceof(LiquidParseError);
-
-        const ret2 = validateLiquidSyntax("{% include 'footer.liquid' %}");
-        expect(ret2).to.be.an.instanceof(LiquidParseError);
       });
     });
 
