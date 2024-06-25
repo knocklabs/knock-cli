@@ -9,8 +9,7 @@ import {
 import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
-import { partialTypeToFileExt } from "./helpers";
-import { PartialData } from "./types";
+import { PartialData, PartialType } from "./types";
 
 export const PARTIAL_JSON = "partial.json";
 
@@ -31,6 +30,21 @@ const toPartialJson = (partial: PartialData<WithAnnotation>): AnyObj => {
 
   // Strip out all schema annotations, so not to expose them to end users.
   return omitDeep(partialjson, ["__annotation"]);
+};
+
+// Maps the partial type to the correct file extension. Defaults to 'txt'
+const partialTypeToFileExt = (type: PartialType): string => {
+  switch (type) {
+    case PartialType.Html:
+      return "html";
+    case PartialType.Json:
+      return "json";
+    case PartialType.Markdown:
+      return "md";
+    case PartialType.Text:
+    default:
+      return "txt";
+  }
 };
 
 /*
