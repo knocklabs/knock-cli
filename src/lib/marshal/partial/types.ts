@@ -3,10 +3,10 @@ import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import { MaybeWithAnnotation } from "../shared/types";
 
 export enum PartialType {
-  Html = "HTML",
-  Json = "JSON",
-  Markdown = "MARKDOWN",
-  Text = "TEXT",
+  Html = "html",
+  Json = "json",
+  Markdown = "markdown",
+  Text = "text",
 }
 
 // Partial payload data from the API.
