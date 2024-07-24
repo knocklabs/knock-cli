@@ -1,13 +1,11 @@
 import { cloneDeep, get, has, set, unset } from "lodash";
 
-import { AnyObj, split } from "@/lib/helpers/object.isomorphic";
-import {
-  ObjKeyOrArrayIdx,
-  ObjPath,
-  omitDeep,
-} from "@/lib/helpers/object.isomorphic";
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
+import { ObjKeyOrArrayIdx, ObjPath } from "@/lib/helpers/object.isomorphic";
 import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
+
+import { prepareResourceJson } from "../shared/helpers.isomorphic";
 
 import { PartialData, PartialType } from "./types";
 
@@ -15,21 +13,6 @@ export const PARTIAL_JSON = "partial.json";
 
 export type PartialDirBundle = {
   [relpath: string]: string;
-};
-
-/*
- * Sanitize the partial content into a format that's appropriate for reading
- * and writing, by stripping out any annotation fields and handling readonly
- * fields.
- */
-const toPartialJson = (partial: PartialData<WithAnnotation>): AnyObj => {
-  // Move read only field under the dedicated field "__readonly".
-  const readonlyFields = partial.__annotation?.readonly_fields || [];
-  const [readonly, remainder] = split(partial, readonlyFields);
-  const partialjson = { ...remainder, __readonly: readonly };
-
-  // Strip out all schema annotations, so not to expose them to end users.
-  return omitDeep(partialjson, ["__annotation"]);
 };
 
 // Maps the partial type to the correct file extension. Defaults to 'txt'
@@ -99,8 +82,7 @@ export const buildPartialDirBundle = (
     compileExtractionSettings(mutRemotePartial);
 
   // Iterate through each extractable field, determine whether we need to
-  // extract the field content, and if so, perform the
-  // extraction.
+  // extract the field content, and if so, perform the extraction.
   for (const [objPathParts, extractionSettings] of compiledExtractionSettings) {
     // If this partial doesn't have this field path, then we don't extract.
     if (!has(mutRemotePartial, objPathParts)) continue;
@@ -141,8 +123,5 @@ export const buildPartialDirBundle = (
   // At this point the bundle contains all extractable files, so we finally add
   // the partial JSON relative path + the file content.
 
-  return set(bundle, [PARTIAL_JSON], toPartialJson(mutRemotePartial));
+  return set(bundle, [PARTIAL_JSON], prepareResourceJson(mutRemotePartial));
 };
-
-// Exported for tests
-export { toPartialJson };

@@ -7,36 +7,36 @@ import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { prepareResourceJson } from "../shared/helpers.isomorphic";
 
-import { EmailLayoutData } from "./types";
+import { MessageTypeData } from "./types";
 
-export const LAYOUT_JSON = "layout.json";
+export const MESSAGE_TYPE_JSON = "message_type.json";
 
-export type EmailLayoutDirBundle = {
+type MessageTypeDirBundle = {
   [relpath: string]: string;
 };
 
 /*
- * Traverse a given email layout data and compile extraction settings of every
+ * Traverse a given message type data and compile extraction settings of every
  * extractable field into a sorted map.
  *
  * NOTE: Currently we do NOT support content extraction at nested levels for
- * email layouts.
+ * message types.
  */
 type CompiledExtractionSettings = Map<ObjKeyOrArrayIdx[], ExtractionSettings>;
 
 const compileExtractionSettings = (
-  emailLayout: EmailLayoutData<WithAnnotation>,
+  messageType: MessageTypeData<WithAnnotation>,
 ): CompiledExtractionSettings => {
   const extractableFields = get(
-    emailLayout,
+    messageType,
     ["__annotation", "extractable_fields"],
     {},
   );
   const map: CompiledExtractionSettings = new Map();
 
-  for (const [key] of Object.entries(emailLayout)) {
-    // If the field we are on is extractable, then add its extraction
-    // settings to the map with the current object path.
+  for (const [key] of Object.entries(messageType)) {
+    // If the field we are on is extractable, then add its extraction settings
+    // to the map with the current object path.
     if (key in extractableFields) {
       map.set([key], extractableFields[key]);
     }
@@ -46,34 +46,33 @@ const compileExtractionSettings = (
 };
 
 /*
- * For a given email layout payload, this function builds a "email layout
- * directoy bundle". This is an object which contains all the relative paths and
- * its file content. It includes the extractable fields, which are extracted out
- * and added to the bundle as separate files.
+ * For a given message type payload, this function builds a message type
+ * "directory bundle". This is an object which contains all the relative paths
+ * and its file content. It includes the extractable fields, which are extracted
+ * out and added to the bundle as separate files.
  */
-export const buildEmailLayoutDirBundle = (
-  remoteEmailLayout: EmailLayoutData<WithAnnotation>,
-  localEmailLayout: AnyObj = {},
-): EmailLayoutDirBundle => {
-  const bundle: EmailLayoutDirBundle = {};
-  const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
-  // A map of extraction settings of every field in the email layout
+export const buildMessageTypeDirBundle = (
+  remoteMessageType: MessageTypeData<WithAnnotation>,
+  localMessageType: AnyObj = {},
+): MessageTypeDirBundle => {
+  const bundle: MessageTypeDirBundle = {};
+  const mutRemoteMessageType = cloneDeep(remoteMessageType);
+  // A map of extraction settings of every field in the message type
   const compiledExtractionSettings =
-    compileExtractionSettings(mutRemoteEmailLayout);
+    compileExtractionSettings(mutRemoteMessageType);
 
   // Iterate through each extractable field, determine whether we need to
-  // extract the field content, and if so, perform the
-  // extraction.
+  // extract the field content, and if so, perform the extraction.
   for (const [objPathParts, extractionSettings] of compiledExtractionSettings) {
-    // If this layout doesn't have this field path, then we don't extract.
-    if (!has(mutRemoteEmailLayout, objPathParts)) continue;
+    // If this message type doesn't have this field path, then we don't extract.
+    if (!has(mutRemoteMessageType, objPathParts)) continue;
 
-    // If the field at this path is extracted in the local layout, then
+    // If the field at this path is extracted in the local message type, then
     // always extract; otherwise extract based on the field settings default.
     const objPathStr = ObjPath.stringify(objPathParts);
 
     const extractedFilePath = get(
-      localEmailLayout,
+      localMessageType,
       `${objPathStr}${FILEPATH_MARKER}`,
     );
 
@@ -82,11 +81,11 @@ export const buildEmailLayoutDirBundle = (
     if (!extractedFilePath && !extractByDefault) continue;
 
     // By this point, we have a field where we need to extract its content.
-    const data = get(mutRemoteEmailLayout, objPathParts);
+    const data = get(mutRemoteMessageType, objPathParts);
     const fileName = objPathParts.pop();
 
-    // If we have an extracted file path from the local layout, we use that.
-    // In the other case we use the default path.
+    // If we have an extracted file path from the local message type, we use
+    // that.  In the other case we use the default path.
     const relpath =
       typeof extractedFilePath === "string"
         ? extractedFilePath
@@ -97,12 +96,16 @@ export const buildEmailLayoutDirBundle = (
     // content with the extracted file path and mark the field as extracted
     // with @ suffix.
     set(bundle, [relpath], data);
-    set(mutRemoteEmailLayout, `${objPathStr}${FILEPATH_MARKER}`, relpath);
-    unset(mutRemoteEmailLayout, objPathStr);
+    set(mutRemoteMessageType, `${objPathStr}${FILEPATH_MARKER}`, relpath);
+    unset(mutRemoteMessageType, objPathStr);
   }
 
   // At this point the bundle contains all extractable files, so we finally add
-  // the layout JSON realtive path + the file content.
+  // the message type JSON relative path + the file content.
 
-  return set(bundle, [LAYOUT_JSON], prepareResourceJson(mutRemoteEmailLayout));
+  return set(
+    bundle,
+    [MESSAGE_TYPE_JSON],
+    prepareResourceJson(mutRemoteMessageType),
+  );
 };

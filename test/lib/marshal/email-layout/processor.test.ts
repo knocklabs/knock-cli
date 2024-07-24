@@ -1,10 +1,8 @@
 import { expect } from "chai";
-import { get } from "lodash";
 
 import {
   buildEmailLayoutDirBundle,
   EmailLayoutData,
-  toEmailLayoutJson,
 } from "@/lib/marshal/email-layout";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
@@ -27,30 +25,6 @@ const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
 };
 
 describe("lib/marshal/layout/processor", () => {
-  describe("toEmailLayoutJson", () => {
-    it("moves over layout's readonly fields under __readonly field", () => {
-      const layoutJson = toEmailLayoutJson(remoteEmailLayout);
-
-      expect(layoutJson.key).to.equal(undefined);
-      expect(layoutJson.environment).to.equal(undefined);
-      expect(layoutJson.created_at).to.equal(undefined);
-      expect(layoutJson.updated_at).to.equal(undefined);
-
-      expect(layoutJson.__readonly).to.eql({
-        key: "default",
-        environment: "development",
-        created_at: "2023-09-18T18:32:18.398053Z",
-        updated_at: "2023-10-02T19:24:48.714630Z",
-      });
-    });
-
-    it("removes all __annotation fields", () => {
-      const layoutJson = toEmailLayoutJson(remoteEmailLayout);
-
-      expect(get(layoutJson, "__annotation")).to.equal(undefined);
-    });
-  });
-
   describe("buildEmailLayoutDirBundle", () => {
     describe("given a fetched layout that has not been pulled before", () => {
       const result = buildEmailLayoutDirBundle(remoteEmailLayout);

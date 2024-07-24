@@ -1,5 +1,3 @@
-import { AnyObj } from "@/lib/helpers/object.isomorphic";
-
 import { MaybeWithAnnotation } from "../shared/types";
 
 export enum PartialType {
@@ -22,8 +20,4 @@ export type PartialData<A extends MaybeWithAnnotation = unknown> = A & {
   environment: string;
   updated_at: string;
   created_at: string;
-};
-
-export type PartialInput = AnyObj & {
-  key: string;
 };
