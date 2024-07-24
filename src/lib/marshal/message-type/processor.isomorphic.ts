@@ -6,7 +6,6 @@ import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { prepareResourceJson } from "../shared/helpers.isomorphic";
-
 import { MessageTypeData } from "./types";
 
 export const MESSAGE_TYPE_JSON = "message_type.json";

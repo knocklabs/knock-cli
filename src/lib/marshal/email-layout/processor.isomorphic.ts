@@ -6,7 +6,6 @@ import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { prepareResourceJson } from "../shared/helpers.isomorphic";
-
 import { EmailLayoutData } from "./types";
 
 export const LAYOUT_JSON = "layout.json";

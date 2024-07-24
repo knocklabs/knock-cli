@@ -2,8 +2,8 @@ import { expect } from "@oclif/test";
 import { get } from "lodash";
 
 import { xpath } from "@/../test/support";
-import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
+import { WithAnnotation } from "@/lib/marshal/shared/types";
 import {
   buildWorkflowDirBundle,
   formatExtractedFilePath,

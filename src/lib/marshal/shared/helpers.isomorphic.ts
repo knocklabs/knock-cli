@@ -3,9 +3,9 @@ import { omitDeep } from "@/lib/helpers/object.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { EmailLayoutData } from "../email-layout";
+import { MessageTypeData } from "../message-type";
 import { PartialData } from "../partial";
 import { WorkflowData } from "../workflow";
-import { MessageTypeData } from "../message-type";
 
 /*
  * Sanitize the resource data into a format that's appropriate for reading

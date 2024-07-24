@@ -6,7 +6,6 @@ import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { prepareResourceJson } from "../shared/helpers.isomorphic";
-
 import { PartialData, PartialType } from "./types";
 
 export const PARTIAL_JSON = "partial.json";

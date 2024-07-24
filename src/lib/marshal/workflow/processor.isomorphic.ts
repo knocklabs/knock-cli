@@ -24,7 +24,6 @@ import {
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { prepareResourceJson } from "../shared/helpers.isomorphic";
-
 import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export const WORKFLOW_JSON = "workflow.json";
