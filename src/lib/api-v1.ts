@@ -321,6 +321,35 @@ export default class ApiV1 {
     return this.get(`/partials/${args.partialKey}`, { params });
   }
 
+  async upsertPartial<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    partial: Partial.PartialInput,
+  ): Promise<AxiosResponse<UpsertPartialResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+    });
+    const data = { partial };
+
+    return this.put(`/partials/${partial.key}`, data, { params });
+  }
+
+  async validatePartial(
+    { flags }: Props,
+    partial: Partial.PartialInput,
+  ): Promise<AxiosResponse<ValidatePartialResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+    const data = { partial };
+
+    return this.put(`/partials/${partial.key}/validate`, data, {
+      params,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -430,3 +459,13 @@ export type ListPartialResp<A extends MaybeWithAnnotation = unknown> =
 
 export type GetPartialResp<A extends MaybeWithAnnotation = unknown> =
   Partial.PartialData<A>;
+
+export type UpsertPartialResp<A extends MaybeWithAnnotation = unknown> = {
+  partial?: Partial.PartialData<A>;
+  errors?: InputError[];
+};
+
+export type ValidatePartialResp = {
+  partial?: Partial.PartialData;
+  errors?: InputError[];
+};

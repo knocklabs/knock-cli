@@ -1,9 +1,10 @@
 import path from "node:path";
 
+import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 import { hasIn, set } from "lodash";
 
-import { JsonDataError } from "@/lib/helpers/error";
+import { formatErrors, JsonDataError, SourceError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
 import {
   AnyObj,
@@ -18,8 +19,42 @@ import {
 import { PartialDirContext } from "@/lib/run-context";
 
 import { FILEPATH_MARKED_RE } from "../shared/const.isomorphic";
-import { lsPartialJson } from "./helpers";
+import { isPartialDir, lsPartialJson, PartialCommandTarget } from "./helpers";
 import { PARTIAL_JSON } from "./processor.isomorphic";
+
+// Hydrated partial directory context with its content.
+export type PartialDirData = PartialDirContext & {
+  content: AnyObj;
+};
+
+/*
+ * For the given list of partial directory contexts, read each partial dir and
+ * return partial directory data.
+ */
+const readPartialsDirs = async (
+  partialDirCtxs: PartialDirContext[],
+  opts: ReadPartialDirOpts = {},
+): Promise<[PartialDirData[], SourceError[]]> => {
+  const partials: PartialDirData[] = [];
+  const errors: SourceError[] = [];
+
+  for (const partialDirCtx of partialDirCtxs) {
+    // eslint-disable-next-line no-await-in-loop
+    const [partial, readErrors] = await readPartialDir(partialDirCtx, opts);
+
+    if (readErrors.length > 0) {
+      const partialJsonPath = path.resolve(partialDirCtx.abspath, PARTIAL_JSON);
+
+      const e = new SourceError(formatErrors(readErrors), partialJsonPath);
+      errors.push(e);
+      continue;
+    }
+
+    partials.push({ ...partialDirCtx, content: partial! });
+  }
+
+  return [partials, errors];
+};
 
 /*
  * The main read function that takes the partial directory context, then reads
@@ -123,4 +158,56 @@ const joinExtractedFiles = async (
   });
 
   return [partialJson, errors];
+};
+
+/*
+ * List and read all partial directories found for the given command target.
+ *
+ * Note, it assumes the valid command target.
+ */
+export const readAllForCommandTarget = async (
+  target: PartialCommandTarget,
+  opts: ReadPartialDirOpts = {},
+): Promise<[PartialDirData[], SourceError[]]> => {
+  const { type: targetType, context: targetCtx } = target;
+
+  if (!targetCtx.exists) {
+    const subject =
+      targetType === "partialDir"
+        ? "a partial directory at"
+        : "partial directories in";
+
+    return ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
+  }
+
+  switch (targetType) {
+    case "partialDir": {
+      return readPartialsDirs([targetCtx], opts);
+    }
+
+    case "partialsIndexDir": {
+      const dirents = await fs.readdir(targetCtx.abspath, {
+        withFileTypes: true,
+      });
+
+      const promises = dirents.map(async (dirent) => {
+        const abspath = path.resolve(targetCtx.abspath, dirent.name);
+        const partialDirCtx: PartialDirContext = {
+          type: "partial",
+          key: dirent.name,
+          abspath,
+          exists: await isPartialDir(abspath),
+        };
+        return partialDirCtx;
+      });
+
+      const partialDirCtxs = (await Promise.all(promises)).filter(
+        (partialDirCtx) => partialDirCtx.exists,
+      );
+      return readPartialsDirs(partialDirCtxs, opts);
+    }
+
+    default:
+      throw new Error(`Invalid partial command target: ${target}`);
+  }
 };
