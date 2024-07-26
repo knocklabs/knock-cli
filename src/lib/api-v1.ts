@@ -308,6 +308,19 @@ export default class ApiV1 {
     return this.get("/partials", { params });
   }
 
+  async getPartial<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetPartialResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/partials/${args.partialKey}`, { params });
+  }
+
   // By methods:
 
   async get(
@@ -414,3 +427,6 @@ export type PromoteOneChangeResp = {
 
 export type ListPartialResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<Partial.PartialData<A>>;
+
+export type GetPartialResp<A extends MaybeWithAnnotation = unknown> =
+  Partial.PartialData<A>;

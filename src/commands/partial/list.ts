@@ -75,6 +75,7 @@ export default class PartialList extends BaseCommand<typeof PartialList> {
       },
       visual_block_enabled: {
         header: "Visual block",
+        get: (entry) => (entry.visual_block_enabled ? "Enabled" : "Disabled"),
       },
       updated_at: {
         header: "Updated at",
