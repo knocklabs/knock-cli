@@ -2,12 +2,12 @@ import { expect } from "@oclif/test";
 import { get } from "lodash";
 
 import { xpath } from "@/../test/support";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import {
   buildWorkflowDirBundle,
   formatExtractedFilePath,
   StepType,
-  toWorkflowJson,
   WorkflowData,
 } from "@/lib/marshal/workflow";
 
@@ -168,9 +168,9 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
 };
 
 describe("lib/marshal/workflow/processor", () => {
-  describe("toWorkflowJson", () => {
+  describe("prepareResourceJson", () => {
     it("moves over workflow's readonly fields under __readonly field", () => {
-      const workflowJson = toWorkflowJson(remoteWorkflow);
+      const workflowJson = prepareResourceJson(remoteWorkflow);
 
       expect(workflowJson.key).to.equal(undefined);
       expect(workflowJson.active).to.equal(undefined);
@@ -189,7 +189,7 @@ describe("lib/marshal/workflow/processor", () => {
     });
 
     it("removes all __annotation fields", () => {
-      const workflowJson = toWorkflowJson(remoteWorkflow);
+      const workflowJson = prepareResourceJson(remoteWorkflow);
 
       expect(get(workflowJson, "__annotation")).to.equal(undefined);
 

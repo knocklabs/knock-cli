@@ -16,7 +16,6 @@ import {
   ObjKeyOrArrayIdx,
   ObjPath,
   omitDeep,
-  split,
 } from "@/lib/helpers/object.isomorphic";
 import {
   FILEPATH_MARKED_RE,
@@ -24,6 +23,7 @@ import {
 } from "@/lib/marshal/shared/const.isomorphic";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
+import { prepareResourceJson } from "../shared/helpers.isomorphic";
 import { StepType, WorkflowData, WorkflowStepData } from "./types";
 
 export const WORKFLOW_JSON = "workflow.json";
@@ -31,22 +31,6 @@ export const VISUAL_BLOCKS_JSON = "visual_blocks.json";
 
 export type WorkflowDirBundle = {
   [relpath: string]: string;
-};
-
-/*
- * Sanitize the workflow content into a format that's appropriate for reading
- * and writing, by stripping out any annotation fields and handling readonly
- * fields.
- */
-const toWorkflowJson = (workflow: WorkflowData<WithAnnotation>): AnyObj => {
-  // Move read only fields of a workflow under the dedicated field "__readonly".
-  const readonlyFields = workflow.__annotation?.readonly_fields || [];
-  const [readonly, remainder] = split(workflow, readonlyFields);
-
-  const worklfowJson = { ...remainder, __readonly: readonly };
-
-  // Strip out all schema annotations, so not to expose them to end users.
-  return omitDeep(worklfowJson, ["__annotation"]);
 };
 
 /*
@@ -373,8 +357,8 @@ export const buildWorkflowDirBundle = (
   );
 
   // Then, prepare the workflow data to be written into a workflow json file.
-  return set(bundle, [WORKFLOW_JSON], toWorkflowJson(mutWorkflow));
+  return set(bundle, [WORKFLOW_JSON], prepareResourceJson(mutWorkflow));
 };
 
 // Exported for tests.
-export { formatExtractedFilePath, toWorkflowJson };
+export { formatExtractedFilePath };
