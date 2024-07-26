@@ -10,7 +10,7 @@ import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Partial from "@/lib/marshal/partial";
 
-// import PartialPush from "./push";
+import PartialPush from "./push";
 
 export default class PartialValidate extends BaseCommand<
   typeof PartialValidate
@@ -84,8 +84,7 @@ export default class PartialValidate extends BaseCommand<
 
   static async validateAll(
     api: ApiV1.T,
-    props: Props<typeof PartialValidate>,
-    // props: Props<typeof PartialValidate | typeof PartialPush>,
+    props: Props<typeof PartialValidate | typeof PartialPush>,
     partials: Partial.PartialDirData[],
   ): Promise<SourceError[]> {
     // TODO: Throw an error if a non validation error (e.g. authentication error)
