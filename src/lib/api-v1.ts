@@ -7,6 +7,7 @@ import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import * as Commit from "@/lib/marshal/commit";
 import * as EmailLayout from "@/lib/marshal/email-layout";
+import * as Partial from "@/lib/marshal/partial";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
@@ -292,6 +293,21 @@ export default class ApiV1 {
     });
   }
 
+  // By resources: Partials
+
+  async listPartials<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListPartialResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      annotate: flags.annotate,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/partials", { params });
+  }
+
   // By methods:
 
   async get(
@@ -395,3 +411,6 @@ export type PromoteOneChangeResp = {
   commit?: Commit.CommitData;
   errors?: InputError[];
 };
+
+export type ListPartialResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Partial.PartialData<A>>;

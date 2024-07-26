@@ -6,6 +6,7 @@ import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
 import { CommitData } from "@/lib/marshal/commit";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
+import { PartialData, PartialType } from "@/lib/marshal/partial";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
@@ -159,6 +160,23 @@ export const commit = (attrs: Partial<CommitData> = {}): CommitData => {
     commit_message: "This is a commit message",
     created_at: "2022-12-31T12:00:00.000000Z",
     environment: "development",
+    ...attrs,
+  };
+};
+
+export const partial = (attrs: Partial<PartialData> = {}): PartialData => {
+  return {
+    key: "cta",
+    valid: false,
+    description: "Call to action",
+    name: "Call to action",
+    visual_block_enabled: false,
+    environment: "development",
+    icon_name: "bell",
+    type: PartialType.Html,
+    content: "<div>{{heading}}<button>{{cta}}</button></div>",
+    created_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
     ...attrs,
   };
 };
