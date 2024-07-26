@@ -6,7 +6,11 @@ import { formatErrors, JsonDataError } from "@/lib/helpers/error";
 import { ParsedJson, parseJson } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 import { VISUAL_BLOCKS_JSON } from "@/lib/marshal/workflow";
-import { EmailLayoutDirContext, WorkflowDirContext } from "@/lib/run-context";
+import {
+  EmailLayoutDirContext,
+  PartialDirContext,
+  WorkflowDirContext,
+} from "@/lib/run-context";
 
 /*
  * Read the file at the given path if it exists, validate the content as
@@ -23,7 +27,7 @@ const DECODABLE_JSON_FILES = new Set([VISUAL_BLOCKS_JSON]);
 
 export const readExtractedFileSync = (
   relpath: string,
-  dirCtx: WorkflowDirContext | EmailLayoutDirContext,
+  dirCtx: WorkflowDirContext | EmailLayoutDirContext | PartialDirContext,
   objPathToFieldStr = "",
 ): ReadExtractedFileResult => {
   // Check if the file actually exists at the given file path.

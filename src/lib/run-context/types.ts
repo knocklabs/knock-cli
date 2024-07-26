@@ -16,7 +16,11 @@ export type T = RunContext;
  * Resource directory context
  */
 
-export type ResourceType = "workflow" | "email_layout" | "translation";
+export type ResourceType =
+  | "workflow"
+  | "email_layout"
+  | "translation"
+  | "partial";
 
 type ResourceDirContextBase = DirContext & {
   type: ResourceType;
@@ -35,10 +39,15 @@ export type TranslationDirContext = ResourceDirContextBase & {
   type: "translation";
 };
 
+export type PartialDirContext = ResourceDirContextBase & {
+  type: "partial";
+};
+
 export type ResourceDirContext =
   | WorkflowDirContext
   | EmailLayoutDirContext
-  | TranslationDirContext;
+  | TranslationDirContext
+  | PartialDirContext;
 
 export type ResourceTarget = {
   commandId: string;
