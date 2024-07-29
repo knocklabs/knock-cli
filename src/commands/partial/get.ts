@@ -5,7 +5,6 @@ import BaseCommand from "@/lib/base-command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
-import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 
 export default class PartialGet extends BaseCommand<typeof PartialGet> {
@@ -32,19 +31,18 @@ export default class PartialGet extends BaseCommand<typeof PartialGet> {
   async run(): Promise<ApiV1.GetPartialResp | void> {
     spinner.start("‣ Loading");
 
-    const { partial, whoami } = await this.loadPartial();
+    const { partial } = await this.loadPartial();
 
     spinner.stop();
 
     const { flags } = this.props;
     if (flags.json) return partial;
 
-    this.render(partial, whoami);
+    this.render(partial);
   }
 
   private async loadPartial(): Promise<{
     partial: ApiV1.GetPartialResp;
-    whoami: ApiV1.WhoamiResp;
   }> {
     const partialResp = await this.apiV1.getPartial(this.props);
 
@@ -53,20 +51,12 @@ export default class PartialGet extends BaseCommand<typeof PartialGet> {
       ux.error(new ApiError(message));
     }
 
-    const whoamiResp = await this.apiV1.whoami();
-
-    if (!isSuccessResp(whoamiResp)) {
-      const message = formatErrorRespMessage(whoamiResp);
-      ux.error(new ApiError(message));
-    }
-
     return {
       partial: partialResp.data,
-      whoami: whoamiResp.data,
     };
   }
 
-  render(partial: ApiV1.GetPartialResp, whoami: ApiV1.WhoamiResp): void {
+  render(partial: ApiV1.GetPartialResp): void {
     const { partialKey } = this.props.args;
     const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
@@ -111,6 +101,10 @@ export default class PartialGet extends BaseCommand<typeof PartialGet> {
         key: "Updated at",
         value: formatDateTime(partial.updated_at),
       },
+      {
+        key: "Content",
+        value: "",
+      },
     ];
 
     ux.table(rows, {
@@ -125,12 +119,6 @@ export default class PartialGet extends BaseCommand<typeof PartialGet> {
     });
 
     this.log("");
-
-    const viewPartialUrl = `https://dashboard.knock.app/${
-      whoami.account_slug
-    }/${env.toLowerCase()}/developers/partials/${partial.key}`;
-
-    this.log(`\n‣ View the full partial in the Knock Dashboard:`);
-    this.log(indentString(viewPartialUrl, 2));
+    ux.log(partial.content);
   }
 }

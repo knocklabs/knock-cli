@@ -70,6 +70,9 @@ export default class PartialList extends BaseCommand<typeof PartialList> {
       name: {
         header: "Name",
       },
+      description: {
+        header: "Description",
+      },
       type: {
         header: "Type",
       },
@@ -80,10 +83,6 @@ export default class PartialList extends BaseCommand<typeof PartialList> {
       updated_at: {
         header: "Updated at",
         get: (entry) => formatDate(entry.updated_at),
-      },
-      created_at: {
-        header: "Created at",
-        get: (entry) => formatDate(entry.created_at),
       },
     });
 

@@ -47,7 +47,7 @@ export const writePartialDirFromData = async (
  * built; for example, it can be from parsing the partial data fetched from
  * the Knock API, or built manually for scaffolding purposes.
  */
-export const writePartialDirFromBundle = async (
+const writePartialDirFromBundle = async (
   partialDirCtx: PartialDirContext,
   partialDirBundle: PartialDirBundle,
 ): Promise<void> => {
