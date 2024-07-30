@@ -22,7 +22,7 @@ import {
   ResourceTarget,
 } from "@/lib/run-context";
 
-export default class PartialsPull extends BaseCommand<typeof PartialsPull> {
+export default class PartialPull extends BaseCommand<typeof PartialPull> {
   static summary =
     "Pull one or more partial from an environment into a local file system.";
 
