@@ -3,6 +3,7 @@ import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
+import { PartialType } from "@/lib/marshal/partial";
 
 const dummyConfig = new Config({ root: "/path/to/bin" });
 
@@ -570,6 +571,86 @@ describe("lib/api-v1", () => {
         hide_uncommitted_changes: true,
       };
       sinon.assert.calledWith(stub, "/v1/partials/cta", { params });
+
+      stub.restore();
+    });
+  });
+
+  describe("upsertPartial", () => {
+    it("makes a PUT request to /v1/partials/:partialKey with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          data: factory.partial(),
+        }),
+      );
+
+      const args = { partialKey: "foo" };
+      const flags = {
+        environment: "development",
+        annotate: true,
+        commit: true,
+        "commit-message": "wip partial",
+        "rogue-flag": "hey",
+        ...factory.gFlags(),
+      };
+      const partial = {
+        key: "foo",
+        name: "New campaign",
+        type: PartialType.Html,
+        content: "<h1>Hello</h1>",
+      };
+      await apiV1.upsertPartial(factory.props({ args, flags }), partial);
+
+      const params = {
+        environment: "development",
+        annotate: true,
+        commit: true,
+        commit_message: "wip partial",
+      };
+      sinon.assert.calledWith(
+        stub,
+        "/v1/partials/foo",
+        { partial },
+        { params },
+      );
+
+      stub.restore();
+    });
+  });
+
+  describe("validatePartial", () => {
+    it("makes a PUT request to /v1/partials/:partialKey/validate with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          data: factory.partial(),
+        }),
+      );
+
+      const args = { partialKey: "bar" };
+      const flags = {
+        environment: "development",
+        "rogue-flag": "hey",
+        ...factory.gFlags(),
+      };
+      const partial = {
+        key: "bar",
+        name: "New campaign",
+      };
+      await apiV1.validatePartial(factory.props({ args, flags }), partial);
+
+      const params = {
+        environment: "development",
+      };
+      sinon.assert.calledWith(
+        stub,
+        "/v1/partials/bar/validate",
+        { partial },
+        { params },
+      );
 
       stub.restore();
     });

@@ -17,8 +17,6 @@ const disabled = {
   },
 } as any;
 
-// TODO(KNO-6058) - Enable render tag for partials
-engine.registerTag("render", disabled);
 engine.registerTag("include", disabled);
 
 /*
