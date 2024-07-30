@@ -503,4 +503,75 @@ describe("lib/api-v1", () => {
       stub.restore();
     });
   });
+
+  describe("listPartials", () => {
+    it("makes a GET request to /v1/partials with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          status: 200,
+          data: {
+            entries: [],
+            page_info: factory.pageInfo(),
+          },
+        }),
+      );
+
+      const flags = {
+        environment: "staging",
+        annotate: true,
+        "hide-uncommitted-changes": true,
+        after: "foo",
+        before: "bar",
+        limit: 99,
+        "rogue-flag": "hey",
+        ...factory.gFlags(),
+      };
+      await apiV1.listPartials(factory.props({ flags }));
+
+      const params = {
+        environment: "staging",
+        annotate: true,
+        hide_uncommitted_changes: true,
+        after: "foo",
+        before: "bar",
+        limit: 99,
+      };
+      sinon.assert.calledWith(stub, "/v1/partials", { params });
+
+      stub.restore();
+    });
+  });
+
+  describe("getPartial", () => {
+    it("makes a GET request to /v1/partials/:partialKey with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          data: factory.partial(),
+        }),
+      );
+
+      const args = { partialKey: "cta" };
+      const flags = {
+        environment: "staging",
+        annotate: true,
+        "hide-uncommitted-changes": true,
+        "rogue-flag": "hey",
+        ...factory.gFlags(),
+      };
+      await apiV1.getPartial(factory.props({ args, flags }));
+
+      const params = {
+        environment: "staging",
+        annotate: true,
+        hide_uncommitted_changes: true,
+      };
+      sinon.assert.calledWith(stub, "/v1/partials/cta", { params });
+
+      stub.restore();
+    });
+  });
 });
