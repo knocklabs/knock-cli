@@ -19,7 +19,7 @@
   "dependencies": {
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
-    "@prantlf/jsonlint": "^14.0.3",
+    "@prantlf/jsonlint": "^14.1.0",
     "axios": "^1.7.3",
     "date-fns": "^2.30.0",
     "enquirer": "^2.4.1",
