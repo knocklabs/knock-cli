@@ -32,7 +32,7 @@
   "devDependencies": {
     "@oclif/test": "^3",
     "@swc/cli": "^0.4.0",
-    "@swc/core": "^1.7.23",
+    "@swc/core": "^1.7.36",
     "@swc/helpers": "^0.5.12",
     "@types/chai": "^4",
     "@types/fs-extra": "^11.0.4",
