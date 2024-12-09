@@ -6,6 +6,7 @@ import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
 import { CommitData } from "@/lib/marshal/commit";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
+import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData, PartialType } from "@/lib/marshal/partial";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
@@ -177,6 +178,42 @@ export const partial = (attrs: Partial<PartialData> = {}): PartialData => {
     content: "<div>{{heading}}<button>{{cta}}</button></div>",
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",
+    ...attrs,
+  };
+};
+
+export const messageType = (
+  attrs: Partial<MessageTypeData> = {},
+): MessageTypeData => {
+  return {
+    key: "banner",
+    valid: true,
+    owner: "user",
+    description: "My banner",
+    name: "Banner",
+    icon_name: "Flag",
+    semver: null,
+    variants: [
+      {
+        key: "default",
+        name: "Default",
+        fields: [
+          {
+            type: "text",
+            key: "title",
+            label: "Title",
+            settings: {
+              required: true,
+              default: "Banner title",
+            },
+          },
+        ],
+      },
+    ],
+    preview: "<div>{{title}}</div>",
+    created_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    environment: "development",
     ...attrs,
   };
 };
