@@ -68,7 +68,7 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
   async pullOnePartial(): Promise<void> {
     const { flags } = this.props;
 
-    const dirContext = await this.getPartialsDirContext();
+    const dirContext = await this.getPartialDirContext();
 
     if (dirContext.exists) {
       this.log(`‣ Found \`${dirContext.key}\` at ${dirContext.abspath}`);
@@ -147,7 +147,7 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
       : partials;
   }
 
-  async getPartialsDirContext(): Promise<PartialDirContext> {
+  async getPartialDirContext(): Promise<PartialDirContext> {
     const { partialKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
 

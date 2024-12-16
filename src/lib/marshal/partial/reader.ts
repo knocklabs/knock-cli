@@ -31,7 +31,7 @@ export type PartialDirData = PartialDirContext & {
  * For the given list of partial directory contexts, read each partial dir and
  * return partial directory data.
  */
-const readPartialsDirs = async (
+const readPartialDirs = async (
   partialDirCtxs: PartialDirContext[],
   opts: ReadPartialDirOpts = {},
 ): Promise<[PartialDirData[], SourceError[]]> => {
@@ -182,7 +182,7 @@ export const readAllForCommandTarget = async (
 
   switch (targetType) {
     case "partialDir": {
-      return readPartialsDirs([targetCtx], opts);
+      return readPartialDirs([targetCtx], opts);
     }
 
     case "partialsIndexDir": {
@@ -204,7 +204,7 @@ export const readAllForCommandTarget = async (
       const partialDirCtxs = (await Promise.all(promises)).filter(
         (partialDirCtx) => partialDirCtx.exists,
       );
-      return readPartialsDirs(partialDirCtxs, opts);
+      return readPartialDirs(partialDirCtxs, opts);
     }
 
     default:
