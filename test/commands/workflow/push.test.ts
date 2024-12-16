@@ -201,7 +201,7 @@ describe("commands/workflow/push", () => {
       .stdout()
       .command(["workflow push"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given both workflow key arg and --all flag", () => {
@@ -209,7 +209,7 @@ describe("commands/workflow/push", () => {
       .stdout()
       .command(["workflow push", "foo", "--all"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given --all and a nonexistent workflows index directory", () => {

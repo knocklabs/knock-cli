@@ -17,7 +17,7 @@ describe("commands/message-type/get", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .command(["message-type get"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given a message type key arg, and no flags", () => {

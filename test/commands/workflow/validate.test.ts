@@ -120,7 +120,7 @@ describe("commands/workflow/validate (a single workflow)", () => {
       .stdout()
       .command(["workflow validate"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 });
 

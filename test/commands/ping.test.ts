@@ -46,6 +46,6 @@ describe("commands/ping", () => {
   });
 
   describe("given no service token flag", () => {
-    test.command(["ping"]).exit(2).it("exists with status 2");
+    test.command(["ping"]).exit(2).it("exits with status 2");
   });
 });

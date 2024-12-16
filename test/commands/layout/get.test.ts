@@ -11,7 +11,7 @@ describe("commands/layout/get", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .command(["layout get"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given an email layout key arg, and no flags", () => {

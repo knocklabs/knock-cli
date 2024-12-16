@@ -119,7 +119,7 @@ describe("commands/layout/validate (a single layout)", () => {
       .stdout()
       .command(["layout validate"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 });
 

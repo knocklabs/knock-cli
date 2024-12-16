@@ -54,6 +54,6 @@ describe("commands/whoami", () => {
   });
 
   describe("given no service token flag", () => {
-    test.command(["whoami"]).exit(2).it("exists with status 2");
+    test.command(["whoami"]).exit(2).it("exits with status 2");
   });
 });

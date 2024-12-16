@@ -130,7 +130,7 @@ describe("commands/translation/validate (a single translation)", () => {
       .stdout()
       .command(["translation validate"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given a valid en translation file in po format", () => {

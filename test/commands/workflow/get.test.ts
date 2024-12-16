@@ -17,7 +17,7 @@ describe("commands/workflow/get", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .command(["workflow get"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given a workflow key arg, and no flags", () => {

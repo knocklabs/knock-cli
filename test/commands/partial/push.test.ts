@@ -213,7 +213,7 @@ describe("commands/partial/push", () => {
       .stdout()
       .command(["partial push"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given both partial key arg and --all flag", () => {
@@ -221,7 +221,7 @@ describe("commands/partial/push", () => {
       .stdout()
       .command(["partial push", "default", "--all"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given --all and a nonexistent partials index directory", () => {
