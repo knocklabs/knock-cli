@@ -7,6 +7,7 @@ import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import * as Commit from "@/lib/marshal/commit";
 import * as EmailLayout from "@/lib/marshal/email-layout";
+import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
@@ -350,6 +351,34 @@ export default class ApiV1 {
     });
   }
 
+  // By resources: Message types
+
+  async listMessageTypes<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListMessageTypeResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      annotate: flags.annotate,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/message_types", { params });
+  }
+
+  async getMessageType<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetMessageTypeResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/message_types/${args.messageTypeKey}`, { params });
+  }
+
   // By methods:
 
   async get(
@@ -469,3 +498,9 @@ export type ValidatePartialResp = {
   partial?: Partial.PartialData;
   errors?: InputError[];
 };
+
+export type ListMessageTypeResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<MessageType.MessageTypeData<A>>;
+
+export type GetMessageTypeResp<A extends MaybeWithAnnotation = unknown> =
+  MessageType.MessageTypeData<A>;

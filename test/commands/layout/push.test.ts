@@ -204,7 +204,7 @@ describe("commands/layout/push", () => {
       .stdout()
       .command(["layout push"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given both email layout key arg and --all flag", () => {
@@ -212,7 +212,7 @@ describe("commands/layout/push", () => {
       .stdout()
       .command(["layout push", "default", "--all"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given --all and a nonexistent layouts index directory", () => {

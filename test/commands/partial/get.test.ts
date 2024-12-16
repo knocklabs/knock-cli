@@ -17,7 +17,7 @@ describe("commands/partial/get", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .command(["partial get"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given a partial key arg, and no flags", () => {

@@ -22,7 +22,7 @@ describe("commands/workflow/run", () => {
       .stdout()
       .command(["workflow run"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given no recipients flag", () => {
@@ -30,7 +30,7 @@ describe("commands/workflow/run", () => {
       .stdout()
       .command(["workflow run", "workflow-x"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given the workflow key arg, the environment flag and the recipient flag", () => {

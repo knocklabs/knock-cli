@@ -151,7 +151,7 @@ describe("commands/translation/push", () => {
       .stdout()
       .command(["translation push"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given --all and a nonexistent translations index directory", () => {

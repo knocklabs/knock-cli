@@ -22,7 +22,7 @@ describe("commands/workflow/activate", () => {
       .stdout()
       .command(["workflow activate"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given no environment flag", () => {
@@ -30,7 +30,7 @@ describe("commands/workflow/activate", () => {
       .stdout()
       .command(["workflow activate", "workflow-x"])
       .exit(2)
-      .it("exists with status 2");
+      .it("exits with status 2");
   });
 
   describe("given the workflow key arg and the environment flag", () => {

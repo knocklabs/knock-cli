@@ -4,50 +4,31 @@ type VariantSchemaBooleanField = {
   type: "boolean";
   key: string;
   label: string;
-  settings: {
-    required: boolean;
-    default: boolean;
-    description?: string;
-  };
+  settings: Record<string, unknown>;
 };
 
 type VariantSchemaMarkdownField = {
   type: "markdown";
   key: string;
   label: string;
-  settings: {
-    required: boolean;
-    default: string;
-    description?: string;
-  };
+  settings: Record<string, unknown>;
 };
 
 type VariantSchemaTextField = {
   type: "text";
   key: string;
   label: string;
-  settings: {
-    required: boolean;
-    default: string;
-    description?: string;
-    maxLength?: number;
-    minLength?: number;
-  };
+  settings: Record<string, unknown>;
 };
 
 type VariantSchemaTextareaField = {
   type: "textarea";
   key: string;
   label: string;
-  settings: {
-    required: boolean;
-    default: string;
-    description?: string;
-    maxLength?: number;
-    minLength?: number;
-  };
+  settings: Record<string, unknown>;
 };
 
+// TODO: Type the remaining schema field types.
 type MessageTypeVariantSchemaField =
   | VariantSchemaBooleanField
   | VariantSchemaMarkdownField
