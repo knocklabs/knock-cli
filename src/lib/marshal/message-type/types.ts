@@ -1,3 +1,5 @@
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
+
 import { MaybeWithAnnotation } from "../shared/types";
 
 type VariantSchemaBooleanField = {
@@ -55,4 +57,8 @@ export type MessageTypeData<A extends MaybeWithAnnotation = unknown> = A & {
   updated_at: string;
   created_at: string;
   environment: string;
+};
+
+export type MessageTypeInput = AnyObj & {
+  key: string;
 };
