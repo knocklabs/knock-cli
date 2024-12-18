@@ -389,7 +389,7 @@ export default class ApiV1 {
       commit: flags.commit,
       commit_message: flags["commit-message"],
     });
-    const data = { messageType };
+    const data = { message_type: messageType };
 
     return this.put(`/message_types/${messageType.key}`, data, { params });
   }
@@ -401,7 +401,7 @@ export default class ApiV1 {
     const params = prune({
       environment: flags.environment,
     });
-    const data = { messageType };
+    const data = { message_type: messageType };
 
     return this.put(`/message_types/${messageType.key}/validate`, data, {
       params,
