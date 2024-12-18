@@ -175,5 +175,5 @@ export const writeMessageTypesIndexDir = async (
   }
 };
 
-// // Exported for tests.
-// export { pruneMessageTypesIndexDir };
+// Exported for tests.
+export { pruneMessageTypesIndexDir };
