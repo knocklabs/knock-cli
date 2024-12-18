@@ -20,7 +20,8 @@ export type ResourceType =
   | "workflow"
   | "email_layout"
   | "translation"
-  | "partial";
+  | "partial"
+  | "message_type";
 
 type ResourceDirContextBase = DirContext & {
   type: ResourceType;
@@ -43,11 +44,16 @@ export type PartialDirContext = ResourceDirContextBase & {
   type: "partial";
 };
 
+export type MessageTypeDirContext = ResourceDirContextBase & {
+  type: "message_type";
+};
+
 export type ResourceDirContext =
   | WorkflowDirContext
   | EmailLayoutDirContext
   | TranslationDirContext
-  | PartialDirContext;
+  | PartialDirContext
+  | MessageTypeDirContext;
 
 export type ResourceTarget = {
   commandId: string;

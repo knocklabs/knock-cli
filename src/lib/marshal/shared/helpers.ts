@@ -8,6 +8,7 @@ import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 import { VISUAL_BLOCKS_JSON } from "@/lib/marshal/workflow";
 import {
   EmailLayoutDirContext,
+  MessageTypeDirContext,
   PartialDirContext,
   WorkflowDirContext,
 } from "@/lib/run-context";
@@ -27,7 +28,11 @@ const DECODABLE_JSON_FILES = new Set([VISUAL_BLOCKS_JSON]);
 
 export const readExtractedFileSync = (
   relpath: string,
-  dirCtx: WorkflowDirContext | EmailLayoutDirContext | PartialDirContext,
+  dirCtx:
+    | WorkflowDirContext
+    | EmailLayoutDirContext
+    | PartialDirContext
+    | MessageTypeDirContext,
   objPathToFieldStr = "",
 ): ReadExtractedFileResult => {
   // Check if the file actually exists at the given file path.

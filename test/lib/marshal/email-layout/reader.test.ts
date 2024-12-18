@@ -6,8 +6,7 @@ import { get } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
 import { JsonDataError } from "@/lib/helpers/error";
-import { LAYOUT_JSON } from "@/lib/marshal/email-layout";
-import { readEmailLayoutDir } from "@/lib/marshal/email-layout/reader";
+import { LAYOUT_JSON, readEmailLayoutDir } from "@/lib/marshal/email-layout";
 import {
   checkIfValidExtractedFilePathFormat,
   readExtractedFileSync,
@@ -215,23 +214,23 @@ describe("lib/marshal/layout/reader", () => {
           updated_at: "2023-10-02T19:24:48.714630Z",
         });
       });
+    });
 
-      describe("with the withExtractedFiles opt of true", () => {
-        it("reads layout.json with the extracted fields inlined", async () => {
-          const [layout] = await readEmailLayoutDir(emailLayoutDirCtx, {
-            withExtractedFiles: true,
-          });
-
-          expect(get(layout, ["name"])).to.equal("Transactional");
-
-          // HTML layout content should be inlined into layout data
-          expect(get(layout, ["html_layout"])).to.contain(
-            "<html><body><p> example </p></body></html>",
-          );
-
-          // Text layout content should be inlined into layout data
-          expect(get(layout, ["text_layout"])).to.contains("foo {{content}}");
+    describe("with the withExtractedFiles opt of true", () => {
+      it("reads layout.json with the extracted fields inlined", async () => {
+        const [layout] = await readEmailLayoutDir(emailLayoutDirCtx, {
+          withExtractedFiles: true,
         });
+
+        expect(get(layout, ["name"])).to.equal("Transactional");
+
+        // HTML layout content should be inlined into layout data
+        expect(get(layout, ["html_layout"])).to.contain(
+          "<html><body><p> example </p></body></html>",
+        );
+
+        // Text layout content should be inlined into layout data
+        expect(get(layout, ["text_layout"])).to.contains("foo {{content}}");
       });
     });
   });

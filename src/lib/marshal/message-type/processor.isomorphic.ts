@@ -10,7 +10,7 @@ import { MessageTypeData } from "./types";
 
 export const MESSAGE_TYPE_JSON = "message_type.json";
 
-type MessageTypeDirBundle = {
+export type MessageTypeDirBundle = {
   [relpath: string]: string;
 };
 
