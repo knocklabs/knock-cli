@@ -9,7 +9,7 @@ import { factory } from "@/../test/support";
 import MessageTypeValidate from "@/commands/message-type/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
-import { MessageTypeData, MESSAGE_TYPE_JSON } from "@/lib/marshal/message-type";
+import { MESSAGE_TYPE_JSON, MessageTypeData } from "@/lib/marshal/message-type";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const messageTypeJsonFile = "banner/message_type.json";
