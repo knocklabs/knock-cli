@@ -1,9 +1,8 @@
 import * as path from "node:path";
 
-import { get } from "lodash";
-
 import { expect } from "@oclif/test";
 import * as fs from "fs-extra";
+import { get } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
 import { DirContext } from "@/lib/helpers/fs";
@@ -195,7 +194,7 @@ describe("lib/marshal/message-type/reader", () => {
           "<div>{{ title }}</div>",
         );
 
-        expect(get(messageType, ["__readonly"])).to.eql(undefined);
+        expect(get(messageType, ["__readonly"])).to.equal(undefined);
       });
     });
   });
