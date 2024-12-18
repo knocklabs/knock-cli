@@ -379,6 +379,35 @@ export default class ApiV1 {
     return this.get(`/message_types/${args.messageTypeKey}`, { params });
   }
 
+  async upsertMessageType<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    messageType: MessageType.MessageTypeInput,
+  ): Promise<AxiosResponse<UpsertMessageTypeResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+    });
+    const data = { message_type: messageType };
+
+    return this.put(`/message_types/${messageType.key}`, data, { params });
+  }
+
+  async validateMessageType(
+    { flags }: Props,
+    messageType: MessageType.MessageTypeInput,
+  ): Promise<AxiosResponse<ValidateMessageTypeResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+    const data = { message_type: messageType };
+
+    return this.put(`/message_types/${messageType.key}/validate`, data, {
+      params,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -504,3 +533,13 @@ export type ListMessageTypeResp<A extends MaybeWithAnnotation = unknown> =
 
 export type GetMessageTypeResp<A extends MaybeWithAnnotation = unknown> =
   MessageType.MessageTypeData<A>;
+
+export type UpsertMessageTypeResp<A extends MaybeWithAnnotation = unknown> = {
+  message_type?: MessageType.MessageTypeData<A>;
+  errors?: InputError[];
+};
+
+export type ValidateMessageTypeResp = {
+  message_type?: MessageType.MessageTypeData;
+  errors?: InputError[];
+};
