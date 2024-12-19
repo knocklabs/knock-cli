@@ -6,48 +6,55 @@
 import * as path from "node:path";
 
 import * as EmailLayout from "@/lib/marshal/email-layout";
+import * as MessageType from "@/lib/marshal/message-type";
+import * as Partial from "@/lib/marshal/partial";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
-import { RunContext } from "./types";
+import { ResourceType, RunContext } from "./types";
+
+const buildResourceDirContext = (type: ResourceType, currDir: string) => {
+  return {
+    type,
+    key: path.basename(currDir),
+    abspath: currDir,
+    exists: true,
+  };
+};
 
 const evaluateRecursively = async (
   ctx: RunContext,
   currDir: string,
 ): Promise<RunContext> => {
-  // Check if we are inside a workflow directory, and if so update the context.
-  const isWorkflowDir = await Workflow.isWorkflowDir(currDir);
-  if (!ctx.resourceDir && isWorkflowDir) {
-    ctx.resourceDir = {
-      type: "workflow",
-      key: path.basename(currDir),
-      abspath: currDir,
-      exists: true,
-    };
-  }
+  // Check if we are inside a resource directory and if so update the context.
+  if (!ctx.resourceDir) {
+    const isWorkflowDir = await Workflow.isWorkflowDir(currDir);
+    if (isWorkflowDir) {
+      ctx.resourceDir = buildResourceDirContext("workflow", currDir);
+    }
 
-  // Check if we are inside a layout directory, and if so update the context.
-  const isEmailLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
-  if (!ctx.resourceDir && isEmailLayoutDir) {
-    ctx.resourceDir = {
-      type: "email_layout",
-      key: path.basename(currDir),
-      abspath: currDir,
-      exists: true,
-    };
-  }
+    const isEmailLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
+    if (isEmailLayoutDir) {
+      ctx.resourceDir = buildResourceDirContext("email_layout", currDir);
+    }
 
-  // NOTE: Must keep this check as last in the order of directory-type checks
-  // since the `isTranslationDir` only checks that the directory name is a
-  // valid locale name.
-  const isTranslationDir = Translation.isTranslationDir(currDir);
-  if (!ctx.resourceDir && isTranslationDir) {
-    ctx.resourceDir = {
-      type: "translation",
-      key: path.basename(currDir),
-      abspath: currDir,
-      exists: true,
-    };
+    const isPartialDir = await Partial.isPartialDir(currDir);
+    if (isPartialDir) {
+      ctx.resourceDir = buildResourceDirContext("partial", currDir);
+    }
+
+    const isMessageTypeDir = await MessageType.isMessageTypeDir(currDir);
+    if (isMessageTypeDir) {
+      ctx.resourceDir = buildResourceDirContext("message_type", currDir);
+    }
+
+    // NOTE: Must keep this check as last in the order of directory-type checks
+    // since the `isTranslationDir` only checks that the directory name is a
+    // valid locale name.
+    const isTranslationDir = Translation.isTranslationDir(currDir);
+    if (isTranslationDir) {
+      ctx.resourceDir = buildResourceDirContext("translation", currDir);
+    }
   }
 
   // If we've identified the resource context, no need to go further.
