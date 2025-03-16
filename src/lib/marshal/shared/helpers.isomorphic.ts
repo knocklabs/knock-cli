@@ -3,6 +3,7 @@ import { omitDeep } from "@/lib/helpers/object.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { EmailLayoutData } from "../email-layout";
+import { GuideData } from "../guide";
 import { MessageTypeData } from "../message-type";
 import { PartialData } from "../partial";
 import { WorkflowData } from "../workflow";
@@ -16,7 +17,8 @@ type ResourceData<A extends WithAnnotation> =
   | EmailLayoutData<A>
   | PartialData<A>
   | WorkflowData<A>
-  | MessageTypeData<A>;
+  | MessageTypeData<A>
+  | GuideData<A>;
 
 export const prepareResourceJson = (
   resource: ResourceData<WithAnnotation>,
