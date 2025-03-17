@@ -2,43 +2,59 @@ import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import { MaybeWithAnnotation } from "../shared/types";
 
-type VariantSchemaBooleanField = {
-  type: "boolean";
+type BaseField = {
   key: string;
   label: string;
   settings: Record<string, unknown>;
 };
 
-type VariantSchemaMarkdownField = {
-  type: "markdown";
-  key: string;
-  label: string;
-  settings: Record<string, unknown>;
-};
-
-type VariantSchemaTextField = {
+type TextField = BaseField & {
   type: "text";
-  key: string;
-  label: string;
-  settings: Record<string, unknown>;
+  value?: string | null;
 };
 
-type VariantSchemaTextareaField = {
+type TextareaField = BaseField & {
   type: "textarea";
-  key: string;
-  label: string;
-  settings: Record<string, unknown>;
+  value?: string | null;
 };
 
-// TODO: Type the remaining schema field types.
-type MessageTypeVariantSchemaField =
-  | VariantSchemaBooleanField
-  | VariantSchemaMarkdownField
-  | VariantSchemaTextField
-  | VariantSchemaTextareaField;
+type MarkdownField = BaseField & {
+  type: "markdown";
+  value?: string | null;
+};
+
+type BooleanField = BaseField & {
+  type: "boolean";
+  value?: boolean | null;
+};
+
+type SelectField = BaseField & {
+  type: "select";
+  value?: string | null;
+};
+
+type MultiSelectField = BaseField & {
+  type: "multi_select";
+  value?: string[] | null;
+};
+
+type ButtonField = BaseField & {
+  type: "button";
+  text: TextField;
+  action: TextField;
+};
+
+export type ContentSchemaField =
+  | TextField
+  | TextareaField
+  | MarkdownField
+  | BooleanField
+  | SelectField
+  | MultiSelectField
+  | ButtonField;
 
 type MessageTypeVariantSchema = {
-  fields: MessageTypeVariantSchemaField[];
+  fields: ContentSchemaField[];
   key: string;
   name: string;
 };
