@@ -8,6 +8,9 @@ import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
 
 export default class MessageTypeGet extends BaseCommand<typeof MessageTypeGet> {
+  // Hide until guides are released in GA.
+  static hidden = true;
+
   static summary = "Display a single in-app message type from an environment.";
 
   static flags = {
