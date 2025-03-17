@@ -25,6 +25,9 @@ import {
 export default class MessageTypePull extends BaseCommand<
   typeof MessageTypePull
 > {
+  // Hide until guides are released in GA.
+  static hidden = true;
+
   static summary =
     "Pull one or more in-app message types from an environment into a local file system.";
 

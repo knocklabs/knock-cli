@@ -15,6 +15,9 @@ import { withSpinner } from "@/lib/helpers/request";
 export default class MessageTypeList extends BaseCommand<
   typeof MessageTypeList
 > {
+  // Hide until guides are released in GA.
+  static hidden = true;
+
   static summary = "Display all in-app message types for an environment.";
 
   static flags = {

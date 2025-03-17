@@ -37,11 +37,6 @@ USAGE
 * [`knock layout pull [EMAILLAYOUTKEY]`](#knock-layout-pull-emaillayoutkey)
 * [`knock layout push [EMAILLAYOUTKEY]`](#knock-layout-push-emaillayoutkey)
 * [`knock layout validate [EMAILLAYOUTKEY]`](#knock-layout-validate-emaillayoutkey)
-* [`knock message-type get MESSAGETYPEKEY`](#knock-message-type-get-messagetypekey)
-* [`knock message-type list`](#knock-message-type-list)
-* [`knock message-type pull [MESSAGETYPEKEY]`](#knock-message-type-pull-messagetypekey)
-* [`knock message-type push [MESSAGETYPEKEY]`](#knock-message-type-push-messagetypekey)
-* [`knock message-type validate [MESSAGETYPEKEY]`](#knock-message-type-validate-messagetypekey)
 * [`knock partial get PARTIALKEY`](#knock-partial-get-partialkey)
 * [`knock partial list`](#knock-partial-list)
 * [`knock partial pull [PARTIALKEY]`](#knock-partial-pull-partialkey)
@@ -261,111 +256,6 @@ FLAGS
 ```
 
 _See code: [src/commands/layout/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.20/src/commands/layout/validate.ts)_
-
-## `knock message-type get MESSAGETYPEKEY`
-
-Display a single in-app message type from an environment.
-
-```
-USAGE
-  $ knock message-type get MESSAGETYPEKEY --service-token <value> [--json] [--environment <value>]
-    [--hide-uncommitted-changes]
-
-FLAGS
-  --environment=<value>       [default: development] The environment to use.
-  --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     (required) The service token to authenticate with.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-```
-
-_See code: [src/commands/message-type/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.20/src/commands/message-type/get.ts)_
-
-## `knock message-type list`
-
-Display all in-app message types for an environment.
-
-```
-USAGE
-  $ knock message-type list --service-token <value> [--json] [--environment <value>] [--hide-uncommitted-changes]
-    [--after <value>] [--before <value>] [--limit <value>]
-
-FLAGS
-  --after=<value>             The cursor after which to fetch the next page.
-  --before=<value>            The cursor before which to fetch the previous page.
-  --environment=<value>       [default: development] The environment to use.
-  --hide-uncommitted-changes  Hide any uncommitted changes.
-  --limit=<value>             The total number of entries to fetch per page.
-  --service-token=<value>     (required) The service token to authenticate with.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-```
-
-_See code: [src/commands/message-type/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.20/src/commands/message-type/list.ts)_
-
-## `knock message-type pull [MESSAGETYPEKEY]`
-
-Pull one or more in-app message types from an environment into a local file system.
-
-```
-USAGE
-  $ knock message-type pull [MESSAGETYPEKEY] --service-token <value> [--environment <value>] [--message-types-dir
-    <value> --all] [--hide-uncommitted-changes] [--force]
-
-FLAGS
-  --all                        Whether to pull all in-app message types from the specified environment.
-  --environment=<value>        [default: development] The environment to use.
-  --force                      Remove the confirmation prompt.
-  --hide-uncommitted-changes   Hide any uncommitted changes.
-  --message-types-dir=<value>  The target directory path to pull all in-app message types into.
-  --service-token=<value>      (required) The service token to authenticate with.
-```
-
-_See code: [src/commands/message-type/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.20/src/commands/message-type/pull.ts)_
-
-## `knock message-type push [MESSAGETYPEKEY]`
-
-Push one or more message types from a local file system to Knock.
-
-```
-USAGE
-  $ knock message-type push [MESSAGETYPEKEY] --service-token <value> [--environment development] [--message-types-dir
-    <value> --all] [-m <value> --commit]
-
-FLAGS
-  -m, --commit-message=<value>     Use the given value as the commit message
-      --all                        Whether to push all message types from the target directory.
-      --commit                     Push and commit the message type(s) at the same time
-      --environment=<option>       [default: development] Pushing a message type is only allowed in the development
-                                   environment
-                                   <options: development>
-      --message-types-dir=<value>  The target directory path to find all message types to push.
-      --service-token=<value>      (required) The service token to authenticate with.
-```
-
-_See code: [src/commands/message-type/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.20/src/commands/message-type/push.ts)_
-
-## `knock message-type validate [MESSAGETYPEKEY]`
-
-Validate one or more message types from a local file system.
-
-```
-USAGE
-  $ knock message-type validate [MESSAGETYPEKEY] --service-token <value> [--environment development] [--message-types-dir
-    <value> --all]
-
-FLAGS
-  --all                        Whether to validate all message types from the target directory.
-  --environment=<option>       [default: development] Validating a message type is only done in the development
-                               environment
-                               <options: development>
-  --message-types-dir=<value>  The target directory path to find all message types to validate.
-  --service-token=<value>      (required) The service token to authenticate with.
-```
-
-_See code: [src/commands/message-type/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.1.20/src/commands/message-type/validate.ts)_
 
 ## `knock partial get PARTIALKEY`
 
