@@ -23,6 +23,26 @@ export const booleanStr = Flags.custom<boolean>({
 /*
  * Takes a relative or absolute path as an input, then parses it into an
  * absolute path. Checks if the path exists or not, and validates that it is
+ * a file, if exists.
+ */
+export const filePath = Flags.custom<DirContext>({
+  parse: async (input: string) => {
+    const abspath = path.isAbsolute(input)
+      ? input
+      : path.resolve(process.cwd(), input);
+
+    const exists = await fs.pathExists(abspath);
+    if (exists && !(await fs.lstat(abspath)).isFile()) {
+      throw new Error(`${input} exists but is not a file`);
+    }
+
+    return { abspath, exists };
+  },
+});
+
+/*
+ * Takes a relative or absolute path as an input, then parses it into an
+ * absolute path. Checks if the path exists or not, and validates that it is
  * a directory, if exists.
  */
 export const dirPath = Flags.custom<DirContext>({
