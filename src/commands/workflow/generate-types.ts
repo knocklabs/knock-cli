@@ -1,4 +1,4 @@
-import { Args, Flags } from "@oclif/core";
+import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
@@ -24,65 +24,58 @@ export default class WorkflowGenerateTypes extends BaseCommand<
 
   static flags = {
     environment: Flags.string({
-      summary:
-        "Generating types is only allowed in the development environment",
+      summary: "Select the environment to generate types for.",
       default: KnockEnv.Development,
-      options: [KnockEnv.Development],
     }),
     "output-file": CustomFlags.filePath({
-      summary: "The output file to write the generated types to.",
+      summary:
+        "The output file to write the generated types to. We currently support .ts, .rb, .go, .py files only. Your file extension will determine the target language for the generated types.",
       required: true,
-    }),
-  };
-
-  static args = {
-    workflowKey: Args.string({
-      required: false,
     }),
   };
 
   async run(): Promise<void> {
     const { flags } = this.props;
 
-    try {
-      spinner.start(`‣ Loading workflows`);
+    const fileExtension = flags["output-file"].abspath.split(".").pop();
+    const targetLanguage = getLanguageFromExtension(fileExtension!);
 
-      // 1. List all workflows in the development environment.
-      const workflows = await this.listAllWorkflows();
-
-      spinner.stop();
-
-      // 2. Generate types for all workflows.
-      spinner.start(`‣ Generating types`);
-
-      const fileExtension = flags["output-file"].abspath.split(".").pop();
-      const targetLanguage = getLanguageFromExtension(fileExtension!);
-
-      const { result, workflows: workflowsWithValidTypes } =
-        await generateWorkflowTypes(workflows, targetLanguage);
-
-      spinner.stop();
-
-      if (!result) {
-        this.log(
-          `‣ No workflows with valid trigger data JSON schema found, skipping type generation`,
-        );
-        return;
-      }
-
-      // 3. Write the generated types to the output file.
-      await fs.writeFile(flags["output-file"].abspath, result.lines.join("\n"));
-
-      this.log(
-        `‣ Successfully generated types for ${workflowsWithValidTypes.length} workflows and wrote them to ${flags["output-file"].abspath}`,
+    if (!targetLanguage) {
+      this.error(
+        new ApiError(
+          `Unsupported file extension: ${fileExtension}. We currently support .ts, .rb, .go, .py files only.`,
+        ),
       );
-    } catch (error) {
-      if (error instanceof Error) {
-        this.error(new ApiError(error.message));
-      } else {
-        this.error(new ApiError("An unknown error occurred"));
-      }
     }
+
+    spinner.start(`‣ Loading workflows`);
+
+    // 1. List all workflows in the development environment.
+    const workflows = await this.listAllWorkflows();
+
+    spinner.stop();
+
+    // 2. Generate types for all workflows.
+    spinner.start(`‣ Generating types`);
+
+    const { result, workflows: workflowsWithValidTypes } =
+      await generateWorkflowTypes(workflows, targetLanguage);
+
+    spinner.stop();
+
+    if (!result) {
+      this.log(
+        `‣ No workflows with valid trigger data JSON schema found, skipping type generation`,
+      );
+      return;
+    }
+
+    // 3. Write the generated types to the output file.
+    await fs.writeFile(flags["output-file"].abspath, result.lines.join("\n"));
+
+    this.log(
+      `‣ Successfully generated types for ${workflowsWithValidTypes.length} workflow(s) and wrote them to ${flags["output-file"].abspath}`,
+    );
   }
 
   async listAllWorkflows(
@@ -98,6 +91,7 @@ export default class WorkflowGenerateTypes extends BaseCommand<
     });
 
     const resp = await this.apiV1.listWorkflows<WithAnnotation>(props);
+
     if (!isSuccessResp(resp)) {
       const message = formatErrorRespMessage(resp);
       this.error(new ApiError(message));

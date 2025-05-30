@@ -10,7 +10,9 @@ import { WorkflowData } from "./marshal/workflow";
 
 type SupportedTypeLanguage = "typescript" | "python" | "go" | "ruby";
 
-function getLanguageFromExtension(extension: string): SupportedTypeLanguage {
+function getLanguageFromExtension(
+  extension: string,
+): SupportedTypeLanguage | undefined {
   switch (extension) {
     case "ts":
       return "typescript";
@@ -21,7 +23,7 @@ function getLanguageFromExtension(extension: string): SupportedTypeLanguage {
     case "rb":
       return "ruby";
     default:
-      throw new Error(`Unsupported language: ${extension}`);
+      return undefined;
   }
 }
 
@@ -41,8 +43,6 @@ async function generateWorkflowTypes(
   result: SerializedRenderResult | undefined;
   workflows: WorkflowData[];
 }> {
-  const schemaInput = new JSONSchemaInput(new FetchingJSONSchemaStore());
-
   const validWorkflows = workflows.filter(
     (workflow) => workflow.trigger_data_json_schema,
   );
@@ -50,6 +50,8 @@ async function generateWorkflowTypes(
   if (validWorkflows.length === 0) {
     return { result: undefined, workflows: [] };
   }
+
+  const schemaInput = new JSONSchemaInput(new FetchingJSONSchemaStore());
 
   for (const workflow of validWorkflows) {
     const pascalCaseWorkflowKey = workflow.key
