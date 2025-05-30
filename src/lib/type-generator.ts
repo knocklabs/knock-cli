@@ -61,11 +61,11 @@ async function generateWorkflowTypes(
 
     const schema = {
       ...workflow.trigger_data_json_schema,
-      title: `${pascalCaseWorkflowKey}WorkflowData`,
+      title: `${pascalCaseWorkflowKey}Data`,
     };
 
     schemaInput.addSource({
-      name: `${pascalCaseWorkflowKey}WorkflowData`,
+      name: `${pascalCaseWorkflowKey}Data`,
       schema: JSON.stringify(schema),
     });
   }
