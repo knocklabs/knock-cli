@@ -167,6 +167,7 @@ describe("commands/workflow/generate-types", () => {
       { extension: "rb", expectedOutput: "ruby" },
     ];
 
+    // eslint-disable-next-line unicorn/no-array-for-each
     testCases.forEach(({ extension, expectedOutput }) => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

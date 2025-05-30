@@ -28,6 +28,31 @@ function getLanguageFromExtension(
 }
 
 /**
+ * Transforms the schema to add additionalProperties to all objects.
+ *
+ * TODO: handle refs, union types, and more.
+ *
+ * @param schema The schema to transform
+ * @returns The transformed schema
+ */
+function transformSchema(schema: Record<string, any>) {
+  if (schema.type === "object" && !schema.additionalProperties) {
+    schema.additionalProperties = false;
+  }
+
+  for (const key of Object.keys(schema.properties ?? {})) {
+    const property = schema.properties[key];
+
+    if (property.type === "object") {
+      const transformedProperty = transformSchema(property);
+      schema.properties[key] = transformedProperty;
+    }
+  }
+
+  return schema;
+}
+
+/**
  * Given a set of workflows, will go through and generated types for each workflow.
  *
  * If the workflow has no trigger data JSON schema, will return empty lines.
@@ -59,10 +84,10 @@ async function generateWorkflowTypes(
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join("");
 
-    const schema = {
+    const schema = transformSchema({
       ...workflow.trigger_data_json_schema,
       title: `${pascalCaseWorkflowKey}Data`,
-    };
+    });
 
     schemaInput.addSource({
       name: `${pascalCaseWorkflowKey}Data`,
@@ -76,8 +101,12 @@ async function generateWorkflowTypes(
   const result = await quicktype({
     inputData,
     lang: targetLanguage,
+    allPropertiesOptional: false,
+    alphabetizeProperties: true,
     rendererOptions: {
       "just-types": true,
+      "no-extra-properties": true,
+      "no-optional-null": true,
     },
   });
 
