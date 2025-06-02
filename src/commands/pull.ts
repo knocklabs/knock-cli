@@ -11,6 +11,9 @@ export default class Pull extends BaseCommand<typeof Pull> {
       default: "development",
       summary: "The environment to use.",
     }),
+    "hide-uncommitted-changes": Flags.boolean({
+      summary: "Hide any uncommitted changes.",
+    }),
   };
 
   public async run(): Promise<void> {
