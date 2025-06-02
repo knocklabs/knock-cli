@@ -14,6 +14,9 @@ export default class Pull extends BaseCommand<typeof Pull> {
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
+    force: Flags.boolean({
+      summary: "Remove the confirmation prompt.",
+    }),
   };
 
   public async run(): Promise<void> {
