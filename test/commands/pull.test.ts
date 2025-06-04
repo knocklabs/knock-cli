@@ -134,19 +134,21 @@ describe("commands/pull", () => {
 
       sinon.assert.calledWith(
         KnockApiV1.prototype.listTranslations as any,
-        sinon.match(({ flags }) =>
-          isEqual(flags, {
-            all: true,
-            "translations-dir": {
-              abspath: path.resolve(sandboxDir, "translations"),
-              exists: false,
-            },
-            "service-token": "valid-token",
-            environment: "development",
-            force: true,
-            limit: 100,
-            format: "json",
-          }),
+        sinon.match(
+          ({ args, flags }) =>
+            isEqual(args, {}) &&
+            isEqual(flags, {
+              all: true,
+              "translations-dir": {
+                abspath: path.resolve(sandboxDir, "translations"),
+                exists: false,
+              },
+              "service-token": "valid-token",
+              environment: "development",
+              force: true,
+              limit: 100,
+              format: "json",
+            }),
         ),
       );
 
