@@ -48,6 +48,9 @@ export default class Pull extends BaseCommand<typeof Pull> {
       "--all",
       "--environment",
       flags.environment,
+      ...(flags["hide-uncommitted-changes"]
+        ? ["--hide-uncommitted-changes"]
+        : []),
       // Always use the force flag to skip prompts
       "--force",
     ];

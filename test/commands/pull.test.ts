@@ -111,6 +111,20 @@ describe("commands/pull", () => {
       );
   });
 
+  describe("with hide-uncommitted-changes flag", () => {
+    setupWithListStubs(
+      [{ key: "messages" }, { key: "transactional" }],
+      [{ key: "partial-a" }, { key: "partial-b" }],
+      [{ locale_code: "en" }, { locale_code: "es-MX" }],
+      [{ key: "workflow-a" }, { key: "workflow-bar" }],
+    )
+      .stdout()
+      .command(["pull", "--dir", ".", "--hide-uncommitted-changes"])
+      .it("calls apiV1 to list resources with uncommitted changes hidden", () =>
+        assertApiV1ListFunctionsCalled({ "hide-uncommitted-changes": true }),
+      );
+  });
+
   setupWithListStubs(
     [{ key: "layout1" }, { key: "layout2" }],
     [{ key: "partial1" }, { key: "partial2" }],
