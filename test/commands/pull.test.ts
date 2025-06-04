@@ -134,6 +134,22 @@ describe("commands/pull", () => {
       );
   });
 
+  describe("with service-token flag", () => {
+    setupWithListStubs(
+      [{ key: "messages" }, { key: "transactional" }],
+      [{ key: "partial-a" }, { key: "partial-b" }],
+      [{ locale_code: "en" }, { locale_code: "es-MX" }],
+      [{ key: "workflow-a" }, { key: "workflow-bar" }],
+    )
+      .env({ KNOCK_SERVICE_TOKEN: null })
+      .stdout()
+      .command(["pull", "--dir", ".", "--service-token=token123"])
+      .it("calls apiV1 to list resources using the given service token", () => {
+        assertApiV1ListFunctionsCalled({ "service-token": "token123" });
+        sinon.assert.calledOnce(enquirer.prototype.prompt as any);
+      });
+  });
+
   describe("with force flag", () => {
     setupWithListStubs(
       [{ key: "messages" }, { key: "transactional" }],
@@ -226,26 +242,7 @@ describe("commands/pull", () => {
       },
     );
 
-  // describe("given a valid service token via flag", () => {
-  //   test
-  //     .stdout()
-  //     .command(["pull", "--service-token", "valid-token"])
-  //     .it("runs the command", (ctx) => {
-  //       expect(ctx.stdout).to.contain("TODO");
-  //     });
-  // });
-
-  // describe("given a valid service token via env var", () => {
-  //   test
-  //     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-  //     .stdout()
-  //     .command(["pull"])
-  //     .it("runs the command", (ctx) => {
-  //       expect(ctx.stdout).to.contain("TODO");
-  //     });
-  // });
-
-  describe("given no service token flag", () => {
+  describe("without service token", () => {
     test.command(["pull"]).exit(2).it("exits with status 2");
   });
 });

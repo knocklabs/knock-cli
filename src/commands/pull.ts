@@ -51,6 +51,9 @@ export default class Pull extends BaseCommand<typeof Pull> {
       ...(flags["hide-uncommitted-changes"]
         ? ["--hide-uncommitted-changes"]
         : []),
+      ...(flags["service-token"]
+        ? ["--service-token", flags["service-token"]]
+        : []),
       // Always use the force flag to skip prompts
       "--force",
     ];
