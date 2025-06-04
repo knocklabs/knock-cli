@@ -1,7 +1,10 @@
+import * as path from "node:path";
+
 import { test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
-import * as path from "node:path";
+import { isEqual } from "lodash";
+import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
@@ -10,8 +13,6 @@ import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { PartialData } from "@/lib/marshal/partial";
 import { TranslationData } from "@/lib/marshal/translation";
 import { WorkflowData } from "@/lib/marshal/workflow";
-import { isEqual } from "lodash";
-import * as sinon from "sinon";
 
 const currCwd = process.cwd();
 
