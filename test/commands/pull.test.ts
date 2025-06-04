@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import { test } from "@oclif/test";
+import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
 import { isEqual } from "lodash";
@@ -172,6 +172,43 @@ describe("commands/pull", () => {
         ),
       );
     });
+
+  setupWithListStubs(
+    [{ key: "layout1" }, { key: "layout2" }],
+    [{ key: "partial1" }, { key: "partial2" }],
+    [{ locale_code: "en" }, { locale_code: "es-MX" }],
+    [{ key: "workflow1" }, { key: "workflow2" }],
+  )
+    .stdout()
+    .command(["pull", "--dir", "."])
+    .it(
+      "writes directories to the file system, with individual dirs inside",
+      () => {
+        const path1 = path.resolve(sandboxDir, "layouts", "layout1");
+        expect(fs.pathExistsSync(path1)).to.equal(true);
+
+        const path2 = path.resolve(sandboxDir, "layouts", "layout2");
+        expect(fs.pathExistsSync(path2)).to.equal(true);
+
+        const path3 = path.resolve(sandboxDir, "partials", "partial1");
+        expect(fs.pathExistsSync(path3)).to.equal(true);
+
+        const path4 = path.resolve(sandboxDir, "partials", "partial2");
+        expect(fs.pathExistsSync(path4)).to.equal(true);
+
+        const path5 = path.resolve(sandboxDir, "translations", "en");
+        expect(fs.pathExistsSync(path5)).to.equal(true);
+
+        const path6 = path.resolve(sandboxDir, "translations", "es-MX");
+        expect(fs.pathExistsSync(path6)).to.equal(true);
+
+        const path7 = path.resolve(sandboxDir, "workflows", "workflow1");
+        expect(fs.pathExistsSync(path7)).to.equal(true);
+
+        const path8 = path.resolve(sandboxDir, "workflows", "workflow2");
+        expect(fs.pathExistsSync(path8)).to.equal(true);
+      },
+    );
 
   // describe("given a valid service token via flag", () => {
   //   test
