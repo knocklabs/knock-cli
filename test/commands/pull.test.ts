@@ -92,8 +92,12 @@ describe("commands/pull", () => {
     )
       .stdout()
       .command(["pull", "--dir", "."])
-      .it("calls apiV1 to list resources in the development environment", () =>
-        assertApiV1ListFunctionsCalled({ environment: "development" }),
+      .it(
+        "calls apiV1 to list resources in the development environment",
+        () => {
+          assertApiV1ListFunctionsCalled({ environment: "development" });
+          sinon.assert.calledOnce(enquirer.prototype.prompt as any);
+        },
       );
   });
 
@@ -106,9 +110,10 @@ describe("commands/pull", () => {
     )
       .stdout()
       .command(["pull", "--dir", ".", "--environment", "staging"])
-      .it("calls apiV1 to list resources in the given environment", () =>
-        assertApiV1ListFunctionsCalled({ environment: "staging" }),
-      );
+      .it("calls apiV1 to list resources in the given environment", () => {
+        assertApiV1ListFunctionsCalled({ environment: "staging" });
+        sinon.assert.calledOnce(enquirer.prototype.prompt as any);
+      });
   });
 
   describe("with hide-uncommitted-changes flag", () => {
@@ -120,9 +125,28 @@ describe("commands/pull", () => {
     )
       .stdout()
       .command(["pull", "--dir", ".", "--hide-uncommitted-changes"])
-      .it("calls apiV1 to list resources with uncommitted changes hidden", () =>
-        assertApiV1ListFunctionsCalled({ "hide-uncommitted-changes": true }),
+      .it(
+        "calls apiV1 to list resources with uncommitted changes hidden",
+        () => {
+          assertApiV1ListFunctionsCalled({ "hide-uncommitted-changes": true });
+          sinon.assert.calledOnce(enquirer.prototype.prompt as any);
+        },
       );
+  });
+
+  describe("with force flag", () => {
+    setupWithListStubs(
+      [{ key: "messages" }, { key: "transactional" }],
+      [{ key: "partial-a" }, { key: "partial-b" }],
+      [{ locale_code: "en" }, { locale_code: "es-MX" }],
+      [{ key: "workflow-a" }, { key: "workflow-bar" }],
+    )
+      .stdout()
+      .command(["pull", "--dir", ".", "--force"])
+      .it("skips the confirmation prompt", () => {
+        assertApiV1ListFunctionsCalled({ environment: "development" });
+        sinon.assert.notCalled(enquirer.prototype.prompt as any);
+      });
   });
 
   setupWithListStubs(
