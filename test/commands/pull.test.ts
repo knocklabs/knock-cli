@@ -91,7 +91,7 @@ describe("commands/pull", () => {
   )
     .stdout()
     .command(["pull", "--dir", "."])
-    .it("calls apiV1 listEmailLayouts with an annotate param", () => {
+    .it("calls apiV1 to list resources with an annotate param", () => {
       sinon.assert.calledWith(
         KnockApiV1.prototype.listEmailLayouts as any,
         sinon.match(
