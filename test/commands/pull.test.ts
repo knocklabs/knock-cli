@@ -111,6 +111,64 @@ describe("commands/pull", () => {
             }),
         ),
       );
+
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.listPartials as any,
+        sinon.match(
+          ({ args, flags }) =>
+            isEqual(args, {}) &&
+            isEqual(flags, {
+              all: true,
+              "partials-dir": {
+                abspath: path.resolve(sandboxDir, "partials"),
+                exists: false,
+              },
+              "service-token": "valid-token",
+              environment: "development",
+              force: true,
+              annotate: true,
+              limit: 100,
+            }),
+        ),
+      );
+
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.listTranslations as any,
+        sinon.match(({ flags }) =>
+          isEqual(flags, {
+            all: true,
+            "translations-dir": {
+              abspath: path.resolve(sandboxDir, "translations"),
+              exists: false,
+            },
+            "service-token": "valid-token",
+            environment: "development",
+            force: true,
+            limit: 100,
+            format: "json",
+          }),
+        ),
+      );
+
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.listWorkflows as any,
+        sinon.match(
+          ({ args, flags }) =>
+            isEqual(args, {}) &&
+            isEqual(flags, {
+              all: true,
+              "workflows-dir": {
+                abspath: path.resolve(sandboxDir, "workflows"),
+                exists: false,
+              },
+              "service-token": "valid-token",
+              environment: "development",
+              force: true,
+              annotate: true,
+              limit: 100,
+            }),
+        ),
+      );
     });
 
   // describe("given a valid service token via flag", () => {
