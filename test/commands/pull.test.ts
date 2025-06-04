@@ -83,95 +83,33 @@ describe("commands/pull", () => {
     fs.removeSync(sandboxDir);
   });
 
-  setupWithListStubs(
-    [{ key: "messages" }, { key: "transactional" }],
-    [{ key: "partial-a" }, { key: "partial-b" }],
-    [{ locale_code: "en" }, { locale_code: "es-MX" }],
-    [{ key: "workflow-a" }, { key: "workflow-bar" }],
-  )
-    .stdout()
-    .command(["pull", "--dir", "."])
-    .it("calls apiV1 to list resources with an annotate param", () => {
-      sinon.assert.calledWith(
-        KnockApiV1.prototype.listEmailLayouts as any,
-        sinon.match(
-          ({ args, flags }) =>
-            isEqual(args, {}) &&
-            isEqual(flags, {
-              all: true,
-              "layouts-dir": {
-                abspath: path.resolve(sandboxDir, "layouts"),
-                exists: false,
-              },
-              "service-token": "valid-token",
-              environment: "development",
-              force: true,
-              annotate: true,
-              limit: 100,
-            }),
-        ),
+  describe("without environment flag", () => {
+    setupWithListStubs(
+      [{ key: "messages" }, { key: "transactional" }],
+      [{ key: "partial-a" }, { key: "partial-b" }],
+      [{ locale_code: "en" }, { locale_code: "es-MX" }],
+      [{ key: "workflow-a" }, { key: "workflow-bar" }],
+    )
+      .stdout()
+      .command(["pull", "--dir", "."])
+      .it("calls apiV1 to list resources in the development environment", () =>
+        assertApiV1ListFunctionsCalled({ environment: "development" }),
       );
+  });
 
-      sinon.assert.calledWith(
-        KnockApiV1.prototype.listPartials as any,
-        sinon.match(
-          ({ args, flags }) =>
-            isEqual(args, {}) &&
-            isEqual(flags, {
-              all: true,
-              "partials-dir": {
-                abspath: path.resolve(sandboxDir, "partials"),
-                exists: false,
-              },
-              "service-token": "valid-token",
-              environment: "development",
-              force: true,
-              annotate: true,
-              limit: 100,
-            }),
-        ),
+  describe("with environment flag", () => {
+    setupWithListStubs(
+      [{ key: "messages" }, { key: "transactional" }],
+      [{ key: "partial-a" }, { key: "partial-b" }],
+      [{ locale_code: "en" }, { locale_code: "es-MX" }],
+      [{ key: "workflow-a" }, { key: "workflow-bar" }],
+    )
+      .stdout()
+      .command(["pull", "--dir", ".", "--environment", "staging"])
+      .it("calls apiV1 to list resources in the given environment", () =>
+        assertApiV1ListFunctionsCalled({ environment: "staging" }),
       );
-
-      sinon.assert.calledWith(
-        KnockApiV1.prototype.listTranslations as any,
-        sinon.match(
-          ({ args, flags }) =>
-            isEqual(args, {}) &&
-            isEqual(flags, {
-              all: true,
-              "translations-dir": {
-                abspath: path.resolve(sandboxDir, "translations"),
-                exists: false,
-              },
-              "service-token": "valid-token",
-              environment: "development",
-              force: true,
-              limit: 100,
-              format: "json",
-            }),
-        ),
-      );
-
-      sinon.assert.calledWith(
-        KnockApiV1.prototype.listWorkflows as any,
-        sinon.match(
-          ({ args, flags }) =>
-            isEqual(args, {}) &&
-            isEqual(flags, {
-              all: true,
-              "workflows-dir": {
-                abspath: path.resolve(sandboxDir, "workflows"),
-                exists: false,
-              },
-              "service-token": "valid-token",
-              environment: "development",
-              force: true,
-              annotate: true,
-              limit: 100,
-            }),
-        ),
-      );
-    });
+  });
 
   setupWithListStubs(
     [{ key: "layout1" }, { key: "layout2" }],
@@ -273,3 +211,91 @@ describe("commands/pull", () => {
     test.command(["pull"]).exit(2).it("exits with status 2");
   });
 });
+
+function assertApiV1ListFunctionsCalled(
+  expectedFlags: Record<string, unknown> = {},
+) {
+  sinon.assert.calledWith(
+    KnockApiV1.prototype.listEmailLayouts as any,
+    sinon.match(
+      ({ args, flags }) =>
+        isEqual(args, {}) &&
+        isEqual(flags, {
+          all: true,
+          "layouts-dir": {
+            abspath: path.resolve(sandboxDir, "layouts"),
+            exists: false,
+          },
+          "service-token": "valid-token",
+          environment: "development",
+          force: true,
+          annotate: true,
+          limit: 100,
+          ...expectedFlags,
+        }),
+    ),
+  );
+
+  sinon.assert.calledWith(
+    KnockApiV1.prototype.listPartials as any,
+    sinon.match(
+      ({ args, flags }) =>
+        isEqual(args, {}) &&
+        isEqual(flags, {
+          all: true,
+          "partials-dir": {
+            abspath: path.resolve(sandboxDir, "partials"),
+            exists: false,
+          },
+          "service-token": "valid-token",
+          environment: "development",
+          force: true,
+          annotate: true,
+          limit: 100,
+          ...expectedFlags,
+        }),
+    ),
+  );
+
+  sinon.assert.calledWith(
+    KnockApiV1.prototype.listTranslations as any,
+    sinon.match(
+      ({ args, flags }) =>
+        isEqual(args, {}) &&
+        isEqual(flags, {
+          all: true,
+          "translations-dir": {
+            abspath: path.resolve(sandboxDir, "translations"),
+            exists: false,
+          },
+          "service-token": "valid-token",
+          environment: "development",
+          force: true,
+          limit: 100,
+          format: "json",
+          ...expectedFlags,
+        }),
+    ),
+  );
+
+  sinon.assert.calledWith(
+    KnockApiV1.prototype.listWorkflows as any,
+    sinon.match(
+      ({ args, flags }) =>
+        isEqual(args, {}) &&
+        isEqual(flags, {
+          all: true,
+          "workflows-dir": {
+            abspath: path.resolve(sandboxDir, "workflows"),
+            exists: false,
+          },
+          "service-token": "valid-token",
+          environment: "development",
+          force: true,
+          annotate: true,
+          limit: 100,
+          ...expectedFlags,
+        }),
+    ),
+  );
+}
