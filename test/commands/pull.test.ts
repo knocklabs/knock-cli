@@ -91,7 +91,7 @@ describe("commands/pull", () => {
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
     )
       .stdout()
-      .command(["pull", "--dir", "."])
+      .command(["pull", "--knock-dir", "."])
       .it(
         "calls apiV1 to list resources in the development environment",
         () => {
@@ -109,7 +109,7 @@ describe("commands/pull", () => {
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
     )
       .stdout()
-      .command(["pull", "--dir", ".", "--environment", "staging"])
+      .command(["pull", "--knock-dir", ".", "--environment", "staging"])
       .it("calls apiV1 to list resources in the given environment", () => {
         assertApiV1ListFunctionsCalled({ environment: "staging" });
         sinon.assert.calledOnce(enquirer.prototype.prompt as any);
@@ -124,7 +124,7 @@ describe("commands/pull", () => {
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
     )
       .stdout()
-      .command(["pull", "--dir", ".", "--hide-uncommitted-changes"])
+      .command(["pull", "--knock-dir", ".", "--hide-uncommitted-changes"])
       .it(
         "calls apiV1 to list resources with uncommitted changes hidden",
         () => {
@@ -143,7 +143,7 @@ describe("commands/pull", () => {
     )
       .env({ KNOCK_SERVICE_TOKEN: null })
       .stdout()
-      .command(["pull", "--dir", ".", "--service-token=token123"])
+      .command(["pull", "--knock-dir", ".", "--service-token=token123"])
       .it("calls apiV1 to list resources using the given service token", () => {
         assertApiV1ListFunctionsCalled({ "service-token": "token123" });
         sinon.assert.calledOnce(enquirer.prototype.prompt as any);
@@ -158,7 +158,7 @@ describe("commands/pull", () => {
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
     )
       .stdout()
-      .command(["pull", "--dir", ".", "--force"])
+      .command(["pull", "--knock-dir", ".", "--force"])
       .it("skips the confirmation prompt", () => {
         assertApiV1ListFunctionsCalled({ environment: "development" });
         sinon.assert.notCalled(enquirer.prototype.prompt as any);
@@ -172,7 +172,7 @@ describe("commands/pull", () => {
     [{ key: "workflow1" }, { key: "workflow2" }],
   )
     .stdout()
-    .command(["pull", "--dir", "resources"])
+    .command(["pull", "--knock-dir", "resources"])
     .it(
       "writes directories to the file system, with individual dirs inside",
       () => {

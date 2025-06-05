@@ -20,7 +20,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
       default: "development",
       summary: "The environment to use.",
     }),
-    dir: CustomFlags.dirPath({
+    "knock-dir": CustomFlags.dirPath({
       summary: "The target directory path to pull all resources into.",
     }),
     "hide-uncommitted-changes": Flags.boolean({
@@ -35,7 +35,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
     const { flags } = this.props;
 
     const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags.dir || defaultToCwd;
+    const targetDirCtx = flags["knock-dir"] || defaultToCwd;
 
     const prompt = targetDirCtx.exists
       ? `Pull latest resources into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`
