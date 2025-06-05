@@ -22,6 +22,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
     }),
     "knock-dir": CustomFlags.dirPath({
       summary: "The target directory path to pull all resources into.",
+      required: true,
     }),
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
@@ -33,9 +34,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
 
   public async run(): Promise<void> {
     const { flags } = this.props;
-
-    const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags["knock-dir"] || defaultToCwd;
+    const targetDirCtx = flags["knock-dir"];
 
     const prompt = targetDirCtx.exists
       ? `Pull latest resources into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`
