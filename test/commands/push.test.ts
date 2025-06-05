@@ -1,17 +1,27 @@
 import { test } from "@oclif/test";
 
+const KNOCK_SERVICE_TOKEN = "valid-token";
+
 describe("commands/push", () => {
-  describe("without service token", () => {
+  describe("with environment other than development", () => {
     test
-      .command(["push", "--knock-dir", "."])
+      .env({ KNOCK_SERVICE_TOKEN })
+      .command(["push", "--knock-dir", ".", "--environment", "production"])
       .exit(2)
       .it("exits with status 2");
   });
 
   describe("without directory", () => {
     test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .env({ KNOCK_SERVICE_TOKEN })
       .command(["push"])
+      .exit(2)
+      .it("exits with status 2");
+  });
+
+  describe("without service token", () => {
+    test
+      .command(["push", "--knock-dir", "."])
       .exit(2)
       .it("exits with status 2");
   });
