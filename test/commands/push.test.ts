@@ -238,6 +238,66 @@ describe("commands/push", () => {
           });
       });
 
+      describe("and a non-empty translations directory", () => {
+        const translationsSubdirPath = path.resolve(sandboxDir, "translations");
+
+        let translationValidateAllStub: sinon.SinonStub;
+        let upsertTranslationStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          translationValidateAllStub = sinon
+            .stub(TranslationValidate, "validateAll")
+            .resolves([]);
+
+          upsertTranslationStub = sinon
+            .stub(KnockApiV1.prototype, "upsertTranslation")
+            .resolves(factory.resp());
+
+          fs.outputJsonSync(
+            path.resolve(translationsSubdirPath, "en", "en.json"),
+            { hello: "Heyyyy" },
+          );
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          fs.removeSync(translationsSubdirPath);
+          sinon.restore();
+        });
+
+        test
+          .command(["push", "--knock-dir", "."])
+          .it("validates and upserts translations", () => {
+            sinon.assert.calledOnce(translationValidateAllStub);
+
+            sinon.assert.calledOnceWithExactly(
+              upsertTranslationStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    "service-token": "valid-token",
+                    environment: "development",
+                    all: true,
+                    "translations-dir": {
+                      abspath: translationsSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((translation) =>
+                isEqual(translation, {
+                  locale_code: "en",
+                  namespace: undefined,
+                  content: '{"hello":"Heyyyy"}',
+                  format: "json",
+                }),
+              ),
+            );
+          });
+      });
+
       describe("and a non-empty workflows directory", () => {
         const workflowsSubdirPath = path.resolve(sandboxDir, "workflows");
 
