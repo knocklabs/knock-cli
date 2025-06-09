@@ -102,8 +102,6 @@ const mockWorkflowData: WorkflowData<WithAnnotation> = {
 };
 
 describe("commands/push", () => {
-  // TODO Test pushes layouts, partials, translations, and workflows
-
   describe("with service token", () => {
     let originalEnv: NodeJS.ProcessEnv;
 
