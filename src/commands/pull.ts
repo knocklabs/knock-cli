@@ -3,9 +3,14 @@ import * as path from "node:path";
 import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
-import { RESOURCE_SUBDIRS } from "@/lib/directories";
 import * as CustomFlags from "@/lib/helpers/flag";
+import { DirContext } from "@/lib/helpers/fs";
 import { promptToConfirm } from "@/lib/helpers/ux";
+import {
+  ALL_NON_HIDDEN_RESOURCE_TYPES,
+  NonHiddenResourceType,
+  RESOURCE_SUBDIRS,
+} from "@/lib/resources";
 
 import EmailLayoutPull from "./layout/pull";
 import PartialPull from "./partial/pull";
@@ -58,25 +63,39 @@ export default class Pull extends BaseCommand<typeof Pull> {
       "--force",
     ];
 
-    await EmailLayoutPull.run([
-      ...args,
-      "--layouts-dir",
-      path.resolve(targetDirCtx.abspath, RESOURCE_SUBDIRS.layouts),
-    ]);
-    await PartialPull.run([
-      ...args,
-      "--partials-dir",
-      path.resolve(targetDirCtx.abspath, RESOURCE_SUBDIRS.partials),
-    ]);
-    await TranslationPull.run([
-      ...args,
-      "--translations-dir",
-      path.resolve(targetDirCtx.abspath, RESOURCE_SUBDIRS.translations),
-    ]);
-    await WorkflowPull.run([
-      ...args,
-      "--workflows-dir",
-      path.resolve(targetDirCtx.abspath, RESOURCE_SUBDIRS.workflows),
-    ]);
+    for (const resourceType of ALL_NON_HIDDEN_RESOURCE_TYPES) {
+      // eslint-disable-next-line no-await-in-loop
+      await runResourcePullCommand(resourceType, targetDirCtx, args);
+    }
   }
 }
+
+const runResourcePullCommand = async (
+  resourceType: NonHiddenResourceType,
+  targetDirCtx: DirContext,
+  args: string[],
+): Promise<void> => {
+  const subdirPath = path.resolve(
+    targetDirCtx.abspath,
+    RESOURCE_SUBDIRS[resourceType],
+  );
+
+  switch (resourceType) {
+    case "email_layout":
+      return EmailLayoutPull.run([...args, "--layouts-dir", subdirPath]);
+
+    case "partial":
+      return PartialPull.run([...args, "--partials-dir", subdirPath]);
+
+    case "translation":
+      return TranslationPull.run([...args, "--translations-dir", subdirPath]);
+
+    case "workflow":
+      return WorkflowPull.run([...args, "--workflows-dir", subdirPath]);
+
+    default: {
+      const invalidResourceType: never = resourceType;
+      throw new Error(`Unknown resource type: ${invalidResourceType}`);
+    }
+  }
+};

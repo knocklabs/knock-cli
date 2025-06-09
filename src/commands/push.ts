@@ -4,9 +4,14 @@ import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
-import { RESOURCE_SUBDIRS } from "@/lib/directories";
 import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
+import { DirContext } from "@/lib/helpers/fs";
+import {
+  ALL_NON_HIDDEN_RESOURCE_TYPES,
+  NonHiddenResourceType,
+  RESOURCE_SUBDIRS,
+} from "@/lib/resources";
 
 import EmailLayoutPush from "./layout/push";
 import PartialPush from "./partial/push";
@@ -59,46 +64,45 @@ export default class Push extends BaseCommand<typeof Push> {
         : []),
     ];
 
-    const layoutsPath = path.resolve(
-      targetDirCtx.abspath,
-      RESOURCE_SUBDIRS.layouts,
-    );
-    const partialsPath = path.resolve(
-      targetDirCtx.abspath,
-      RESOURCE_SUBDIRS.partials,
-    );
-    const translationsPath = path.resolve(
-      targetDirCtx.abspath,
-      RESOURCE_SUBDIRS.translations,
-    );
-    const workflowsPath = path.resolve(
-      targetDirCtx.abspath,
-      RESOURCE_SUBDIRS.workflows,
-    );
-
-    const hasLayouts = await fs.pathExists(layoutsPath);
-    const hasPartials = await fs.pathExists(partialsPath);
-    const hasTranslations = await fs.pathExists(translationsPath);
-    const hasWorkflows = await fs.pathExists(workflowsPath);
-
-    if (hasLayouts) {
-      await EmailLayoutPush.run([...args, "--layouts-dir", layoutsPath]);
-    }
-
-    if (hasPartials) {
-      await PartialPush.run([...args, "--partials-dir", partialsPath]);
-    }
-
-    if (hasTranslations) {
-      await TranslationPush.run([
-        ...args,
-        "--translations-dir",
-        translationsPath,
-      ]);
-    }
-
-    if (hasWorkflows) {
-      await WorkflowPush.run([...args, "--workflows-dir", workflowsPath]);
+    for (const resourceType of ALL_NON_HIDDEN_RESOURCE_TYPES) {
+      // eslint-disable-next-line no-await-in-loop
+      await runResourcePushCommand(resourceType, targetDirCtx, args);
     }
   }
 }
+
+const runResourcePushCommand = async (
+  resourceType: NonHiddenResourceType,
+  targetDirCtx: DirContext,
+  args: string[],
+): Promise<void> => {
+  const subdirPath = path.resolve(
+    targetDirCtx.abspath,
+    RESOURCE_SUBDIRS[resourceType],
+  );
+
+  const hasResources = await fs.pathExists(subdirPath);
+
+  if (!hasResources) {
+    return;
+  }
+
+  switch (resourceType) {
+    case "email_layout":
+      return EmailLayoutPush.run([...args, "--layouts-dir", subdirPath]);
+
+    case "partial":
+      return PartialPush.run([...args, "--partials-dir", subdirPath]);
+
+    case "translation":
+      return TranslationPush.run([...args, "--translations-dir", subdirPath]);
+
+    case "workflow":
+      return WorkflowPush.run([...args, "--workflows-dir", subdirPath]);
+
+    default: {
+      const invalidResourceType: never = resourceType;
+      throw new Error(`Unknown resource type: ${invalidResourceType}`);
+    }
+  }
+};
