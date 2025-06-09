@@ -3,41 +3,117 @@ import * as path from "node:path";
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
 
-import { factory } from "@/../test/support";
-import PartialValidate from "@/commands/partial/validate";
-import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 
 const KNOCK_SERVICE_TOKEN = "valid-token";
 
-const setupWithPartialsStubs = (attrs = {}) =>
-  test
-    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(PartialValidate, "validateAll", (stub) => stub.resolves([]))
-    .stub(KnockApiV1.prototype, "upsertPartial", (stub) =>
-      stub.resolves(factory.resp(attrs)),
-    );
-
 describe("commands/push", () => {
   // TODO Test pushes layouts, partials, translations, and workflows
   // TODO Test command only pushes resources when resource-specific subdirectories exist
-  // TODO Test error thrown when resource-specific directories are empty
 
-  describe("with development environment", () => {
-    describe("and an empty partials directory", () => {
-      beforeEach(() => {
-        const partialsDirPath = path.resolve(sandboxDir, "partials");
-        fs.ensureDirSync(partialsDirPath);
-        process.chdir(sandboxDir);
+  describe("with service token", () => {
+    let originalEnv: NodeJS.ProcessEnv;
+
+    beforeEach(() => {
+      originalEnv = { ...process.env };
+      process.env = {
+        ...originalEnv,
+        KNOCK_SERVICE_TOKEN: "valid-token",
+      };
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    describe("with development environment", () => {
+      describe("and an empty layouts directory", () => {
+        let layoutsDirPath: string;
+
+        beforeEach(() => {
+          layoutsDirPath = path.resolve(sandboxDir, "layouts");
+          fs.ensureDirSync(layoutsDirPath);
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          fs.removeSync(layoutsDirPath);
+        });
+
+        test
+          .stdout()
+          .command(["push", "--knock-dir", "."])
+          .catch((error) =>
+            expect(error.message).to.match(/No layout directories found in/),
+          )
+          .it("throws an error");
       });
 
-      setupWithPartialsStubs()
-        .stdout()
-        .command(["push", "--knock-dir", "."])
-        .catch((error) =>
-          expect(error.message).to.match(/No partial directories found in/),
-        )
-        .it("throws an error");
+      describe("and an empty partials directory", () => {
+        let partialsDirPath: string;
+
+        beforeEach(() => {
+          partialsDirPath = path.resolve(sandboxDir, "partials");
+          fs.ensureDirSync(partialsDirPath);
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          fs.removeSync(partialsDirPath);
+        });
+
+        test
+          .stdout()
+          .command(["push", "--knock-dir", "."])
+          .catch((error) =>
+            expect(error.message).to.match(/No partial directories found in/),
+          )
+          .it("throws an error");
+      });
+
+      describe("and an empty translations directory", () => {
+        let translationsDirPath: string;
+
+        beforeEach(() => {
+          translationsDirPath = path.resolve(sandboxDir, "translations");
+          fs.ensureDirSync(translationsDirPath);
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          fs.removeSync(translationsDirPath);
+        });
+
+        test
+          .stdout()
+          .command(["push", "--knock-dir", "."])
+          .catch((error) =>
+            expect(error.message).to.match(/No translation files found in/),
+          )
+          .it("throws an error");
+      });
+
+      describe("and an empty workflows directory", () => {
+        let workflowsDirPath: string;
+
+        beforeEach(() => {
+          workflowsDirPath = path.resolve(sandboxDir, "workflows");
+          fs.ensureDirSync(workflowsDirPath);
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          fs.removeSync(workflowsDirPath);
+        });
+
+        test
+          .stdout()
+          .command(["push", "--knock-dir", "."])
+          .catch((error) =>
+            expect(error.message).to.match(/No workflow directories found in/),
+          )
+          .it("throws an error");
+      });
     });
   });
 
