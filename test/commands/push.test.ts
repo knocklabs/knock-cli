@@ -101,7 +101,18 @@ const mockWorkflowData: WorkflowData<WithAnnotation> = {
   },
 };
 
+const currCwd = process.cwd();
+
 describe("commands/push", () => {
+  beforeEach(() => {
+    fs.removeSync(sandboxDir);
+    fs.ensureDirSync(sandboxDir);
+  });
+  afterEach(() => {
+    process.chdir(currCwd);
+    fs.removeSync(sandboxDir);
+  });
+
   describe("with service token", () => {
     let originalEnv: NodeJS.ProcessEnv;
 
