@@ -29,7 +29,7 @@ export default class Push extends BaseCommand<typeof Push> {
       options: [KnockEnv.Development],
     }),
     "knock-dir": CustomFlags.dirPath({
-      summary: "The target directory path to pull all resources into.",
+      summary: "The target directory path to find all resources to push.",
       required: true,
     }),
     commit: Flags.boolean({
