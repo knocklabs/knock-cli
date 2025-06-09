@@ -176,6 +176,43 @@ describe("commands/push", () => {
               ),
             );
           });
+
+        test
+          .command([
+            "push",
+            "--knock-dir",
+            ".",
+            "--commit",
+            "-m",
+            "this is a commit comment!",
+          ])
+          .it(
+            "calls apiV1 upsertEmailLayout with commit flags, if provided",
+            () => {
+              sinon.assert.calledOnceWithExactly(
+                upsertLayoutStub,
+                sinon.match(
+                  ({ args, flags }) =>
+                    isEqual(args, {}) &&
+                    isEqual(flags, {
+                      annotate: true,
+                      "service-token": "valid-token",
+                      environment: "development",
+                      all: true,
+                      "layouts-dir": {
+                        abspath: layoutsSubdirPath,
+                        exists: true,
+                      },
+                      commit: true,
+                      "commit-message": "this is a commit comment!",
+                    }),
+                ),
+                sinon.match((layout) =>
+                  isEqual(layout, { key: "messages", name: "Messages" }),
+                ),
+              );
+            },
+          );
       });
 
       describe("and a non-empty partials directory", () => {
@@ -331,6 +368,47 @@ describe("commands/push", () => {
               ),
             );
           });
+
+        test
+          .command([
+            "push",
+            "--knock-dir",
+            ".",
+            "--commit",
+            "-m",
+            "this is a commit comment!",
+          ])
+          .it(
+            "calls apiV1 upsertTranslation with commit flags, if provided",
+            () => {
+              sinon.assert.calledOnceWithExactly(
+                upsertTranslationStub,
+                sinon.match(
+                  ({ args, flags }) =>
+                    isEqual(args, {}) &&
+                    isEqual(flags, {
+                      "service-token": "valid-token",
+                      environment: "development",
+                      all: true,
+                      "translations-dir": {
+                        abspath: translationsSubdirPath,
+                        exists: true,
+                      },
+                      commit: true,
+                      "commit-message": "this is a commit comment!",
+                    }),
+                ),
+                sinon.match((translation) =>
+                  isEqual(translation, {
+                    locale_code: "en",
+                    namespace: undefined,
+                    content: '{"hello":"Heyyyy"}',
+                    format: "json",
+                  }),
+                ),
+              );
+            },
+          );
       });
 
       describe("and a non-empty workflows directory", () => {
@@ -389,6 +467,43 @@ describe("commands/push", () => {
               ),
             );
           });
+
+        test
+          .command([
+            "push",
+            "--knock-dir",
+            ".",
+            "--commit",
+            "-m",
+            "this is a commit comment!",
+          ])
+          .it(
+            "calls apiV1 upsertWorkflow with commit flags, if provided",
+            () => {
+              sinon.assert.calledOnceWithExactly(
+                upsertWorkflowStub,
+                sinon.match(
+                  ({ args, flags }) =>
+                    isEqual(args, {}) &&
+                    isEqual(flags, {
+                      annotate: true,
+                      "service-token": "valid-token",
+                      environment: "development",
+                      all: true,
+                      "workflows-dir": {
+                        abspath: workflowsSubdirPath,
+                        exists: true,
+                      },
+                      commit: true,
+                      "commit-message": "this is a commit comment!",
+                    }),
+                ),
+                sinon.match((workflow) =>
+                  isEqual(workflow, { key: "foo", name: "Foo" }),
+                ),
+              );
+            },
+          );
       });
 
       describe("and some (but not all) resource-specific subdirectories", () => {
