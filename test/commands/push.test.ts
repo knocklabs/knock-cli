@@ -12,6 +12,7 @@ import TranslationValidate from "@/commands/translation/validate";
 import WorkflowValidate from "@/commands/workflow/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
+import { EmailLayoutData, LAYOUT_JSON } from "@/lib/marshal/email-layout";
 import { PARTIAL_JSON, PartialData, PartialType } from "@/lib/marshal/partial";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { WORKFLOW_JSON, WorkflowData } from "@/lib/marshal/workflow";
@@ -19,6 +20,31 @@ import { WORKFLOW_JSON, WorkflowData } from "@/lib/marshal/workflow";
 import { factory } from "../support";
 
 const KNOCK_SERVICE_TOKEN = "valid-token";
+
+const mockEmailLayoutData: EmailLayoutData<WithAnnotation> = {
+  key: "default",
+  name: "Default",
+  html_layout: `
+    <!doctype html>
+    <html>
+    <body>
+    <p>This is some example text</p>
+    </body>
+    </html>
+    `.trimStart(),
+  text_layout: "Text {{ content }}",
+  footer_links: [],
+  environment: "development",
+  updated_at: "2023-09-29T19:08:04.129228Z",
+  created_at: "2023-09-18T18:32:18.398053Z",
+  __annotation: {
+    extractable_fields: {
+      html_layout: { default: true, file_ext: "html" },
+      text_layout: { default: true, file_ext: "txt" },
+    },
+    readonly_fields: ["environment", "key", "created_at", "updated_at"],
+  },
+};
 
 const mockPartialData: PartialData<WithAnnotation> = {
   key: "default",
@@ -94,6 +120,66 @@ describe("commands/push", () => {
     });
 
     describe("with development environment", () => {
+      describe("and a non-empty layouts directory", () => {
+        const layoutsSubdirPath = path.resolve(sandboxDir, "layouts");
+
+        let layoutValidateAllStub: sinon.SinonStub;
+        let upsertLayoutStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          layoutValidateAllStub = sinon
+            .stub(EmailLayoutValidate, "validateAll")
+            .resolves([]);
+
+          upsertLayoutStub = sinon
+            .stub(KnockApiV1.prototype, "upsertEmailLayout")
+            .resolves(
+              factory.resp({ data: { email_layout: mockEmailLayoutData } }),
+            );
+
+          const messagesLayoutJson = path.resolve(
+            layoutsSubdirPath,
+            "messages",
+            LAYOUT_JSON,
+          );
+          fs.outputJsonSync(messagesLayoutJson, { name: "Messages" });
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          fs.removeSync(layoutsSubdirPath);
+          sinon.restore();
+        });
+
+        test
+          .command(["push", "--knock-dir", "."])
+          .it("validates and upserts layouts", () => {
+            sinon.assert.calledOnce(layoutValidateAllStub);
+
+            sinon.assert.calledOnceWithExactly(
+              upsertLayoutStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    all: true,
+                    "layouts-dir": {
+                      abspath: layoutsSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((layout) =>
+                isEqual(layout, { key: "messages", name: "Messages" }),
+              ),
+            );
+          });
+      });
+
       describe("and a non-empty partials directory", () => {
         const partialsSubdirPath = path.resolve(sandboxDir, "partials");
 
@@ -147,6 +233,64 @@ describe("commands/push", () => {
               ),
               sinon.match((partial) =>
                 isEqual(partial, { key: "messages", name: "Messages" }),
+              ),
+            );
+          });
+      });
+
+      describe("and a non-empty workflows directory", () => {
+        const workflowsSubdirPath = path.resolve(sandboxDir, "workflows");
+
+        let workflowValidateAllStub: sinon.SinonStub;
+        let upsertWorkflowStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          workflowValidateAllStub = sinon
+            .stub(WorkflowValidate, "validateAll")
+            .resolves([]);
+
+          upsertWorkflowStub = sinon
+            .stub(KnockApiV1.prototype, "upsertWorkflow")
+            .resolves(factory.resp({ data: { workflow: mockWorkflowData } }));
+
+          const fooWorkflowJson = path.resolve(
+            workflowsSubdirPath,
+            "foo",
+            WORKFLOW_JSON,
+          );
+          fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          fs.removeSync(workflowsSubdirPath);
+          sinon.restore();
+        });
+
+        test
+          .command(["push", "--knock-dir", "."])
+          .it("validates and upserts workflows", () => {
+            sinon.assert.calledOnce(workflowValidateAllStub);
+
+            sinon.assert.calledOnceWithExactly(
+              upsertWorkflowStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    all: true,
+                    "workflows-dir": {
+                      abspath: workflowsSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((workflow) =>
+                isEqual(workflow, { key: "foo", name: "Foo" }),
               ),
             );
           });
