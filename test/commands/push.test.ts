@@ -234,6 +234,43 @@ describe("commands/push", () => {
               ),
             );
           });
+
+        test
+          .command([
+            "push",
+            "--knock-dir",
+            ".",
+            "--commit",
+            "-m",
+            "this is a commit comment!",
+          ])
+          .it(
+            "calls apiV1 upsertPartial with commit flags, if provided",
+            () => {
+              sinon.assert.calledOnceWithExactly(
+                upsertPartialStub,
+                sinon.match(
+                  ({ args, flags }) =>
+                    isEqual(args, {}) &&
+                    isEqual(flags, {
+                      annotate: true,
+                      "service-token": "valid-token",
+                      environment: "development",
+                      all: true,
+                      "partials-dir": {
+                        abspath: partialsSubdirPath,
+                        exists: true,
+                      },
+                      commit: true,
+                      "commit-message": "this is a commit comment!",
+                    }),
+                ),
+                sinon.match((partial) =>
+                  isEqual(partial, { key: "messages", name: "Messages" }),
+                ),
+              );
+            },
+          );
       });
 
       describe("and a non-empty translations directory", () => {
