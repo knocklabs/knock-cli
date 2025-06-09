@@ -6,7 +6,9 @@ import * as fs from "fs-extra";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
+import EmailLayoutValidate from "@/commands/layout/validate";
 import PartialValidate from "@/commands/partial/validate";
+import TranslationValidate from "@/commands/translation/validate";
 import WorkflowValidate from "@/commands/workflow/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
@@ -14,8 +16,6 @@ import { PARTIAL_JSON, PartialData, PartialType } from "@/lib/marshal/partial";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { WORKFLOW_JSON, WorkflowData } from "@/lib/marshal/workflow";
 
-import EmailLayoutValidate from "@/commands/layout/validate";
-import TranslationValidate from "@/commands/translation/validate";
 import { factory } from "../support";
 
 const KNOCK_SERVICE_TOKEN = "valid-token";
