@@ -157,7 +157,6 @@ describe("commands/push", () => {
         });
 
         afterEach(() => {
-          fs.removeSync(layoutsSubdirPath);
           sinon.restore();
         });
 
@@ -252,7 +251,6 @@ describe("commands/push", () => {
         });
 
         afterEach(() => {
-          fs.removeSync(partialsSubdirPath);
           sinon.restore();
         });
 
@@ -345,7 +343,6 @@ describe("commands/push", () => {
         });
 
         afterEach(() => {
-          fs.removeSync(translationsSubdirPath);
           sinon.restore();
         });
 
@@ -448,7 +445,6 @@ describe("commands/push", () => {
         });
 
         afterEach(() => {
-          fs.removeSync(workflowsSubdirPath);
           sinon.restore();
         });
 
@@ -584,8 +580,6 @@ describe("commands/push", () => {
         });
 
         afterEach(() => {
-          fs.removeSync(workflowsSubdirPath);
-          fs.removeSync(partialsSubdirPath);
           sinon.restore();
         });
 
@@ -657,10 +651,6 @@ describe("commands/push", () => {
           process.chdir(sandboxDir);
         });
 
-        afterEach(() => {
-          fs.removeSync(layoutsDirPath);
-        });
-
         test
           .stdout()
           .command(["push", "--knock-dir", "."])
@@ -677,10 +667,6 @@ describe("commands/push", () => {
           partialsDirPath = path.resolve(sandboxDir, "partials");
           fs.ensureDirSync(partialsDirPath);
           process.chdir(sandboxDir);
-        });
-
-        afterEach(() => {
-          fs.removeSync(partialsDirPath);
         });
 
         test
@@ -701,10 +687,6 @@ describe("commands/push", () => {
           process.chdir(sandboxDir);
         });
 
-        afterEach(() => {
-          fs.removeSync(translationsDirPath);
-        });
-
         test
           .stdout()
           .command(["push", "--knock-dir", "."])
@@ -721,10 +703,6 @@ describe("commands/push", () => {
           workflowsDirPath = path.resolve(sandboxDir, "workflows");
           fs.ensureDirSync(workflowsDirPath);
           process.chdir(sandboxDir);
-        });
-
-        afterEach(() => {
-          fs.removeSync(workflowsDirPath);
         });
 
         test
