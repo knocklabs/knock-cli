@@ -8,6 +8,9 @@ import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 
 import EmailLayoutPush from "./layout/push";
+import PartialPush from "./partial/push";
+import TranslationPush from "./translation/push";
+import WorkflowPush from "./workflow/push";
 
 export default class Push extends BaseCommand<typeof Push> {
   static summary = "Push all resources from a local file system to Knock.";
@@ -56,10 +59,33 @@ export default class Push extends BaseCommand<typeof Push> {
     ];
 
     const layoutsPath = path.resolve(targetDirCtx.abspath, "layouts");
+    const partialsPath = path.resolve(targetDirCtx.abspath, "partials");
+    const translationsPath = path.resolve(targetDirCtx.abspath, "translations");
+    const workflowsPath = path.resolve(targetDirCtx.abspath, "workflows");
+
     const hasLayouts = await fs.pathExists(layoutsPath);
+    const hasPartials = await fs.pathExists(partialsPath);
+    const hasTranslations = await fs.pathExists(translationsPath);
+    const hasWorkflows = await fs.pathExists(workflowsPath);
 
     if (hasLayouts) {
       await EmailLayoutPush.run([...args, "--layouts-dir", layoutsPath]);
+    }
+
+    if (hasPartials) {
+      await PartialPush.run([...args, "--partials-dir", partialsPath]);
+    }
+
+    if (hasTranslations) {
+      await TranslationPush.run([
+        ...args,
+        "--translations-dir",
+        translationsPath,
+      ]);
+    }
+
+    if (hasWorkflows) {
+      await WorkflowPush.run([...args, "--workflows-dir", workflowsPath]);
     }
   }
 }
