@@ -94,6 +94,64 @@ describe("commands/push", () => {
     });
 
     describe("with development environment", () => {
+      describe("and a non-empty partials directory", () => {
+        const partialsSubdirPath = path.resolve(sandboxDir, "partials");
+
+        let partialValidateAllStub: sinon.SinonStub;
+        let upsertPartialStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          partialValidateAllStub = sinon
+            .stub(PartialValidate, "validateAll")
+            .resolves([]);
+
+          upsertPartialStub = sinon
+            .stub(KnockApiV1.prototype, "upsertPartial")
+            .resolves(factory.resp({ data: { partial: mockPartialData } }));
+
+          const messagesPartialJson = path.resolve(
+            partialsSubdirPath,
+            "messages",
+            PARTIAL_JSON,
+          );
+          fs.outputJsonSync(messagesPartialJson, { name: "Messages" });
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          fs.removeSync(partialsSubdirPath);
+          sinon.restore();
+        });
+
+        test
+          .command(["push", "--knock-dir", "."])
+          .it("validates and upserts partials", () => {
+            sinon.assert.calledOnce(partialValidateAllStub);
+
+            sinon.assert.calledOnceWithExactly(
+              upsertPartialStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    all: true,
+                    "partials-dir": {
+                      abspath: partialsSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((partial) =>
+                isEqual(partial, { key: "messages", name: "Messages" }),
+              ),
+            );
+          });
+      });
+
       describe("and some (but not all) resource-specific subdirectories", () => {
         const partialsSubdirPath = path.resolve(sandboxDir, "partials");
         const workflowsSubdirPath = path.resolve(sandboxDir, "workflows");
