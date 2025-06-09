@@ -1,8 +1,9 @@
 import type { ResourceType } from "./run-context";
 
+// TODO Remove this once hidden option is removed from message types
 export type NonHiddenResourceType = Exclude<ResourceType, "message_type">;
 
-export const ALL_NON_HIDDEN_RESOURCE_TYPES: NonHiddenResourceType[] = [
+export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   "email_layout",
   "partial",
   "translation",

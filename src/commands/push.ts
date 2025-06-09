@@ -8,7 +8,7 @@ import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import {
-  ALL_NON_HIDDEN_RESOURCE_TYPES,
+  ALL_RESOURCE_TYPES,
   NonHiddenResourceType,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
@@ -64,7 +64,7 @@ export default class Push extends BaseCommand<typeof Push> {
         : []),
     ];
 
-    for (const resourceType of ALL_NON_HIDDEN_RESOURCE_TYPES) {
+    for (const resourceType of ALL_RESOURCE_TYPES) {
       // eslint-disable-next-line no-await-in-loop
       await runResourcePushCommand(resourceType, targetDirCtx, args);
     }

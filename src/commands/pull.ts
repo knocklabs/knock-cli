@@ -7,7 +7,7 @@ import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import {
-  ALL_NON_HIDDEN_RESOURCE_TYPES,
+  ALL_RESOURCE_TYPES,
   NonHiddenResourceType,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
@@ -63,7 +63,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
       "--force",
     ];
 
-    for (const resourceType of ALL_NON_HIDDEN_RESOURCE_TYPES) {
+    for (const resourceType of ALL_RESOURCE_TYPES) {
       // eslint-disable-next-line no-await-in-loop
       await runResourcePullCommand(resourceType, targetDirCtx, args);
     }
