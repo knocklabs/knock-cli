@@ -14,6 +14,8 @@ import { PARTIAL_JSON, PartialData, PartialType } from "@/lib/marshal/partial";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { WORKFLOW_JSON, WorkflowData } from "@/lib/marshal/workflow";
 
+import EmailLayoutValidate from "@/commands/layout/validate";
+import TranslationValidate from "@/commands/translation/validate";
 import { factory } from "../support";
 
 const KNOCK_SERVICE_TOKEN = "valid-token";
@@ -95,23 +97,47 @@ describe("commands/push", () => {
       describe("and some (but not all) resource-specific subdirectories", () => {
         const partialsSubdirPath = path.resolve(sandboxDir, "partials");
         const workflowsSubdirPath = path.resolve(sandboxDir, "workflows");
+
+        let layoutValidateAllStub: sinon.SinonStub;
         let partialValidateAllStub: sinon.SinonStub;
+        let translationValidateAllStub: sinon.SinonStub;
         let workflowValidateAllStub: sinon.SinonStub;
+
+        let upsertLayoutStub: sinon.SinonStub;
         let upsertPartialStub: sinon.SinonStub;
+        let upsertTranslationStub: sinon.SinonStub;
         let upsertWorkflowStub: sinon.SinonStub;
 
         beforeEach(() => {
+          layoutValidateAllStub = sinon
+            .stub(EmailLayoutValidate, "validateAll")
+            .resolves([]);
+
           partialValidateAllStub = sinon
             .stub(PartialValidate, "validateAll")
+            .resolves([]);
+
+          translationValidateAllStub = sinon
+            .stub(TranslationValidate, "validateAll")
             .resolves([]);
 
           workflowValidateAllStub = sinon
             .stub(WorkflowValidate, "validateAll")
             .resolves([]);
 
+          upsertLayoutStub = sinon.stub(
+            KnockApiV1.prototype,
+            "upsertEmailLayout",
+          );
+
           upsertPartialStub = sinon
             .stub(KnockApiV1.prototype, "upsertPartial")
             .resolves(factory.resp({ data: { partial: mockPartialData } }));
+
+          upsertTranslationStub = sinon.stub(
+            KnockApiV1.prototype,
+            "upsertTranslation",
+          );
 
           upsertWorkflowStub = sinon
             .stub(KnockApiV1.prototype, "upsertWorkflow")
@@ -137,10 +163,7 @@ describe("commands/push", () => {
         afterEach(() => {
           fs.removeSync(workflowsSubdirPath);
           fs.removeSync(partialsSubdirPath);
-          upsertWorkflowStub.restore();
-          upsertPartialStub.restore();
-          workflowValidateAllStub.restore();
-          partialValidateAllStub.restore();
+          sinon.restore();
         });
 
         test
@@ -148,6 +171,11 @@ describe("commands/push", () => {
           .it(
             "only pushes the resources for the subdirectories which exist",
             () => {
+              sinon.assert.notCalled(layoutValidateAllStub);
+              sinon.assert.notCalled(translationValidateAllStub);
+              sinon.assert.notCalled(upsertLayoutStub);
+              sinon.assert.notCalled(upsertTranslationStub);
+
               sinon.assert.calledOnce(partialValidateAllStub);
               sinon.assert.calledOnce(workflowValidateAllStub);
 
