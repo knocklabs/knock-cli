@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { DEFAULT_DIRECTORIES } from "@/lib/directories";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
@@ -60,22 +61,22 @@ export default class Pull extends BaseCommand<typeof Pull> {
     await EmailLayoutPull.run([
       ...args,
       "--layouts-dir",
-      path.resolve(targetDirCtx.abspath, "layouts"),
+      path.resolve(targetDirCtx.abspath, DEFAULT_DIRECTORIES.layouts),
     ]);
     await PartialPull.run([
       ...args,
       "--partials-dir",
-      path.resolve(targetDirCtx.abspath, "partials"),
+      path.resolve(targetDirCtx.abspath, DEFAULT_DIRECTORIES.partials),
     ]);
     await TranslationPull.run([
       ...args,
       "--translations-dir",
-      path.resolve(targetDirCtx.abspath, "translations"),
+      path.resolve(targetDirCtx.abspath, DEFAULT_DIRECTORIES.translations),
     ]);
     await WorkflowPull.run([
       ...args,
       "--workflows-dir",
-      path.resolve(targetDirCtx.abspath, "workflows"),
+      path.resolve(targetDirCtx.abspath, DEFAULT_DIRECTORIES.workflows),
     ]);
   }
 }

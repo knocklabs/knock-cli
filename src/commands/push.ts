@@ -4,6 +4,7 @@ import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
+import { DEFAULT_DIRECTORIES } from "@/lib/directories";
 import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 
@@ -58,10 +59,22 @@ export default class Push extends BaseCommand<typeof Push> {
         : []),
     ];
 
-    const layoutsPath = path.resolve(targetDirCtx.abspath, "layouts");
-    const partialsPath = path.resolve(targetDirCtx.abspath, "partials");
-    const translationsPath = path.resolve(targetDirCtx.abspath, "translations");
-    const workflowsPath = path.resolve(targetDirCtx.abspath, "workflows");
+    const layoutsPath = path.resolve(
+      targetDirCtx.abspath,
+      DEFAULT_DIRECTORIES.layouts,
+    );
+    const partialsPath = path.resolve(
+      targetDirCtx.abspath,
+      DEFAULT_DIRECTORIES.partials,
+    );
+    const translationsPath = path.resolve(
+      targetDirCtx.abspath,
+      DEFAULT_DIRECTORIES.translations,
+    );
+    const workflowsPath = path.resolve(
+      targetDirCtx.abspath,
+      DEFAULT_DIRECTORIES.workflows,
+    );
 
     const hasLayouts = await fs.pathExists(layoutsPath);
     const hasPartials = await fs.pathExists(partialsPath);
