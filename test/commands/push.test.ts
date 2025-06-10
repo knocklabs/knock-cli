@@ -642,6 +642,108 @@ describe("commands/push", () => {
           );
       });
 
+      describe("and all resources-specific subdirectories", () => {
+        const layoutsSubdirPath = path.resolve(sandboxDir, "layouts");
+        const partialsSubdirPath = path.resolve(sandboxDir, "partials");
+        const translationsSubdirPath = path.resolve(sandboxDir, "translations");
+        const workflowsSubdirPath = path.resolve(sandboxDir, "workflows");
+
+        let layoutValidateAllStub: sinon.SinonStub;
+        let partialValidateAllStub: sinon.SinonStub;
+        let translationValidateAllStub: sinon.SinonStub;
+        let workflowValidateAllStub: sinon.SinonStub;
+
+        let upsertLayoutStub: sinon.SinonStub;
+        let upsertPartialStub: sinon.SinonStub;
+        let upsertTranslationStub: sinon.SinonStub;
+        let upsertWorkflowStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          layoutValidateAllStub = sinon
+            .stub(EmailLayoutValidate, "validateAll")
+            .resolves([]);
+
+          partialValidateAllStub = sinon
+            .stub(PartialValidate, "validateAll")
+            .resolves([]);
+
+          translationValidateAllStub = sinon
+            .stub(TranslationValidate, "validateAll")
+            .resolves([]);
+
+          workflowValidateAllStub = sinon
+            .stub(WorkflowValidate, "validateAll")
+            .resolves([]);
+
+          upsertLayoutStub = sinon
+            .stub(KnockApiV1.prototype, "upsertEmailLayout")
+            .resolves(
+              factory.resp({ data: { email_layout: mockEmailLayoutData } }),
+            );
+
+          upsertPartialStub = sinon
+            .stub(KnockApiV1.prototype, "upsertPartial")
+            .resolves(factory.resp({ data: { partial: mockPartialData } }));
+
+          upsertTranslationStub = sinon
+            .stub(KnockApiV1.prototype, "upsertTranslation")
+            .resolves(factory.resp());
+
+          upsertWorkflowStub = sinon
+            .stub(KnockApiV1.prototype, "upsertWorkflow")
+            .resolves(factory.resp({ data: { workflow: mockWorkflowData } }));
+
+          const messagesLayoutJson = path.resolve(
+            layoutsSubdirPath,
+            "messages",
+            LAYOUT_JSON,
+          );
+          fs.outputJsonSync(messagesLayoutJson, { name: "Messages" });
+
+          const messagesPartialJson = path.resolve(
+            partialsSubdirPath,
+            "messages",
+            PARTIAL_JSON,
+          );
+          fs.outputJsonSync(messagesPartialJson, { name: "Messages" });
+
+          const fooWorkflowJson = path.resolve(
+            workflowsSubdirPath,
+            "foo",
+            WORKFLOW_JSON,
+          );
+          fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+          const enTranslationJson = path.resolve(
+            translationsSubdirPath,
+            "en",
+            "en.json",
+          );
+          fs.outputJsonSync(enTranslationJson, { hello: "Heyyyy" });
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          sinon.restore();
+        });
+
+        test
+          .command(["push", "--knock-dir", "."])
+          .it("pushes all resources in the correct order", () => {
+            sinon.assert.callOrder(
+              partialValidateAllStub,
+              upsertPartialStub,
+              layoutValidateAllStub,
+              upsertLayoutStub,
+              workflowValidateAllStub,
+              upsertWorkflowStub,
+              translationValidateAllStub,
+              upsertTranslationStub,
+            );
+          });
+      });
+
       describe("and an empty layouts directory", () => {
         let layoutsDirPath: string;
 
