@@ -64,6 +64,10 @@ export default class Push extends BaseCommand<typeof Push> {
         : []),
     ];
 
+    // Note: Because we're pushing the different resource types sequentially,
+    // if one of the push commands fails, we may end up in a partially pushed
+    // state, with only some of the resources upserted. This is the best we can
+    // do until we have a bulk push mAPI endpoint.
     for (const resourceType of ALL_RESOURCE_TYPES) {
       // eslint-disable-next-line no-await-in-loop
       await runResourcePushCommand(resourceType, targetDirCtx, args);
