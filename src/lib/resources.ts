@@ -3,11 +3,20 @@ import type { ResourceType } from "./run-context";
 // TODO Remove this once hidden option is removed from message types
 export type NonHiddenResourceType = Exclude<ResourceType, "message_type">;
 
+/**
+ * An ordered array of all resource types.
+ *
+ * Order is important here, specifically when pushing all resources. For
+ * example, if an email layout references a partial, that partial must be pushed
+ * first or else the validation and upsert of the layout will fail.
+ */
 export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
-  "email_layout",
+  // Partials first, as email layouts and workflows may reference them
   "partial",
-  "translation",
+  // Email layouts next, as workflows with email channel steps may reference them
+  "email_layout",
   "workflow",
+  "translation",
 ];
 
 /**
