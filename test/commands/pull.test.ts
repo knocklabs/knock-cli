@@ -242,8 +242,19 @@ describe("commands/pull", () => {
       },
     );
 
+  describe("without directory", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .command(["pull"])
+      .exit(2)
+      .it("exits with status 2");
+  });
+
   describe("without service token", () => {
-    test.command(["pull"]).exit(2).it("exits with status 2");
+    test
+      .command(["pull", "--knock-dir", "."])
+      .exit(2)
+      .it("exits with status 2");
   });
 });
 
