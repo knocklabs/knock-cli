@@ -642,7 +642,7 @@ describe("commands/push", () => {
           );
       });
 
-      describe("and all resources-specific subdirectories", () => {
+      describe("and all resource-specific subdirectories", () => {
         const layoutsSubdirPath = path.resolve(sandboxDir, "layouts");
         const partialsSubdirPath = path.resolve(sandboxDir, "partials");
         const translationsSubdirPath = path.resolve(sandboxDir, "translations");
