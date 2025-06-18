@@ -424,6 +424,19 @@ export default class ApiV1 {
     return this.get("/guides", { params });
   }
 
+  async getGuide<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetGuideResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/guides/${args.guideKey}`, { params });
+  }
+
   // By methods:
 
   async get(
@@ -562,3 +575,6 @@ export type ValidateMessageTypeResp = {
 
 export type ListGuideResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<Guide.GuideData<A>>;
+
+export type GetGuideResp<A extends MaybeWithAnnotation = unknown> =
+  Guide.GuideData<A>;
