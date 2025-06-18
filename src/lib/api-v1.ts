@@ -404,7 +404,7 @@ export default class ApiV1 {
     });
     const data = { message_type: messageType };
 
-    return this.put(`/message-types/${messageType.key}/validate`, data, {
+    return this.put(`/message_types/${messageType.key}/validate`, data, {
       params,
     });
   }

@@ -78,14 +78,6 @@ export default class GuideList extends BaseCommand<typeof GuideList> {
         header: "Description",
         get: (entry) => entry.description || "-",
       },
-      steps: {
-        header: "Steps",
-        get: (entry) => {
-          const result = entry.steps.length;
-
-          return result > 0 ? result : "-";
-        },
-      },
       updated_at: {
         header: "Updated at",
         get: (entry) => formatDate(entry.updated_at),
