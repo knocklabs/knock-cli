@@ -13,6 +13,9 @@ import * as Guide from "@/lib/marshal/guide";
 export default class GuideValidate extends BaseCommand<typeof GuideValidate> {
   static summary = "Validate one or more guides from a local file system.";
 
+  // Hide until guides are released in GA.
+  static hidden = true;
+
   static flags = {
     environment: Flags.string({
       summary: "Validating a guide is only done in the development environment",

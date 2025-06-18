@@ -16,6 +16,9 @@ import { formatStatusWithSchedule } from "@/lib/marshal/guide/helpers";
 export default class GuideList extends BaseCommand<typeof GuideList> {
   static summary = "Display all guides for an environment.";
 
+  // Hide until guides are released in GA.
+  static hidden = true;
+
   static flags = {
     environment: Flags.string({
       default: "development",
