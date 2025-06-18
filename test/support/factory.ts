@@ -226,7 +226,6 @@ export const guide = (attrs: Partial<GuideData> = {}): GuideData => {
     active: true,
     name: "Welcome Guide",
     description: "A guide to help new users get started",
-    priority: "10",
     channel_key: "in-app-guide",
     type: "banner",
     semver: "0.0.1",
