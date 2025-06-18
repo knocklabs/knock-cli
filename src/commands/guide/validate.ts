@@ -5,10 +5,10 @@ import BaseCommand, { Props } from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Guide from "@/lib/marshal/guide";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 
 export default class GuideValidate extends BaseCommand<typeof GuideValidate> {
   static summary = "Validate one or more guides from a local file system.";
