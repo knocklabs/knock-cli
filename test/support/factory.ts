@@ -6,6 +6,7 @@ import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
 import { CommitData } from "@/lib/marshal/commit";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
+import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData, PartialType } from "@/lib/marshal/partial";
 import { TranslationData } from "@/lib/marshal/translation";
@@ -213,6 +214,34 @@ export const messageType = (
     preview: "<div>{{title}}</div>",
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",
+    environment: "development",
+    ...attrs,
+  };
+};
+
+export const guide = (attrs: Partial<GuideData> = {}): GuideData => {
+  return {
+    key: "welcome-guide",
+    valid: true,
+    active: true,
+    name: "Welcome Guide",
+    description: "A guide to help new users get started",
+    priority: "10",
+    channel_key: "in-app-guide",
+    type: "banner",
+    semver: "0.0.1",
+    steps: [
+      {
+        ref: "step_1",
+        name: "Welcome Step",
+        schema_key: "banner",
+        schema_semver: "0.0.1",
+        schema_variant_key: "default",
+        fields: [],
+      },
+    ],
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    created_at: "2022-12-31T12:00:00.000000Z",
     environment: "development",
     ...attrs,
   };

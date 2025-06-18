@@ -7,6 +7,7 @@ import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import * as Commit from "@/lib/marshal/commit";
 import * as EmailLayout from "@/lib/marshal/email-layout";
+import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
@@ -403,9 +404,24 @@ export default class ApiV1 {
     });
     const data = { message_type: messageType };
 
-    return this.put(`/message_types/${messageType.key}/validate`, data, {
+    return this.put(`/message-types/${messageType.key}/validate`, data, {
       params,
     });
+  }
+
+  // By resources: Guides
+
+  async listGuides<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListGuideResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      ...toPageParams(flags),
+    });
+
+    return this.get("/guides", { params });
   }
 
   // By methods:
@@ -543,3 +559,6 @@ export type ValidateMessageTypeResp = {
   message_type?: MessageType.MessageTypeData;
   errors?: InputError[];
 };
+
+export type ListGuideResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Guide.GuideData<A>>;
