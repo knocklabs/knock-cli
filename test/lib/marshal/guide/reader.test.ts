@@ -103,7 +103,6 @@ describe("lib/marshal/guide/reader", () => {
           ],
         },
       ],
-      "description@": "description.md",
       __readonly: {
         key: "onboarding",
         valid: true,
@@ -130,11 +129,6 @@ describe("lib/marshal/guide/reader", () => {
 
       // Set up a sample guide directory
       fs.outputJsonSync(path.join(guideDirPath, GUIDE_JSON), sampleGuideJson);
-
-      fs.outputJsonSync(
-        path.join(guideDirPath, "description.md"),
-        "# Onboarding Guide\n\nThis guide helps new users get started.",
-      );
     });
 
     after(() => {
@@ -147,8 +141,9 @@ describe("lib/marshal/guide/reader", () => {
         const [guide] = await readGuideDir(guideDirCtx);
 
         expect(get(guide, ["name"])).to.equal("Onboarding Guide");
-        expect(get(guide, ["description@"])).to.equal("description.md");
-        expect(get(guide, ["description"])).to.equal(undefined);
+        expect(get(guide, ["description"])).to.equal(
+          "A comprehensive onboarding guide for new users.",
+        );
         expect(get(guide, ["__readonly"])).to.equal(undefined);
       });
     });
@@ -160,8 +155,9 @@ describe("lib/marshal/guide/reader", () => {
         });
 
         expect(get(guide, ["name"])).to.equal("Onboarding Guide");
-        expect(get(guide, ["description@"])).to.equal("description.md");
-        expect(get(guide, ["description"])).to.equal(undefined);
+        expect(get(guide, ["description"])).to.equal(
+          "A comprehensive onboarding guide for new users.",
+        );
 
         expect(get(guide, ["__readonly"])).to.eql({
           key: "onboarding",
@@ -183,9 +179,8 @@ describe("lib/marshal/guide/reader", () => {
         });
 
         expect(get(guide, ["name"])).to.equal("Onboarding Guide");
-        expect(get(guide, ["description@"])).to.equal("description.md");
-        expect(get(guide, ["description"])).to.contain(
-          "# Onboarding Guide\n\nThis guide helps new users get started.",
+        expect(get(guide, ["description"])).to.equal(
+          "A comprehensive onboarding guide for new users.",
         );
 
         expect(get(guide, ["__readonly"])).to.equal(undefined);
