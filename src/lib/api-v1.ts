@@ -451,6 +451,21 @@ export default class ApiV1 {
     });
   }
 
+  async upsertGuide<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    guide: Guide.GuideInput,
+  ): Promise<AxiosResponse<UpsertGuideResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+    });
+    const data = { guide };
+
+    return this.put(`/guides/${guide.key}`, data, { params });
+  }
+
   // By methods:
 
   async get(
@@ -595,5 +610,10 @@ export type GetGuideResp<A extends MaybeWithAnnotation = unknown> =
 
 export type ValidateGuideResp = {
   guide?: Guide.GuideData;
+  errors?: InputError[];
+};
+
+export type UpsertGuideResp<A extends MaybeWithAnnotation = unknown> = {
+  guide?: Guide.GuideData<A>;
   errors?: InputError[];
 };
