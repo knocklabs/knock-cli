@@ -4,7 +4,6 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
-import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { GuideDirContext, RunContext } from "@/lib/run-context";
 
 import { GUIDE_JSON } from "./processor.isomorphic";
@@ -42,18 +41,6 @@ export const formatActivationRules = (
 
 export const guideJsonPath = (guideDirCtx: GuideDirContext): string =>
   path.resolve(guideDirCtx.abspath, GUIDE_JSON);
-
-/*
- * Validates a string input for a guide key, and returns an error reason
- * if invalid.
- */
-export const validateGuideKey = (input: string): string | undefined => {
-  if (!checkSlugifiedFormat(input, { onlyLowerCase: true })) {
-    return "must include only lowercase alphanumeric, dash, or underscore characters";
-  }
-
-  return undefined;
-};
 
 /*
  * Check for guide.json file and return the file path if present.
