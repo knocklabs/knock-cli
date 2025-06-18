@@ -437,6 +437,20 @@ export default class ApiV1 {
     return this.get(`/guides/${args.guideKey}`, { params });
   }
 
+  async validateGuide(
+    { flags }: Props,
+    guide: Guide.GuideInput,
+  ): Promise<AxiosResponse<ValidateGuideResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+    const data = { guide };
+
+    return this.put(`/guides/${guide.key}/validate`, data, {
+      params,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -578,3 +592,8 @@ export type ListGuideResp<A extends MaybeWithAnnotation = unknown> =
 
 export type GetGuideResp<A extends MaybeWithAnnotation = unknown> =
   Guide.GuideData<A>;
+
+export type ValidateGuideResp = {
+  guide?: Guide.GuideData;
+  errors?: InputError[];
+};

@@ -21,7 +21,8 @@ export type ResourceType =
   | "email_layout"
   | "translation"
   | "partial"
-  | "message_type";
+  | "message_type"
+  | "guide";
 
 type ResourceDirContextBase = DirContext & {
   type: ResourceType;
@@ -48,12 +49,17 @@ export type MessageTypeDirContext = ResourceDirContextBase & {
   type: "message_type";
 };
 
+export type GuideDirContext = ResourceDirContextBase & {
+  type: "guide";
+};
+
 export type ResourceDirContext =
   | WorkflowDirContext
   | EmailLayoutDirContext
   | TranslationDirContext
   | PartialDirContext
-  | MessageTypeDirContext;
+  | MessageTypeDirContext
+  | GuideDirContext;
 
 export type ResourceTarget = {
   commandId: string;
