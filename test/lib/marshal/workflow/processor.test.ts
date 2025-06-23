@@ -169,23 +169,23 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
 
 describe("lib/marshal/workflow/processor", () => {
   describe("prepareResourceJson", () => {
-    it("moves over workflow's readonly fields under __readonly field", () => {
+    it("removes all fields present in __readonly field", () => {
       const workflowJson = prepareResourceJson(remoteWorkflow);
 
+      // Readonly fields should be removed
+      expect(workflowJson.environment).to.equal(undefined);
       expect(workflowJson.key).to.equal(undefined);
-      expect(workflowJson.active).to.equal(undefined);
       expect(workflowJson.active).to.equal(undefined);
       expect(workflowJson.valid).to.equal(undefined);
       expect(workflowJson.created_at).to.equal(undefined);
       expect(workflowJson.updated_at).to.equal(undefined);
 
-      expect(workflowJson.__readonly).to.eql({
-        key: "new-comment",
-        active: false,
-        valid: false,
-        created_at: "2022-12-31T12:00:00.000000Z",
-        updated_at: "2022-12-31T12:00:00.000000Z",
-      });
+      // Non-readonly fields should be preserved
+      expect(workflowJson.name).to.equal("New comment");
+      expect(workflowJson.steps).not.to.equal(undefined);
+
+      // __readonly itself should be removed
+      expect(workflowJson.__readonly).to.equal(undefined);
     });
 
     it("removes all __annotation fields", () => {
@@ -356,13 +356,13 @@ describe("lib/marshal/workflow/processor", () => {
                 ],
               },
             ],
-            __readonly: {
-              key: "new-comment",
-              active: false,
-              valid: false,
-              created_at: "2022-12-31T12:00:00.000000Z",
-              updated_at: "2022-12-31T12:00:00.000000Z",
-            },
+            // __readonly: {
+            //   key: "new-comment",
+            //   active: false,
+            //   valid: false,
+            //   created_at: "2022-12-31T12:00:00.000000Z",
+            //   updated_at: "2022-12-31T12:00:00.000000Z",
+            // },
           },
           [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
           [xpath("email_1/html_body.html")]:
@@ -493,13 +493,13 @@ describe("lib/marshal/workflow/processor", () => {
                 ],
               },
             ],
-            __readonly: {
-              key: "new-comment",
-              active: false,
-              valid: false,
-              created_at: "2022-12-31T12:00:00.000000Z",
-              updated_at: "2022-12-31T12:00:00.000000Z",
-            },
+            // __readonly: {
+            //   key: "new-comment",
+            //   active: false,
+            //   valid: false,
+            //   created_at: "2022-12-31T12:00:00.000000Z",
+            //   updated_at: "2022-12-31T12:00:00.000000Z",
+            // },
           },
           [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
           // And here..
@@ -605,13 +605,13 @@ describe("lib/marshal/workflow/processor", () => {
                 },
               },
             ],
-            __readonly: {
-              key: "new-comment",
-              active: false,
-              valid: false,
-              created_at: "2022-12-31T12:00:00.000000Z",
-              updated_at: "2022-12-31T12:00:00.000000Z",
-            },
+            // __readonly: {
+            //   key: "new-comment",
+            //   active: false,
+            //   valid: false,
+            //   created_at: "2022-12-31T12:00:00.000000Z",
+            //   updated_at: "2022-12-31T12:00:00.000000Z",
+            // },
           },
           [xpath("email_1/settings/pre_content.txt")]: "{{ foo }}",
           [xpath("email_1/visual_blocks.json")]: JSON.stringify(

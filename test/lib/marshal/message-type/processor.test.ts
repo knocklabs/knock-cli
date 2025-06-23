@@ -78,15 +78,15 @@ describe("lib/marshal/message-typel/processor", () => {
           ],
           description: "My little banner",
           "preview@": "preview.html",
-          __readonly: {
-            key: "banner",
-            valid: true,
-            owner: "user",
-            environment: "development",
-            semver: "0.0.1",
-            created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-10-02T19:24:48.714630Z",
-          },
+          // __readonly: {
+          //   key: "banner",
+          //   valid: true,
+          //   owner: "user",
+          //   environment: "development",
+          //   semver: "0.0.1",
+          //   created_at: "2023-09-18T18:32:18.398053Z",
+          //   updated_at: "2023-10-02T19:24:48.714630Z",
+          // },
         },
       });
     });
@@ -126,15 +126,15 @@ describe("lib/marshal/message-typel/processor", () => {
             ],
             description: "My little banner",
             "preview@": "foo/bar/baz.html",
-            __readonly: {
-              key: "banner",
-              valid: true,
-              owner: "user",
-              environment: "development",
-              semver: "0.0.1",
-              created_at: "2023-09-18T18:32:18.398053Z",
-              updated_at: "2023-10-02T19:24:48.714630Z",
-            },
+            // __readonly: {
+            //   key: "banner",
+            //   valid: true,
+            //   owner: "user",
+            //   environment: "development",
+            //   semver: "0.0.1",
+            //   created_at: "2023-09-18T18:32:18.398053Z",
+            //   updated_at: "2023-10-02T19:24:48.714630Z",
+            // },
           },
         });
       });

@@ -1,5 +1,6 @@
-import { AnyObj, split } from "@/lib/helpers/object.isomorphic";
-import { omitDeep } from "@/lib/helpers/object.isomorphic";
+import { omit } from "lodash";
+
+import { AnyObj, omitDeep } from "@/lib/helpers/object.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { EmailLayoutData } from "../email-layout";
@@ -23,10 +24,9 @@ type ResourceData<A extends WithAnnotation> =
 export const prepareResourceJson = (
   resource: ResourceData<WithAnnotation>,
 ): AnyObj => {
-  // Move read only field under the dedicated field "__readonly".
+  // Remove all fields marked as readonly in the schema annotation
   const readonlyFields = resource.__annotation?.readonly_fields || [];
-  const [readonly, remainder] = split(resource, readonlyFields);
-  const resourceJson = { ...remainder, __readonly: readonly };
+  const resourceJson = omit(resource, readonlyFields);
 
   // Strip out all schema annotations, so not to expose them to end users.
   return omitDeep(resourceJson, ["__annotation"]);

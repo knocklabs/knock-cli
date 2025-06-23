@@ -37,12 +37,12 @@ describe("lib/marshal/layout/processor", () => {
           footer_links: [{ text: "Link 1", url: "https://example.com" }],
           "html_layout@": "html_layout.html",
           "text_layout@": "text_layout.txt",
-          __readonly: {
-            key: "default",
-            environment: "development",
-            created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-10-02T19:24:48.714630Z",
-          },
+          // __readonly: {
+          //   key: "default",
+          //   environment: "development",
+          //   created_at: "2023-09-18T18:32:18.398053Z",
+          //   updated_at: "2023-10-02T19:24:48.714630Z",
+          // },
         },
       });
     });
@@ -69,12 +69,12 @@ describe("lib/marshal/layout/processor", () => {
             footer_links: [{ text: "Link 1", url: "https://example.com" }],
             "html_layout@": "foo/bar/layout.html",
             "text_layout@": "text_layout.txt",
-            __readonly: {
-              key: "default",
-              environment: "development",
-              created_at: "2023-09-18T18:32:18.398053Z",
-              updated_at: "2023-10-02T19:24:48.714630Z",
-            },
+            // __readonly: {
+            //   key: "default",
+            //   environment: "development",
+            //   created_at: "2023-09-18T18:32:18.398053Z",
+            //   updated_at: "2023-10-02T19:24:48.714630Z",
+            // },
           },
         });
       });

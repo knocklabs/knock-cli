@@ -145,14 +145,14 @@ describe("commands/partial/push", () => {
           description: "This is a default partial",
           icon_name: "Microphone",
           visual_block_enabled: true,
-          __readonly: {
-            valid: true,
-            type: "html",
-            key: "default",
-            environment: "development",
-            created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-09-29T19:08:04.129228Z",
-          },
+          // __readonly: {
+          //   valid: true,
+          //   type: "html",
+          //   key: "default",
+          //   environment: "development",
+          //   created_at: "2023-09-18T18:32:18.398053Z",
+          //   updated_at: "2023-09-29T19:08:04.129228Z",
+          // },
         });
       });
   });
