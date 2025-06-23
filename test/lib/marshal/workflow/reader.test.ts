@@ -279,26 +279,6 @@ describe("lib/marshal/workflow/reader", () => {
       });
     });
 
-    describe("with the withReadonlyField opt of true", () => {
-      it("reads workflow.json with the readonly field", async () => {
-        const [workflow] = await readWorkflowDir(workflowDirCtx, {
-          withReadonlyField: true,
-        });
-
-        expect(get(workflow, ["name"])).to.equal("My cool workflow");
-        expect(get(workflow, ["steps", 0, "ref"])).to.equal("email_1");
-
-        expect(get(workflow, ["__readonly"])).to.eql({
-          environment: "development",
-          key: "my-cool-workflow",
-          active: false,
-          valid: true,
-          created_at: "2023-02-16T02:49:12.163499Z",
-          updated_at: "2023-04-25T14:28:43.486084Z",
-        });
-      });
-    });
-
     describe("with the withExtractedFiles opt of true", () => {
       it("reads workflow.json with the readonly field", async () => {
         const [workflow] = await readWorkflowDir(workflowDirCtx, {

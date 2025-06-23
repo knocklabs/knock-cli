@@ -172,7 +172,6 @@ const joinExtractedFiles = async (
  */
 type ReadWorkflowDirOpts = {
   withExtractedFiles?: boolean;
-  withReadonlyField?: boolean;
 };
 
 export const readWorkflowDir = async (
@@ -180,7 +179,7 @@ export const readWorkflowDir = async (
   opts: ReadWorkflowDirOpts = {},
 ): Promise<ParseJsonResult | JoinExtractedFilesResult> => {
   const { abspath } = workflowDirCtx;
-  const { withExtractedFiles = false, withReadonlyField = false } = opts;
+  const { withExtractedFiles = false } = opts;
 
   const dirExists = await fs.pathExists(abspath);
   if (!dirExists) throw new Error(`${abspath} does not exist`);
@@ -194,9 +193,7 @@ export const readWorkflowDir = async (
 
   let [workflowJson] = result;
 
-  workflowJson = withReadonlyField
-    ? workflowJson
-    : omitDeep(workflowJson, ["__readonly"]);
+  workflowJson = omitDeep(workflowJson, ["__readonly"]);
 
   return withExtractedFiles
     ? joinExtractedFiles(workflowDirCtx, workflowJson)

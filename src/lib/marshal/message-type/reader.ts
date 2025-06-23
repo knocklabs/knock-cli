@@ -73,7 +73,6 @@ const readMessageTypeDirs = async (
  */
 type ReadMessageTypeDirOpts = {
   withExtractedFiles?: boolean;
-  withReadonlyField?: boolean;
 };
 
 export const readMessageTypeDir = async (
@@ -81,7 +80,7 @@ export const readMessageTypeDir = async (
   opts: ReadMessageTypeDirOpts = {},
 ): Promise<ParseJsonResult | JoinExtractedFilesResult> => {
   const { abspath } = messageTypeDirCtx;
-  const { withExtractedFiles = false, withReadonlyField = false } = opts;
+  const { withExtractedFiles = false } = opts;
 
   const dirExists = await fs.pathExists(abspath);
   if (!dirExists) throw new Error(`${abspath} does not exist`);
@@ -95,9 +94,7 @@ export const readMessageTypeDir = async (
 
   let [messageTypeJson] = result;
 
-  messageTypeJson = withReadonlyField
-    ? messageTypeJson
-    : omitDeep(messageTypeJson, ["__readonly"]);
+  messageTypeJson = omitDeep(messageTypeJson, ["__readonly"]);
 
   return withExtractedFiles
     ? joinExtractedFiles(messageTypeDirCtx, messageTypeJson)
