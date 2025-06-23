@@ -142,6 +142,8 @@ export const readEmailLayoutDir = async (
 
   let [layoutJson] = result;
 
+  // Read-only fields were previously stored under "__readonly" in layout JSON files.
+  // We remove these, in case we're reading a JSON file created by an older version of the CLI.
   layoutJson = omitDeep(layoutJson, ["__readonly"]);
 
   return withExtractedFiles

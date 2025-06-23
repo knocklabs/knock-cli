@@ -193,6 +193,8 @@ export const readWorkflowDir = async (
 
   let [workflowJson] = result;
 
+  // Read-only fields were previously stored under "__readonly" in workflow JSON files.
+  // We remove these, in case we're reading a JSON file created by an older version of the CLI.
   workflowJson = omitDeep(workflowJson, ["__readonly"]);
 
   return withExtractedFiles

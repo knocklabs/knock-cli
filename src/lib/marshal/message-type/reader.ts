@@ -94,6 +94,8 @@ export const readMessageTypeDir = async (
 
   let [messageTypeJson] = result;
 
+  // Read-only fields were previously stored under "__readonly" in message type JSON files.
+  // We remove these, in case we're reading a JSON file created by an older version of the CLI.
   messageTypeJson = omitDeep(messageTypeJson, ["__readonly"]);
 
   return withExtractedFiles

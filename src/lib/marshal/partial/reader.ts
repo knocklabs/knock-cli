@@ -83,6 +83,8 @@ export const readPartialDir = async (
 
   let [partialJson] = result;
 
+  // Read-only fields were previously stored under "__readonly" in partial JSON files.
+  // We remove these, in case we're reading a JSON file created by an older version of the CLI.
   partialJson = omitDeep(partialJson, ["__readonly"]);
 
   return withExtractedFiles
