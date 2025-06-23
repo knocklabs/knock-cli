@@ -6,30 +6,9 @@
  * reason there are some restrictions for which nodejs imports are allowed in
  * this module. See `.eslintrc.json` for more details.
  */
-import {
-  isNil,
-  isPlainObject,
-  merge as _merge,
-  omit,
-  omitBy,
-  pick,
-} from "lodash";
+import { isNil, isPlainObject, merge as _merge, omit, omitBy } from "lodash";
 
 export type AnyObj = Record<string, unknown>;
-
-/*
- * Split an object into two based on keys provided (similar to Map.split/2 in
- * Elixir)
- */
-export const split = (
-  obj: AnyObj,
-  paths: string | string[],
-): [AnyObj, AnyObj] => {
-  const picked = pick(obj, paths);
-  const remainder = omit(obj, paths);
-
-  return [picked, remainder];
-};
 
 /*
  * Omit a given key or keys recursively from an object or an array.

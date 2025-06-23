@@ -7,36 +7,9 @@ import {
   ObjPath,
   omitDeep,
   prune,
-  split,
 } from "@/lib/helpers/object.isomorphic";
 
 describe("lib/helpers/object", () => {
-  describe("split", () => {
-    describe("given a key to extract from an object", () => {
-      it("returns a tuple with a new extracted object plus the old object with a removed key", () => {
-        const obj = {
-          a: 1,
-          b: 2,
-          c: 3,
-        };
-        const result = split(obj, "a");
-        expect(result).to.eql([{ a: 1 }, { b: 2, c: 3 }]);
-      });
-    });
-
-    describe("given a list of keys to extract from an object", () => {
-      it("returns a tuple with a new extracted object plus the old object with removed keys", () => {
-        const obj = {
-          a: 1,
-          b: 2,
-          c: 3,
-        };
-        const result = split(obj, ["a", "b", "x"]);
-        expect(result).to.eql([{ a: 1, b: 2 }, { c: 3 }]);
-      });
-    });
-  });
-
   describe("omitDeep", () => {
     describe("given an object with target key(s) to remove", () => {
       it("returns an object with target key(s) removed recursively", () => {
