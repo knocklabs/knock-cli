@@ -156,7 +156,6 @@ describe("lib/marshal/message-type/reader", () => {
         expect(get(messageType, ["preview@"])).to.equal("preview.html");
         expect(get(messageType, ["preview"])).to.equal(undefined);
         expect(get(messageType, ["__readonly"])).to.equal(undefined);
-        expect(get(messageType, ["__readonly"])).to.equal(undefined);
       });
     });
 
