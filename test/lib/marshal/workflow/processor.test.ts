@@ -388,13 +388,6 @@ describe("lib/marshal/workflow/processor", () => {
               },
             },
           ],
-          __readonly: {
-            key: "new-comment",
-            active: false,
-            valid: false,
-            created_at: "2022-12-31T12:00:00.000000Z",
-            updated_at: "2022-12-31T12:00:00.000000Z",
-          },
         };
 
         const result = buildWorkflowDirBundle(remoteWorkflow, localWorkflow);
@@ -486,13 +479,6 @@ describe("lib/marshal/workflow/processor", () => {
                 ],
               },
             ],
-            // __readonly: {
-            //   key: "new-comment",
-            //   active: false,
-            //   valid: false,
-            //   created_at: "2022-12-31T12:00:00.000000Z",
-            //   updated_at: "2022-12-31T12:00:00.000000Z",
-            // },
           },
           [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
           // And here..
