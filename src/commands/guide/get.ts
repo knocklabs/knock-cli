@@ -6,6 +6,11 @@ import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
+import { formatConditions } from "@/lib/marshal/conditions";
+
+const formatStep = (step: ApiV1.GetGuideResp["steps"][number]) => {
+  return `${step.schema_key} (${step.schema_variant_key})`;
+};
 
 export default class GuideGet extends BaseCommand<typeof GuideGet> {
   static summary = "Display a single guide from an environment.";
@@ -72,6 +77,34 @@ export default class GuideGet extends BaseCommand<typeof GuideGet> {
      * Guide table
      */
 
+    const getStatusValue = () => {
+      const baseStatus = guide.active ? "Active" : "Inactive";
+
+      if (guide.active_from || guide.active_until) {
+        const fromText = guide.active_from
+          ? `from ${guide.active_from}`
+          : "immediately";
+        const untilText = guide.active_until
+          ? `until ${guide.active_until}`
+          : "with no end time";
+        return `${baseStatus} (${fromText} ${untilText})`;
+      }
+
+      return baseStatus;
+    };
+
+    const formatActivationRulesValue = () => {
+      if (
+        !guide.activation_location_rules ||
+        !Array.isArray(guide.activation_location_rules)
+      )
+        return "-";
+
+      return guide.activation_location_rules
+        .map(({ directive, pathname }) => `${directive} ${pathname}`)
+        .join(", ");
+    };
+
     const rows = [
       {
         key: "Name",
@@ -87,11 +120,29 @@ export default class GuideGet extends BaseCommand<typeof GuideGet> {
       },
       {
         key: "Status",
-        value: guide.active ? "Active" : "Inactive",
+        value: getStatusValue(),
       },
       {
         key: "Description",
         value: guide.description || "-",
+      },
+      {
+        key: "Content",
+        value: guide.steps.length > 0 ? formatStep(guide.steps[0]) : "-",
+      },
+      {
+        key: "Targeting",
+        value: guide.target_audience_id,
+      },
+      {
+        key: "Targeting conditions",
+        value: guide.target_property_conditions
+          ? formatConditions(guide.target_property_conditions)
+          : "-",
+      },
+      {
+        key: "Activation",
+        value: formatActivationRulesValue(),
       },
       {
         key: "Created at",
@@ -115,38 +166,5 @@ export default class GuideGet extends BaseCommand<typeof GuideGet> {
     });
 
     this.log("");
-
-    // Leading space is there intentionally to align the left padding.
-    if (guide.steps.length === 0) {
-      return ux.log(" This guide has no steps to display.");
-    }
-
-    /*
-     * Guide steps table
-     */
-
-    const steps = guide.steps.map((step, index) => ({ ...step, index }));
-
-    ux.table(steps, {
-      index: {
-        header: "Steps",
-        get: (step) => step.index + 1,
-      },
-      ref: {
-        header: "Ref",
-        minWidth: 18,
-        get: (step) => step.ref,
-      },
-      schema_key: {
-        header: "Schema",
-        minWidth: 15,
-        get: (step) => step.schema_key,
-      },
-      schema_variant_key: {
-        header: "Variant",
-        minWidth: 15,
-        get: (step) => step.schema_variant_key,
-      },
-    });
   }
 }

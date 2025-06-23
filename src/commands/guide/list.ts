@@ -68,11 +68,28 @@ export default class GuideList extends BaseCommand<typeof GuideList> {
       },
       type: {
         header: "Type",
-        get: (entry) => entry.type || "-",
+      },
+      channel: {
+        header: "Channel",
+        get: (entry) => entry.channel_key || "-",
       },
       status: {
         header: "Status",
-        get: (entry) => (entry.active ? "active" : "inactive"),
+        get: (entry) => {
+          const baseStatus = entry.active ? "Active" : "Inactive";
+
+          if (entry.active_from || entry.active_until) {
+            const fromText = entry.active_from
+              ? `from ${entry.active_from}`
+              : "immediately";
+            const untilText = entry.active_until
+              ? `until ${entry.active_until}`
+              : "with no end time";
+            return `${baseStatus} (${fromText} ${untilText})`;
+          }
+
+          return baseStatus;
+        },
       },
       description: {
         header: "Description",

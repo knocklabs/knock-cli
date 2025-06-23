@@ -1,5 +1,6 @@
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
+import { Conditions } from "../conditions";
 import { ContentSchemaField } from "../message-type";
 import { MaybeWithAnnotation } from "../shared/types";
 
@@ -23,6 +24,11 @@ export type GuideData<A extends MaybeWithAnnotation = unknown> = A & {
   channel_key: string | null;
   type: string | null;
   semver: string | null;
+  active_from?: string | null;
+  active_until?: string | null;
+  target_audience_id?: string | null;
+  target_property_conditions?: Conditions;
+  activation_location_rules?: AnyObj;
   steps: GuideStepData[];
   updated_at: string;
   created_at: string;
