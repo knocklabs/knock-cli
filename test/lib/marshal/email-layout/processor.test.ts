@@ -4,6 +4,7 @@ import {
   buildEmailLayoutDirBundle,
   EmailLayoutData,
 } from "@/lib/marshal/email-layout";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
@@ -25,6 +26,36 @@ const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
 };
 
 describe("lib/marshal/layout/processor", () => {
+  describe("prepareResourceJson", () => {
+    it("removes all fields present in __readonly field", () => {
+      const emailLayoutJson = prepareResourceJson(remoteEmailLayout);
+
+      // Readonly fields should be removed
+      expect(emailLayoutJson.environment).to.equal(undefined);
+      expect(emailLayoutJson.key).to.equal(undefined);
+      expect(emailLayoutJson.created_at).to.equal(undefined);
+      expect(emailLayoutJson.updated_at).to.equal(undefined);
+
+      // Non-readonly fields should be preserved
+      expect(emailLayoutJson.name).to.equal("Default");
+      expect(emailLayoutJson.html_layout).to.equal(
+        "<html><body><p> Example content </html></body><p>",
+      );
+      expect(emailLayoutJson.text_layout).to.equal("Text {{content}}");
+      expect(emailLayoutJson.footer_links).to.deep.equal([
+        { text: "Link 1", url: "https://example.com" },
+      ]);
+
+      // __readonly itself should be removed
+      expect(emailLayoutJson.__readonly).to.equal(undefined);
+    });
+
+    it("removes all __annotation fields", () => {
+      const emailLayoutJson = prepareResourceJson(remoteEmailLayout);
+      expect(emailLayoutJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildEmailLayoutDirBundle", () => {
     describe("given a fetched layout that has not been pulled before", () => {
       const result = buildEmailLayoutDirBundle(remoteEmailLayout);

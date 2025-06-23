@@ -5,6 +5,7 @@ import {
   PartialData,
   PartialType,
 } from "@/lib/marshal/partial";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remotePartial: PartialData<WithAnnotation> = {
@@ -34,6 +35,36 @@ const remotePartial: PartialData<WithAnnotation> = {
 };
 
 describe("lib/marshal/partial/processor", () => {
+  describe("prepareResourceJson", () => {
+    it("removes all fields present in __readonly field", () => {
+      const partialJson = prepareResourceJson(remotePartial);
+
+      // Readonly fields should be removed
+      expect(partialJson.key).to.equal(undefined);
+      expect(partialJson.valid).to.equal(undefined);
+      expect(partialJson.type).to.equal(undefined);
+      expect(partialJson.environment).to.equal(undefined);
+      expect(partialJson.created_at).to.equal(undefined);
+      expect(partialJson.updated_at).to.equal(undefined);
+
+      // Non-readonly fields should be preserved
+      expect(partialJson.name).to.equal("Default");
+      expect(partialJson.visual_block_enabled).to.equal(true);
+      expect(partialJson.content).to.equal(
+        "<html><body><p> Example content </html></body><p>",
+      );
+      expect(partialJson.description).to.equal("Default HTML partial");
+
+      // __readonly itself should be removed
+      expect(partialJson.__readonly).to.equal(undefined);
+    });
+
+    it("removes all __annotation fields", () => {
+      const partialJson = prepareResourceJson(remotePartial);
+      expect(partialJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildPartialDirBundle", () => {
     describe("given a fetched partial that has not been pulled before", () => {
       const result = buildPartialDirBundle(remotePartial);

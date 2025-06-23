@@ -4,6 +4,7 @@ import {
   buildMessageTypeDirBundle,
   MessageTypeData,
 } from "@/lib/marshal/message-type";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remoteMessageType: MessageTypeData<WithAnnotation> = {
@@ -51,6 +52,51 @@ const remoteMessageType: MessageTypeData<WithAnnotation> = {
 };
 
 describe("lib/marshal/message-typel/processor", () => {
+  describe("prepareResourceJson", () => {
+    it("removes all fields present in __readonly field", () => {
+      const messageTypeJson = prepareResourceJson(remoteMessageType);
+
+      // Readonly fields should be removed
+      expect(messageTypeJson.key).to.equal(undefined);
+      expect(messageTypeJson.valid).to.equal(undefined);
+      expect(messageTypeJson.owner).to.equal(undefined);
+      expect(messageTypeJson.environment).to.equal(undefined);
+      expect(messageTypeJson.semver).to.equal(undefined);
+      expect(messageTypeJson.created_at).to.equal(undefined);
+      expect(messageTypeJson.updated_at).to.equal(undefined);
+
+      // Non-readonly fields should be preserved
+      expect(messageTypeJson.name).to.equal("Banner");
+      expect(messageTypeJson.variants).to.deep.equal([
+        {
+          key: "default",
+          name: "Default",
+          fields: [
+            {
+              type: "text",
+              key: "title",
+              label: "Title",
+              settings: {
+                required: true,
+                default: "",
+              },
+            },
+          ],
+        },
+      ]);
+      expect(messageTypeJson.preview).to.equal("<div>{{ title }}</div>");
+      expect(messageTypeJson.description).to.equal("My little banner");
+
+      // __readonly itself should be removed
+      expect(messageTypeJson.__readonly).to.equal(undefined);
+    });
+
+    it("removes all __annotation fields", () => {
+      const messageTypeJson = prepareResourceJson(remoteMessageType);
+      expect(messageTypeJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildMessageTypeDirBundle", () => {
     describe("given a fetched message type that has not been pulled before", () => {
       const result = buildMessageTypeDirBundle(remoteMessageType);
