@@ -134,13 +134,6 @@ describe("commands/workflow/push", () => {
         expect(workflowJson).to.eql({
           name: "New comment",
           steps: [],
-          // __readonly: {
-          //   key: "new-comment",
-          //   active: false,
-          //   valid: false,
-          //   created_at: "2022-12-31T12:00:00.000000Z",
-          //   updated_at: "2022-12-31T12:00:00.000000Z",
-          // },
         });
       });
   });
