@@ -4,13 +4,18 @@ import { Conditions } from "../conditions";
 import { ContentSchemaField } from "../message-type";
 import { MaybeWithAnnotation } from "../shared/types";
 
-type GuideStepData = {
+export type GuideStepData = {
   ref: string;
   name?: string;
   schema_key: string;
   schema_semver: string;
   schema_variant_key: string;
   fields: ContentSchemaField[];
+};
+
+export type GuideActivationLocationRule = {
+  directive: "allow" | "block";
+  pathname: string;
 };
 
 // Guide data from the API.
@@ -26,9 +31,9 @@ export type GuideData<A extends MaybeWithAnnotation = unknown> = A & {
   semver: string | null;
   active_from?: string | null;
   active_until?: string | null;
-  target_audience_id?: string | null;
+  target_audience_key?: string | null;
   target_property_conditions?: Conditions;
-  activation_location_rules?: AnyObj;
+  activation_location_rules?: GuideActivationLocationRule[];
   steps: GuideStepData[];
   updated_at: string;
   created_at: string;
