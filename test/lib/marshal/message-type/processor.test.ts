@@ -85,7 +85,6 @@ describe("lib/marshal/message-typel/processor", () => {
             environment: "development",
             semver: "0.0.1",
             created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-10-02T19:24:48.714630Z",
           },
         },
       });
@@ -133,7 +132,6 @@ describe("lib/marshal/message-typel/processor", () => {
               environment: "development",
               semver: "0.0.1",
               created_at: "2023-09-18T18:32:18.398053Z",
-              updated_at: "2023-10-02T19:24:48.714630Z",
             },
           },
         });

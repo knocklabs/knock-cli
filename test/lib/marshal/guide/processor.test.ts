@@ -74,7 +74,6 @@ describe("lib/marshal/guide/processor", () => {
             active: true,
             environment: "development",
             created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-10-02T19:24:48.714630Z",
           },
         },
       });

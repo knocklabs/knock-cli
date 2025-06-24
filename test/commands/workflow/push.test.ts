@@ -139,7 +139,6 @@ describe("commands/workflow/push", () => {
             active: false,
             valid: false,
             created_at: "2022-12-31T12:00:00.000000Z",
-            updated_at: "2022-12-31T12:00:00.000000Z",
           },
         });
       });

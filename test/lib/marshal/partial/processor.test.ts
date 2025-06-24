@@ -51,7 +51,6 @@ describe("lib/marshal/partial/processor", () => {
             type: PartialType.Html,
             environment: "development",
             created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-10-02T19:24:48.714630Z",
           },
         },
       });
@@ -80,7 +79,6 @@ describe("lib/marshal/partial/processor", () => {
               type: PartialType.Html,
               environment: "development",
               created_at: "2023-09-18T18:32:18.398053Z",
-              updated_at: "2023-10-02T19:24:48.714630Z",
             },
           },
         });

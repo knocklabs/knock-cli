@@ -151,7 +151,6 @@ describe("commands/partial/push", () => {
             key: "default",
             environment: "development",
             created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-09-29T19:08:04.129228Z",
           },
         });
       });

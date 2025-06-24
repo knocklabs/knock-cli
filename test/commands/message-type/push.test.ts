@@ -192,6 +192,48 @@ describe("commands/message-type/push", () => {
           );
         },
       );
+
+    setupWithStub({ data: { message_type: mockMessageTypeData } })
+      .stdout()
+      .command(["message-type push", "banner"])
+      .it(
+        "writes the upserted message type data into message_type.json",
+        () => {
+          const abspath = path.resolve(sandboxDir, messageTypeJsonFile);
+          const messageTypeJson = fs.readJsonSync(abspath);
+
+          expect(messageTypeJson).to.eql({
+            name: "Banner",
+            description: "My little banner",
+            variants: [
+              {
+                key: "default",
+                name: "Default",
+                fields: [
+                  {
+                    type: "text",
+                    key: "title",
+                    label: "Title",
+                    settings: {
+                      required: true,
+                      default: "",
+                    },
+                  },
+                ],
+              },
+            ],
+            "preview@": "preview.html",
+            __readonly: {
+              key: "banner",
+              valid: true,
+              owner: "user",
+              environment: "development",
+              semver: "0.0.1",
+              created_at: "2023-09-18T18:32:18.398053Z",
+            },
+          });
+        },
+      );
   });
 
   describe("given a message_type.json file with syntax errors", () => {
