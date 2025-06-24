@@ -11,6 +11,7 @@ import {
   paramsForPageAction,
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
+import { formatStatusWithSchedule } from "@/lib/marshal/guide/helpers";
 
 export default class GuideList extends BaseCommand<typeof GuideList> {
   static summary = "Display all guides for an environment.";
@@ -70,9 +71,13 @@ export default class GuideList extends BaseCommand<typeof GuideList> {
         header: "Type",
         get: (entry) => entry.type || "-",
       },
+      channel: {
+        header: "Channel",
+        get: (entry) => entry.channel_key || "-",
+      },
       status: {
         header: "Status",
-        get: (entry) => (entry.active ? "active" : "inactive"),
+        get: (entry) => formatStatusWithSchedule(entry),
       },
       description: {
         header: "Description",

@@ -44,7 +44,7 @@ type ButtonField = BaseField & {
   action: TextField;
 };
 
-export type ContentSchemaField =
+type ContentSchemaField =
   | TextField
   | TextareaField
   | MarkdownField
