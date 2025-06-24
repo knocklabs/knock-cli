@@ -1,7 +1,6 @@
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import { Conditions } from "../conditions";
-import { ContentSchemaField } from "../message-type";
 import { MaybeWithAnnotation } from "../shared/types";
 
 export type GuideStepData = {
@@ -10,7 +9,7 @@ export type GuideStepData = {
   schema_key: string;
   schema_semver: string;
   schema_variant_key: string;
-  fields: ContentSchemaField[];
+  values: AnyObj;
 };
 
 export type GuideActivationLocationRule = {
