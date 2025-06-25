@@ -12,7 +12,7 @@ export type EmailLayoutData<A extends MaybeWithAnnotation = unknown> = A & {
   environment: string;
   updated_at: string;
   created_at: string;
-  sha?: string;
+  sha: string;
 };
 
 export type EmailLayoutInput = AnyObj & {
