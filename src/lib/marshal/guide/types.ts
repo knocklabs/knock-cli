@@ -37,6 +37,7 @@ export type GuideData<A extends MaybeWithAnnotation = unknown> = A & {
   updated_at: string;
   created_at: string;
   environment: string;
+  sha: string;
 };
 
 export type GuideInput = AnyObj & {

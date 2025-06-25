@@ -30,12 +30,13 @@ const mockGuideData: GuideData<WithAnnotation> = {
       schema_key: "banner",
       schema_semver: "0.0.1",
       schema_variant_key: "default",
-      fields: [],
+      values: {},
     },
   ],
   updated_at: "2022-12-31T12:00:00.000000Z",
   created_at: "2022-12-31T12:00:00.000000Z",
   environment: "development",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {},
     readonly_fields: [
@@ -45,6 +46,7 @@ const mockGuideData: GuideData<WithAnnotation> = {
       "environment",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };

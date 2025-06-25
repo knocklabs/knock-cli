@@ -137,6 +137,7 @@ export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {
   trigger_data_json_schema?: Record<string, any>;
   created_at: string;
   updated_at: string;
+  sha: string;
 };
 
 export type WorkflowInput = AnyObj & {

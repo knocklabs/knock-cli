@@ -4,6 +4,7 @@ import {
   buildEmailLayoutDirBundle,
   EmailLayoutData,
 } from "@/lib/marshal/email-layout";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
@@ -15,16 +16,40 @@ const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
   environment: "development",
   updated_at: "2023-10-02T19:24:48.714630Z",
   created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {
       html_layout: { default: true, file_ext: "html" },
       text_layout: { default: true, file_ext: "txt" },
     },
-    readonly_fields: ["key", "environment", "created_at", "updated_at"],
+    readonly_fields: ["key", "environment", "created_at", "updated_at", "sha"],
   },
 };
 
 describe("lib/marshal/layout/processor", () => {
+  describe("prepareResourceJson", () => {
+    it("moves over email layout's readonly fields under __readonly field", () => {
+      const emailLayoutJson = prepareResourceJson(remoteEmailLayout);
+
+      expect(emailLayoutJson.key).to.equal(undefined);
+      expect(emailLayoutJson.environment).to.equal(undefined);
+      expect(emailLayoutJson.created_at).to.equal(undefined);
+      expect(emailLayoutJson.updated_at).to.equal(undefined);
+      expect(emailLayoutJson.sha).to.equal(undefined);
+
+      expect(emailLayoutJson.__readonly).to.eql({
+        key: "default",
+        environment: "development",
+        created_at: "2023-09-18T18:32:18.398053Z",
+      });
+    });
+
+    it("removes the __annotation field", () => {
+      const emailLayoutJson = prepareResourceJson(remoteEmailLayout);
+      expect(emailLayoutJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildEmailLayoutDirBundle", () => {
     describe("given a fetched layout that has not been pulled before", () => {
       const result = buildEmailLayoutDirBundle(remoteEmailLayout);
@@ -41,7 +66,6 @@ describe("lib/marshal/layout/processor", () => {
             key: "default",
             environment: "development",
             created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-10-02T19:24:48.714630Z",
           },
         },
       });
@@ -73,7 +97,6 @@ describe("lib/marshal/layout/processor", () => {
               key: "default",
               environment: "development",
               created_at: "2023-09-18T18:32:18.398053Z",
-              updated_at: "2023-10-02T19:24:48.714630Z",
             },
           },
         });
