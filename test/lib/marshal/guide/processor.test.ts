@@ -45,7 +45,9 @@ const remoteGuide: GuideData<WithAnnotation> = {
 
 describe("lib/marshal/guide/processor", () => {
   describe("prepareResourceJson", () => {
-    // TODO
+    it("moves over guide's readonly fields under __readonly field", () => {
+      // TODO
+    });
 
     it("removes the __annotation field", () => {
       const guideJson = prepareResourceJson(remoteGuide);

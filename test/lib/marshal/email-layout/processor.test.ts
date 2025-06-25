@@ -27,7 +27,9 @@ const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
 
 describe("lib/marshal/layout/processor", () => {
   describe("prepareResourceJson", () => {
-    // TODO
+    it("moves over email layout's readonly fields under __readonly field", () => {
+      // TODO
+    });
 
     it("removes the __annotation field", () => {
       const emailLayoutJson = prepareResourceJson(remoteEmailLayout);

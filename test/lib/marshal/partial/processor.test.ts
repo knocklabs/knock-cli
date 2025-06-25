@@ -36,7 +36,9 @@ const remotePartial: PartialData<WithAnnotation> = {
 
 describe("lib/marshal/partial/processor", () => {
   describe("prepareResourceJson", () => {
-    // TODO
+    it("moves over partial's readonly fields under __readonly field", () => {
+      // TODO
+    });
 
     it("removes the __annotation field", () => {
       const partialJson = prepareResourceJson(remotePartial);
