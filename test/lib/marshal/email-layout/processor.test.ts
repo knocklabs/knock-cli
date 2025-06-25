@@ -28,7 +28,18 @@ const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
 describe("lib/marshal/layout/processor", () => {
   describe("prepareResourceJson", () => {
     it("moves over email layout's readonly fields under __readonly field", () => {
-      // TODO
+      const emailLayoutJson = prepareResourceJson(remoteEmailLayout);
+
+      expect(emailLayoutJson.key).to.equal(undefined);
+      expect(emailLayoutJson.environment).to.equal(undefined);
+      expect(emailLayoutJson.created_at).to.equal(undefined);
+      expect(emailLayoutJson.updated_at).to.equal(undefined);
+
+      expect(emailLayoutJson.__readonly).to.eql({
+        key: "default",
+        environment: "development",
+        created_at: "2023-09-18T18:32:18.398053Z",
+      });
     });
 
     it("removes the __annotation field", () => {

@@ -37,7 +37,22 @@ const remotePartial: PartialData<WithAnnotation> = {
 describe("lib/marshal/partial/processor", () => {
   describe("prepareResourceJson", () => {
     it("moves over partial's readonly fields under __readonly field", () => {
-      // TODO
+      const partialJson = prepareResourceJson(remotePartial);
+
+      expect(partialJson.key).to.equal(undefined);
+      expect(partialJson.valid).to.equal(undefined);
+      expect(partialJson.type).to.equal(undefined);
+      expect(partialJson.environment).to.equal(undefined);
+      expect(partialJson.created_at).to.equal(undefined);
+      expect(partialJson.updated_at).to.equal(undefined);
+
+      expect(partialJson.__readonly).to.eql({
+        key: "default",
+        valid: true,
+        type: PartialType.Html,
+        environment: "development",
+        created_at: "2023-09-18T18:32:18.398053Z",
+      });
     });
 
     it("removes the __annotation field", () => {

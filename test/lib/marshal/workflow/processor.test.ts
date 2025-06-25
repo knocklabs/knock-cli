@@ -174,7 +174,6 @@ describe("lib/marshal/workflow/processor", () => {
 
       expect(workflowJson.key).to.equal(undefined);
       expect(workflowJson.active).to.equal(undefined);
-      expect(workflowJson.active).to.equal(undefined);
       expect(workflowJson.valid).to.equal(undefined);
       expect(workflowJson.created_at).to.equal(undefined);
       expect(workflowJson.updated_at).to.equal(undefined);

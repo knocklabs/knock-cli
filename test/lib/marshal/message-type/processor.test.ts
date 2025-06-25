@@ -54,7 +54,24 @@ const remoteMessageType: MessageTypeData<WithAnnotation> = {
 describe("lib/marshal/message-typel/processor", () => {
   describe("prepareResourceJson", () => {
     it("moves over message type's readonly fields under __readonly field", () => {
-      // TODO
+      const messageTypeJson = prepareResourceJson(remoteMessageType);
+
+      expect(messageTypeJson.key).to.equal(undefined);
+      expect(messageTypeJson.valid).to.equal(undefined);
+      expect(messageTypeJson.owner).to.equal(undefined);
+      expect(messageTypeJson.environment).to.equal(undefined);
+      expect(messageTypeJson.semver).to.equal(undefined);
+      expect(messageTypeJson.created_at).to.equal(undefined);
+      expect(messageTypeJson.updated_at).to.equal(undefined);
+
+      expect(messageTypeJson.__readonly).to.eql({
+        key: "banner",
+        valid: true,
+        owner: "user",
+        environment: "development",
+        semver: "0.0.1",
+        created_at: "2023-09-18T18:32:18.398053Z",
+      });
     });
 
     it("removes the __annotation field", () => {

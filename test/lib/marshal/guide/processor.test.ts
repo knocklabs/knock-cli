@@ -46,7 +46,22 @@ const remoteGuide: GuideData<WithAnnotation> = {
 describe("lib/marshal/guide/processor", () => {
   describe("prepareResourceJson", () => {
     it("moves over guide's readonly fields under __readonly field", () => {
-      // TODO
+      const guideJson = prepareResourceJson(remoteGuide);
+
+      expect(guideJson.key).to.equal(undefined);
+      expect(guideJson.active).to.equal(undefined);
+      expect(guideJson.valid).to.equal(undefined);
+      expect(guideJson.environment).to.equal(undefined);
+      expect(guideJson.created_at).to.equal(undefined);
+      expect(guideJson.updated_at).to.equal(undefined);
+
+      expect(guideJson.__readonly).to.eql({
+        key: "success-banner",
+        active: true,
+        valid: true,
+        environment: "development",
+        created_at: "2023-09-18T18:32:18.398053Z",
+      });
     });
 
     it("removes the __annotation field", () => {
