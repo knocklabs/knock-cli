@@ -21,6 +21,7 @@ type ResourceData<A extends WithAnnotation> =
   | MessageTypeData<A>
   | GuideData<A>;
 
+// sha and updated_at fields change too frequently, so we exclude them from resource JSON files
 const REMOVED_READONLY_FIELDS = ["sha", "updated_at"];
 
 export const prepareResourceJson = (
