@@ -47,6 +47,7 @@ describe("lib/marshal/partial/processor", () => {
       expect(partialJson.environment).to.equal(undefined);
       expect(partialJson.created_at).to.equal(undefined);
       expect(partialJson.updated_at).to.equal(undefined);
+      expect(partialJson.sha).to.equal(undefined);
 
       expect(partialJson.__readonly).to.eql({
         key: "default",

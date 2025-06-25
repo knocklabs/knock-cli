@@ -56,6 +56,7 @@ describe("lib/marshal/guide/processor", () => {
       expect(guideJson.environment).to.equal(undefined);
       expect(guideJson.created_at).to.equal(undefined);
       expect(guideJson.updated_at).to.equal(undefined);
+      expect(guideJson.sha).to.equal(undefined);
 
       expect(guideJson.__readonly).to.eql({
         key: "success-banner",

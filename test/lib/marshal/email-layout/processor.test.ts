@@ -35,6 +35,7 @@ describe("lib/marshal/layout/processor", () => {
       expect(emailLayoutJson.environment).to.equal(undefined);
       expect(emailLayoutJson.created_at).to.equal(undefined);
       expect(emailLayoutJson.updated_at).to.equal(undefined);
+      expect(emailLayoutJson.sha).to.equal(undefined);
 
       expect(emailLayoutJson.__readonly).to.eql({
         key: "default",

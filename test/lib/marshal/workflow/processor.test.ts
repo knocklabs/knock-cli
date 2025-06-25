@@ -179,6 +179,7 @@ describe("lib/marshal/workflow/processor", () => {
       expect(workflowJson.valid).to.equal(undefined);
       expect(workflowJson.created_at).to.equal(undefined);
       expect(workflowJson.updated_at).to.equal(undefined);
+      expect(workflowJson.sha).to.equal(undefined);
 
       expect(workflowJson.__readonly).to.eql({
         key: "new-comment",

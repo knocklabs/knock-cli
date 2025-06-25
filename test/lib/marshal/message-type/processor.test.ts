@@ -65,6 +65,7 @@ describe("lib/marshal/message-typel/processor", () => {
       expect(messageTypeJson.semver).to.equal(undefined);
       expect(messageTypeJson.created_at).to.equal(undefined);
       expect(messageTypeJson.updated_at).to.equal(undefined);
+      expect(messageTypeJson.sha).to.equal(undefined);
 
       expect(messageTypeJson.__readonly).to.eql({
         key: "banner",
