@@ -30,12 +30,13 @@ const mockEmailLayoutData: EmailLayoutData<WithAnnotation> = {
   environment: "development",
   updated_at: "2023-09-29T19:08:04.129228Z",
   created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {
       html_layout: { default: true, file_ext: "html" },
       text_layout: { default: true, file_ext: "txt" },
     },
-    readonly_fields: ["environment", "key", "created_at", "updated_at"],
+    readonly_fields: ["environment", "key", "created_at", "updated_at", "sha"],
   },
 };
 

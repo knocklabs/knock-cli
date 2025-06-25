@@ -33,6 +33,7 @@ const mockPartialData: PartialData<WithAnnotation> = {
   environment: "development",
   updated_at: "2023-09-29T19:08:04.129228Z",
   created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {
       content: { default: true, file_ext: "txt" },
@@ -44,6 +45,7 @@ const mockPartialData: PartialData<WithAnnotation> = {
       "valid",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };
