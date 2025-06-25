@@ -16,12 +16,13 @@ const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
   environment: "development",
   updated_at: "2023-10-02T19:24:48.714630Z",
   created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {
       html_layout: { default: true, file_ext: "html" },
       text_layout: { default: true, file_ext: "txt" },
     },
-    readonly_fields: ["key", "environment", "created_at", "updated_at"],
+    readonly_fields: ["key", "environment", "created_at", "updated_at", "sha"],
   },
 };
 

@@ -19,6 +19,7 @@ const remotePartial: PartialData<WithAnnotation> = {
   environment: "development",
   updated_at: "2023-10-02T19:24:48.714630Z",
   created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {
       content: { default: true, file_ext: "txt" },
@@ -30,6 +31,7 @@ const remotePartial: PartialData<WithAnnotation> = {
       "environment",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };

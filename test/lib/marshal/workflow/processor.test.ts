@@ -154,6 +154,7 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
   ],
   created_at: "2022-12-31T12:00:00.000000Z",
   updated_at: "2022-12-31T12:00:00.000000Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {},
     readonly_fields: [
@@ -163,6 +164,7 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
       "valid",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };

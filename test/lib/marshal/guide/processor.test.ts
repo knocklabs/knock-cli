@@ -30,6 +30,7 @@ const remoteGuide: GuideData<WithAnnotation> = {
   ],
   updated_at: "2023-10-02T19:24:48.714630Z",
   created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {},
     readonly_fields: [
@@ -39,6 +40,7 @@ const remoteGuide: GuideData<WithAnnotation> = {
       "environment",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };
