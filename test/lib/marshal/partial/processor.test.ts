@@ -5,6 +5,7 @@ import {
   PartialData,
   PartialType,
 } from "@/lib/marshal/partial";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remotePartial: PartialData<WithAnnotation> = {
@@ -34,6 +35,15 @@ const remotePartial: PartialData<WithAnnotation> = {
 };
 
 describe("lib/marshal/partial/processor", () => {
+  describe("prepareResourceJson", () => {
+    // TODO
+
+    it("removes the __annotation field", () => {
+      const partialJson = prepareResourceJson(remotePartial);
+      expect(partialJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildPartialDirBundle", () => {
     describe("given a fetched partial that has not been pulled before", () => {
       const result = buildPartialDirBundle(remotePartial);

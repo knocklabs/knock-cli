@@ -4,6 +4,7 @@ import {
   buildMessageTypeDirBundle,
   MessageTypeData,
 } from "@/lib/marshal/message-type";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remoteMessageType: MessageTypeData<WithAnnotation> = {
@@ -51,6 +52,15 @@ const remoteMessageType: MessageTypeData<WithAnnotation> = {
 };
 
 describe("lib/marshal/message-typel/processor", () => {
+  describe("prepareResourceJson", () => {
+    // TODO
+
+    it("removes the __annotation field", () => {
+      const messageTypeJson = prepareResourceJson(remoteMessageType);
+      expect(messageTypeJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildMessageTypeDirBundle", () => {
     describe("given a fetched message type that has not been pulled before", () => {
       const result = buildMessageTypeDirBundle(remoteMessageType);

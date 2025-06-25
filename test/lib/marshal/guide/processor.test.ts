@@ -1,6 +1,7 @@
 import { expect } from "chai";
 
 import { buildGuideDirBundle, GuideData } from "@/lib/marshal/guide";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remoteGuide: GuideData<WithAnnotation> = {
@@ -43,6 +44,15 @@ const remoteGuide: GuideData<WithAnnotation> = {
 };
 
 describe("lib/marshal/guide/processor", () => {
+  describe("prepareResourceJson", () => {
+    // TODO
+
+    it("removes the __annotation field", () => {
+      const guideJson = prepareResourceJson(remoteGuide);
+      expect(guideJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildGuideDirBundle", () => {
     describe("given a fetched guide that has not been pulled before", () => {
       const result = buildGuideDirBundle(remoteGuide);

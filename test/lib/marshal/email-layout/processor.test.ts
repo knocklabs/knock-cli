@@ -4,6 +4,7 @@ import {
   buildEmailLayoutDirBundle,
   EmailLayoutData,
 } from "@/lib/marshal/email-layout";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
@@ -25,6 +26,15 @@ const remoteEmailLayout: EmailLayoutData<WithAnnotation> = {
 };
 
 describe("lib/marshal/layout/processor", () => {
+  describe("prepareResourceJson", () => {
+    // TODO
+
+    it("removes the __annotation field", () => {
+      const emailLayoutJson = prepareResourceJson(remoteEmailLayout);
+      expect(emailLayoutJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildEmailLayoutDirBundle", () => {
     describe("given a fetched layout that has not been pulled before", () => {
       const result = buildEmailLayoutDirBundle(remoteEmailLayout);
