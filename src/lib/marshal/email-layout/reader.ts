@@ -35,7 +35,6 @@ export type EmailLayoutDirData = EmailLayoutDirContext & {
 
 type ReadLayoutDirOpts = {
   withExtractedFiles?: boolean;
-  withReadonlyField?: boolean;
 };
 
 /*
@@ -130,7 +129,7 @@ export const readEmailLayoutDir = async (
   opts: ReadLayoutDirOpts = {},
 ): Promise<ParseJsonResult | JoinExtractedFilesResult> => {
   const { abspath } = layoutDirCtx;
-  const { withExtractedFiles = false, withReadonlyField = false } = opts;
+  const { withExtractedFiles = false } = opts;
 
   const dirExists = await fs.pathExists(abspath);
   if (!dirExists) throw new Error(`${abspath} does not exist`);
@@ -143,9 +142,7 @@ export const readEmailLayoutDir = async (
 
   let [layoutJson] = result;
 
-  layoutJson = withReadonlyField
-    ? layoutJson
-    : omitDeep(layoutJson, ["__readonly"]);
+  layoutJson = omitDeep(layoutJson, ["__readonly"]);
 
   return withExtractedFiles
     ? joinExtractedFiles(layoutDirCtx, layoutJson)

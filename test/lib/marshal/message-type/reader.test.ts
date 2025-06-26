@@ -159,29 +159,6 @@ describe("lib/marshal/message-type/reader", () => {
       });
     });
 
-    describe("with the withReadonlyField opt of true", () => {
-      it("reads message_type.json with the readonly field", async () => {
-        const [messageType] = await readMessageTypeDir(messageTypeDirCtx, {
-          withReadonlyField: true,
-        });
-
-        expect(get(messageType, ["name"])).to.equal("Modal");
-        expect(get(messageType, ["preview@"])).to.equal("preview.html");
-        expect(get(messageType, ["preview"])).to.equal(undefined);
-
-        expect(get(messageType, ["__readonly"])).to.eql({
-          key: "modal",
-          valid: true,
-          owner: "system",
-          environment: "development",
-          semver: "0.0.4",
-          created_at: "2024-09-17T23:28:39.939366Z",
-          updated_at: "2024-10-18T06:43:37.942727Z",
-          sha: "OdCrRlz43e2y0ZAHNqyIkp/Vva/xSK1shKF4i8vXx3Y=",
-        });
-      });
-    });
-
     describe("with the withExtractedFiles opt of true", () => {
       it("reads message_type.json with the extracted fields inlined", async () => {
         const [messageType] = await readMessageTypeDir(messageTypeDirCtx, {

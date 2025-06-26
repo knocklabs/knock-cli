@@ -62,7 +62,6 @@ const readPartialDirs = async (
  */
 type ReadPartialDirOpts = {
   withExtractedFiles?: boolean;
-  withReadonlyField?: boolean;
 };
 
 export const readPartialDir = async (
@@ -70,7 +69,7 @@ export const readPartialDir = async (
   opts: ReadPartialDirOpts = {},
 ): Promise<ParseJsonResult | JoinExtractedFilesResult> => {
   const { abspath } = partialDirCtx;
-  const { withExtractedFiles = false, withReadonlyField = false } = opts;
+  const { withExtractedFiles = false } = opts;
 
   const dirExists = await fs.pathExists(abspath);
   if (!dirExists) throw new Error(`${abspath} does not exist`);
@@ -84,9 +83,7 @@ export const readPartialDir = async (
 
   let [partialJson] = result;
 
-  partialJson = withReadonlyField
-    ? partialJson
-    : omitDeep(partialJson, ["__readonly"]);
+  partialJson = omitDeep(partialJson, ["__readonly"]);
 
   return withExtractedFiles
     ? joinExtractedFiles(partialDirCtx, partialJson)
