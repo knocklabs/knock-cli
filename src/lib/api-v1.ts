@@ -7,6 +7,7 @@ import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import * as Commit from "@/lib/marshal/commit";
 import * as EmailLayout from "@/lib/marshal/email-layout";
+import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
@@ -408,6 +409,77 @@ export default class ApiV1 {
     });
   }
 
+  // By resources: Guides
+
+  async listGuides<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListGuideResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      ...toPageParams(flags),
+    });
+
+    return this.get("/guides", { params });
+  }
+
+  async getGuide<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetGuideResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/guides/${args.guideKey}`, { params });
+  }
+
+  async validateGuide(
+    { flags }: Props,
+    guide: Guide.GuideInput,
+  ): Promise<AxiosResponse<ValidateGuideResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+    const data = { guide };
+
+    return this.put(`/guides/${guide.key}/validate`, data, {
+      params,
+    });
+  }
+
+  async upsertGuide<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    guide: Guide.GuideInput,
+  ): Promise<AxiosResponse<UpsertGuideResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+    });
+    const data = { guide };
+
+    return this.put(`/guides/${guide.key}`, data, { params });
+  }
+
+  async activateGuide({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ActivateGuideResp>> {
+    const params = prune({
+      environment: flags.environment,
+      status: flags.status,
+      from: flags.from,
+      until: flags.until,
+    });
+
+    return this.put(`/guides/${args.guideKey}/activate`, {}, { params });
+  }
+
   // By methods:
 
   async get(
@@ -541,5 +613,26 @@ export type UpsertMessageTypeResp<A extends MaybeWithAnnotation = unknown> = {
 
 export type ValidateMessageTypeResp = {
   message_type?: MessageType.MessageTypeData;
+  errors?: InputError[];
+};
+
+export type ListGuideResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Guide.GuideData<A>>;
+
+export type GetGuideResp<A extends MaybeWithAnnotation = unknown> =
+  Guide.GuideData<A>;
+
+export type ValidateGuideResp = {
+  guide?: Guide.GuideData;
+  errors?: InputError[];
+};
+
+export type UpsertGuideResp<A extends MaybeWithAnnotation = unknown> = {
+  guide?: Guide.GuideData<A>;
+  errors?: InputError[];
+};
+
+export type ActivateGuideResp = {
+  guide?: Guide.GuideData;
   errors?: InputError[];
 };

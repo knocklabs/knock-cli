@@ -1,7 +1,10 @@
 import { cloneDeep, get, has, set, unset } from "lodash";
 
-import { AnyObj } from "@/lib/helpers/object.isomorphic";
-import { ObjKeyOrArrayIdx, ObjPath } from "@/lib/helpers/object.isomorphic";
+import {
+  AnyObj,
+  ObjKeyOrArrayIdx,
+  ObjPath,
+} from "@/lib/helpers/object.isomorphic";
 import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { ExtractionSettings, WithAnnotation } from "@/lib/marshal/shared/types";
 
@@ -46,7 +49,7 @@ const compileExtractionSettings = (
 
 /*
  * For a given email layout payload, this function builds a "email layout
- * directoy bundle". This is an object which contains all the relative paths and
+ * directory bundle". This is an object which contains all the relative paths and
  * its file content. It includes the extractable fields, which are extracted out
  * and added to the bundle as separate files.
  */

@@ -22,6 +22,7 @@ const mockWorkflowData: WorkflowData<WithAnnotation> = {
   steps: [],
   created_at: "2022-12-31T12:00:00.000000Z",
   updated_at: "2022-12-31T12:00:00.000000Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {},
     readonly_fields: [
@@ -31,6 +32,7 @@ const mockWorkflowData: WorkflowData<WithAnnotation> = {
       "valid",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };
@@ -139,7 +141,6 @@ describe("commands/workflow/push", () => {
             active: false,
             valid: false,
             created_at: "2022-12-31T12:00:00.000000Z",
-            updated_at: "2022-12-31T12:00:00.000000Z",
           },
         });
       });

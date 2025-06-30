@@ -22,6 +22,7 @@ export type PartialData<A extends MaybeWithAnnotation = unknown> = A & {
   environment: string;
   updated_at: string;
   created_at: string;
+  sha: string;
 };
 
 export type PartialInput = AnyObj & {

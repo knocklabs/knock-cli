@@ -42,6 +42,7 @@ const mockMessageTypeData: MessageTypeData<WithAnnotation> = {
   environment: "development",
   updated_at: "2023-10-02T19:24:48.714630Z",
   created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {
       preview: { default: true, file_ext: "html" },
@@ -54,6 +55,7 @@ const mockMessageTypeData: MessageTypeData<WithAnnotation> = {
       "semver",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };
@@ -190,6 +192,48 @@ describe("commands/message-type/push", () => {
               }),
             ),
           );
+        },
+      );
+
+    setupWithStub({ data: { message_type: mockMessageTypeData } })
+      .stdout()
+      .command(["message-type push", "banner"])
+      .it(
+        "writes the upserted message type data into message_type.json",
+        () => {
+          const abspath = path.resolve(sandboxDir, messageTypeJsonFile);
+          const messageTypeJson = fs.readJsonSync(abspath);
+
+          expect(messageTypeJson).to.eql({
+            name: "Banner",
+            description: "My little banner",
+            variants: [
+              {
+                key: "default",
+                name: "Default",
+                fields: [
+                  {
+                    type: "text",
+                    key: "title",
+                    label: "Title",
+                    settings: {
+                      required: true,
+                      default: "",
+                    },
+                  },
+                ],
+              },
+            ],
+            "preview@": "preview.html",
+            __readonly: {
+              key: "banner",
+              valid: true,
+              owner: "user",
+              environment: "development",
+              semver: "0.0.1",
+              created_at: "2023-09-18T18:32:18.398053Z",
+            },
+          });
         },
       );
   });

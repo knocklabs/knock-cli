@@ -154,6 +154,7 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
   ],
   created_at: "2022-12-31T12:00:00.000000Z",
   updated_at: "2022-12-31T12:00:00.000000Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {},
     readonly_fields: [
@@ -163,6 +164,7 @@ const remoteWorkflow: WorkflowData<WithAnnotation> = {
       "valid",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };
@@ -174,17 +176,16 @@ describe("lib/marshal/workflow/processor", () => {
 
       expect(workflowJson.key).to.equal(undefined);
       expect(workflowJson.active).to.equal(undefined);
-      expect(workflowJson.active).to.equal(undefined);
       expect(workflowJson.valid).to.equal(undefined);
       expect(workflowJson.created_at).to.equal(undefined);
       expect(workflowJson.updated_at).to.equal(undefined);
+      expect(workflowJson.sha).to.equal(undefined);
 
       expect(workflowJson.__readonly).to.eql({
         key: "new-comment",
         active: false,
         valid: false,
         created_at: "2022-12-31T12:00:00.000000Z",
-        updated_at: "2022-12-31T12:00:00.000000Z",
       });
     });
 
@@ -361,7 +362,6 @@ describe("lib/marshal/workflow/processor", () => {
               active: false,
               valid: false,
               created_at: "2022-12-31T12:00:00.000000Z",
-              updated_at: "2022-12-31T12:00:00.000000Z",
             },
           },
           [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
@@ -400,7 +400,6 @@ describe("lib/marshal/workflow/processor", () => {
             active: false,
             valid: false,
             created_at: "2022-12-31T12:00:00.000000Z",
-            updated_at: "2022-12-31T12:00:00.000000Z",
           },
         };
 
@@ -498,7 +497,6 @@ describe("lib/marshal/workflow/processor", () => {
               active: false,
               valid: false,
               created_at: "2022-12-31T12:00:00.000000Z",
-              updated_at: "2022-12-31T12:00:00.000000Z",
             },
           },
           [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
@@ -610,7 +608,6 @@ describe("lib/marshal/workflow/processor", () => {
               active: false,
               valid: false,
               created_at: "2022-12-31T12:00:00.000000Z",
-              updated_at: "2022-12-31T12:00:00.000000Z",
             },
           },
           [xpath("email_1/settings/pre_content.txt")]: "{{ foo }}",

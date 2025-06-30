@@ -44,7 +44,7 @@ type ButtonField = BaseField & {
   action: TextField;
 };
 
-export type ContentSchemaField =
+type ContentSchemaField =
   | TextField
   | TextareaField
   | MarkdownField
@@ -73,6 +73,7 @@ export type MessageTypeData<A extends MaybeWithAnnotation = unknown> = A & {
   updated_at: string;
   created_at: string;
   environment: string;
+  sha: string;
 };
 
 export type MessageTypeInput = AnyObj & {

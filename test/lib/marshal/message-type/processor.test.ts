@@ -4,6 +4,7 @@ import {
   buildMessageTypeDirBundle,
   MessageTypeData,
 } from "@/lib/marshal/message-type";
+import { prepareResourceJson } from "@/lib/marshal/shared/helpers.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 const remoteMessageType: MessageTypeData<WithAnnotation> = {
@@ -34,6 +35,7 @@ const remoteMessageType: MessageTypeData<WithAnnotation> = {
   environment: "development",
   updated_at: "2023-10-02T19:24:48.714630Z",
   created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
   __annotation: {
     extractable_fields: {
       preview: { default: true, file_ext: "html" },
@@ -46,11 +48,41 @@ const remoteMessageType: MessageTypeData<WithAnnotation> = {
       "semver",
       "created_at",
       "updated_at",
+      "sha",
     ],
   },
 };
 
 describe("lib/marshal/message-typel/processor", () => {
+  describe("prepareResourceJson", () => {
+    it("moves over message type's readonly fields under __readonly field", () => {
+      const messageTypeJson = prepareResourceJson(remoteMessageType);
+
+      expect(messageTypeJson.key).to.equal(undefined);
+      expect(messageTypeJson.valid).to.equal(undefined);
+      expect(messageTypeJson.owner).to.equal(undefined);
+      expect(messageTypeJson.environment).to.equal(undefined);
+      expect(messageTypeJson.semver).to.equal(undefined);
+      expect(messageTypeJson.created_at).to.equal(undefined);
+      expect(messageTypeJson.updated_at).to.equal(undefined);
+      expect(messageTypeJson.sha).to.equal(undefined);
+
+      expect(messageTypeJson.__readonly).to.eql({
+        key: "banner",
+        valid: true,
+        owner: "user",
+        environment: "development",
+        semver: "0.0.1",
+        created_at: "2023-09-18T18:32:18.398053Z",
+      });
+    });
+
+    it("removes the __annotation field", () => {
+      const messageTypeJson = prepareResourceJson(remoteMessageType);
+      expect(messageTypeJson.__annotation).to.equal(undefined);
+    });
+  });
+
   describe("buildMessageTypeDirBundle", () => {
     describe("given a fetched message type that has not been pulled before", () => {
       const result = buildMessageTypeDirBundle(remoteMessageType);
@@ -85,7 +117,6 @@ describe("lib/marshal/message-typel/processor", () => {
             environment: "development",
             semver: "0.0.1",
             created_at: "2023-09-18T18:32:18.398053Z",
-            updated_at: "2023-10-02T19:24:48.714630Z",
           },
         },
       });
@@ -133,7 +164,6 @@ describe("lib/marshal/message-typel/processor", () => {
               environment: "development",
               semver: "0.0.1",
               created_at: "2023-09-18T18:32:18.398053Z",
-              updated_at: "2023-10-02T19:24:48.714630Z",
             },
           },
         });
