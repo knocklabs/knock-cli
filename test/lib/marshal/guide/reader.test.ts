@@ -148,30 +148,6 @@ describe("lib/marshal/guide/reader", () => {
       });
     });
 
-    describe("with the withReadonlyField opt of true", () => {
-      it("reads guide.json with the readonly field", async () => {
-        const [guide] = await readGuideDir(guideDirCtx, {
-          withReadonlyField: true,
-        });
-
-        expect(get(guide, ["name"])).to.equal("Onboarding Guide");
-        expect(get(guide, ["description"])).to.equal(
-          "A comprehensive onboarding guide for new users.",
-        );
-
-        expect(get(guide, ["__readonly"])).to.eql({
-          key: "onboarding",
-          valid: true,
-          active: true,
-          environment: "development",
-          semver: "1.0.0",
-          created_at: "2024-09-17T23:28:39.939366Z",
-          updated_at: "2024-10-18T06:43:37.942727Z",
-          sha: "OdCrRlz43e2y0ZAHNqyIkp/Vva/xSK1shKF4i8vXx3Y=",
-        });
-      });
-    });
-
     describe("with the withExtractedFiles opt of true", () => {
       it("reads guide.json with the extracted fields inlined", async () => {
         const [guide] = await readGuideDir(guideDirCtx, {

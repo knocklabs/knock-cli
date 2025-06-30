@@ -62,7 +62,6 @@ const readGuideDirs = async (
  */
 type ReadGuideDirOpts = {
   withExtractedFiles?: boolean;
-  withReadonlyField?: boolean;
 };
 
 export const readGuideDir = async (
@@ -70,7 +69,7 @@ export const readGuideDir = async (
   opts: ReadGuideDirOpts = {},
 ): Promise<ParseJsonResult | JoinExtractedFilesResult> => {
   const { abspath } = guideDirCtx;
-  const { withExtractedFiles = false, withReadonlyField = false } = opts;
+  const { withExtractedFiles = false } = opts;
 
   const dirExists = await fs.pathExists(abspath);
   if (!dirExists) throw new Error(`${abspath} does not exist`);
@@ -83,9 +82,7 @@ export const readGuideDir = async (
 
   let [guideJson] = result;
 
-  guideJson = withReadonlyField
-    ? guideJson
-    : omitDeep(guideJson, ["__readonly"]);
+  guideJson = omitDeep(guideJson, ["__readonly"]);
 
   return withExtractedFiles
     ? joinExtractedFiles(guideDirCtx, guideJson)
