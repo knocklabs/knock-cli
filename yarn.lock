@@ -2149,10 +2149,10 @@
   dependencies:
     undici-types "~6.19.8"
 
-"@types/node@^20.19.1":
-  version "20.19.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.19.1.tgz#cef8bc04aaae86824b5bbe2570769358592bcc59"
-  integrity sha512-jJD50LtlD2dodAEO653i3YF04NWak6jN3ky+Ri3Em3mGR39/glWiboM/IePaRbgwSfqM1TpGXfAg8ohn/4dTgA==
+"@types/node@^20.19.9":
+  version "20.19.9"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.19.9.tgz#ca9a58193fec361cc6e859d88b52261853f1f0d3"
+  integrity sha512-cuVNgarYWZqxRJDQHEB58GEONhOK79QVR/qYx4S7kcUObQvUwvFnYxJuuHUKm2aieN9X3yZB4LZsuYNU1Qphsw==
   dependencies:
     undici-types "~6.21.0"
 
