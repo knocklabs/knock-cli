@@ -9,6 +9,7 @@ export type GuideStepData = {
   schema_key: string;
   schema_semver: string;
   schema_variant_key: string;
+  json_schema: AnyObj;
   values: AnyObj;
 };
 

@@ -8,19 +8,16 @@ import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import { getLanguageFromExtension } from "@/lib/helpers/typegen";
 import { spinner } from "@/lib/helpers/ux";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import * as Workflow from "@/lib/marshal/workflow";
-import {
-  generateWorkflowTypes,
-  getLanguageFromExtension,
-} from "@/lib/type-generator";
 
 export default class WorkflowGenerateTypes extends BaseCommand<
   typeof WorkflowGenerateTypes
 > {
   static description =
-    "Generate types for all workflows in the development environment and write them to a file.";
+    "Generate types for all workflows in an environment and write them to a file.";
 
   static flags = {
     environment: Flags.string({
@@ -50,7 +47,7 @@ export default class WorkflowGenerateTypes extends BaseCommand<
 
     spinner.start(`‣ Loading workflows`);
 
-    // 1. List all workflows in the development environment.
+    // 1. List all workflows in the target environment.
     const workflows = await this.listAllWorkflows();
 
     spinner.stop();
@@ -59,7 +56,7 @@ export default class WorkflowGenerateTypes extends BaseCommand<
     spinner.start(`‣ Generating types`);
 
     const { result, workflows: workflowsWithValidTypes } =
-      await generateWorkflowTypes(workflows, targetLanguage);
+      await Workflow.generateWorkflowTypes(workflows, targetLanguage);
 
     spinner.stop();
 
