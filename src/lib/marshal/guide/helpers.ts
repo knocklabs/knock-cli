@@ -252,6 +252,32 @@ const startCaseNoSpace = (key: string) => startCase(key).replace(/\s/g, "");
 
 const MAPPING_TYPE_NAME = "GuideContentTypes";
 
+/*
+ * For typescript, this writes a root type that maps out all guide types by
+ * guide type and key.
+ *
+ * For example:
+ *   type GuideContentTypesByKey = {
+ *     "banner-one": GuideBannerOneStep1Banner001Default;
+ *     "banner-two": GuideBannerTwoStep1Banner001Default;
+ *     "card-one": GuideCardOneStep1Card001Default;
+ *     "card-two": GuideCardTwoStep1Card001SingleAction;
+ *     "changelog-card": GuideChangelogCardStep1ChangelogCard001SingleAction;
+ *     "modal-one": GuideModalOneStep1Modal001MultiAction;
+ *   };
+ *
+ *   type GuideContentTypesByType = {
+ *     "banner": GuideBannerOneStep1Banner001Default | GuideBannerTwoStep1Banner001Default;
+ *     "card": GuideCardOneStep1Card001Default | GuideCardTwoStep1Card001SingleAction;
+ *     "changelog-card": GuideChangelogCardStep1ChangelogCard001SingleAction;
+ *     "modal": GuideModalOneStep1Modal001MultiAction;
+ *   };
+ *
+ *   export type GuideContentTypes = {
+ *     key: GuideContentTypesByKey;
+ *     type: GuideContentTypesByType;
+ *   };
+ */
 export const generateMappingsTypeTS = (
   mapping: ContentTypesMapping,
 ): Array<string> => {
