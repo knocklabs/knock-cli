@@ -318,8 +318,6 @@ export const countSteps = (workflow: WorkflowData): number =>
  * @param workflows List of workflows to generate types for
  * @param targetLanguage Target programming language for type generation
  * @returns Generated type definitions for the workflows
- *
- * TODO: Move to workflow helpers.
  */
 export async function generateWorkflowTypes(
   workflows: WorkflowData[],
