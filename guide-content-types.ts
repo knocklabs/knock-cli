@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 export interface GuideBannerFourStep1Banner001Default {
     body:         string;
     dismissible?: boolean;
