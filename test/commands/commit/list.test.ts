@@ -54,6 +54,10 @@ describe("commands/commit/list", () => {
         "--after",
         "xyz",
         "--json",
+        "--resource-type",
+        "email_layout",
+        "--resource-id",
+        "123",
       ])
       .it("calls apiV1 listCommits with correct props", () => {
         sinon.assert.calledWith(
@@ -68,6 +72,8 @@ describe("commands/commit/list", () => {
                 limit: 5,
                 after: "xyz",
                 json: true,
+                "resource-type": "email_layout",
+                "resource-id": "123",
               }),
           ),
         );
@@ -183,5 +189,21 @@ describe("commands/commit/list", () => {
           sinon.assert.calledOnce(KnockApiV1.prototype.listCommits as any);
         });
     });
+  });
+
+  describe("given a resource-type but not resource-id", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
+      .command(["commit list", "--resource-type", "email_layout"])
+      .exit(2)
+      .it("exits with status 2");
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
+      .command(["commit list", "--resource-id", "123"])
+      .exit(2)
+      .it("exits with status 2");
   });
 });

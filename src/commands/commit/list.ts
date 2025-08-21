@@ -26,15 +26,42 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
         "Show only promoted or unpromoted changes between the given environment and the subsequent environment.",
       allowNo: true,
     }),
+    "resource-type": Flags.string({
+      summary:
+        "Filter commits by resource type. Must be used together with resource-id.",
+      options: [
+        "email_layout",
+        "guide",
+        "message_type",
+        "partial",
+        "translation",
+        "workflow",
+      ],
+    }),
+    "resource-id": Flags.string({
+      summary:
+        "Filter commits by resource identifier. Must be used together with resource-type. For most resources, this will be the resource key. In the case of translations, this will be the locale code and namespace, separated by a /. For example, en/courses or en.",
+    }),
     ...pageFlags,
   };
 
   static enableJsonFlag = true;
 
   async run(): Promise<ApiV1.ListCommitResp | void> {
+    // Validate that resource-type and resource-id are used together
+    const { flags } = this.props;
+    const hasResourceType = Boolean(flags["resource-type"]);
+    const hasResourceId = Boolean(flags["resource-id"]);
+
+    if (hasResourceType !== hasResourceId) {
+      this.error(
+        "The --resource-type and --resource-id flags must be used together. " +
+          "You cannot use one without the other.",
+      );
+    }
+
     const resp = await this.request();
 
-    const { flags } = this.props;
     if (flags.json) return resp.data;
 
     this.render(resp.data);

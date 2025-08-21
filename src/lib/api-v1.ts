@@ -136,6 +136,8 @@ export default class ApiV1 {
     const params = prune({
       environment: flags.environment,
       promoted: flags.promoted,
+      resource_type: flags["resource-type"],
+      resource_id: flags["resource-id"],
       ...toPageParams(flags),
     });
 
