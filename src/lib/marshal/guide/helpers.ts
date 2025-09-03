@@ -290,6 +290,7 @@ export const generateIndexTypeTS = (
   for (const [key, val] of Object.entries(mapping.key)) {
     lines.push(`  "${key}": ${val};`);
   }
+
   lines.push("};");
 
   // Define the type for sub index by guide type.
