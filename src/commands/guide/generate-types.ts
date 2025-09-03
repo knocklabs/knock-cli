@@ -79,10 +79,9 @@ export default class GuideGenerateTypes extends BaseCommand<
     // 3. Write the generated types to the output file.
     await fs.outputFile(outputFilePath, result.lines.join("\n"));
 
-    // 4. If for typescript, render and append the content types mapping at the
-    // end.
+    // 4. If for typescript, render and append the types index at the end.
     if (targetLang === "typescript") {
-      const lines = Guide.generateMappingsTypeTS(mapping);
+      const lines = Guide.generateIndexTypeTS(mapping);
       await fs.appendFile(outputFilePath, lines.join("\n"));
     }
 

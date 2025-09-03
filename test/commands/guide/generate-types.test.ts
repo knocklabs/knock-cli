@@ -364,7 +364,7 @@ describe("commands/guide/generate-types", () => {
         );
 
         // Check the root mapping
-        expect(appendedContent).to.contain("export type GuideContentTypes");
+        expect(appendedContent).to.contain("export type GuideContentIndex");
       });
   });
 

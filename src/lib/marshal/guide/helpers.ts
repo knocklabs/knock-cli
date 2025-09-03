@@ -250,14 +250,12 @@ export async function generateTypes(
 
 const startCaseNoSpace = (key: string) => startCase(key).replace(/\s/g, "");
 
-const MAPPING_TYPE_NAME = "GuideContentTypes";
-
 /*
  * For typescript, this writes a root type that maps out all guide types by
  * guide type and key.
  *
  * For example:
- *   type GuideContentTypesByKey = {
+ *   type GuideContentByType = {
  *     "banner-one": GuideBannerOneStep1Banner001Default;
  *     "banner-two": GuideBannerTwoStep1Banner001Default;
  *     "card-one": GuideCardOneStep1Card001Default;
@@ -266,36 +264,37 @@ const MAPPING_TYPE_NAME = "GuideContentTypes";
  *     "modal-one": GuideModalOneStep1Modal001MultiAction;
  *   };
  *
- *   type GuideContentTypesByType = {
+ *   type GuideContentByKey = {
  *     "banner": GuideBannerOneStep1Banner001Default | GuideBannerTwoStep1Banner001Default;
  *     "card": GuideCardOneStep1Card001Default | GuideCardTwoStep1Card001SingleAction;
  *     "changelog-card": GuideChangelogCardStep1ChangelogCard001SingleAction;
  *     "modal": GuideModalOneStep1Modal001MultiAction;
  *   };
  *
- *   export type GuideContentTypes = {
- *     key: GuideContentTypesByKey;
- *     type: GuideContentTypesByType;
+ *   export type GuideContentIndex = {
+ *     key: GuideContentByType;
+ *     type: GuideContentByKey;
  *   };
  */
-export const generateMappingsTypeTS = (
+const TS_INDEX_TYPE_PREFIX = "GuideContent";
+
+export const generateIndexTypeTS = (
   mapping: ContentTypesMapping,
 ): Array<string> => {
   const lines: Array<string> = [];
 
-  // Define the type for sub mapping by guide key.
-  const byKeyMappingName = `${MAPPING_TYPE_NAME}ByKey`;
-  lines.push(`\ntype ${byKeyMappingName} = {`);
+  // Define the type for sub index by guide key.
+  const byKey = `${TS_INDEX_TYPE_PREFIX}ByKey`;
+  lines.push(`\ntype ${byKey} = {`);
 
   for (const [key, val] of Object.entries(mapping.key)) {
     lines.push(`  "${key}": ${val};`);
   }
-
   lines.push("};");
 
-  // Define the type for sub mapping by guide type.
-  const byTypeMappingName = `${MAPPING_TYPE_NAME}ByType`;
-  lines.push(`\ntype ${byTypeMappingName} = {`);
+  // Define the type for sub index by guide type.
+  const byType = `${TS_INDEX_TYPE_PREFIX}ByType`;
+  lines.push(`\ntype ${byType} = {`);
 
   for (const [key, val] of Object.entries(mapping.type)) {
     lines.push(`  "${key}": ${(val || []).join(" | ")};`);
@@ -303,9 +302,9 @@ export const generateMappingsTypeTS = (
 
   lines.push(
     "};",
-    `\nexport type ${MAPPING_TYPE_NAME} = {`,
-    `  key: ${byKeyMappingName};`,
-    `  type: ${byTypeMappingName};`,
+    `\nexport type ${TS_INDEX_TYPE_PREFIX}Index = {`,
+    `  key: ${byKey};`,
+    `  type: ${byType};`,
     "};",
   );
 
