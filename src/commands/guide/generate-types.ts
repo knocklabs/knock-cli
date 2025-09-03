@@ -99,7 +99,7 @@ export default class GuideGenerateTypes extends BaseCommand<
         ...pageParams,
         limit: MAX_PAGINATION_LIMIT,
         // Generate json schemas for guide contents so we can generate types.
-        ["include-json-schema"]: true,
+        "include-json-schema": true,
       },
     });
 
