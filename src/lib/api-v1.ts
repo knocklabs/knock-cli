@@ -420,6 +420,7 @@ export default class ApiV1 {
       environment: flags.environment,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      include_json_schema: flags["include-json-schema"],
       ...toPageParams(flags),
     });
 
