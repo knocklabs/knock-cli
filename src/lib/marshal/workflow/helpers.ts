@@ -3,9 +3,17 @@ import * as path from "node:path";
 import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 import { take } from "lodash";
+import {
+  FetchingJSONSchemaStore,
+  InputData,
+  JSONSchemaInput,
+  quicktype,
+  SerializedRenderResult,
+} from "quicktype-core";
 
 import { DirContext } from "@/lib/helpers/fs";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
+import { SupportedTypeLanguage, transformSchema } from "@/lib/helpers/typegen";
 import { RunContext, WorkflowDirContext } from "@/lib/run-context";
 
 import { WORKFLOW_JSON } from "./processor.isomorphic";
@@ -301,3 +309,64 @@ const doCountSteps = (steps: WorkflowStepData[]): number => {
 
 export const countSteps = (workflow: WorkflowData): number =>
   doCountSteps(workflow.steps);
+
+/**
+ * Given a set of workflows, will go through and generated types for each workflow.
+ *
+ * If the workflow has no trigger data JSON schema, will return empty lines.
+ *
+ * @param workflows List of workflows to generate types for
+ * @param targetLanguage Target programming language for type generation
+ * @returns Generated type definitions for the workflows
+ */
+export async function generateWorkflowTypes(
+  workflows: WorkflowData[],
+  targetLanguage: SupportedTypeLanguage,
+): Promise<{
+  result: SerializedRenderResult | undefined;
+  workflows: WorkflowData[];
+}> {
+  const validWorkflows = workflows.filter(
+    (workflow) => workflow.trigger_data_json_schema,
+  );
+
+  if (validWorkflows.length === 0) {
+    return { result: undefined, workflows: [] };
+  }
+
+  const schemaInput = new JSONSchemaInput(new FetchingJSONSchemaStore());
+
+  for (const workflow of validWorkflows) {
+    const pascalCaseWorkflowKey = workflow.key
+      .split(/[_-]/)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join("");
+
+    const schema = transformSchema({
+      ...workflow.trigger_data_json_schema,
+      title: `${pascalCaseWorkflowKey}Data`,
+    });
+
+    schemaInput.addSource({
+      name: `${pascalCaseWorkflowKey}Data`,
+      schema: JSON.stringify(schema),
+    });
+  }
+
+  const inputData = new InputData();
+  inputData.addInput(schemaInput);
+
+  const result = await quicktype({
+    inputData,
+    lang: targetLanguage,
+    allPropertiesOptional: false,
+    alphabetizeProperties: true,
+    rendererOptions: {
+      "just-types": true,
+      "no-extra-properties": true,
+      "no-optional-null": true,
+    },
+  });
+
+  return { result, workflows: validWorkflows };
+}
