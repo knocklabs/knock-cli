@@ -197,7 +197,7 @@ export async function generateTypes(
     // We only support single step guides at the moment.
     const step = (guide.steps || []).find((s) => s.json_schema);
 
-    if (!step || !guide.type) {
+    if (!step) {
       continue;
     }
 
