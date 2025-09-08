@@ -4,16 +4,16 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
-import * as yup from "yup";
+import { z } from "zod";
 
 import { isTestEnv } from "@/lib/helpers/const";
 
-const userConfigSchema = yup.object({
-  serviceToken: yup.string(),
-  apiOrigin: yup.string(),
+const userConfigSchema = z.object({
+  serviceToken: z.string().optional(),
+  apiOrigin: z.string().optional(),
 });
 
-type UserConfig = yup.InferType<typeof userConfigSchema>;
+type UserConfig = z.infer<typeof userConfigSchema>;
 
 let USER_CONFIG: UserConfig;
 
@@ -31,7 +31,7 @@ const maybeReadJsonConfig = async (configDir: string) => {
 
 const load = async (configDir: string): Promise<UserConfig> => {
   const readConfig = await maybeReadJsonConfig(configDir);
-  const validConfig = await userConfigSchema.validate(readConfig || {});
+  const validConfig = userConfigSchema.parse(readConfig || {});
 
   // If no valid user config was available, give it an empty map.
   USER_CONFIG = validConfig || {};
