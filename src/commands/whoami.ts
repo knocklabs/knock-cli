@@ -14,12 +14,22 @@ export default class Whoami extends BaseCommand<typeof Whoami> {
     const { flags } = this.props;
     if (flags.json) return resp.data;
 
-    this.log(`‣ Successfully verified the provided service token:`);
+    this.log(`‣ Successfully authenticated:`);
 
-    const info = [
-      `Account name: ${resp.data.account_name}`,
-      `Service token name: ${resp.data.service_token_name}`,
-    ];
+    let info: string[] = [];
+
+    if (resp.data.service_token_name) {
+      info = [
+        `Account name: ${resp.data.account_name}`,
+        `Service token name: ${resp.data.service_token_name}`,
+      ];
+    } else {
+      info = [
+        `Account name: ${resp.data.account_name}`,
+        `User ID: ${resp.data.user_id}`,
+      ];
+    }
+
     this.log(indentString(info.join("\n"), 4));
   }
 }
