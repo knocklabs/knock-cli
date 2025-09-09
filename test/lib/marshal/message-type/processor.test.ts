@@ -53,7 +53,7 @@ const remoteMessageType: MessageTypeData<WithAnnotation> = {
   },
 };
 
-describe("lib/marshal/message-typel/processor", () => {
+describe("lib/marshal/message-type/processor", () => {
   describe("prepareResourceJson", () => {
     it("moves over message type's readonly fields under __readonly field", () => {
       const messageTypeJson = prepareResourceJson(remoteMessageType);

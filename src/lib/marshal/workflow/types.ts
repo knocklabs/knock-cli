@@ -94,7 +94,7 @@ type HttpFetchStepSettings = {
   query_params?: KeyValueBlock[];
 };
 
-type HttpFetchStepData = WorkflowStepBase & {
+export type HttpFetchStepData = WorkflowStepBase & {
   type: StepType.HttpFetch;
   settings: HttpFetchStepSettings;
 };

@@ -9,6 +9,7 @@ import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData, PartialType } from "@/lib/marshal/partial";
+import { ReusableStepData } from "@/lib/marshal/reusable-step";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
@@ -242,6 +243,35 @@ export const guide = (attrs: Partial<GuideData> = {}): GuideData => {
     updated_at: "2022-12-31T12:00:00.000000Z",
     created_at: "2022-12-31T12:00:00.000000Z",
     environment: "development",
+    ...attrs,
+  };
+};
+
+export const reusableStep = (
+  attrs: Partial<ReusableStepData> = {},
+): ReusableStepData => {
+  return {
+    id: randomUUID(),
+    key: "fetch-user-data",
+    step: {
+      type: "http_fetch" as StepType.HttpFetch,
+      url: "https://api.example.com/users/{{ recipient.id }}",
+      method: "GET",
+      headers: {
+        Authorization: "Bearer {{ data.api_token }}",
+        "Content-Type": "application/json",
+      },
+      timeout: 30_000,
+      retry_policy: {
+        max_attempts: 3,
+        backoff_type: "exponential",
+        initial_delay: 1000,
+      },
+    },
+    type: StepType.HttpFetch,
+    created_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    sha: "<SOME_SHA>",
     ...attrs,
   };
 };

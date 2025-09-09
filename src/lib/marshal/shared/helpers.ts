@@ -8,8 +8,10 @@ import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 import { VISUAL_BLOCKS_JSON } from "@/lib/marshal/workflow";
 import {
   EmailLayoutDirContext,
+  GuideDirContext,
   MessageTypeDirContext,
   PartialDirContext,
+  ReusableStepDirContext,
   WorkflowDirContext,
 } from "@/lib/run-context";
 
@@ -32,7 +34,9 @@ export const readExtractedFileSync = (
     | WorkflowDirContext
     | EmailLayoutDirContext
     | PartialDirContext
-    | MessageTypeDirContext,
+    | MessageTypeDirContext
+    | GuideDirContext
+    | ReusableStepDirContext,
   objPathToFieldStr = "",
 ): ReadExtractedFileResult => {
   // Check if the file actually exists at the given file path.
