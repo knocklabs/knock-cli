@@ -3,19 +3,19 @@ import { Command, Flags, Interfaces } from "@oclif/core";
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import KnockApiV1 from "./api-v1";
+import { refreshAccessToken } from "./auth";
 import * as RunContext from "./run-context";
-import { UserConfigStore } from "./user-config";
 import {
   OAuthTokenContext,
   ServiceTokenContext,
   SessionContext,
 } from "./types";
-import { refreshAccessToken } from "./auth";
 import {
   DEFAULT_API_URL,
   DEFAULT_AUTH_URL,
   DEFAULT_DASHBOARD_URL,
 } from "./urls";
+import { UserConfigStore } from "./user-config";
 
 export type BFlags = Interfaces.InferredFlags<
   (typeof BaseCommand)["baseFlags"]
@@ -124,7 +124,7 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
       await this.configStore.set({ userSession: refreshedSession });
       // Update the session context to use the new session.
       this.sessionContext = this.buildSessionContext();
-    } catch (error) {
+    } catch {
       this.debug("Failed to refresh access token, clearing session.");
       await this.configStore.set({ userSession: undefined });
     }

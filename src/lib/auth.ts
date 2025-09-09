@@ -1,7 +1,7 @@
-import crypto from "crypto";
-import http from "http";
+import crypto from "node:crypto";
+import http from "node:http";
+
 import open from "open";
-import chalk from "chalk";
 
 import { authErrorUrl, authSuccessUrl } from "./urls";
 
@@ -148,7 +148,9 @@ async function exchangeCodeForToken(params: ExchangeCodeForTokenParams) {
   };
 }
 
-export async function refreshAccessToken(params: RefreshAccessTokenParams) {
+export async function refreshAccessToken(
+  params: RefreshAccessTokenParams,
+): Promise<AuthenticatedSession> {
   const { tokenEndpoint } = await getOAuthServerUrls(params.authUrl);
 
   const response = await fetch(tokenEndpoint, {
@@ -177,7 +179,7 @@ export async function refreshAccessToken(params: RefreshAccessTokenParams) {
 export async function waitForAccessToken(
   dashboardUrl: string,
   authUrl: string,
-) {
+): Promise<AuthenticatedSession> {
   const { authorizationEndpoint, tokenEndpoint, registrationEndpoint } =
     await getOAuthServerUrls(authUrl);
 
@@ -195,7 +197,7 @@ export async function waitForAccessToken(
     cleanupAndReject(
       `authentication timed out after ${DEFAULT_TIMEOUT / 1000} seconds`,
     );
-  }, 60000);
+  }, 60_000);
 
   function cleanupAndReject(message: string) {
     cleanup();
@@ -213,7 +215,7 @@ export async function waitForAccessToken(
   server.listen();
 
   const address = server.address();
-  if (address == null || typeof address !== "object") {
+  if (address === null || typeof address !== "object") {
     throw new Error("Could not start server");
   }
 
@@ -300,11 +302,9 @@ export async function waitForAccessToken(
     resolve({ ...response, clientId });
   });
 
-  console.log(
-    `Opened web browser to facilitate auth: ${chalk.cyan(browserUrl)}`,
-  );
+  console.log(`Opened web browser to facilitate auth: ${browserUrl}`);
 
-  void open(browserUrl);
+  open(browserUrl);
 
   return promise;
 }

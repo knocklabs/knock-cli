@@ -18,17 +18,15 @@ export default class Whoami extends BaseCommand<typeof Whoami> {
 
     let info: string[] = [];
 
-    if (resp.data.service_token_name) {
-      info = [
-        `Account name: ${resp.data.account_name}`,
-        `Service token name: ${resp.data.service_token_name}`,
-      ];
-    } else {
-      info = [
-        `Account name: ${resp.data.account_name}`,
-        `User ID: ${resp.data.user_id}`,
-      ];
-    }
+    info = resp.data.service_token_name
+      ? [
+          `Account name: ${resp.data.account_name}`,
+          `Service token name: ${resp.data.service_token_name}`,
+        ]
+      : [
+          `Account name: ${resp.data.account_name}`,
+          `User ID: ${resp.data.user_id}`,
+        ];
 
     this.log(indentString(info.join("\n"), 4));
   }
