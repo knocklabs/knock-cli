@@ -92,9 +92,11 @@ type HttpFetchStepSettings = {
   body?: string;
   headers?: KeyValueBlock[];
   query_params?: KeyValueBlock[];
+  response_path?: string;
+  signing_key?: string;
 };
 
-type HttpFetchStepData = WorkflowStepBase & {
+export type HttpFetchStepData = WorkflowStepBase & {
   type: StepType.HttpFetch;
   settings: HttpFetchStepSettings;
 };

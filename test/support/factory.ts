@@ -11,6 +11,7 @@ import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData, PartialType } from "@/lib/marshal/partial";
+import { ReusableStepData } from "@/lib/marshal/reusable-step";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
@@ -282,6 +283,29 @@ export const authenticatedSession = (
     idToken: "test-id-token",
     expiresAt: new Date(Date.now() + 3600 * 1000),
     clientId: "test-client-id",
+    ...attrs,
+  };
+};
+
+export const reusableStep = (
+  attrs: Partial<ReusableStepData> = {},
+): ReusableStepData => {
+  return {
+    key: "fetch-user-data",
+    name: "Fetch User Data",
+    environment: "development",
+    type: StepType.HttpFetch,
+    settings: {
+      url: "https://api.example.com/users/{{ recipient.id }}",
+      method: "GET",
+      headers: [
+        { key: "Authorization", value: "Bearer {{ data.api_token }}" },
+        { key: "Content-Type", value: "application/json" },
+      ],
+    },
+    created_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    sha: "<SOME_SHA>",
     ...attrs,
   };
 };
