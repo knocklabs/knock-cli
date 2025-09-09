@@ -58,6 +58,8 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   protected sessionContext!: SessionContext;
   protected configStore!: UserConfigStore;
 
+  protected requiresAuth: boolean = true;
+
   public async init(): Promise<void> {
     await super.init();
 
@@ -73,15 +75,20 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     // 3. Build the initial session context.
     this.sessionContext = this.buildSessionContext();
 
-    // 4. If the session context is an OAuth session, refresh the access token.
+    // 4. If the command requires authentication, ensure the session is authenticated.
+    if (this.requiresAuth) {
+      this.ensureAuthenticated();
+    }
+
+    // 5. If the session context is an OAuth session, refresh the access token.
     if (this.sessionContext.type === "oauth") {
       await this.refreshAccessTokenForSession();
     }
 
-    // 5. Instantiate a knock api client.
+    // 6. Instantiate a knock api client.
     this.apiV1 = new KnockApiV1(this.sessionContext, this.config);
 
-    // 6. Load the run context of the invoked command.
+    // 7. Load the run context of the invoked command.
     this.runContext = await RunContext.load(this.id);
   }
 
@@ -108,6 +115,15 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
       dashboardOrigin: userConfig.dashboardOrigin,
       authOrigin: userConfig.authOrigin,
     }) as ServiceTokenContext;
+  }
+
+  ensureAuthenticated(): void {
+    if (
+      (this.sessionContext.type === "service" && !this.sessionContext.token) ||
+      (this.sessionContext.type === "oauth" && !this.sessionContext.session)
+    ) {
+      this.error("No token found. Refusing to run command.");
+    }
   }
 
   private async refreshAccessTokenForSession() {

@@ -2,7 +2,7 @@ import { expect, test } from "@oclif/test";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
-import UserConfig from "@/lib/user-config";
+import { UserConfigStore } from "@/lib/user-config";
 
 describe("commands/whoami", () => {
   const data = {
@@ -39,7 +39,7 @@ describe("commands/whoami", () => {
 
   describe("given a valid service token via user config", () => {
     test
-      .stub(UserConfig, "get", (stub) =>
+      .stub(UserConfigStore.prototype, "get", (stub) =>
         stub.returns({ serviceToken: "valid-token" }),
       )
       .stub(KnockApiV1.prototype, "whoami", (stub) =>

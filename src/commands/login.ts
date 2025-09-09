@@ -3,6 +3,8 @@ import BaseCommand from "@/lib/base-command";
 import { spinner } from "@/lib/helpers/ux";
 
 export default class Login extends BaseCommand<typeof Login> {
+  protected requiresAuth = false;
+
   public async run(): Promise<void> {
     const { flags } = this.props;
 

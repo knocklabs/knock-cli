@@ -18,6 +18,20 @@ import {
 } from "@/lib/marshal/workflow";
 
 import { sequence } from "./helpers";
+import { ServiceTokenContext, SessionContext } from "@/lib/types";
+
+export const sessionContext = (
+  attrs: Partial<SessionContext> = {},
+): SessionContext => {
+  return {
+    type: "service",
+    token: "valid-token",
+    apiOrigin: "https://api.knock.app",
+    dashboardOrigin: "https://dashboard.knock.app",
+    authOrigin: "https://auth.knock.app",
+    ...attrs,
+  } as ServiceTokenContext;
+};
 
 export const gFlags = (attrs: Partial<BFlags> = {}): BFlags => {
   return {
