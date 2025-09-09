@@ -16,9 +16,9 @@ import {
   StepType,
   WorkflowData,
 } from "@/lib/marshal/workflow";
+import { ServiceTokenContext, SessionContext } from "@/lib/types";
 
 import { sequence } from "./helpers";
-import { ServiceTokenContext, SessionContext } from "@/lib/types";
 
 export const sessionContext = (
   attrs: Partial<SessionContext> = {},

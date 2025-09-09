@@ -58,7 +58,7 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   protected sessionContext!: SessionContext;
   protected configStore!: UserConfigStore;
 
-  protected requiresAuth: boolean = true;
+  protected requiresAuth = true;
 
   public async init(): Promise<void> {
     await super.init();
