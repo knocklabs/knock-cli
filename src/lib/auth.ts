@@ -1,9 +1,8 @@
 import crypto from "node:crypto";
 import http from "node:http";
 
-import open from "open";
-
 import { authErrorUrl, authSuccessUrl } from "./urls";
+import { browser } from "./helpers";
 
 const DEFAULT_TIMEOUT = 5000;
 
@@ -45,7 +44,7 @@ function createChallenge() {
   return { codeVerifier, codeChallenge, state };
 }
 
-async function getOAuthServerUrls(apiUrl: string) {
+export async function getOAuthServerUrls(apiUrl: string) {
   const { protocol, host } = new URL(apiUrl);
   const wellKnownUrl = `${protocol}//${host}/.well-known/oauth-authorization-server`;
 
@@ -72,7 +71,7 @@ async function getOAuthServerUrls(apiUrl: string) {
   throw new Error("Failed to fetch OAuth server metadata");
 }
 
-async function registerClient(
+export async function registerClient(
   registrationEndpoint: string,
   redirectUri: string,
 ) {
@@ -113,7 +112,7 @@ async function parseTokenResponse(response: Response) {
   };
 }
 
-async function exchangeCodeForToken(params: ExchangeCodeForTokenParams) {
+export async function exchangeCodeForToken(params: ExchangeCodeForTokenParams) {
   const response = await fetch(params.tokenEndpoint, {
     method: "POST",
     headers: {
@@ -304,7 +303,9 @@ export async function waitForAccessToken(
 
   console.log(`Opened web browser to facilitate auth: ${browserUrl}`);
 
-  open(browserUrl);
+  browser.openUrl(browserUrl);
 
   return promise;
 }
+
+export default { waitForAccessToken };

@@ -1,4 +1,4 @@
-import { waitForAccessToken } from "@/lib/auth";
+import auth from "@/lib/auth";
 import BaseCommand from "@/lib/base-command";
 import { spinner } from "@/lib/helpers/ux";
 
@@ -15,7 +15,7 @@ export default class Login extends BaseCommand<typeof Login> {
 
     spinner.start("‣ Authenticating with Knock...");
 
-    const resp = await waitForAccessToken(
+    const resp = await auth.waitForAccessToken(
       this.sessionContext.dashboardOrigin,
       this.sessionContext.authOrigin,
     );

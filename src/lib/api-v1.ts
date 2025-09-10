@@ -31,7 +31,11 @@ export default class ApiV1 {
     this.client = axios.create({
       baseURL,
       headers: {
+        // Used to authenticate the request to the API.
         Authorization: `Bearer ${token}`,
+        // Used in conjunction with the JWT access token, to allow the OAuth server to
+        // verify the client ID of the OAuth client that issued the access token.
+        "X-Knock-OAuth-ClientId": sessionContext.session?.clientId ?? undefined,
         "User-Agent": `${config.userAgent}`,
       },
       // Don't reject the promise based on a response status code.
