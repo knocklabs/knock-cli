@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
 import http from "node:http";
 
-import { authErrorUrl, authSuccessUrl } from "./urls";
 import { browser } from "./helpers";
+import { authErrorUrl, authSuccessUrl } from "./urls";
 
 const DEFAULT_TIMEOUT = 5000;
 
@@ -44,7 +44,16 @@ function createChallenge() {
   return { codeVerifier, codeChallenge, state };
 }
 
-export async function getOAuthServerUrls(apiUrl: string) {
+type OAuthServerUrls = {
+  registrationEndpoint: string;
+  authorizationEndpoint: string;
+  tokenEndpoint: string;
+  issuer: string;
+};
+
+export async function getOAuthServerUrls(
+  apiUrl: string,
+): Promise<OAuthServerUrls> {
   const { protocol, host } = new URL(apiUrl);
   const wellKnownUrl = `${protocol}//${host}/.well-known/oauth-authorization-server`;
 
@@ -74,7 +83,7 @@ export async function getOAuthServerUrls(apiUrl: string) {
 export async function registerClient(
   registrationEndpoint: string,
   redirectUri: string,
-) {
+): Promise<string> {
   const registrationResponse = await fetch(registrationEndpoint, {
     method: "POST",
     headers: {
@@ -101,7 +110,9 @@ export async function registerClient(
   return registrationData.client_id;
 }
 
-async function parseTokenResponse(response: Response) {
+async function parseTokenResponse(
+  response: Response,
+): Promise<Omit<AuthenticatedSession, "clientId">> {
   const data = await response.json();
 
   return {
@@ -112,7 +123,9 @@ async function parseTokenResponse(response: Response) {
   };
 }
 
-export async function exchangeCodeForToken(params: ExchangeCodeForTokenParams) {
+export async function exchangeCodeForToken(
+  params: ExchangeCodeForTokenParams,
+): Promise<AuthenticatedSession | { error: string }> {
   const response = await fetch(params.tokenEndpoint, {
     method: "POST",
     headers: {

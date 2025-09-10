@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import http from "node:http";
 
 import { expect } from "@oclif/test";
@@ -414,8 +413,10 @@ describe("lib/auth", () => {
       });
 
       // Set up server request handler
-      let requestHandler: Function | undefined;
-      httpServerMock.on.callsFake((event: string, handler: Function) => {
+      let requestHandler = (req: any, res: any) =>
+        Promise.resolve({ req, res });
+
+      httpServerMock.on.callsFake((event: string, handler: any) => {
         if (event === "request") {
           requestHandler = handler;
         }
@@ -428,6 +429,7 @@ describe("lib/auth", () => {
       );
 
       // Wait a bit for setup
+      // eslint-disable-next-line no-promise-executor-return
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Simulate the OAuth callback with authorization code
@@ -471,18 +473,21 @@ describe("lib/auth", () => {
     it("should handle OAuth error in callback", async () => {
       await setupMockOAuthFlow();
 
-      let requestHandler: Function | undefined;
-      httpServerMock.on.callsFake((event: string, handler: Function) => {
-        if (event === "request") {
-          requestHandler = handler;
-        }
-      });
+      let requestHandler: ((req: any, res: any) => void) | undefined;
+      httpServerMock.on.callsFake(
+        (event: string, handler: (req: any, res: any) => void) => {
+          if (event === "request") {
+            requestHandler = handler;
+          }
+        },
+      );
 
       const authPromise = waitForAccessToken(
         "https://dashboard.example.com",
         "https://auth.example.com",
       );
 
+      // eslint-disable-next-line no-promise-executor-return
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Simulate OAuth error callback
@@ -513,18 +518,25 @@ describe("lib/auth", () => {
     it("should handle missing authorization code", async () => {
       await setupMockOAuthFlow();
 
-      let requestHandler: Function | undefined;
-      httpServerMock.on.callsFake((event: string, handler: Function) => {
-        if (event === "request") {
-          requestHandler = handler;
-        }
-      });
+      let requestHandler: ((req: any, res: any) => void) | undefined;
+
+      httpServerMock.on.callsFake(
+        (
+          event: string,
+          handler: (req: any, res: any) => Promise<{ req: any; res: any }>,
+        ) => {
+          if (event === "request") {
+            requestHandler = handler;
+          }
+        },
+      );
 
       const authPromise = waitForAccessToken(
         "https://dashboard.example.com",
         "https://auth.example.com",
       );
 
+      // eslint-disable-next-line no-promise-executor-return
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Simulate callback without code
@@ -552,18 +564,25 @@ describe("lib/auth", () => {
     it("should handle invalid callback path", async () => {
       await setupMockOAuthFlow();
 
-      let requestHandler: Function | undefined;
-      httpServerMock.on.callsFake((event: string, handler: Function) => {
-        if (event === "request") {
-          requestHandler = handler;
-        }
-      });
+      let requestHandler = (req: any, res: any) =>
+        Promise.resolve({ req, res });
+      httpServerMock.on.callsFake(
+        (
+          event: string,
+          handler: (req: any, res: any) => Promise<{ req: any; res: any }>,
+        ) => {
+          if (event === "request") {
+            requestHandler = handler;
+          }
+        },
+      );
 
       const authPromise = waitForAccessToken(
         "https://dashboard.example.com",
         "https://auth.example.com",
       );
 
+      // eslint-disable-next-line no-promise-executor-return
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Simulate request to wrong path
@@ -603,8 +622,9 @@ describe("lib/auth", () => {
         }),
       });
 
-      let requestHandler: Function | undefined;
-      httpServerMock.on.callsFake((event: string, handler: Function) => {
+      let requestHandler = (req: any, res: any) =>
+        Promise.resolve({ req, res });
+      httpServerMock.on.callsFake((event: string, handler: any) => {
         if (event === "request") {
           requestHandler = handler;
         }
@@ -615,6 +635,7 @@ describe("lib/auth", () => {
         "https://auth.example.com",
       );
 
+      // eslint-disable-next-line no-promise-executor-return
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       const mockReq = {
