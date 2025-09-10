@@ -3,7 +3,7 @@ import { Command, Flags, Interfaces } from "@oclif/core";
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import KnockApiV1 from "./api-v1";
-import { refreshAccessToken } from "./auth";
+import auth from "./auth";
 import * as RunContext from "./run-context";
 import {
   OAuthTokenContext,
@@ -126,10 +126,10 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     }
   }
 
-  private async refreshAccessTokenForSession() {
+  private async refreshAccessTokenForSession(): Promise<void> {
     // Maybe refresh the access token?
     try {
-      const refreshedSession = await refreshAccessToken({
+      const refreshedSession = await auth.refreshAccessToken({
         authUrl: this.sessionContext.authOrigin,
         clientId: this.sessionContext.session?.clientId ?? "",
         refreshToken: this.sessionContext.session?.refreshToken ?? "",

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
+import { AuthenticatedSession } from "@/lib/auth";
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
 import { CommitData } from "@/lib/marshal/commit";
@@ -256,6 +257,19 @@ export const guide = (attrs: Partial<GuideData> = {}): GuideData => {
     updated_at: "2022-12-31T12:00:00.000000Z",
     created_at: "2022-12-31T12:00:00.000000Z",
     environment: "development",
+    ...attrs,
+  };
+};
+
+export const authenticatedSession = (
+  attrs: Partial<AuthenticatedSession> = {},
+): AuthenticatedSession => {
+  return {
+    accessToken: "test-access-token",
+    refreshToken: "test-refresh-token",
+    idToken: "test-id-token",
+    expiresAt: new Date(Date.now() + 3600 * 1000),
+    clientId: "test-client-id",
     ...attrs,
   };
 };

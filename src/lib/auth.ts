@@ -321,4 +321,4 @@ export async function waitForAccessToken(
   return promise;
 }
 
-export default { waitForAccessToken };
+export default { waitForAccessToken, refreshAccessToken };
