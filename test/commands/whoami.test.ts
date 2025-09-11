@@ -1,20 +1,22 @@
+import { type AuthVerifyResponse } from "@knocklabs/mgmt/resources/auth";
 import { expect, test } from "@oclif/test";
+import nock from "nock";
 
-import { factory } from "@/../test/support";
-import KnockApiV1 from "@/lib/api-v1";
 import UserConfig from "@/lib/user-config";
 
 describe("commands/whoami", () => {
-  const data = {
+  const data: AuthVerifyResponse = {
     account_name: "Collab.io",
+    account_slug: "collab-io",
     service_token_name: "My cool token",
   };
 
+  beforeEach(() => {
+    nock("https://control.knock.app").get("/v1/whoami").reply(200, data);
+  });
+
   describe("given a valid service token via flag", () => {
     test
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data })),
-      )
       .stdout()
       .command(["whoami", "--service-token", "valid-token"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -26,9 +28,6 @@ describe("commands/whoami", () => {
   describe("given a valid service token via env var", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data })),
-      )
       .stdout()
       .command(["whoami"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -41,9 +40,6 @@ describe("commands/whoami", () => {
     test
       .stub(UserConfig, "get", (stub) =>
         stub.returns({ serviceToken: "valid-token" }),
-      )
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data })),
       )
       .stdout()
       .command(["whoami"])
