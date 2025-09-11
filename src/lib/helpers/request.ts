@@ -1,3 +1,4 @@
+import KnockMgmt, { type APIPromise } from "@knocklabs/mgmt";
 import { ux } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
@@ -41,25 +42,47 @@ export const formatErrorRespMessage = ({
  */
 type WithSpinnerOpts = {
   action?: string;
-  ensureSuccess?: boolean;
 };
 
 export const withSpinner = async <T>(
   requestFn: () => Promise<AxiosResponse>,
   opts: WithSpinnerOpts = {},
 ): Promise<AxiosResponse<T>> => {
-  const { action = "‣ Loading", ensureSuccess = true } = opts;
+  const { action = "‣ Loading" } = opts;
 
   // Suppress printing the spinner in tests, oclif doesn't for some reasons.
   spinner.start(action);
   const resp = await requestFn();
 
   // Error out before the action stop so the spinner can update accordingly.
-  if (ensureSuccess && !isSuccessResp(resp)) {
+  if (!isSuccessResp(resp)) {
     const message = formatErrorRespMessage(resp);
     ux.error(new ApiError(message));
   }
 
   spinner.stop();
   return resp;
+};
+
+// For use with the KnockMgmt client
+export const withSpinnerV2 = async <T>(
+  requestFn: () => APIPromise<T>,
+  opts: WithSpinnerOpts = {},
+): Promise<{ data: T; response: Response }> => {
+  const { action = "‣ Loading" } = opts;
+
+  // Suppress printing the spinner in tests, oclif doesn't for some reasons.
+  spinner.start(action);
+
+  try {
+    const resp = await requestFn().withResponse();
+    spinner.stop();
+    return resp;
+  } catch (error) {
+    if (error instanceof KnockMgmt.APIError) {
+      return ux.error(new ApiError(error.message));
+    }
+
+    throw error;
+  }
 };

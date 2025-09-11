@@ -1,6 +1,7 @@
-import * as ApiV1 from "@/lib/api-v1";
+import { AuthVerifyResponse } from "@knocklabs/mgmt/resources/auth";
+
 import BaseCommand from "@/lib/base-command";
-import { withSpinner } from "@/lib/helpers/request";
+import { withSpinnerV2 } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 
 export default class Whoami extends BaseCommand<typeof Whoami> {
@@ -8,8 +9,10 @@ export default class Whoami extends BaseCommand<typeof Whoami> {
 
   static enableJsonFlag = true;
 
-  public async run(): Promise<ApiV1.WhoamiResp | void> {
-    const resp = await withSpinner<ApiV1.WhoamiResp>(() => this.apiV1.whoami());
+  public async run(): Promise<AuthVerifyResponse | void> {
+    const resp = await withSpinnerV2<AuthVerifyResponse>(() =>
+      this.apiV1.knockMgmt.auth.verify(),
+    );
 
     const { flags } = this.props;
     if (flags.json) return resp.data;

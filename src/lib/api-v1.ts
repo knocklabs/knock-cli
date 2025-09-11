@@ -1,3 +1,4 @@
+import KnockMgmt from "@knocklabs/mgmt";
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -17,23 +18,40 @@ import * as Workflow from "@/lib/marshal/workflow";
 const DEFAULT_ORIGIN = "https://control.knock.app";
 const API_VERSION = "v1";
 
+/**
+ * KnockMgmt client requires a service token, but we set the Authorization
+ * request header directly, so use a placeholder when service token is not
+ * provided.
+ */
+const PLACEHOLDER_SERVICE_TOKEN = "overridden";
+
 /*
  * API v1 client
  */
 export default class ApiV1 {
   client!: AxiosInstance;
+  public knockMgmt: KnockMgmt;
 
   constructor(flags: BFlags, config: Config) {
     const baseURL = flags["api-origin"] || DEFAULT_ORIGIN;
 
+    const headers = {
+      Authorization: `Bearer ${flags["service-token"]}`,
+      "User-Agent": `${config.userAgent}`,
+    };
+
     this.client = axios.create({
       baseURL,
-      headers: {
-        Authorization: `Bearer ${flags["service-token"]}`,
-        "User-Agent": `${config.userAgent}`,
-      },
+      headers,
       // Don't reject the promise based on a response status code.
       validateStatus: null,
+    });
+
+    // This should eventually replace the Axios client
+    this.knockMgmt = new KnockMgmt({
+      serviceToken: flags["service-token"] || PLACEHOLDER_SERVICE_TOKEN,
+      baseURL,
+      defaultHeaders: headers,
     });
   }
 
