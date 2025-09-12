@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import http from "node:http";
 
-import { browser } from "./helpers";
+import { browser } from "./helpers/browser";
 import { authErrorUrl, authSuccessUrl } from "./urls";
 
 const DEFAULT_TIMEOUT = 5000;

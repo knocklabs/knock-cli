@@ -11,7 +11,7 @@ import {
   registerClient,
   waitForAccessToken,
 } from "@/lib/auth";
-import { browser } from "@/lib/helpers";
+import { browser } from "@/lib/helpers/browser";
 
 // Mock fetch globally
 global.fetch = sinon.stub();
