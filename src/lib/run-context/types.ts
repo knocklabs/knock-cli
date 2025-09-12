@@ -22,7 +22,8 @@ export type ResourceType =
   | "translation"
   | "partial"
   | "message_type"
-  | "guide";
+  | "guide"
+  | "reusable_step";
 
 type ResourceDirContextBase = DirContext & {
   type: ResourceType;
@@ -53,13 +54,18 @@ export type GuideDirContext = ResourceDirContextBase & {
   type: "guide";
 };
 
+export type ReusableStepDirContext = ResourceDirContextBase & {
+  type: "reusable_step";
+};
+
 export type ResourceDirContext =
   | WorkflowDirContext
   | EmailLayoutDirContext
   | TranslationDirContext
   | PartialDirContext
   | MessageTypeDirContext
-  | GuideDirContext;
+  | GuideDirContext
+  | ReusableStepDirContext;
 
 export type ResourceTarget = {
   commandId: string;
