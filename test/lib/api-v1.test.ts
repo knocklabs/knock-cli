@@ -10,7 +10,7 @@ const dummyConfig = new Config({ root: "/path/to/bin" });
 describe("lib/api-v1", () => {
   describe("listWorkflows", () => {
     it("makes a GET request to /v1/workflows with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "get").returns(
         Promise.resolve({
@@ -50,7 +50,7 @@ describe("lib/api-v1", () => {
 
   describe("getWorkflow", () => {
     it("makes a GET request to /v1/workflows/:workflowKey with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "get").returns(
         Promise.resolve({
@@ -81,7 +81,7 @@ describe("lib/api-v1", () => {
 
   describe("upsertWorkflow", () => {
     it("makes a PUT request to /v1/workflows/:workflowKey with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -123,7 +123,7 @@ describe("lib/api-v1", () => {
 
   describe("validateWorkflow", () => {
     it("makes a PUT request to /v1/workflows/:workflowKey/validate with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -159,7 +159,7 @@ describe("lib/api-v1", () => {
 
   describe("activateWorkflow", () => {
     it("makes a PUT request to /v1/workflows/:workflowKey/activate with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -193,7 +193,7 @@ describe("lib/api-v1", () => {
 
   describe("listCommits", () => {
     it("makes a GET request to /v1/commits with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "get").returns(
         Promise.resolve({
@@ -229,7 +229,7 @@ describe("lib/api-v1", () => {
 
   describe("getCommit", () => {
     it("makes a GET request to /v1/commits/:id with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "get").returns(
         Promise.resolve({
@@ -248,7 +248,7 @@ describe("lib/api-v1", () => {
 
   describe("commitAllChanges", () => {
     it("makes a PUT request to /v1/commits with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -277,7 +277,7 @@ describe("lib/api-v1", () => {
 
   describe("promoteAllChanges", () => {
     it("makes a PUT request to /v1/commits/promote with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -304,7 +304,7 @@ describe("lib/api-v1", () => {
 
   describe("promoteOneChange", () => {
     it("makes a PUT request to /v1/commits/:id/promote with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -345,7 +345,7 @@ describe("lib/api-v1", () => {
     };
 
     it("makes a GET request to /v1/translations, without filters", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
       const stub = sinon
         .stub(apiV1.client, "get")
         .returns(Promise.resolve(resp));
@@ -365,7 +365,7 @@ describe("lib/api-v1", () => {
     });
 
     it("makes a GET request to /v1/translations, with filters", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
       const stub = sinon
         .stub(apiV1.client, "get")
         .returns(Promise.resolve(resp));
@@ -393,7 +393,7 @@ describe("lib/api-v1", () => {
 
   describe("getTranslation", () => {
     it("makes a GET request to /v1/translations/:locale_code with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "get").returns(
         Promise.resolve({
@@ -428,7 +428,7 @@ describe("lib/api-v1", () => {
 
   describe("upsertTranslation", () => {
     it("makes a PUT request to /v1/translations/:locale with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -470,7 +470,7 @@ describe("lib/api-v1", () => {
 
   describe("validateTranslation", () => {
     it("makes a PUT request to /v1/translations/:locale/validate with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -507,7 +507,7 @@ describe("lib/api-v1", () => {
 
   describe("listPartials", () => {
     it("makes a GET request to /v1/partials with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "get").returns(
         Promise.resolve({
@@ -547,7 +547,7 @@ describe("lib/api-v1", () => {
 
   describe("getPartial", () => {
     it("makes a GET request to /v1/partials/:partialKey with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "get").returns(
         Promise.resolve({
@@ -578,7 +578,7 @@ describe("lib/api-v1", () => {
 
   describe("upsertPartial", () => {
     it("makes a PUT request to /v1/partials/:partialKey with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({
@@ -622,7 +622,7 @@ describe("lib/api-v1", () => {
 
   describe("validatePartial", () => {
     it("makes a PUT request to /v1/partials/:partialKey/validate with supported params", async () => {
-      const apiV1 = new KnockApiV1(factory.gFlags(), dummyConfig);
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
       const stub = sinon.stub(apiV1.client, "put").returns(
         Promise.resolve({

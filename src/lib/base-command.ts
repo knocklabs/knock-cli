@@ -3,8 +3,19 @@ import { Command, Flags, Interfaces } from "@oclif/core";
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import KnockApiV1 from "./api-v1";
+import auth from "./auth";
 import * as RunContext from "./run-context";
-import UserConfig from "./user-config";
+import {
+  OAuthTokenContext,
+  ServiceTokenContext,
+  SessionContext,
+} from "./types";
+import {
+  DEFAULT_API_URL,
+  DEFAULT_AUTH_URL,
+  DEFAULT_DASHBOARD_URL,
+} from "./urls";
+import { UserConfigStore } from "./user-config";
 
 export type BFlags = Interfaces.InferredFlags<
   (typeof BaseCommand)["baseFlags"]
@@ -31,26 +42,108 @@ export type Props<T = unknown> = T extends typeof Command
   ? TProps<T>
   : GenericCommandProps;
 
+function sessionWithDefaultOrigins(sessionContext: Partial<SessionContext>) {
+  return {
+    ...sessionContext,
+    apiOrigin: sessionContext.apiOrigin ?? DEFAULT_API_URL,
+    dashboardOrigin: sessionContext.dashboardOrigin ?? DEFAULT_DASHBOARD_URL,
+    authOrigin: sessionContext.authOrigin ?? DEFAULT_AUTH_URL,
+  };
+}
+
 abstract class BaseCommand<T extends typeof Command> extends Command {
   protected props!: TProps<T>;
   protected apiV1!: KnockApiV1;
   protected runContext!: RunContext.T;
+  protected sessionContext!: SessionContext;
+  protected configStore!: UserConfigStore;
+
+  protected requiresAuth = true;
 
   public async init(): Promise<void> {
     await super.init();
 
+    this.configStore = new UserConfigStore(this.config.configDir);
+
     // 1. Load user's config from the config dir, as available.
-    await UserConfig.load(this.config.configDir);
+    await this.configStore.load();
 
     // 2. Parse flags and args, must come after the user config load.
     const { args, flags } = await this.parse(this.ctor);
     this.props = { args: args as TArgs<T>, flags: flags as TFlags<T> };
 
-    // 3. Instantiate a knock api client.
-    this.apiV1 = new KnockApiV1(this.props.flags, this.config);
+    // 3. Build the initial session context.
+    this.sessionContext = this.buildSessionContext();
 
-    // 4. Load the run context of the invoked command.
+    // 4. If the command requires authentication, ensure the session is authenticated.
+    if (this.requiresAuth) {
+      this.ensureAuthenticated();
+    }
+
+    // 5. If the session context is an OAuth session, refresh the access token.
+    if (this.sessionContext.type === "oauth") {
+      await this.refreshAccessTokenForSession();
+    }
+
+    // 6. Instantiate a knock api client.
+    this.apiV1 = new KnockApiV1(this.sessionContext, this.config);
+
+    // 7. Load the run context of the invoked command.
     this.runContext = await RunContext.load(this.id);
+  }
+
+  private buildSessionContext(): SessionContext {
+    const userConfig = this.configStore.get();
+    const session = userConfig.userSession;
+
+    // If the user has a session and a service token is not provided, use the session.
+    if (session && !this.props.flags["service-token"]) {
+      return sessionWithDefaultOrigins({
+        type: "oauth",
+        session,
+        apiOrigin: this.props.flags["api-origin"] ?? userConfig.apiOrigin,
+        dashboardOrigin: userConfig.dashboardOrigin,
+        authOrigin: userConfig.authOrigin,
+      }) as OAuthTokenContext;
+    }
+
+    // Otherwise, default to this being a service token session.
+    return sessionWithDefaultOrigins({
+      type: "service",
+      token: this.props.flags["service-token"] ?? userConfig.serviceToken,
+      apiOrigin: this.props.flags["api-origin"] ?? userConfig.apiOrigin,
+      dashboardOrigin: userConfig.dashboardOrigin,
+      authOrigin: userConfig.authOrigin,
+    }) as ServiceTokenContext;
+  }
+
+  ensureAuthenticated(): void {
+    if (
+      (this.sessionContext.type === "service" && !this.sessionContext.token) ||
+      (this.sessionContext.type === "oauth" && !this.sessionContext.session)
+    ) {
+      this.error("No token found. Refusing to run command.");
+    }
+  }
+
+  private async refreshAccessTokenForSession(): Promise<void> {
+    // Maybe refresh the access token?
+    try {
+      const refreshedSession = await auth.refreshAccessToken({
+        authUrl: this.sessionContext.authOrigin,
+        clientId: this.sessionContext.session?.clientId ?? "",
+        refreshToken: this.sessionContext.session?.refreshToken ?? "",
+      });
+
+      this.debug("Successfully refreshed access token.");
+      // Update the user config to use the new session.
+      await this.configStore.set({ userSession: refreshedSession });
+      // Update the session context to use the new session.
+      this.sessionContext = this.buildSessionContext();
+    } catch {
+      this.debug("Failed to refresh access token, clearing session.");
+      await this.configStore.set({ userSession: undefined });
+    }
   }
 
   // Base flags are inherited by any command that extends BaseCommand.
@@ -61,18 +154,16 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     // - if not available, fall back to user config
     "service-token": Flags.string({
       summary: "The service token to authenticate with.",
-      required: true,
+      required: false,
       multiple: false,
       env: "KNOCK_SERVICE_TOKEN",
-      default: async () => UserConfig.get().serviceToken,
     }),
 
-    // Hidden flag to use a different api base url for development purposes.
+    // Hidden flags to use a different api url for development purposes.
     "api-origin": Flags.string({
       hidden: true,
       required: false,
       multiple: false,
-      default: async () => UserConfig.get().apiOrigin,
     }),
   };
 }

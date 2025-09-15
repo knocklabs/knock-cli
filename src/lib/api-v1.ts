@@ -1,7 +1,7 @@
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-import { BFlags, Props } from "@/lib/base-command";
+import { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
@@ -14,7 +14,8 @@ import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
-const DEFAULT_ORIGIN = "https://control.knock.app";
+import { SessionContext } from "./types";
+
 const API_VERSION = "v1";
 
 /*
@@ -23,18 +24,29 @@ const API_VERSION = "v1";
 export default class ApiV1 {
   client!: AxiosInstance;
 
-  constructor(flags: BFlags, config: Config) {
-    const baseURL = flags["api-origin"] || DEFAULT_ORIGIN;
+  constructor(sessionContext: SessionContext, config: Config) {
+    const baseURL = sessionContext.apiOrigin;
+    const token = this.getToken(sessionContext);
 
     this.client = axios.create({
       baseURL,
       headers: {
-        Authorization: `Bearer ${flags["service-token"]}`,
+        // Used to authenticate the request to the API.
+        Authorization: `Bearer ${token}`,
+        // Used in conjunction with the JWT access token, to allow the OAuth server to
+        // verify the client ID of the OAuth client that issued the access token.
+        "x-knock-client-id": sessionContext.session?.clientId ?? undefined,
         "User-Agent": `${config.userAgent}`,
       },
       // Don't reject the promise based on a response status code.
       validateStatus: null,
     });
+  }
+
+  private getToken(sessionContext: SessionContext): string | undefined {
+    return sessionContext.session
+      ? sessionContext.session.accessToken
+      : sessionContext.token;
   }
 
   async ping(): Promise<AxiosResponse> {
@@ -509,7 +521,8 @@ export type T = ApiV1;
 export type WhoamiResp = {
   account_name: string;
   account_slug: string;
-  service_token_name: string;
+  service_token_name: string | null;
+  user_id: string | null;
 };
 
 export type ListWorkflowResp<A extends MaybeWithAnnotation = unknown> =

@@ -24,6 +24,7 @@ const JOKES = [
 export default class Knock extends BaseCommand<typeof Knock> {
   // Because, it's a secret :)
   static hidden = true;
+  protected requiresAuth = false;
 
   public async run(): Promise<void> {
     const promptOpts = { type: "invisible", name: "input" };
