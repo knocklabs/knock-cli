@@ -4,47 +4,74 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
-import * as yup from "yup";
+import { z } from "zod";
 
 import { isTestEnv } from "@/lib/helpers/const";
 
-const userConfigSchema = yup.object({
-  serviceToken: yup.string(),
-  apiOrigin: yup.string(),
+// When a user has authenticated via OAuth, we store the session in the user config.
+const userSessionSchema = z.object({
+  accessToken: z.string(),
+  clientId: z.string(),
+  refreshToken: z.string(),
 });
 
-type UserConfig = yup.InferType<typeof userConfigSchema>;
+const userConfigSchema = z.object({
+  serviceToken: z.string().optional(),
+  apiOrigin: z.string().optional(),
+  dashboardOrigin: z.string().optional(),
+  authOrigin: z.string().optional(),
+  userSession: userSessionSchema.optional(),
+});
 
-let USER_CONFIG: UserConfig;
+export type UserConfig = z.infer<typeof userConfigSchema>;
 
-const maybeReadJsonConfig = async (configDir: string) => {
-  // Don't use a user config file in tests.
-  if (isTestEnv) return null;
+class UserConfigStore {
+  private configDir: string;
+  private userConfig: UserConfig;
 
-  const pathToJsonConfig = path.resolve(configDir, "config.json");
-
-  const exists = await fs.pathExists(pathToJsonConfig);
-  if (!exists) return null;
-
-  return fs.readJSON(pathToJsonConfig);
-};
-
-const load = async (configDir: string): Promise<UserConfig> => {
-  const readConfig = await maybeReadJsonConfig(configDir);
-  const validConfig = await userConfigSchema.validate(readConfig || {});
-
-  // If no valid user config was available, give it an empty map.
-  USER_CONFIG = validConfig || {};
-
-  return USER_CONFIG;
-};
-
-const get = (): UserConfig => {
-  if (!USER_CONFIG) {
-    throw new Error("User config must be loaded first.");
+  constructor(configDir: string) {
+    this.configDir = configDir;
+    this.userConfig = {};
   }
 
-  return USER_CONFIG;
-};
+  public async load(): Promise<UserConfig> {
+    const readConfig = await this.maybeReadJsonConfig();
+    const validConfig = userConfigSchema.parse(readConfig || {});
+    this.userConfig = validConfig || {};
+    return this.userConfig;
+  }
 
-export default { load, get };
+  public get(): UserConfig {
+    return this.userConfig;
+  }
+
+  public async set(updatedConfig: UserConfig): Promise<UserConfig> {
+    this.userConfig = { ...this.userConfig, ...updatedConfig };
+    await this.maybeWriteJsonConfig();
+    return this.userConfig;
+  }
+
+  private configPath(): string {
+    return path.resolve(this.configDir, "config.json");
+  }
+
+  private async maybeReadJsonConfig(): Promise<UserConfig> {
+    if (isTestEnv) return {};
+
+    const path = this.configPath();
+
+    const exists = await fs.pathExists(path);
+    if (!exists) return {};
+
+    return fs.readJSON(path);
+  }
+
+  private async maybeWriteJsonConfig(): Promise<void> {
+    if (isTestEnv) return;
+
+    const path = this.configPath();
+    await fs.outputJson(path, this.userConfig, { spaces: 2 });
+  }
+}
+
+export { UserConfigStore };
