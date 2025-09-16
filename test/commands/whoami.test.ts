@@ -4,7 +4,6 @@ import nock from "nock";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
-import KnockApiV1 from "@/lib/api-v1";
 import auth from "@/lib/auth";
 import { DEFAULT_AUTH_URL } from "@/lib/urls";
 import { UserConfigStore } from "@/lib/user-config";
@@ -12,15 +11,26 @@ import { UserConfigStore } from "@/lib/user-config";
 const mockAuthenticatedSession = factory.authenticatedSession();
 
 describe("commands/whoami", () => {
-  const data: AuthVerifyResponse = {
+  const serviceTokenData: AuthVerifyResponse = {
+    type: "service_token",
     account_name: "Collab.io",
     account_slug: "collab-io",
     service_token_name: "My cool token",
+    user_id: null,
+  };
+
+  const userData: AuthVerifyResponse = {
+    type: "oauth_context",
+    account_name: "Collab.io",
+    account_slug: "collab-io",
+    service_token_name: null,
     user_id: "123",
   };
 
   beforeEach(() => {
-    nock("https://control.knock.app").get("/v1/whoami").reply(200, data);
+    nock("https://control.knock.app")
+      .get("/v1/whoami")
+      .reply(200, serviceTokenData);
   });
 
   describe("given a valid service token via flag", () => {
@@ -58,12 +68,13 @@ describe("commands/whoami", () => {
   });
 
   describe("given a valid user session via user config", () => {
+    beforeEach(() => {
+      nock("https://control.knock.app").get("/v1/whoami").reply(200, userData);
+    });
+
     test
       .stub(UserConfigStore.prototype, "get", (stub) =>
         stub.returns({ userSession: mockAuthenticatedSession }),
-      )
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data: userData })),
       )
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.resolves(mockAuthenticatedSession),
@@ -80,9 +91,6 @@ describe("commands/whoami", () => {
         stub.returns({ userSession: mockAuthenticatedSession }),
       )
       .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data: userData })),
-      )
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.resolves({
           ...mockAuthenticatedSession,
@@ -117,9 +125,6 @@ describe("commands/whoami", () => {
         stub.returns({ userSession: mockAuthenticatedSession }),
       )
       .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data: userData })),
-      )
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.rejects(new Error("Failed to refresh access token")),
       )

@@ -55,10 +55,7 @@ export default class ApiV1 {
 
     // This should eventually replace the Axios client
     this.knockMgmt = new KnockMgmt({
-      serviceToken:
-        sessionContext.type === "service"
-          ? sessionContext.token
-          : PLACEHOLDER_SERVICE_TOKEN,
+      serviceToken: sessionContext.token || PLACEHOLDER_SERVICE_TOKEN,
       baseURL,
       defaultHeaders: headers,
     });

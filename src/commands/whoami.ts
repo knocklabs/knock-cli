@@ -19,9 +19,7 @@ export default class Whoami extends BaseCommand<typeof Whoami> {
 
     this.log(`‣ Successfully authenticated:`);
 
-    let info: string[] = [];
-
-    info = resp.data.service_token_name
+    const info = resp.data.service_token_name
       ? [
           `Account name: ${resp.data.account_name}`,
           `Service token name: ${resp.data.service_token_name}`,
