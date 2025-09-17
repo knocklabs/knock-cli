@@ -13,6 +13,7 @@ import {
 import { withSpinnerV2 } from "@/lib/helpers/request";
 
 export default class BranchList extends BaseCommand<typeof BranchList> {
+  // Hide until branches are released in GA
   static hidden = true;
 
   static summary =
