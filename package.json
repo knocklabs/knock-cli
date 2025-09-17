@@ -92,7 +92,7 @@
     "type.check": "tsc",
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "yarn build && oclif manifest && oclif readme",
-    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
+    "test": "mocha \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md"
   },
   "engines": {
