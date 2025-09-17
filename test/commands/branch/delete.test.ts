@@ -8,7 +8,7 @@ describe("commands/branch/delete", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.prototype, "delete", (stub) =>
-        stub.resolves({ status: 204 }),
+        stub.resolves({ status: 204, ok: true }),
       )
       .stub(enquirer.prototype, "prompt", (stub) =>
         stub.resolves({ input: "y" }),
@@ -33,7 +33,7 @@ describe("commands/branch/delete", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.prototype, "delete", (stub) =>
-        stub.resolves({ status: 204 }),
+        stub.resolves({ status: 204, ok: true }),
       )
       .stdout()
       .command(["branch delete", "test-branch", "--force"])
@@ -55,7 +55,7 @@ describe("commands/branch/delete", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.prototype, "delete", (stub) =>
-        stub.resolves({ status: 204 }),
+        stub.resolves({ status: 204, ok: true }),
       )
       .stub(enquirer.prototype, "prompt", (stub) =>
         stub.resolves({ input: false }),
