@@ -1,6 +1,5 @@
-import { type AuthVerifyResponse } from "@knocklabs/mgmt/resources/auth";
+import { Auth, type AuthVerifyResponse } from "@knocklabs/mgmt/resources/auth";
 import { expect, test } from "@oclif/test";
-import nock from "nock";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
@@ -27,14 +26,9 @@ describe("commands/whoami", () => {
     user_id: "123",
   };
 
-  beforeEach(() => {
-    nock("https://control.knock.app")
-      .get("/v1/whoami")
-      .reply(200, serviceTokenData);
-  });
-
   describe("given a valid service token via flag", () => {
     test
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(serviceTokenData))
       .stdout()
       .command(["whoami", "--service-token", "valid-token"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -46,6 +40,7 @@ describe("commands/whoami", () => {
   describe("given a valid service token via env var", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(serviceTokenData))
       .stdout()
       .command(["whoami"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -59,6 +54,7 @@ describe("commands/whoami", () => {
       .stub(UserConfigStore.prototype, "get", (stub) =>
         stub.returns({ serviceToken: "valid-token" }),
       )
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(serviceTokenData))
       .stdout()
       .command(["whoami"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -68,14 +64,11 @@ describe("commands/whoami", () => {
   });
 
   describe("given a valid user session via user config", () => {
-    beforeEach(() => {
-      nock("https://control.knock.app").get("/v1/whoami").reply(200, userData);
-    });
-
     test
       .stub(UserConfigStore.prototype, "get", (stub) =>
         stub.returns({ userSession: mockAuthenticatedSession }),
       )
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(userData))
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.resolves(mockAuthenticatedSession),
       )
@@ -91,6 +84,7 @@ describe("commands/whoami", () => {
         stub.returns({ userSession: mockAuthenticatedSession }),
       )
       .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(userData))
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.resolves({
           ...mockAuthenticatedSession,
@@ -125,6 +119,7 @@ describe("commands/whoami", () => {
         stub.returns({ userSession: mockAuthenticatedSession }),
       )
       .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(userData))
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.rejects(new Error("Failed to refresh access token")),
       )

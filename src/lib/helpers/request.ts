@@ -68,14 +68,14 @@ export const withSpinner = async <T>(
 export const withSpinnerV2 = async <T>(
   requestFn: () => APIPromise<T>,
   opts: WithSpinnerOpts = {},
-): Promise<{ data: T; response: Response }> => {
+): Promise<T> => {
   const { action = "‣ Loading" } = opts;
 
   // Suppress printing the spinner in tests, oclif doesn't for some reasons.
   spinner.start(action);
 
   try {
-    const resp = await requestFn().withResponse();
+    const resp = await requestFn();
     spinner.stop();
     return resp;
   } catch (error) {
