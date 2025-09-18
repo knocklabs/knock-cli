@@ -31,7 +31,7 @@ export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
 
   async request(slug: string): Promise<ApiV1.BranchData> {
     return withSpinnerV2<ApiV1.BranchData>(() =>
-      this.apiV1.knockMgmt.post(`/v1/branches/${slug}`),
+      this.apiV1.mgmtClient.post(`/v1/branches/${slug}`),
     );
   }
 
