@@ -33,6 +33,39 @@ export const formatErrorRespMessage = ({
   return message;
 };
 
+export const formatMgmtError = (
+  apiError: InstanceType<
+    typeof KnockMgmt.APIError<
+      number,
+      Headers,
+      { message?: string; errors?: InputError[] }
+    >
+  >,
+): string => {
+  if (apiError.status === 500) {
+    return "An internal server error occurred";
+  }
+
+  // Prefer the error message from the error object over
+  // the error message formatted by the Stainless SDK
+  const description = `${apiError.error.message ?? apiError.message} (status: ${
+    apiError.status
+  })`;
+
+  const inputErrors = apiError.error.errors ?? [];
+
+  if (Array.isArray(inputErrors) && inputErrors.length > 0) {
+    const errs = inputErrors.map(
+      (e: InputError) => new JsonDataError(e.message, e.field),
+    );
+    return errs.length === 0
+      ? description
+      : description + "\n\n" + formatErrors(errs, { indentBy: 2 });
+  }
+
+  return description;
+};
+
 /*
  * Helper function that wraps the underlying request function and handles
  * certain boilerplate operations around a req/resp cycle:
@@ -80,7 +113,8 @@ export const withSpinnerV2 = async <T>(
     return resp;
   } catch (error) {
     if (error instanceof KnockMgmt.APIError) {
-      return ux.error(new ApiError(error.message));
+      const message = formatMgmtError(error);
+      return ux.error(new ApiError(message));
     }
 
     throw error;

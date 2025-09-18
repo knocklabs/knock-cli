@@ -11,7 +11,7 @@ export default class Whoami extends BaseCommand<typeof Whoami> {
 
   public async run(): Promise<AuthVerifyResponse | void> {
     const resp = await withSpinnerV2<AuthVerifyResponse>(() =>
-      this.apiV1.knockMgmt.auth.verify(),
+      this.apiV1.mgmtClient.auth.verify(),
     );
 
     const { flags } = this.props;
