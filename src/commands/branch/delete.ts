@@ -1,6 +1,7 @@
-import { Args, Flags } from "@oclif/core";
+import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { CustomArgs } from "@/lib/helpers/arg";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
@@ -11,8 +12,9 @@ export default class BranchDelete extends BaseCommand<typeof BranchDelete> {
   static summary = "Deletes an existing branch with the given slug.";
 
   static args = {
-    slug: Args.string({
+    slug: CustomArgs.slugArg({
       required: true,
+      description: "The slug of the branch to delete",
     }),
   };
 

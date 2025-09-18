@@ -68,6 +68,30 @@ describe("commands/branch/delete", () => {
       );
   });
 
+  describe("given an argument containing mixed casing and whitespace", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockMgmt.prototype, "delete", (stub) => stub.resolves())
+      .command(["branch delete", " Mixed Case   With Whitespace ", "--force"])
+      .it("slugifies input before calling knockMgmt.delete", () => {
+        sinon.assert.calledWith(
+          KnockMgmt.prototype.delete as any,
+          "/v1/branches/mixed-case-with-whitespace",
+        );
+      });
+  });
+
+  describe("given an invalid branch slug", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .command(
+        // Attempts to pass in whitespace as the slug
+        ["branch delete", " "],
+      )
+      .catch(/Invalid slug provided/)
+      .it("throws an error");
+  });
+
   describe("given no service token", () => {
     test
       .command(["branch delete", "test-branch"])
