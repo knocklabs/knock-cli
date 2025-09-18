@@ -31,7 +31,7 @@ export default class BranchDelete extends BaseCommand<typeof BranchDelete> {
     if (!input) return;
 
     await withSpinnerV2(
-      () => this.apiV1.knockMgmt.delete(`/v1/branches/${args.slug}`),
+      () => this.apiV1.mgmtClient.delete(`/v1/branches/${args.slug}`),
       { action: "‣ Deleting branch" },
     );
 
