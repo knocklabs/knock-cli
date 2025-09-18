@@ -24,7 +24,7 @@ const API_VERSION = "v1";
  * request header directly, so use a placeholder when service token is not
  * provided.
  */
-const PLACEHOLDER_SERVICE_TOKEN = "overridden";
+const PLACEHOLDER_SERVICE_TOKEN = "placeholder-service-token";
 
 /*
  * API v1 client
