@@ -85,9 +85,14 @@ describe("commands/branch/delete", () => {
         stub.rejects(
           new KnockMgmt.APIError(
             404,
+            {
+              code: "branch_not_found",
+              message: "The branch you specified was not found in this project",
+              status: 404,
+              type: "invalid_request_error",
+            },
             undefined,
-            "The branch you specified was not found in this project",
-            undefined,
+            new Headers(),
           ),
         ),
       )
@@ -95,7 +100,9 @@ describe("commands/branch/delete", () => {
         stub.resolves({ input: "y" }),
       )
       .command(["branch delete", "nonexistent-branch"])
-      .catch(/404 The branch you specified was not found in this project/)
+      .catch(
+        /The branch you specified was not found in this project \(status: 404\)/,
+      )
       .it("throws error when API returns error");
   });
 });
