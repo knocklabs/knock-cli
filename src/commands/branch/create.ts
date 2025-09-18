@@ -1,7 +1,6 @@
-import { Args } from "@oclif/core";
-
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { CustomArgs } from "@/lib/helpers/arg";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 
 export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
@@ -13,7 +12,7 @@ export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
   static enableJsonFlag = true;
 
   static args = {
-    slug: Args.string({
+    slug: CustomArgs.slugArg({
       required: true,
       description: "The slug for the new branch",
     }),

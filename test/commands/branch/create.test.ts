@@ -35,6 +35,34 @@ describe("commands/branch/create", () => {
       });
   });
 
+  describe("given a branch slug containing mixed casing and whitespace", () => {
+    const expectedSlug = "mixed-case-with-whitespace";
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockMgmt.prototype, "post", (stub) =>
+        stub.resolves(factory.branch({ slug: expectedSlug })),
+      )
+      .command(["branch create", " Mixed Case   With Whitespace "])
+      .it("creates a branch with the correct slug", () => {
+        sinon.assert.calledWith(
+          KnockMgmt.prototype.post as any,
+          `/v1/branches/${expectedSlug}`,
+        );
+      });
+  });
+
+  describe("given an invalid branch slug", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .command(
+        // Attempts to pass in whitespace as the slug
+        ["branch create", " "],
+      )
+      .catch(/Invalid slug provided/)
+      .it("throws an error");
+  });
+
   describe("given --json flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
