@@ -41,7 +41,7 @@ export default class BranchList extends BaseCommand<typeof BranchList> {
     });
 
     return withSpinnerV2<ApiV1.ListBranchResp>(() =>
-      this.apiV1.knockMgmt.get("/v1/branches", { query: queryParams }),
+      this.apiV1.mgmtClient.get("/v1/branches", { query: queryParams }),
     );
   }
 
