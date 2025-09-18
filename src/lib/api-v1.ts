@@ -24,14 +24,14 @@ const API_VERSION = "v1";
  * request header directly, so use a placeholder when service token is not
  * provided.
  */
-const PLACEHOLDER_SERVICE_TOKEN = "overridden";
+const PLACEHOLDER_SERVICE_TOKEN = "placeholder-service-token";
 
 /*
  * API v1 client
  */
 export default class ApiV1 {
   client!: AxiosInstance;
-  public knockMgmt: KnockMgmt;
+  public mgmtClient: KnockMgmt;
 
   constructor(sessionContext: SessionContext, config: Config) {
     const baseURL = sessionContext.apiOrigin;
@@ -54,7 +54,7 @@ export default class ApiV1 {
     });
 
     // This should eventually replace the Axios client
-    this.knockMgmt = new KnockMgmt({
+    this.mgmtClient = new KnockMgmt({
       serviceToken: sessionContext.token || PLACEHOLDER_SERVICE_TOKEN,
       baseURL,
       defaultHeaders: headers,
