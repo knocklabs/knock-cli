@@ -30,7 +30,7 @@ export const pageFlags = {
   }),
 };
 
-type PageParams = {
+export type PageParams = {
   after?: string;
   before?: string;
   limit?: number;

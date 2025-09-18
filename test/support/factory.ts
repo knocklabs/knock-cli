@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
+import { type BranchData } from "@/lib/api-v1";
 import { AuthenticatedSession } from "@/lib/auth";
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
@@ -257,6 +258,17 @@ export const guide = (attrs: Partial<GuideData> = {}): GuideData => {
     updated_at: "2022-12-31T12:00:00.000000Z",
     created_at: "2022-12-31T12:00:00.000000Z",
     environment: "development",
+    ...attrs,
+  };
+};
+
+export const branch = (attrs: Partial<BranchData> = {}): BranchData => {
+  return {
+    slug: "test-branch",
+    created_at: "2025-09-15T17:10:20.755005Z",
+    updated_at: "2025-09-15T17:10:20.755005Z",
+    last_commit_at: "2025-09-15T17:12:54.948275Z",
+    deleted_at: null,
     ...attrs,
   };
 };

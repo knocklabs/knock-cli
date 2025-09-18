@@ -670,3 +670,14 @@ export type ActivateGuideResp = {
   guide?: Guide.GuideData;
   errors?: InputError[];
 };
+
+export type ListBranchResp = PaginatedResp<BranchData>;
+
+// TODO Remove this type once @knocklabs/mgmt includes branch operations
+export type BranchData = {
+  created_at: string;
+  deleted_at: string | null;
+  last_commit_at: string | null;
+  slug: string;
+  updated_at: string;
+};
