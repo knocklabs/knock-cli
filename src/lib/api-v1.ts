@@ -1,3 +1,4 @@
+import KnockMgmt from "@knocklabs/mgmt";
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -18,28 +19,45 @@ import { SessionContext } from "./types";
 
 const API_VERSION = "v1";
 
+/**
+ * KnockMgmt client requires a service token, but we set the Authorization
+ * request header directly, so use a placeholder when service token is not
+ * provided.
+ */
+const PLACEHOLDER_SERVICE_TOKEN = "placeholder-service-token";
+
 /*
  * API v1 client
  */
 export default class ApiV1 {
   client!: AxiosInstance;
+  public mgmtClient: KnockMgmt;
 
   constructor(sessionContext: SessionContext, config: Config) {
     const baseURL = sessionContext.apiOrigin;
     const token = this.getToken(sessionContext);
 
+    const headers = {
+      // Used to authenticate the request to the API.
+      Authorization: `Bearer ${token}`,
+      // Used in conjunction with the JWT access token, to allow the OAuth server to
+      // verify the client ID of the OAuth client that issued the access token.
+      "x-knock-client-id": sessionContext.session?.clientId ?? undefined,
+      "User-Agent": `${config.userAgent}`,
+    };
+
     this.client = axios.create({
       baseURL,
-      headers: {
-        // Used to authenticate the request to the API.
-        Authorization: `Bearer ${token}`,
-        // Used in conjunction with the JWT access token, to allow the OAuth server to
-        // verify the client ID of the OAuth client that issued the access token.
-        "x-knock-client-id": sessionContext.session?.clientId ?? undefined,
-        "User-Agent": `${config.userAgent}`,
-      },
+      headers,
       // Don't reject the promise based on a response status code.
       validateStatus: null,
+    });
+
+    // This should eventually replace the Axios client
+    this.mgmtClient = new KnockMgmt({
+      serviceToken: sessionContext.token || PLACEHOLDER_SERVICE_TOKEN,
+      baseURL,
+      defaultHeaders: headers,
     });
   }
 

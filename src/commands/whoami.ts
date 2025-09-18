@@ -1,6 +1,7 @@
-import * as ApiV1 from "@/lib/api-v1";
+import { AuthVerifyResponse } from "@knocklabs/mgmt/resources/auth";
+
 import BaseCommand from "@/lib/base-command";
-import { withSpinner } from "@/lib/helpers/request";
+import { withSpinnerV2 } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 
 export default class Whoami extends BaseCommand<typeof Whoami> {
@@ -8,25 +9,22 @@ export default class Whoami extends BaseCommand<typeof Whoami> {
 
   static enableJsonFlag = true;
 
-  public async run(): Promise<ApiV1.WhoamiResp | void> {
-    const resp = await withSpinner<ApiV1.WhoamiResp>(() => this.apiV1.whoami());
+  public async run(): Promise<AuthVerifyResponse | void> {
+    const resp = await withSpinnerV2<AuthVerifyResponse>(() =>
+      this.apiV1.mgmtClient.auth.verify(),
+    );
 
     const { flags } = this.props;
-    if (flags.json) return resp.data;
+    if (flags.json) return resp;
 
     this.log(`‣ Successfully authenticated:`);
 
-    let info: string[] = [];
-
-    info = resp.data.service_token_name
+    const info = resp.service_token_name
       ? [
-          `Account name: ${resp.data.account_name}`,
-          `Service token name: ${resp.data.service_token_name}`,
+          `Account name: ${resp.account_name}`,
+          `Service token name: ${resp.service_token_name}`,
         ]
-      : [
-          `Account name: ${resp.data.account_name}`,
-          `User ID: ${resp.data.user_id}`,
-        ];
+      : [`Account name: ${resp.account_name}`, `User ID: ${resp.user_id}`];
 
     this.log(indentString(info.join("\n"), 4));
   }

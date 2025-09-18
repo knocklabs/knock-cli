@@ -1,8 +1,8 @@
+import { Auth, type AuthVerifyResponse } from "@knocklabs/mgmt/resources/auth";
 import { expect, test } from "@oclif/test";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
-import KnockApiV1 from "@/lib/api-v1";
 import auth from "@/lib/auth";
 import { DEFAULT_AUTH_URL } from "@/lib/urls";
 import { UserConfigStore } from "@/lib/user-config";
@@ -10,21 +10,25 @@ import { UserConfigStore } from "@/lib/user-config";
 const mockAuthenticatedSession = factory.authenticatedSession();
 
 describe("commands/whoami", () => {
-  const data = {
+  const serviceTokenData: AuthVerifyResponse = {
+    type: "service_token",
     account_name: "Collab.io",
+    account_slug: "collab-io",
     service_token_name: "My cool token",
+    user_id: null,
   };
 
-  const userData = {
+  const userData: AuthVerifyResponse = {
+    type: "oauth_context",
     account_name: "Collab.io",
+    account_slug: "collab-io",
+    service_token_name: null,
     user_id: "123",
   };
 
   describe("given a valid service token via flag", () => {
     test
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data })),
-      )
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(serviceTokenData))
       .stdout()
       .command(["whoami", "--service-token", "valid-token"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -36,9 +40,7 @@ describe("commands/whoami", () => {
   describe("given a valid service token via env var", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data })),
-      )
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(serviceTokenData))
       .stdout()
       .command(["whoami"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -52,9 +54,7 @@ describe("commands/whoami", () => {
       .stub(UserConfigStore.prototype, "get", (stub) =>
         stub.returns({ serviceToken: "valid-token" }),
       )
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data })),
-      )
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(serviceTokenData))
       .stdout()
       .command(["whoami"])
       .it("runs the command to make a whoami request", (ctx) => {
@@ -68,9 +68,7 @@ describe("commands/whoami", () => {
       .stub(UserConfigStore.prototype, "get", (stub) =>
         stub.returns({ userSession: mockAuthenticatedSession }),
       )
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data: userData })),
-      )
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(userData))
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.resolves(mockAuthenticatedSession),
       )
@@ -86,9 +84,7 @@ describe("commands/whoami", () => {
         stub.returns({ userSession: mockAuthenticatedSession }),
       )
       .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data: userData })),
-      )
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(userData))
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.resolves({
           ...mockAuthenticatedSession,
@@ -123,9 +119,7 @@ describe("commands/whoami", () => {
         stub.returns({ userSession: mockAuthenticatedSession }),
       )
       .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
-      .stub(KnockApiV1.prototype, "whoami", (stub) =>
-        stub.resolves(factory.resp({ data: userData })),
-      )
+      .stub(Auth.prototype, "verify", (stub) => stub.resolves(userData))
       .stub(auth, "refreshAccessToken", (stub) =>
         stub.rejects(new Error("Failed to refresh access token")),
       )
