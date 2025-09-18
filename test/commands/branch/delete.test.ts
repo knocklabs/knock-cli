@@ -7,9 +7,7 @@ describe("commands/branch/delete", () => {
   describe("given confirmation accepted", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "delete", (stub) =>
-        stub.resolves({ status: 204, ok: true }),
-      )
+      .stub(KnockMgmt.prototype, "delete", (stub) => stub.resolves())
       .stub(enquirer.prototype, "prompt", (stub) =>
         stub.resolves({ input: "y" }),
       )
@@ -32,9 +30,7 @@ describe("commands/branch/delete", () => {
   describe("given --force flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "delete", (stub) =>
-        stub.resolves({ status: 204, ok: true }),
-      )
+      .stub(KnockMgmt.prototype, "delete", (stub) => stub.resolves())
       .stdout()
       .command(["branch delete", "test-branch", "--force"])
       .it(
@@ -54,9 +50,7 @@ describe("commands/branch/delete", () => {
   describe("given confirmation declined", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "delete", (stub) =>
-        stub.resolves({ status: 204, ok: true }),
-      )
+      .stub(KnockMgmt.prototype, "delete", (stub) => stub.resolves())
       .stub(enquirer.prototype, "prompt", (stub) =>
         stub.resolves({ input: false }),
       )
