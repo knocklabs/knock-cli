@@ -93,7 +93,8 @@
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "yarn build && oclif manifest && oclif readme",
     "test": "mocha \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md"
+    "version": "oclif readme && git add README.md",
+    "check": "yarn run lint && yarn run format.check && yarn run type.check"
   },
   "engines": {
     "node": ">=18.17.0"
