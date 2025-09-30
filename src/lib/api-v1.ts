@@ -274,6 +274,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ListEmailLayoutResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       ...toPageParams(flags),
@@ -288,6 +289,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<GetEmailLayoutResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
@@ -301,6 +303,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertEmailLayoutResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
@@ -316,6 +319,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidateEmailLayoutResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = { email_layout: layout };
 

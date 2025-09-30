@@ -43,6 +43,41 @@ describe("commands/layout/get", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "getEmailLayout", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.emailLayout(),
+          }),
+        ),
+      )
+      .stdout()
+      .command([
+        "layout get",
+        "transactional",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 getEmailLayout with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getEmailLayout as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                emailLayoutKey: "transactional",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given an email layout key arg, and flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

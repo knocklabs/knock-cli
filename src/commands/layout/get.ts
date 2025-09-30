@@ -2,7 +2,9 @@ import { Args, Flags, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDate } from "@/lib/helpers/date";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 
 export default class EmailLayoutGet extends BaseCommand<typeof EmailLayoutGet> {
@@ -13,6 +15,7 @@ export default class EmailLayoutGet extends BaseCommand<typeof EmailLayoutGet> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
@@ -45,8 +48,9 @@ export default class EmailLayoutGet extends BaseCommand<typeof EmailLayoutGet> {
     const qualifier =
       env === "development" && !commitedOnly ? "(including uncommitted)" : "";
 
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Showing email layout \`${emailLayoutKey}\` in \`${env}\` environment ${qualifier}\n`,
+      `‣ Showing email layout \`${emailLayoutKey}\` in ${scope} ${qualifier}\n`,
     );
     /*
      * Email layout table
