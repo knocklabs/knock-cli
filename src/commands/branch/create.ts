@@ -12,7 +12,7 @@ export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
   static enableJsonFlag = true;
 
   static args = {
-    slug: CustomArgs.slugArg({
+    slug: CustomArgs.slug({
       required: true,
       description: "The slug for the new branch",
     }),
