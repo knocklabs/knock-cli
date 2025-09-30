@@ -396,6 +396,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ListMessageTypeResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       annotate: flags.annotate,
       ...toPageParams(flags),
@@ -410,6 +411,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<GetMessageTypeResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
@@ -423,6 +425,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertMessageTypeResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
@@ -438,6 +441,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidateMessageTypeResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = { message_type: messageType };
 

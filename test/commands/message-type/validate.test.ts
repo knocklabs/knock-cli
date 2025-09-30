@@ -62,6 +62,37 @@ describe("commands/message-type/validate (a single message type)", () => {
           ),
         );
       });
+
+    describe("given a branch flag", () => {
+      setupWithStub()
+        .stdout()
+        .command([
+          "message-type validate",
+          "card",
+          "--branch",
+          "my-feature-branch-123",
+        ])
+        .it("calls apiV1 validateMessageType with expected params", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.validateMessageType as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { messageTypeKey: "card" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  environment: "development",
+                  branch: "my-feature-branch-123",
+                }),
+            ),
+            sinon.match((messageType) =>
+              isEqual(messageType, {
+                key: "card",
+                name: "Card",
+              }),
+            ),
+          );
+        });
+    });
   });
 
   describe("given a message_type.json file with syntax errors", () => {
