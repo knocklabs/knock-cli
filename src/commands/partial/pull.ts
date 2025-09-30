@@ -93,7 +93,7 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
     const action = dirContext.exists ? "updated" : "created";
     const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} from ${scope}`,
+      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} using ${scope}`,
     );
   }
 
@@ -121,7 +121,7 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
     const action = targetDirCtx.exists ? "updated" : "created";
     const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} the partials directory at ${targetDirCtx.abspath} from ${scope}`,
+      `‣ Successfully ${action} the partials directory at ${targetDirCtx.abspath} using ${scope}`,
     );
   }
 

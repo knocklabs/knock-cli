@@ -80,7 +80,7 @@ export default class PartialValidate extends BaseCommand<
     const partialKeys = partials.map((p) => p.key);
     const scope = formatCommandScope({ ...this.props.flags });
     this.log(
-      `‣ Successfully validated ${partials.length} partial(s) in ${scope}:\n` +
+      `‣ Successfully validated ${partials.length} partial(s) using ${scope}:\n` +
         indentString(partialKeys.join("\n"), 4),
     );
   }
