@@ -161,6 +161,7 @@ export default class ApiV1 {
   async listCommits({ flags }: Props): Promise<AxiosResponse<ListCommitResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       promoted: flags.promoted,
       resource_type: flags["resource-type"],
       resource_id: flags["resource-id"],
