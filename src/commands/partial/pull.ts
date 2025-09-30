@@ -4,6 +4,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
@@ -90,8 +91,9 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
     await Partial.writePartialDirFromData(dirContext, resp.data);
 
     const action = dirContext.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath}`,
+      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} from ${scope}`,
     );
   }
 
@@ -117,8 +119,9 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
     spinner.stop();
 
     const action = targetDirCtx.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} the partials directory at ${targetDirCtx.abspath}`,
+      `‣ Successfully ${action} the partials directory at ${targetDirCtx.abspath} from ${scope}`,
     );
   }
 
