@@ -134,6 +134,38 @@ describe("commands/partial/push", () => {
         );
       });
 
+    describe("given a branch flag", () => {
+      setupWithStub({ data: { partial: mockPartialData } })
+        .stdout()
+        .command([
+          "partial push",
+          "default",
+          "--branch",
+          "my-feature-branch-123",
+        ])
+        .it("calls apiV1 upsertPartial with expected params", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.upsertPartial as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { partialKey: "default" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  environment: "development",
+                  branch: "my-feature-branch-123",
+                  annotate: true,
+                }),
+            ),
+            sinon.match((partial) =>
+              isEqual(partial, {
+                key: "default",
+                name: "Default",
+              }),
+            ),
+          );
+        });
+    });
+
     setupWithStub({ data: { partial: mockPartialData } })
       .stdout()
       .command(["partial push", "default"])

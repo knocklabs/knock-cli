@@ -61,6 +61,37 @@ describe("commands/partial/validate (a single partial)", () => {
           ),
         );
       });
+
+    describe("given a branch flag", () => {
+      setupWithStub()
+        .stdout()
+        .command([
+          "partial validate",
+          "default",
+          "--branch",
+          "my-feature-branch-123",
+        ])
+        .it("calls apiV1 validatePartial with expected params", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.validatePartial as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { partialKey: "default" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  environment: "development",
+                  branch: "my-feature-branch-123",
+                }),
+            ),
+            sinon.match((partial) =>
+              isEqual(partial, {
+                key: "default",
+                name: "Default",
+              }),
+            ),
+          );
+        });
+    });
   });
 
   describe("given a partial.json file, with syntax errors", () => {

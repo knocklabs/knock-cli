@@ -31,6 +31,7 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to pull all partials from the specified environment.",
     }),
