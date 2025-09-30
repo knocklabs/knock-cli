@@ -210,6 +210,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ListTranslationResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       locale_code: filters.localeCode,
       namespace: filters.namespace,
@@ -226,6 +227,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<GetTranslationResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       namespace: translation.namespace,
       format: flags.format,
@@ -240,6 +242,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertTranslationResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       commit: flags.commit,
       commit_message: flags["commit-message"],
       namespace: translation.namespace,
@@ -258,6 +261,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidateTranslationResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       namespace: translation.namespace,
     });
     const data = { translation };
