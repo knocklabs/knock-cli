@@ -93,6 +93,48 @@ describe("commands/translation/get", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.translation(),
+          }),
+        ),
+      )
+      .stdout()
+      .command([
+        "translation get",
+        "admin.en",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 getTranslation with correct props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getTranslation as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                translationRef: "admin.en",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+                format: "json",
+              }),
+          ),
+          sinon.match((translation) =>
+            isEqual(translation, {
+              localeCode: "en",
+              namespace: "admin",
+            }),
+          ),
+        );
+      });
+  });
+
   describe("given a translation ref that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
