@@ -1,14 +1,16 @@
 import { Args } from "@oclif/core";
 
+import { slugify } from "./string";
+
 const slugArg = Args.custom<string>({
   parse: async (str) => {
-    const slug = str.toLowerCase().trim().replace(/\s+/g, "-");
+    const slugifiedInput = slugify(str);
 
-    if (!slug) {
+    if (!slugifiedInput) {
       throw new Error("Invalid slug provided");
     }
 
-    return slug;
+    return slugifiedInput;
   },
 });
 

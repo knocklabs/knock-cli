@@ -7,6 +7,7 @@ import { DirContext } from "@/lib/helpers/fs";
 
 import { tryJsonParse } from "./json";
 import { AnyObj } from "./object.isomorphic";
+import { slugify } from "./string";
 
 /*
  * Takes a flag input of 'true' or 'false' as a string, then cast to a boolean
@@ -95,4 +96,22 @@ export const maybeJsonStrAsList = Flags.custom<AnyObj[] | string[]>({
     if (Array.isArray(data)) return data;
     return [data];
   },
+});
+
+const slug = Flags.custom<string>({
+  parse: async (str) => {
+    const slugifiedInput = slugify(str);
+
+    if (!slugifiedInput) {
+      throw new Error("Invalid slug provided");
+    }
+
+    return slugifiedInput;
+  },
+});
+
+export const branch = slug({
+  summary: "The slug of the branch to use.",
+  // TODO Hide until branching is released in GA
+  hidden: true,
 });
