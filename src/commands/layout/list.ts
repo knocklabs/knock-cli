@@ -54,13 +54,11 @@ export default class EmailLayoutList extends BaseCommand<
 
   async render(data: ApiV1.ListEmailLayoutResp): Promise<void> {
     const { entries } = data;
-    const { environment, "hide-uncommitted-changes": commitedOnly } =
+    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
       this.props.flags;
 
     const qualifier =
-      environment === "development" && !commitedOnly
-        ? "(including uncommitted)"
-        : "";
+      env === "development" && !commitedOnly ? "(including uncommitted)" : "";
 
     const scope = formatCommandScope(this.props.flags);
     this.log(
