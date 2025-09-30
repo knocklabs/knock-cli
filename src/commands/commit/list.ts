@@ -3,6 +3,7 @@ import { AxiosResponse } from "axios";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDate } from "@/lib/helpers/date";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
@@ -79,7 +80,7 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
 
   async render(data: ApiV1.ListCommitResp): Promise<void> {
     const { entries } = data;
-    const { environment: env, promoted, branch } = this.props.flags;
+    const { promoted } = this.props.flags;
 
     let qualifier = "";
 
@@ -91,11 +92,8 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       qualifier = "(showing only unpromoted)";
     }
 
-    this.log(
-      `‣ Showing ${entries.length} commits in \`${branch ?? env}\` ${
-        branch ? "branch" : "environment"
-      } ${qualifier}\n`,
-    );
+    const scope = formatCommandScope(this.props.flags);
+    this.log(`‣ Showing ${entries.length} commits in ${scope} ${qualifier}\n`);
 
     /*
      * Commits table
