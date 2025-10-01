@@ -26,6 +26,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     "knock-dir": CustomFlags.dirPath({
       summary: "The target directory path to pull all resources into.",
       required: true,
@@ -53,6 +54,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
       "--all",
       "--environment",
       flags.environment,
+      ...(flags.branch ? ["--branch", flags.branch] : []),
       ...(flags["hide-uncommitted-changes"]
         ? ["--hide-uncommitted-changes"]
         : []),
