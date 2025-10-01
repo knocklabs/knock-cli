@@ -56,6 +56,8 @@ or deactivated at a later time using the --from and --until flags.
   async run(): Promise<void> {
     const { args, flags } = this.props;
 
+    const scope = formatCommandScope(flags);
+
     // Validate that either status OR from/until is provided
     const hasStatus = flags.status !== undefined;
     const hasFrom = Boolean(flags.from);
@@ -77,7 +79,7 @@ or deactivated at a later time using the --from and --until flags.
     }
 
     // 1. Confirm before activating or deactivating the guide, unless forced.
-    const prompt = `${action} \`${args.guideKey}\` guide in \`${flags.environment}\` environment?`;
+    const prompt = `${action} \`${args.guideKey}\` guide in ${scope}?`;
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
@@ -103,7 +105,6 @@ or deactivated at a later time using the --from and --until flags.
       actioned = "scheduled";
     }
 
-    const scope = formatCommandScope(flags);
     this.log(
       `‣ Successfully ${actioned} \`${args.guideKey}\` guide in ${scope}`,
     );
