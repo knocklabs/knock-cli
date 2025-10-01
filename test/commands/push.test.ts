@@ -750,7 +750,176 @@ describe("commands/push", () => {
       });
 
       describe("and a branch flag", () => {
-        // TODO
+        const layoutsSubdirPath = path.resolve(sandboxDir, "layouts");
+        const partialsSubdirPath = path.resolve(sandboxDir, "partials");
+        const translationsSubdirPath = path.resolve(sandboxDir, "translations");
+        const workflowsSubdirPath = path.resolve(sandboxDir, "workflows");
+
+        let upsertLayoutStub: sinon.SinonStub;
+        let upsertPartialStub: sinon.SinonStub;
+        let upsertTranslationStub: sinon.SinonStub;
+        let upsertWorkflowStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          sinon.stub(EmailLayoutValidate, "validateAll").resolves([]);
+          sinon.stub(PartialValidate, "validateAll").resolves([]);
+          sinon.stub(TranslationValidate, "validateAll").resolves([]);
+          sinon.stub(WorkflowValidate, "validateAll").resolves([]);
+
+          upsertLayoutStub = sinon
+            .stub(KnockApiV1.prototype, "upsertEmailLayout")
+            .resolves(
+              factory.resp({ data: { email_layout: mockEmailLayoutData } }),
+            );
+
+          upsertPartialStub = sinon
+            .stub(KnockApiV1.prototype, "upsertPartial")
+            .resolves(factory.resp({ data: { partial: mockPartialData } }));
+
+          upsertTranslationStub = sinon
+            .stub(KnockApiV1.prototype, "upsertTranslation")
+            .resolves(factory.resp());
+
+          upsertWorkflowStub = sinon
+            .stub(KnockApiV1.prototype, "upsertWorkflow")
+            .resolves(factory.resp({ data: { workflow: mockWorkflowData } }));
+
+          const messagesLayoutJson = path.resolve(
+            layoutsSubdirPath,
+            "messages",
+            LAYOUT_JSON,
+          );
+          fs.outputJsonSync(messagesLayoutJson, { name: "Messages" });
+
+          const messagesPartialJson = path.resolve(
+            partialsSubdirPath,
+            "messages",
+            PARTIAL_JSON,
+          );
+          fs.outputJsonSync(messagesPartialJson, { name: "Messages" });
+
+          const fooWorkflowJson = path.resolve(
+            workflowsSubdirPath,
+            "foo",
+            WORKFLOW_JSON,
+          );
+          fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+          const enTranslationJson = path.resolve(
+            translationsSubdirPath,
+            "en",
+            "en.json",
+          );
+          fs.outputJsonSync(enTranslationJson, { hello: "Heyyyy" });
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          sinon.restore();
+        });
+
+        test
+          .command([
+            "push",
+            "--knock-dir",
+            ".",
+            "--branch",
+            "my-feature-branch-123",
+          ])
+          .it("upserts all resources with expected params", () => {
+            sinon.assert.calledOnceWithExactly(
+              upsertLayoutStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    branch: "my-feature-branch-123",
+                    all: true,
+                    "layouts-dir": {
+                      abspath: layoutsSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((layout) =>
+                isEqual(layout, { key: "messages", name: "Messages" }),
+              ),
+            );
+
+            sinon.assert.calledOnceWithExactly(
+              upsertPartialStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    branch: "my-feature-branch-123",
+                    all: true,
+                    "partials-dir": {
+                      abspath: partialsSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((partial) =>
+                isEqual(partial, { key: "messages", name: "Messages" }),
+              ),
+            );
+
+            sinon.assert.calledOnceWithExactly(
+              upsertTranslationStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    "service-token": "valid-token",
+                    environment: "development",
+                    branch: "my-feature-branch-123",
+                    all: true,
+                    "translations-dir": {
+                      abspath: translationsSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((translation) =>
+                isEqual(translation, {
+                  locale_code: "en",
+                  namespace: undefined,
+                  content: '{"hello":"Heyyyy"}',
+                  format: "json",
+                }),
+              ),
+            );
+
+            sinon.assert.calledOnceWithExactly(
+              upsertWorkflowStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    branch: "my-feature-branch-123",
+                    all: true,
+                    "workflows-dir": {
+                      abspath: workflowsSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((workflow) =>
+                isEqual(workflow, { key: "foo", name: "Foo" }),
+              ),
+            );
+          });
       });
 
       describe("and an empty layouts directory", () => {
