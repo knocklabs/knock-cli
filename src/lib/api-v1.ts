@@ -67,10 +67,6 @@ export default class ApiV1 {
       : sessionContext.token;
   }
 
-  async ping(): Promise<AxiosResponse> {
-    return this.get("/ping");
-  }
-
   async whoami(): Promise<AxiosResponse<WhoamiResp>> {
     return this.get("/whoami");
   }
