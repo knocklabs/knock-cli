@@ -184,6 +184,38 @@ describe("commands/guide/activate", () => {
       );
   });
 
+  describe("given a branch flag", () => {
+    setupWithStub({ data: { guide: factory.guide() } })
+      .stdout()
+      .command([
+        "guide activate",
+        "guide-x",
+        "--environment",
+        "staging",
+        "--status",
+        "true",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 activateGuide with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.activateGuide as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                guideKey: "guide-x",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "staging",
+                branch: "my-feature-branch-123",
+                status: true,
+              }),
+          ),
+        );
+      });
+  });
+
   describe("validation errors", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

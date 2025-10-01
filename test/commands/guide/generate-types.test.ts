@@ -137,6 +137,78 @@ describe("commands/guide/generate-types", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    const guides = [
+      factory.guide({
+        key: "branch-guide",
+        type: "banner",
+        steps: [
+          {
+            ref: "step_1",
+            name: "Branch Step",
+            schema_key: "banner",
+            schema_semver: "0.0.1",
+            schema_variant_key: "default",
+            json_schema: {
+              type: "object",
+              properties: { title: { type: "string" } },
+            },
+            values: { title: "foo" },
+          },
+        ],
+      }),
+    ];
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "listGuides", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: {
+              page_info: factory.pageInfo(),
+              entries: guides,
+            },
+          }),
+        ),
+      )
+      .stub(fs, "outputFile", (stub) => stub.resolves())
+      .stub(fs, "appendFile", (stub) => stub.resolves())
+      .stdout()
+      .command([
+        "guide generate-types",
+        "--output-file",
+        "types.ts",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 listGuides with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listGuides as any,
+          sinon.match(({ flags }) => {
+            const expectedFlags = {
+              "service-token": "valid-token",
+              environment: "development",
+              branch: "my-feature-branch-123",
+              limit: 100,
+              "include-json-schema": true,
+            };
+
+            // Check all expected flags exist and match
+            for (const [key, value] of Object.entries(expectedFlags)) {
+              if (flags[key] !== value) {
+                return false;
+              }
+            }
+
+            return true;
+          }),
+        );
+      });
+  });
+
   describe("will generate types for each supported language", () => {
     const testCases = [
       { extension: "ts", expectedOutput: "typescript" },

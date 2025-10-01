@@ -173,6 +173,50 @@ describe("commands/guide/push", () => {
           ),
         );
       });
+
+    describe("given a branch flag", () => {
+      setupWithStub({ data: { guide: mockGuideData } })
+        .stdout()
+        .command([
+          "guide push",
+          "welcome-guide",
+          "--branch",
+          "my-feature-branch-123",
+        ])
+        .it("calls apiV1 upsertGuide with expected params", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.upsertGuide as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { guideKey: "welcome-guide" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  environment: "development",
+                  branch: "my-feature-branch-123",
+                  annotate: true,
+                }),
+            ),
+            sinon.match((guide) =>
+              isEqual(guide, {
+                key: "welcome-guide",
+                name: "Welcome Guide",
+                description: "A guide to help new users get started",
+                channel_key: "in-app-guide",
+                type: "banner",
+                steps: [
+                  {
+                    ref: "step_1",
+                    name: "Welcome Step",
+                    schema_key: "banner",
+                    schema_variant_key: "default",
+                    fields: [],
+                  },
+                ],
+              }),
+            ),
+          );
+        });
+    });
   });
 
   describe("given a guide.json file with syntax errors", () => {
