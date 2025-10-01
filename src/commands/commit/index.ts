@@ -31,9 +31,11 @@ export default class Commit extends BaseCommand<typeof Commit> {
   async run(): Promise<void> {
     const { flags } = this.props;
 
+    const scope = formatCommandScope(flags);
+
     // Confirm first as we are about to commit changes to go live in the
     // development environment, unless forced.
-    const prompt = "Commit all changes in the development environment?";
+    const prompt = `Commit all changes in the ${scope}?`;
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
@@ -41,7 +43,6 @@ export default class Commit extends BaseCommand<typeof Commit> {
       this.apiV1.commitAllChanges(this.props),
     );
 
-    const scope = formatCommandScope(flags);
     this.log(`‣ Successfully committed all changes in ${scope}`);
   }
 }
