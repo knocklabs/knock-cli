@@ -187,4 +187,28 @@ describe("commands/workflow/list", () => {
         });
     });
   });
+
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "listWorkflows", (stub) =>
+        stub.resolves(emptyWorkflowsListResp),
+      )
+      .stdout()
+      .command(["workflow list", "--branch", "my-feature-branch-123"])
+      .it("calls apiV1 listWorkflows with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listWorkflows as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {}) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+        );
+      });
+  });
 });

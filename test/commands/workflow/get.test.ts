@@ -93,6 +93,39 @@ describe("commands/workflow/get", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "getWorkflow", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.workflow(),
+          }),
+        ),
+      )
+      .stdout()
+      .command(["workflow get", "foo", "--branch", "my-feature-branch-123"])
+      .it("calls apiV1 getWorkflow with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                workflowKey: "foo",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given a workflow key that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

@@ -281,4 +281,34 @@ describe("commands/workflow/run", () => {
         },
       );
   });
+
+  describe("given a branch flag", () => {
+    setupWithStub({ data: { workflow: factory.workflow() } })
+      .stdout()
+      .command([
+        "workflow run",
+        "workflow-x",
+        "--recipients",
+        "alice",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 runWorkflow with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.runWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                workflowKey: "workflow-x",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+                recipients: ["alice"],
+              }),
+          ),
+        );
+      });
+  });
 });

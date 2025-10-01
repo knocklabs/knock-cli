@@ -264,4 +264,42 @@ describe("commands/workflow/validate (all workflows)", () => {
         sinon.assert.calledTwice(stub);
       });
   });
+
+  describe("given a branch flag", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, "foo/workflow.json");
+      fs.outputJsonSync(abspath, { name: "Foo", key: "foo" });
+
+      process.chdir(sandboxDir);
+    });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "validateWorkflow", (stub) =>
+        stub.resolves(factory.resp({ data: { workflow: factory.workflow() } })),
+      )
+      .stdout()
+      .command([
+        "workflow validate",
+        "foo",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 validateWorkflow with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.validateWorkflow as any,
+          sinon.match(({ args, flags }) => {
+            return (
+              args.workflowKey === "foo" &&
+              flags["service-token"] === "valid-token" &&
+              flags.environment === "development" &&
+              flags.branch === "my-feature-branch-123"
+            );
+          }),
+          sinon.match(
+            (workflow) => workflow.key === "foo" && workflow.name === "Foo",
+          ),
+        );
+      });
+  });
 });
