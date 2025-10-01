@@ -2,6 +2,8 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { booleanStr } from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
@@ -26,6 +28,7 @@ with \`false\` in order to deactivate it.
       required: true,
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     status: booleanStr({
       default: true,
       summary: "The workflow active status to set.",
@@ -46,7 +49,8 @@ with \`false\` in order to deactivate it.
 
     // 1. Confirm before activating or deactivating the workflow, unless forced.
     const action = flags.status ? "Activate" : "Deactivate";
-    const prompt = `${action} \`${args.workflowKey}\` workflow in \`${flags.environment}\` environment?`;
+    const scope = formatCommandScope(flags);
+    const prompt = `${action} \`${args.workflowKey}\` workflow in ${scope}?`;
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
@@ -61,7 +65,7 @@ with \`false\` in order to deactivate it.
 
     const actioned = flags.status ? "activated" : "deactivated";
     this.log(
-      `‣ Successfully ${actioned} \`${args.workflowKey}\` workflow in \`${flags.environment}\` environment`,
+      `‣ Successfully ${actioned} \`${args.workflowKey}\` workflow in ${scope}`,
     );
   }
 }

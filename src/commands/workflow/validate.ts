@@ -2,6 +2,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -24,6 +25,7 @@ export default class WorkflowValidate extends BaseCommand<
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to validate all workflows from the target directory.",
     }),
@@ -76,8 +78,9 @@ export default class WorkflowValidate extends BaseCommand<
 
     // 3. Display a success message.
     const workflowKeys = workflows.map((w) => w.key);
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Successfully validated ${workflows.length} workflow(s):\n` +
+      `‣ Successfully validated ${workflows.length} workflow(s) using ${scope}:\n` +
         indentString(workflowKeys.join("\n"), 4),
     );
   }

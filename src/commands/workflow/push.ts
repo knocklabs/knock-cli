@@ -1,6 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -24,6 +25,7 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all workflows from the target directory.",
     }),
@@ -117,8 +119,9 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
     const workflowKeys = workflows.map((w) => w.key);
     const actioned = flags.commit ? "pushed and committed" : "pushed";
 
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} ${workflows.length} workflow(s):\n` +
+      `‣ Successfully ${actioned} ${workflows.length} workflow(s) to ${scope}:\n` +
         indentString(workflowKeys.join("\n"), 4),
     );
   }
