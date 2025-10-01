@@ -2,6 +2,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -22,6 +23,7 @@ export default class GuideValidate extends BaseCommand<typeof GuideValidate> {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to validate all guides from the target directory.",
     }),
@@ -73,8 +75,9 @@ export default class GuideValidate extends BaseCommand<typeof GuideValidate> {
 
     // 3. Display a success message.
     const guideKeys = guides.map((g) => g.key);
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Successfully validated ${guides.length} guide(s):\n` +
+      `‣ Successfully validated ${guides.length} guide(s) using ${scope}:\n` +
         indentString(guideKeys.join("\n"), 4),
     );
   }

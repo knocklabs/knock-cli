@@ -2,6 +2,8 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { booleanStr } from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
@@ -13,7 +15,7 @@ export default class GuideActivate extends BaseCommand<typeof GuideActivate> {
 This enables or disables a guide in a given environment without
 needing to go through environment promotion.
 
-You can activate or deactivate a guide immediately or schedule it to be activated 
+You can activate or deactivate a guide immediately or schedule it to be activated
 or deactivated at a later time using the --from and --until flags.
 `.trim();
 
@@ -24,6 +26,7 @@ or deactivated at a later time using the --from and --until flags.
       required: true,
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     status: booleanStr({
       summary:
         "The guide active status to set. Cannot be used with --from/--until.",
@@ -100,8 +103,9 @@ or deactivated at a later time using the --from and --until flags.
       actioned = "scheduled";
     }
 
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} \`${args.guideKey}\` guide in \`${flags.environment}\` environment`,
+      `‣ Successfully ${actioned} \`${args.guideKey}\` guide in ${scope}`,
     );
   }
 }

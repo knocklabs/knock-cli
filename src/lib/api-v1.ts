@@ -457,6 +457,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ListGuideResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       include_json_schema: flags["include-json-schema"],
@@ -472,6 +473,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<GetGuideResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
@@ -485,6 +487,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidateGuideResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = { guide };
 
@@ -499,6 +502,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertGuideResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
@@ -514,6 +518,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ActivateGuideResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       status: flags.status,
       from: flags.from,
       until: flags.until,
