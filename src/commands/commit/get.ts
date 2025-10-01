@@ -1,9 +1,9 @@
+import { Commit } from "@knocklabs/mgmt/resources/commits";
 import { Args, ux } from "@oclif/core";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
-import { withSpinner } from "@/lib/helpers/request";
+import { withSpinnerV2 } from "@/lib/helpers/request";
 import { formatCommitAuthor } from "@/lib/marshal/commit";
 
 export default class CommitGet extends BaseCommand<typeof CommitGet> {
@@ -17,18 +17,18 @@ export default class CommitGet extends BaseCommand<typeof CommitGet> {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<ApiV1.GetCommitResp | void> {
-    const { flags } = this.props;
+  async run(): Promise<Commit | void> {
+    const { flags, args } = this.props;
 
-    const resp = await withSpinner<ApiV1.GetCommitResp>(() =>
-      this.apiV1.getCommit(this.props),
+    const resp = await withSpinnerV2(() =>
+      this.apiV1.mgmtClient.commits.retrieve(args.id),
     );
 
-    if (flags.json) return resp.data;
-    this.render(resp.data);
+    if (flags.json) return resp;
+    this.render(resp);
   }
 
-  render(commit: ApiV1.GetCommitResp): void {
+  render(commit: Commit): void {
     this.log(
       `‣ Showing commit \`${commit.id}\` in \`${commit.environment}\` environment`,
     );
