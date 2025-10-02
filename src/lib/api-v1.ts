@@ -331,6 +331,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ListPartialResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       annotate: flags.annotate,
       ...toPageParams(flags),
@@ -345,6 +346,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<GetPartialResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
@@ -358,6 +360,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertPartialResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
@@ -373,6 +376,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidatePartialResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = { partial };
 

@@ -2,6 +2,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -24,6 +25,7 @@ export default class PartialValidate extends BaseCommand<
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to validate all partials from the target directory.",
     }),
@@ -76,8 +78,9 @@ export default class PartialValidate extends BaseCommand<
 
     // 3. Display a success message.
     const partialKeys = partials.map((p) => p.key);
+    const scope = formatCommandScope({ ...this.props.flags });
     this.log(
-      `‣ Successfully validated ${partials.length} partial(s):\n` +
+      `‣ Successfully validated ${partials.length} partial(s) using ${scope}:\n` +
         indentString(partialKeys.join("\n"), 4),
     );
   }

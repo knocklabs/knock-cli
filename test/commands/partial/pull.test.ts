@@ -139,6 +139,34 @@ describe("commands/partial/pull", () => {
       );
   });
 
+  describe("given a branch flag", () => {
+    setupWithGetPartialStub({ key: "partial-x" })
+      .stdout()
+      .command([
+        "partial pull",
+        "partial-x",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 getPartial with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getPartial as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                partialKey: "partial-x",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+                annotate: true,
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given both a partial key arg and a --all flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

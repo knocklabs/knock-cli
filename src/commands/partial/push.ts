@@ -1,6 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -24,6 +25,7 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all partials from the target directory.",
     }),
@@ -121,8 +123,9 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
     const partialKeys = partials.map((l) => l.key);
     const actioned = flags.commit ? "pushed and committed" : "pushed";
 
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} ${partials.length} partial(s):\n` +
+      `‣ Successfully ${actioned} ${partials.length} partial(s) to ${scope}:\n` +
         indentString(partialKeys.join("\n"), 4),
     );
   }
