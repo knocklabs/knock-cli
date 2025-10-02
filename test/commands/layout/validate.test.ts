@@ -63,6 +63,44 @@ describe("commands/layout/validate (a single layout)", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, layoutJsonFile);
+      fs.outputJsonSync(abspath, { name: "Default" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command([
+        "layout validate",
+        "default",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 validateEmailLayout with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.validateEmailLayout as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { emailLayoutKey: "default" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+          sinon.match((layout) =>
+            isEqual(layout, {
+              key: "default",
+              name: "Default",
+            }),
+          ),
+        );
+      });
+  });
+
   describe("given a layout.json file, with syntax errors", () => {
     beforeEach(() => {
       const abspath = path.resolve(sandboxDir, layoutJsonFile);

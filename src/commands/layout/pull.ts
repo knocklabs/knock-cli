@@ -4,6 +4,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
@@ -33,6 +34,7 @@ export default class EmailLayoutPull extends BaseCommand<
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary:
         "Whether to pull all email layouts from the specified environment.",
@@ -95,8 +97,9 @@ export default class EmailLayoutPull extends BaseCommand<
     await EmailLayout.writeEmailLayoutDirFromData(dirContext, resp.data);
 
     const action = dirContext.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath}`,
+      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} using ${scope}`,
     );
   }
 
@@ -122,8 +125,9 @@ export default class EmailLayoutPull extends BaseCommand<
     spinner.stop();
 
     const action = targetDirCtx.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} the layouts directory at ${targetDirCtx.abspath}`,
+      `‣ Successfully ${action} the layouts directory at ${targetDirCtx.abspath} using ${scope}`,
     );
   }
 

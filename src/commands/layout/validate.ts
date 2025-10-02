@@ -2,6 +2,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -24,6 +25,7 @@ export default class EmailLayoutValidate extends BaseCommand<
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to validate all layouts from the target directory.",
     }),
@@ -77,9 +79,9 @@ export default class EmailLayoutValidate extends BaseCommand<
 
     // 3. Display a success message.
     const layoutsKey = layouts.map((l) => l.key);
-
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Successfully validated ${layouts.length} layout(s):\n` +
+      `‣ Successfully validated ${layouts.length} layout(s) using ${scope}:\n` +
         indentString(layoutsKey.join("\n"), 4),
     );
   }

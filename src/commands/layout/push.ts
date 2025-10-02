@@ -1,6 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -26,6 +27,7 @@ export default class EmailLayoutPush extends BaseCommand<
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all layouts from the target directory.",
     }),
@@ -127,8 +129,9 @@ export default class EmailLayoutPush extends BaseCommand<
     const layoutKeys = layouts.map((l) => l.key);
     const actioned = flags.commit ? "pushed and committed" : "pushed";
 
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} ${layouts.length} layout(s):\n` +
+      `‣ Successfully ${actioned} ${layouts.length} layout(s) to ${scope}:\n` +
         indentString(layoutKeys.join("\n"), 4),
     );
   }

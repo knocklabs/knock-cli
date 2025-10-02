@@ -92,6 +92,38 @@ describe("commands/layout/push", () => {
         );
       });
 
+    describe("given a branch flag", () => {
+      setupWithStub({ data: { email_layout: mockEmailLayoutData } })
+        .stdout()
+        .command([
+          "layout push",
+          "default",
+          "--branch",
+          "my-feature-branch-123",
+        ])
+        .it("calls apiV1 upsertEmailLayout with expected params", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.upsertEmailLayout as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { emailLayoutKey: "default" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  environment: "development",
+                  branch: "my-feature-branch-123",
+                  annotate: true,
+                }),
+            ),
+            sinon.match((layout) =>
+              isEqual(layout, {
+                key: "default",
+                name: "Default",
+              }),
+            ),
+          );
+        });
+    });
+
     setupWithStub({ data: { email_layout: mockEmailLayoutData } })
       .stdout()
       .command([
