@@ -2,7 +2,9 @@ import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
@@ -16,6 +18,7 @@ export default class Commit extends BaseCommand<typeof Commit> {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     "commit-message": Flags.string({
       summary: "Use the given value as the commit message.",
       char: "m",
@@ -28,9 +31,11 @@ export default class Commit extends BaseCommand<typeof Commit> {
   async run(): Promise<void> {
     const { flags } = this.props;
 
+    const scope = formatCommandScope(flags);
+
     // Confirm first as we are about to commit changes to go live in the
     // development environment, unless forced.
-    const prompt = "Commit all changes in the development environment?";
+    const prompt = `Commit all changes in the ${scope}?`;
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
@@ -38,8 +43,6 @@ export default class Commit extends BaseCommand<typeof Commit> {
       this.apiV1.commitAllChanges(this.props),
     );
 
-    this.log(
-      `‣ Successfully committed all changes in \`${flags.environment}\` environment`,
-    );
+    this.log(`‣ Successfully committed all changes in ${scope}`);
   }
 }
