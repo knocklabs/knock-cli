@@ -1,9 +1,8 @@
+import KnockMgmt from "@knocklabs/mgmt";
 import { test } from "@oclif/test";
-import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
-import KnockApiV1 from "@/lib/api-v1";
 
 describe("commands/commit/get", () => {
   describe("given no id arg", () => {
@@ -17,27 +16,15 @@ describe("commands/commit/get", () => {
   describe("given a commit ID arg, and no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "getCommit", (stub) =>
-        stub.resolves(
-          factory.resp({
-            data: factory.commit(),
-          }),
-        ),
+      .stub(KnockMgmt.Commits.prototype, "retrieve", (stub) =>
+        stub.resolves(factory.commit()),
       )
       .stdout()
       .command(["commit get", "example-id"])
       .it("calls apiV1 getCommit with correct props", () => {
         sinon.assert.calledWith(
-          KnockApiV1.prototype.getCommit as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, {
-                id: "example-id",
-              }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-              }),
-          ),
+          KnockMgmt.Commits.prototype.retrieve as any,
+          "example-id",
         );
       });
   });
@@ -45,28 +32,15 @@ describe("commands/commit/get", () => {
   describe("given a commit ID arg, and flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "getCommit", (stub) =>
-        stub.resolves(
-          factory.resp({
-            data: factory.commit(),
-          }),
-        ),
+      .stub(KnockMgmt.Commits.prototype, "retrieve", (stub) =>
+        stub.resolves(factory.commit()),
       )
       .stdout()
       .command(["commit get", "example-id", "--json"])
       .it("calls apiV1 getCommit with correct props", () => {
         sinon.assert.calledWith(
-          KnockApiV1.prototype.getCommit as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, {
-                id: "example-id",
-              }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-                json: true,
-              }),
-          ),
+          KnockMgmt.Commits.prototype.retrieve as any,
+          "example-id",
         );
       });
   });
@@ -74,23 +48,24 @@ describe("commands/commit/get", () => {
   describe("given a commit that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "getCommit", (stub) =>
-        stub.resolves(
-          factory.resp({
-            status: 404,
-            statusText: "Not found",
-            data: {
+      .stub(KnockMgmt.Commits.prototype, "retrieve", (stub) =>
+        stub.rejects(
+          new KnockMgmt.APIError(
+            404,
+            {
               code: "resource_missing",
               message: "The resource you requested does not exist",
               status: 404,
               type: "api_error",
             },
-          }),
+            undefined,
+            undefined,
+          ),
         ),
       )
       .stdout()
       .command(["commit get", "foo"])
-      .catch("The resource you requested does not exist")
+      .catch("The resource you requested does not exist (status: 404)")
       .it("throws an error for resource not found");
   });
 });
