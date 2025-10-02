@@ -4,6 +4,7 @@ import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -31,6 +32,7 @@ export default class GuideGenerateTypes extends BaseCommand<
       summary: "Select the environment to generate types for.",
       default: KnockEnv.Development,
     }),
+    branch: CustomFlags.branch,
     "output-file": CustomFlags.filePath({
       summary: `The output file to write the generated types to. We currently support ${supportedExts} files only. Your file extension will determine the target language for the generated types.`,
       required: true,
@@ -85,8 +87,9 @@ export default class GuideGenerateTypes extends BaseCommand<
       await fs.appendFile(outputFilePath, lines.join("\n"));
     }
 
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully generated types for ${count} message type(s) and wrote them to ${outputFilePath}`,
+      `‣ Successfully generated types for ${count} message type(s) using ${scope} and wrote them to ${outputFilePath}`,
     );
   }
 

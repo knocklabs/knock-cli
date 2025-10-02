@@ -91,6 +91,39 @@ describe("commands/guide/get", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "getGuide", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.guide(),
+          }),
+        ),
+      )
+      .stdout()
+      .command(["guide get", "foo", "--branch", "my-feature-branch-123"])
+      .it("calls apiV1 getGuide with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getGuide as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                guideKey: "foo",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given a guide key that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

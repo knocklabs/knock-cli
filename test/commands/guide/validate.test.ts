@@ -61,6 +61,37 @@ describe("commands/guide/validate (a single guide)", () => {
           ),
         );
       });
+
+    describe("given a branch flag", () => {
+      setupWithStub()
+        .stdout()
+        .command([
+          "guide validate",
+          "welcome-guide",
+          "--branch",
+          "my-feature-branch-123",
+        ])
+        .it("calls apiV1 validateGuide with expected params", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.validateGuide as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { guideKey: "welcome-guide" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  environment: "development",
+                  branch: "my-feature-branch-123",
+                }),
+            ),
+            sinon.match((guide) =>
+              isEqual(guide, {
+                key: "welcome-guide",
+                name: "Welcome Guide",
+              }),
+            ),
+          );
+        });
+    });
   });
 
   describe("given a guide.json file, with syntax errors", () => {

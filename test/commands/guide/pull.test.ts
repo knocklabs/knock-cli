@@ -151,6 +151,34 @@ describe("commands/guide/pull", () => {
       );
   });
 
+  describe("given a branch flag", () => {
+    setupWithGetGuideStub({ key: "onboarding" })
+      .stdout()
+      .command([
+        "guide pull",
+        "onboarding",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 getGuide with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getGuide as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                guideKey: "onboarding",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+                annotate: true,
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given both a guide key arg and a --all flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

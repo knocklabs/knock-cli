@@ -4,6 +4,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
@@ -34,6 +35,7 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to pull all guides from the specified environment.",
     }),
@@ -91,8 +93,9 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
     await Guide.writeGuideDirFromData(dirContext, resp.data);
 
     const action = dirContext.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath}`,
+      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} using ${scope}`,
     );
   }
 
@@ -117,8 +120,9 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
     spinner.stop();
 
     const action = targetDirCtx.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} the guides directory at ${targetDirCtx.abspath}`,
+      `‣ Successfully ${action} the guides directory at ${targetDirCtx.abspath} using ${scope}`,
     );
   }
 

@@ -1,6 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -25,6 +26,7 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all guides from the target directory.",
     }),
@@ -119,8 +121,9 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
     const guideKeys = guides.map((g) => g.key);
     const actioned = flags.commit ? "pushed and committed" : "pushed";
 
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} ${guides.length} guide(s):\n` +
+      `‣ Successfully ${actioned} ${guides.length} guide(s) to ${scope}:\n` +
         indentString(guideKeys.join("\n"), 4),
     );
   }
