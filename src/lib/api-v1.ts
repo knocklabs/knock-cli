@@ -1,4 +1,5 @@
 import KnockMgmt from "@knocklabs/mgmt";
+import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -6,7 +7,6 @@ import { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
-import * as Commit from "@/lib/marshal/commit";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
@@ -169,10 +169,6 @@ export default class ApiV1 {
     });
 
     return this.get("/commits", { params });
-  }
-
-  async getCommit({ args }: Props): Promise<AxiosResponse<GetCommitResp>> {
-    return this.get(`/commits/${args.id}`);
   }
 
   async commitAllChanges({
@@ -612,9 +608,7 @@ export type ValidateEmailLayoutResp = {
   errors?: InputError[];
 };
 
-export type ListCommitResp = PaginatedResp<Commit.CommitData>;
-
-export type GetCommitResp = Commit.CommitData;
+export type ListCommitResp = PaginatedResp<Commit>;
 
 export type CommitAllChangesResp = {
   result?: "success";
@@ -627,7 +621,7 @@ export type PromoteAllChangesResp = {
 };
 
 export type PromoteOneChangeResp = {
-  commit?: Commit.CommitData;
+  commit?: Commit;
   errors?: InputError[];
 };
 

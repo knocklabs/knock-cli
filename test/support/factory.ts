@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 
+import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 import { type BranchData } from "@/lib/api-v1";
 import { AuthenticatedSession } from "@/lib/auth";
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
-import { CommitData } from "@/lib/marshal/commit";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
@@ -168,7 +168,7 @@ export const emailLayout = (
   };
 };
 
-export const commit = (attrs: Partial<CommitData> = {}): CommitData => {
+export const commit = (attrs: Partial<Commit> = {}): Commit => {
   return {
     id: randomUUID(),
     resource: { type: "workflow", identifier: "new-comment" },
