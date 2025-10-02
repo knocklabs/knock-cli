@@ -2,7 +2,7 @@
 export type CommitData = {
   id: string;
   resource: { type: string; identifier: string };
-  author: { name?: string; email: string };
+  author: { name?: string | null; email: string };
   commit_message?: string;
   created_at: string;
   environment: string;
