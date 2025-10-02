@@ -1,6 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -24,6 +25,7 @@ export default class TranslationPush extends BaseCommand<
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all translations from the target directory.",
     }),
@@ -106,8 +108,9 @@ export default class TranslationPush extends BaseCommand<
     const handledRefs = translations.map((t) => t.ref);
     const actioned = flags.commit ? "pushed and committed" : "pushed";
 
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} ${translations.length} translation(s):\n` +
+      `‣ Successfully ${actioned} ${translations.length} translation(s) to ${scope}:\n` +
         indentString(handledRefs.join("\n"), 4),
     );
   }

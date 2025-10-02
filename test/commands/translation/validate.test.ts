@@ -96,6 +96,46 @@ describe("commands/translation/validate (a single translation)", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, "en", "admin.en.json");
+      fs.outputJsonSync(abspath, { hello: "Heyyyy" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command([
+        "translation validate",
+        "admin.en",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 validateTranslation with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.validateTranslation as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { translationRef: "admin.en" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+          sinon.match((translation) =>
+            isEqual(translation, {
+              locale_code: "en",
+              namespace: "admin",
+              content: '{"hello":"Heyyyy"}',
+              format: "json",
+            }),
+          ),
+        );
+      });
+  });
+
   describe("given a translation file, with syntax errors", () => {
     beforeEach(() => {
       const abspath = path.resolve(sandboxDir, "en", "en.json");

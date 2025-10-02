@@ -2,6 +2,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
@@ -27,6 +28,7 @@ export default class TranslationPull extends BaseCommand<
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary:
         "Whether to pull all translations from the specified environment.",
@@ -101,8 +103,9 @@ export default class TranslationPull extends BaseCommand<
     });
 
     const actioned = targetCtx.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} \`${targetCtx.ref}\` at ${targetCtx.abspath}`,
+      `‣ Successfully ${actioned} \`${targetCtx.ref}\` at ${targetCtx.abspath} using ${scope}`,
     );
   }
 
@@ -133,8 +136,9 @@ export default class TranslationPull extends BaseCommand<
     spinner.stop();
 
     const actioned = targetCtx.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} the \`${targetCtx.key}\` translations directory at ${targetCtx.abspath}`,
+      `‣ Successfully ${actioned} the \`${targetCtx.key}\` translations directory at ${targetCtx.abspath} using ${scope}`,
     );
   }
 
@@ -161,8 +165,9 @@ export default class TranslationPull extends BaseCommand<
     spinner.stop();
 
     const action = targetCtx.exists ? "updated" : "created";
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${action} the translations directory at ${targetCtx.abspath}`,
+      `‣ Successfully ${action} the translations directory at ${targetCtx.abspath} using ${scope}`,
     );
   }
 

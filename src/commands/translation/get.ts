@@ -2,7 +2,9 @@ import { Args, Flags, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDate } from "@/lib/helpers/date";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import * as Translation from "@/lib/marshal/translation";
 
@@ -14,6 +16,7 @@ export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
@@ -62,8 +65,9 @@ export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
     const qualifier =
       env === "development" && !commitedOnly ? "(including uncommitted)" : "";
 
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Showing translation \`${translationRef}\` in \`${env}\` environment ${qualifier}\n`,
+      `‣ Showing translation \`${translationRef}\` in ${scope} ${qualifier}\n`,
     );
 
     /*

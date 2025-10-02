@@ -174,6 +174,43 @@ describe("commands/translation/pull", () => {
       );
   });
 
+  describe("given a branch flag", () => {
+    setupWithGetTranslationStub({ locale_code: "es-MX", namespace: "hello" })
+      .stdout()
+      .command([
+        "translation pull",
+        "hello.es-MX",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 getTranslation with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getTranslation as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                translationRef: "hello.es-MX",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+                format: "json",
+              }),
+          ),
+          sinon.match((translation) =>
+            isEqual(translation, {
+              ref: "hello.es-MX",
+              localeCode: "es-MX",
+              namespace: "hello",
+              abspath: path.resolve(sandboxDir, "es-MX", "hello.es-MX.json"),
+              exists: false,
+            }),
+          ),
+        );
+      });
+  });
+
   describe("given a --all flag with a namespaced translation ref", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
