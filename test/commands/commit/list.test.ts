@@ -80,6 +80,30 @@ describe("commands/commit/list", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "listCommits", (stub) =>
+        stub.resolves(emptyCommitListResp),
+      )
+      .stdout()
+      .command(["commit list", "--branch", "my-feature-branch-123"])
+      .it("calls apiV1 listCommits with correct props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listCommits as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {}) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given a list of commit in response", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

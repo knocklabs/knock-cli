@@ -1,6 +1,6 @@
 import { expect } from "@oclif/test";
 
-import { checkSlugifiedFormat } from "@/lib/helpers/string";
+import { checkSlugifiedFormat, slugify } from "@/lib/helpers/string";
 
 describe("lib/helpers/string", () => {
   describe("checkSlugifiedFormat", () => {
@@ -41,6 +41,16 @@ describe("lib/helpers/string", () => {
           checkSlugifiedFormat("one-two!three-4", { onlyLowerCase: false }),
         ).to.equal(false);
       });
+    });
+  });
+
+  describe("slugify", () => {
+    it("converts a string to a slugified format", () => {
+      expect(slugify("One Two Three")).to.equal("one-two-three");
+    });
+
+    it("collapses whitespace when slugifying", () => {
+      expect(slugify("  One  Two  Three  ")).to.equal("one-two-three");
     });
   });
 });

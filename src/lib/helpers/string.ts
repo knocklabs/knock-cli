@@ -70,3 +70,11 @@ export const indentString = (
 
   return string.replace(regex, indent.repeat(count));
 };
+
+/*
+ * Converts a string to a slugified format.
+ *
+ * For example, "One Two Three" becomes "one-two-three".
+ */
+export const slugify = (input: string): string =>
+  input.toLowerCase().trim().replace(/\s+/g, "-");
