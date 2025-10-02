@@ -306,4 +306,34 @@ describe("commands/workflow/push", () => {
         );
       });
   });
+
+  describe("given a branch flag", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, "foo/workflow.json");
+      fs.outputJsonSync(abspath, { name: "Foo", key: "foo" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", "foo", "--branch", "my-feature-branch-123"])
+      .it("calls apiV1 upsertWorkflow with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertWorkflow as any,
+          sinon.match(({ args, flags }) => {
+            return (
+              args.workflowKey === "foo" &&
+              flags["service-token"] === "valid-token" &&
+              flags.environment === "development" &&
+              flags.branch === "my-feature-branch-123" &&
+              flags.annotate === true
+            );
+          }),
+          sinon.match(
+            (workflow) => workflow.key === "foo" && workflow.name === "Foo",
+          ),
+        );
+      });
+  });
 });

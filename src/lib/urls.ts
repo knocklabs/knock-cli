@@ -7,3 +7,11 @@ export const authSuccessUrl = (dashboardUrl: string): string =>
 
 export const authErrorUrl = (dashboardUrl: string, error: string): string =>
   `${dashboardUrl}/auth/oauth/cli?error=${error}`;
+
+export const viewWorkflowUrl = (
+  dashboardUrl: string,
+  accountSlug: string,
+  envOrBranchSlug: string,
+  workflowKey: string,
+): string =>
+  `${dashboardUrl}/${accountSlug}/${envOrBranchSlug.toLowerCase()}/workflows/${workflowKey}`;

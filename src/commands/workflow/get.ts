@@ -2,13 +2,16 @@ import { Args, Flags, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Conditions from "@/lib/marshal/conditions";
 import * as Workflow from "@/lib/marshal/workflow";
+import { viewWorkflowUrl } from "@/lib/urls";
 
 export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
   static summary = "Display a single workflow from an environment.";
@@ -18,6 +21,7 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
@@ -70,14 +74,18 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
 
   render(workflow: ApiV1.GetWorkflowResp, whoami: ApiV1.WhoamiResp): void {
     const { workflowKey } = this.props.args;
-    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
-      this.props.flags;
+    const {
+      environment: env,
+      branch,
+      "hide-uncommitted-changes": commitedOnly,
+    } = this.props.flags;
 
     const qualifier =
       env === "development" && !commitedOnly ? "(including uncommitted)" : "";
 
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Showing workflow \`${workflowKey}\` in \`${env}\` environment ${qualifier}\n`,
+      `‣ Showing workflow \`${workflowKey}\` in ${scope} ${qualifier}\n`,
     );
 
     /*
@@ -177,11 +185,14 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
       ? `\n‣ This workflow has branches with nested steps, view the full workflow tree in the Knock Dashboard:`
       : `\n‣ View the full workflow in the Knock Dashboard:`;
 
-    const viewWorkflowUrl = `https://dashboard.knock.app/${
-      whoami.account_slug
-    }/${env.toLowerCase()}/workflows/${workflow.key}`;
+    const url = viewWorkflowUrl(
+      this.sessionContext.dashboardOrigin,
+      whoami.account_slug,
+      branch ?? env,
+      workflow.key,
+    );
 
     this.log(dashboardLinkMessage);
-    this.log(indentString(viewWorkflowUrl, 2));
+    this.log(indentString(url, 2));
   }
 }

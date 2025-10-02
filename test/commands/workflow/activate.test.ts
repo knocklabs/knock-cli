@@ -87,4 +87,34 @@ describe("commands/workflow/activate", () => {
         );
       });
   });
+
+  describe("given a branch flag", () => {
+    setupWithStub({ data: { workflow: factory.workflow() } })
+      .stdout()
+      .command([
+        "workflow activate",
+        "workflow-x",
+        "--environment",
+        "staging",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 activateWorkflow with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.activateWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                workflowKey: "workflow-x",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "staging",
+                branch: "my-feature-branch-123",
+                status: true,
+              }),
+          ),
+        );
+      });
+  });
 });

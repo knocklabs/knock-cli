@@ -276,4 +276,45 @@ describe("commands/workflow/generate-types", () => {
         );
       });
   });
+
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "listWorkflows", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: {
+              page_info: factory.pageInfo(),
+              entries: [factory.workflow({ key: "foo" })],
+            },
+          }),
+        ),
+      )
+      .stub(fs, "writeFile", (stub) => stub.resolves())
+      .stdout()
+      .command([
+        "workflow generate-types",
+        "--output-file",
+        "types.ts",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 listWorkflows with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listWorkflows as any,
+          sinon.match(({ flags }) => {
+            return (
+              flags["service-token"] === "valid-token" &&
+              flags.environment === "development" &&
+              flags.branch === "my-feature-branch-123" &&
+              flags.annotate === true &&
+              flags.limit === 100
+            );
+          }),
+        );
+      });
+  });
 });

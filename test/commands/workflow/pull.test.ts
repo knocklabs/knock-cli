@@ -139,6 +139,34 @@ describe("commands/workflow/pull", () => {
       );
   });
 
+  describe("given a branch flag", () => {
+    setupWithGetWorkflowStub({ key: "workflow-x" })
+      .stdout()
+      .command([
+        "workflow pull",
+        "workflow-x",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 getWorkflow with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                workflowKey: "workflow-x",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+                annotate: true,
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given both a workflow key arg and a --all flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

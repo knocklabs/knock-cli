@@ -2,6 +2,8 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { jsonStr, maybeJsonStr, maybeJsonStrAsList } from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
@@ -14,6 +16,7 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       default: "development",
       summary: "The environment in which to run the workflow",
     }),
+    branch: CustomFlags.branch,
     recipients: maybeJsonStrAsList({
       required: true,
       aliases: ["recipient"],
@@ -46,9 +49,8 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       { action: "‣ Running" },
     );
 
-    this.log(
-      `‣ Successfully ran \`${args.workflowKey}\` workflow in \`${flags.environment}\` environment`,
-    );
+    const scope = formatCommandScope(flags);
+    this.log(`‣ Successfully ran \`${args.workflowKey}\` workflow in ${scope}`);
     this.log(indentString(`Workflow run id: ${resp.data.workflow_run_id}`, 4));
   }
 }

@@ -78,6 +78,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ListWorkflowResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       ...toPageParams(flags),
@@ -92,6 +93,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<GetWorkflowResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
@@ -105,6 +107,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertWorkflowResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
@@ -120,6 +123,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidateWorkflowResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = { workflow };
 
@@ -134,6 +138,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ActivateWorkflowResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       status: flags.status,
     });
 
@@ -146,6 +151,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ActivateWorkflowResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = prune({
       recipients: flags.recipients,
