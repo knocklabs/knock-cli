@@ -116,6 +116,30 @@ describe("commands/pull", () => {
       });
   });
 
+  describe("with branch flag", () => {
+    setupWithListStubs(
+      [{ key: "messages" }, { key: "transactional" }],
+      [{ key: "partial-a" }, { key: "partial-b" }],
+      [{ locale_code: "en" }, { locale_code: "es-MX" }],
+      [{ key: "workflow-a" }, { key: "workflow-bar" }],
+    )
+      .stdout()
+      .command([
+        "pull",
+        "--knock-dir",
+        ".",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 to list resources in the given branch", () => {
+        assertApiV1ListFunctionsCalled({
+          environment: "development",
+          branch: "my-feature-branch-123",
+        });
+        sinon.assert.calledOnce(enquirer.prototype.prompt as any);
+      });
+  });
+
   describe("with hide-uncommitted-changes flag", () => {
     setupWithListStubs(
       [{ key: "messages" }, { key: "transactional" }],

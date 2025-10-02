@@ -28,6 +28,7 @@ export default class Push extends BaseCommand<typeof Push> {
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     "knock-dir": CustomFlags.dirPath({
       summary: "The target directory path to find all resources to push.",
       required: true,
@@ -55,6 +56,7 @@ export default class Push extends BaseCommand<typeof Push> {
       "--all",
       "--environment",
       flags.environment,
+      ...(flags.branch ? ["--branch", flags.branch] : []),
       ...(flags["service-token"]
         ? ["--service-token", flags["service-token"]]
         : []),
