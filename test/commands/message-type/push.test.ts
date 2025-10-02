@@ -236,6 +236,53 @@ describe("commands/message-type/push", () => {
           });
         },
       );
+
+    describe("given a branch flag", () => {
+      setupWithStub({ data: { message_type: mockMessageTypeData } })
+        .stdout()
+        .command([
+          "message-type push",
+          "banner",
+          "--branch",
+          "my-feature-branch-123",
+        ])
+        .it("calls apiV1 upsertMessageType with expected params", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.upsertMessageType as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { messageTypeKey: "banner" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  environment: "development",
+                  branch: "my-feature-branch-123",
+                  annotate: true,
+                }),
+            ),
+            sinon.match((messageType) =>
+              isEqual(messageType, {
+                key: "banner",
+                name: "Banner",
+                description: "My little banner",
+                variants: [
+                  {
+                    key: "default",
+                    name: "Default",
+                    fields: [
+                      {
+                        type: "text",
+                        key: "title",
+                        label: "Title",
+                      },
+                    ],
+                  },
+                ],
+                preview: "<div>{{ title }}</div>",
+              }),
+            ),
+          );
+        });
+    });
   });
 
   describe("given a message_type.json file with syntax errors", () => {

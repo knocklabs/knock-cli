@@ -2,6 +2,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -28,6 +29,7 @@ export default class MessageTypeValidate extends BaseCommand<
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary:
         "Whether to validate all message types from the target directory.",
@@ -84,8 +86,9 @@ export default class MessageTypeValidate extends BaseCommand<
 
     // 3. Display a success message.
     const messageTypeKeys = messageTypes.map((w) => w.key);
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Successfully validated ${messageTypes.length} message type(s):\n` +
+      `‣ Successfully validated ${messageTypes.length} message type(s) using ${scope}:\n` +
         indentString(messageTypeKeys.join("\n"), 4),
     );
   }

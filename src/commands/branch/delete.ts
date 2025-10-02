@@ -12,7 +12,7 @@ export default class BranchDelete extends BaseCommand<typeof BranchDelete> {
   static summary = "Deletes an existing branch with the given slug.";
 
   static args = {
-    slug: CustomArgs.slugArg({
+    slug: CustomArgs.slug({
       required: true,
       description: "The slug of the branch to delete",
     }),

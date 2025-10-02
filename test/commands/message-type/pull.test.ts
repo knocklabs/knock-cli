@@ -93,6 +93,34 @@ describe("commands/message-type/pull", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    setupWithGetMessageTypeStub({ key: "modal" })
+      .stdout()
+      .command([
+        "message-type pull",
+        "modal",
+        "--branch",
+        "my-feature-branch-123",
+      ])
+      .it("calls apiV1 getMessageType with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getMessageType as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                messageTypeKey: "modal",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+                annotate: true,
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given a --all flag", () => {
     setupWithListMessageTypesStub({ key: "card" }, { key: "banner" })
       .stdout()

@@ -161,6 +161,7 @@ export default class ApiV1 {
   async listCommits({ flags }: Props): Promise<AxiosResponse<ListCommitResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       promoted: flags.promoted,
       resource_type: flags["resource-type"],
       resource_id: flags["resource-id"],
@@ -273,6 +274,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ListEmailLayoutResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       ...toPageParams(flags),
@@ -287,6 +289,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<GetEmailLayoutResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
@@ -300,6 +303,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertEmailLayoutResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
@@ -315,6 +319,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidateEmailLayoutResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = { email_layout: layout };
 
@@ -330,6 +335,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ListPartialResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       annotate: flags.annotate,
       ...toPageParams(flags),
@@ -344,6 +350,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<GetPartialResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
@@ -357,6 +364,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertPartialResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
@@ -372,6 +380,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidatePartialResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = { partial };
 
@@ -387,6 +396,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<ListMessageTypeResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       annotate: flags.annotate,
       ...toPageParams(flags),
@@ -401,6 +411,7 @@ export default class ApiV1 {
   }: Props): Promise<AxiosResponse<GetMessageTypeResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
@@ -414,6 +425,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<UpsertMessageTypeResp<A>>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
@@ -429,6 +441,7 @@ export default class ApiV1 {
   ): Promise<AxiosResponse<ValidateMessageTypeResp>> {
     const params = prune({
       environment: flags.environment,
+      branch: flags.branch,
     });
     const data = { message_type: messageType };
 

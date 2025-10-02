@@ -3,7 +3,9 @@ import { AxiosResponse } from "axios";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDate } from "@/lib/helpers/date";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import {
   maybePromptPageAction,
@@ -21,6 +23,7 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     promoted: Flags.boolean({
       summary:
         "Show only promoted or unpromoted changes between the given environment and the subsequent environment.",
@@ -77,7 +80,7 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
 
   async render(data: ApiV1.ListCommitResp): Promise<void> {
     const { entries } = data;
-    const { environment: env, promoted } = this.props.flags;
+    const { promoted } = this.props.flags;
 
     let qualifier = "";
 
@@ -89,9 +92,8 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       qualifier = "(showing only unpromoted)";
     }
 
-    this.log(
-      `‣ Showing ${entries.length} commits in \`${env}\` environment ${qualifier}\n`,
-    );
+    const scope = formatCommandScope(this.props.flags);
+    this.log(`‣ Showing ${entries.length} commits in ${scope} ${qualifier}\n`);
 
     /*
      * Commits table

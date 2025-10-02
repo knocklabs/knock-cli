@@ -2,8 +2,10 @@ import { Args, Flags, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
 
@@ -15,6 +17,7 @@ export default class PartialGet extends BaseCommand<typeof PartialGet> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
@@ -64,9 +67,8 @@ export default class PartialGet extends BaseCommand<typeof PartialGet> {
     const qualifier =
       env === "development" && !commitedOnly ? "(including uncommitted)" : "";
 
-    this.log(
-      `‣ Showing partial \`${partialKey}\` in \`${env}\` environment ${qualifier}\n`,
-    );
+    const scope = formatCommandScope(this.props.flags);
+    this.log(`‣ Showing partial \`${partialKey}\` in ${scope} ${qualifier}\n`);
 
     /*
      * Partial table

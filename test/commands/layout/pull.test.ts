@@ -92,6 +92,29 @@ describe("commands/layout/pull", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    setupWithGetLayoutStub({ key: "layout-x" })
+      .stdout()
+      .command(["layout pull", "layout-x", "--branch", "my-feature-branch-123"])
+      .it("calls apiV1 getEmailLayout with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.getEmailLayout as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                emailLayoutKey: "layout-x",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+                annotate: true,
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given a --all flag", () => {
     setupWithListLayoutsStub({ key: "messages" }, { key: "transactional" })
       .stdout()
