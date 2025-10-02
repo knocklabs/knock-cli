@@ -1,4 +1,4 @@
-import { Commit } from "@knocklabs/mgmt/resources/commits";
+import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { Args, ux } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";

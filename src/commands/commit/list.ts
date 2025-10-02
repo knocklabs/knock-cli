@@ -99,30 +99,33 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
      * Commits table
      */
 
-    ux.table(entries, {
+    const formattedEntries = entries.map((entry) => ({
+      id: entry.id,
+      resource: entry.resource.type,
+      identifier: entry.resource.identifier,
+      author: formatCommitAuthor(entry),
+      commit_message: entry.commit_message ? entry.commit_message.trim() : "",
+      created_at: formatDate(entry.created_at),
+    }));
+
+    ux.table(formattedEntries, {
       id: {
         header: "ID",
       },
       resource: {
         header: "Resource",
-        get: (entry) => entry.resource.type,
       },
       identifier: {
         header: "Identifier",
-        get: (entry) => entry.resource.identifier,
       },
       author: {
         header: "Author",
-        get: (entry) => formatCommitAuthor(entry),
       },
       commit_message: {
         header: "Commit message",
-        get: (entry) =>
-          entry.commit_message ? entry.commit_message.trim() : "",
       },
       created_at: {
         header: "Created at",
-        get: (entry) => formatDate(entry.created_at),
       },
     });
 
