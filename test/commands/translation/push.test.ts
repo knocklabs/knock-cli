@@ -91,6 +91,35 @@ describe("commands/translation/push", () => {
           );
         },
       );
+
+    describe("given a branch flag", () => {
+      setupWithStub()
+        .stdout()
+        .command([
+          "translation push",
+          "admin.en",
+          "--branch",
+          "my-feature-branch-123",
+        ])
+        .it("calls apiV1 upsertTranslation with expected params", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.upsertTranslation as any,
+            sinon.match(({ flags }) => {
+              return isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              });
+            }),
+            sinon.match({
+              content: '{"welcome":"hello!"}',
+              locale_code: "en",
+              namespace: "admin",
+              format: "json",
+            }),
+          );
+        });
+    });
   });
 
   describe("given a translation file, with syntax errors", () => {

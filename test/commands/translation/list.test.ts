@@ -73,6 +73,30 @@ describe("commands/translation/list", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
+        stub.resolves(emptyTranslationListResp),
+      )
+      .stdout()
+      .command(["translation list", "--branch", "my-feature-branch-123"])
+      .it("calls apiV1 listTranslations with correct props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listTranslations as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {}) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given a list of translations in response", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

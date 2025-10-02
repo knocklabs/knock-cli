@@ -2,6 +2,7 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -25,6 +26,7 @@ export default class TranslationValidate extends BaseCommand<
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary:
         "Whether to validate all translations from the target directory.",
@@ -74,8 +76,9 @@ export default class TranslationValidate extends BaseCommand<
     spinner.stop();
 
     const handledRefs = translations.map((t) => t.ref);
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Successfully validated ${translations.length} translation(s):\n` +
+      `‣ Successfully validated ${translations.length} translation(s) using ${scope}:\n` +
         indentString(handledRefs.join("\n"), 4),
     );
   }

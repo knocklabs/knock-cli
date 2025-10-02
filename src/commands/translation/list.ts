@@ -3,7 +3,9 @@ import { AxiosResponse } from "axios";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDate } from "@/lib/helpers/date";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import {
   maybePromptPageAction,
@@ -23,6 +25,7 @@ export default class TranslationList extends BaseCommand<
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
@@ -58,8 +61,9 @@ export default class TranslationList extends BaseCommand<
     const qualifier =
       env === "development" && !committedOnly ? "(including uncommitted)" : "";
 
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Showing ${entries.length} translations in \`${env}\` environment ${qualifier}\n`,
+      `‣ Showing ${entries.length} translations in ${scope} ${qualifier}\n`,
     );
 
     /*
