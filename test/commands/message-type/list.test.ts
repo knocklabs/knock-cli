@@ -37,6 +37,30 @@ describe("commands/message-type/list", () => {
       });
   });
 
+  describe("given a branch flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "listMessageTypes", (stub) =>
+        stub.resolves(emptyEntriesResp),
+      )
+      .stdout()
+      .command(["message-type list", "--branch", "my-feature-branch-123"])
+      .it("calls apiV1 listMessageTypes with expected params", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listMessageTypes as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {}) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                branch: "my-feature-branch-123",
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

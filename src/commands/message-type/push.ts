@@ -1,6 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -29,6 +30,7 @@ export default class MessageTypePush extends BaseCommand<
       default: KnockEnv.Development,
       options: [KnockEnv.Development],
     }),
+    branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all message types from the target directory.",
     }),
@@ -127,8 +129,9 @@ export default class MessageTypePush extends BaseCommand<
     const messageTypeKeys = messageTypes.map((w) => w.key);
     const actioned = flags.commit ? "pushed and committed" : "pushed";
 
+    const scope = formatCommandScope(flags);
     this.log(
-      `‣ Successfully ${actioned} ${messageTypes.length} message type(s):\n` +
+      `‣ Successfully ${actioned} ${messageTypes.length} message type(s) to ${scope}:\n` +
         indentString(messageTypeKeys.join("\n"), 4),
     );
   }

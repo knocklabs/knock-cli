@@ -2,8 +2,10 @@ import { Args, Flags, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
 
@@ -18,6 +20,7 @@ export default class MessageTypeGet extends BaseCommand<typeof MessageTypeGet> {
       default: "development",
       summary: "The environment to use.",
     }),
+    branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
     }),
@@ -67,8 +70,9 @@ export default class MessageTypeGet extends BaseCommand<typeof MessageTypeGet> {
     const qualifier =
       env === "development" && !commitedOnly ? "(including uncommitted)" : "";
 
+    const scope = formatCommandScope(this.props.flags);
     this.log(
-      `‣ Showing in-app message type \`${messageTypeKey}\` in \`${env}\` environment ${qualifier}\n`,
+      `‣ Showing in-app message type \`${messageTypeKey}\` in ${scope} ${qualifier}\n`,
     );
 
     /*
