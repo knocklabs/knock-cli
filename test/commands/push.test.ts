@@ -10,12 +10,16 @@ import EmailLayoutValidate from "@/commands/layout/validate";
 import PartialValidate from "@/commands/partial/validate";
 import TranslationValidate from "@/commands/translation/validate";
 import WorkflowValidate from "@/commands/workflow/validate";
+import MessageTypeValidate from "@/commands/message-type/validate";
+import GuideValidate from "@/commands/guide/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { EmailLayoutData, LAYOUT_JSON } from "@/lib/marshal/email-layout";
 import { PARTIAL_JSON, PartialData, PartialType } from "@/lib/marshal/partial";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { WORKFLOW_JSON, WorkflowData } from "@/lib/marshal/workflow";
+import { MESSAGE_TYPE_JSON, MessageTypeData } from "@/lib/marshal/message-type";
+import { GUIDE_JSON, GuideData } from "@/lib/marshal/guide";
 
 import { factory } from "../support";
 
@@ -99,6 +103,65 @@ const mockWorkflowData: WorkflowData<WithAnnotation> = {
       "key",
       "active",
       "valid",
+      "created_at",
+      "updated_at",
+      "sha",
+    ],
+  },
+};
+
+const mockMessageTypeData: MessageTypeData<WithAnnotation> = {
+  key: "default",
+  name: "Default",
+  valid: true,
+  owner: "user",
+  variants: [],
+  preview: "This is a preview",
+  semver: "1.0.0",
+  description: "This is a default message type",
+  icon_name: "Bell",
+  environment: "development",
+  updated_at: "2023-09-29T19:08:04.129228Z",
+  created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
+  __annotation: {
+    extractable_fields: {
+      preview: { default: true, file_ext: "html" },
+    },
+    readonly_fields: [
+      "environment",
+      "key",
+      "valid",
+      "owner",
+      "created_at",
+      "updated_at",
+      "sha",
+    ],
+  },
+};
+
+const mockGuideData: GuideData<WithAnnotation> = {
+  key: "default",
+  name: "Default",
+  valid: true,
+  active: false,
+  description: "This is a default guide",
+  priority: "high",
+  channel_key: null,
+  type: null,
+  semver: "1.0.0",
+  steps: [],
+  environment: "development",
+  updated_at: "2023-09-29T19:08:04.129228Z",
+  created_at: "2023-09-18T18:32:18.398053Z",
+  sha: "<SOME_SHA>",
+  __annotation: {
+    extractable_fields: {},
+    readonly_fields: [
+      "environment",
+      "key",
+      "valid",
+      "active",
       "created_at",
       "updated_at",
       "sha",
@@ -518,6 +581,196 @@ describe("commands/push", () => {
           );
       });
 
+      describe("and a non-empty message-types directory", () => {
+        const messageTypesSubdirPath = path.resolve(
+          sandboxDir,
+          "message-types",
+        );
+
+        let messageTypeValidateAllStub: sinon.SinonStub;
+        let upsertMessageTypeStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          messageTypeValidateAllStub = sinon
+            .stub(MessageTypeValidate, "validateAll")
+            .resolves([]);
+
+          upsertMessageTypeStub = sinon
+            .stub(KnockApiV1.prototype, "upsertMessageType")
+            .resolves(
+              factory.resp({ data: { message_type: mockMessageTypeData } }),
+            );
+
+          const defaultMessageTypeJson = path.resolve(
+            messageTypesSubdirPath,
+            "default",
+            MESSAGE_TYPE_JSON,
+          );
+          fs.outputJsonSync(defaultMessageTypeJson, { name: "Default" });
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          sinon.restore();
+        });
+
+        test
+          .command(["push", "--knock-dir", "."])
+          .it("validates and upserts message types", () => {
+            sinon.assert.calledOnce(messageTypeValidateAllStub);
+
+            sinon.assert.calledOnceWithExactly(
+              upsertMessageTypeStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    all: true,
+                    "message-types-dir": {
+                      abspath: messageTypesSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((messageType) =>
+                isEqual(messageType, { key: "default", name: "Default" }),
+              ),
+            );
+          });
+
+        test
+          .command([
+            "push",
+            "--knock-dir",
+            ".",
+            "--commit",
+            "-m",
+            "this is a commit comment!",
+          ])
+          .it(
+            "calls apiV1 upsertMessageType with commit flags, if provided",
+            () => {
+              sinon.assert.calledOnceWithExactly(
+                upsertMessageTypeStub,
+                sinon.match(
+                  ({ args, flags }) =>
+                    isEqual(args, {}) &&
+                    isEqual(flags, {
+                      annotate: true,
+                      "service-token": "valid-token",
+                      environment: "development",
+                      all: true,
+                      "message-types-dir": {
+                        abspath: messageTypesSubdirPath,
+                        exists: true,
+                      },
+                      commit: true,
+                      "commit-message": "this is a commit comment!",
+                    }),
+                ),
+                sinon.match((messageType) =>
+                  isEqual(messageType, { key: "default", name: "Default" }),
+                ),
+              );
+            },
+          );
+      });
+
+      describe("and a non-empty guides directory", () => {
+        const guidesSubdirPath = path.resolve(sandboxDir, "guides");
+
+        let guideValidateAllStub: sinon.SinonStub;
+        let upsertGuideStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          guideValidateAllStub = sinon
+            .stub(GuideValidate, "validateAll")
+            .resolves([]);
+
+          upsertGuideStub = sinon
+            .stub(KnockApiV1.prototype, "upsertGuide")
+            .resolves(factory.resp({ data: { guide: mockGuideData } }));
+
+          const defaultGuideJson = path.resolve(
+            guidesSubdirPath,
+            "default",
+            GUIDE_JSON,
+          );
+          fs.outputJsonSync(defaultGuideJson, { name: "Default" });
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          sinon.restore();
+        });
+
+        test
+          .command(["push", "--knock-dir", "."])
+          .it("validates and upserts guides", () => {
+            sinon.assert.calledOnce(guideValidateAllStub);
+
+            sinon.assert.calledOnceWithExactly(
+              upsertGuideStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    all: true,
+                    "guides-dir": {
+                      abspath: guidesSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((guide) =>
+                isEqual(guide, { key: "default", name: "Default" }),
+              ),
+            );
+          });
+
+        test
+          .command([
+            "push",
+            "--knock-dir",
+            ".",
+            "--commit",
+            "-m",
+            "this is a commit comment!",
+          ])
+          .it("calls apiV1 upsertGuide with commit flags, if provided", () => {
+            sinon.assert.calledOnceWithExactly(
+              upsertGuideStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    all: true,
+                    "guides-dir": {
+                      abspath: guidesSubdirPath,
+                      exists: true,
+                    },
+                    commit: true,
+                    "commit-message": "this is a commit comment!",
+                  }),
+              ),
+              sinon.match((guide) =>
+                isEqual(guide, { key: "default", name: "Default" }),
+              ),
+            );
+          });
+      });
+
       describe("and some (but not all) resource-specific subdirectories", () => {
         const partialsSubdirPath = path.resolve(sandboxDir, "partials");
         const workflowsSubdirPath = path.resolve(sandboxDir, "workflows");
@@ -754,17 +1007,26 @@ describe("commands/push", () => {
         const partialsSubdirPath = path.resolve(sandboxDir, "partials");
         const translationsSubdirPath = path.resolve(sandboxDir, "translations");
         const workflowsSubdirPath = path.resolve(sandboxDir, "workflows");
+        const messageTypesSubdirPath = path.resolve(
+          sandboxDir,
+          "message-types",
+        );
+        const guidesSubdirPath = path.resolve(sandboxDir, "guides");
 
         let upsertLayoutStub: sinon.SinonStub;
         let upsertPartialStub: sinon.SinonStub;
         let upsertTranslationStub: sinon.SinonStub;
         let upsertWorkflowStub: sinon.SinonStub;
+        let upsertMessageTypeStub: sinon.SinonStub;
+        let upsertGuideStub: sinon.SinonStub;
 
         beforeEach(() => {
           sinon.stub(EmailLayoutValidate, "validateAll").resolves([]);
           sinon.stub(PartialValidate, "validateAll").resolves([]);
           sinon.stub(TranslationValidate, "validateAll").resolves([]);
           sinon.stub(WorkflowValidate, "validateAll").resolves([]);
+          sinon.stub(MessageTypeValidate, "validateAll").resolves([]);
+          sinon.stub(GuideValidate, "validateAll").resolves([]);
 
           upsertLayoutStub = sinon
             .stub(KnockApiV1.prototype, "upsertEmailLayout")
@@ -783,6 +1045,16 @@ describe("commands/push", () => {
           upsertWorkflowStub = sinon
             .stub(KnockApiV1.prototype, "upsertWorkflow")
             .resolves(factory.resp({ data: { workflow: mockWorkflowData } }));
+
+          upsertMessageTypeStub = sinon
+            .stub(KnockApiV1.prototype, "upsertMessageType")
+            .resolves(
+              factory.resp({ data: { message_type: mockMessageTypeData } }),
+            );
+
+          upsertGuideStub = sinon
+            .stub(KnockApiV1.prototype, "upsertGuide")
+            .resolves(factory.resp({ data: { guide: mockGuideData } }));
 
           const messagesLayoutJson = path.resolve(
             layoutsSubdirPath,
@@ -811,6 +1083,20 @@ describe("commands/push", () => {
             "en.json",
           );
           fs.outputJsonSync(enTranslationJson, { hello: "Heyyyy" });
+
+          const defaultMessageTypeJson = path.resolve(
+            messageTypesSubdirPath,
+            "default",
+            MESSAGE_TYPE_JSON,
+          );
+          fs.outputJsonSync(defaultMessageTypeJson, { name: "Default" });
+
+          const defaultGuideJson = path.resolve(
+            guidesSubdirPath,
+            "default",
+            GUIDE_JSON,
+          );
+          fs.outputJsonSync(defaultGuideJson, { name: "Default" });
 
           process.chdir(sandboxDir);
         });
@@ -917,6 +1203,50 @@ describe("commands/push", () => {
               ),
               sinon.match((workflow) =>
                 isEqual(workflow, { key: "foo", name: "Foo" }),
+              ),
+            );
+
+            sinon.assert.calledOnceWithExactly(
+              upsertMessageTypeStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    branch: "my-feature-branch-123",
+                    all: true,
+                    "message-types-dir": {
+                      abspath: messageTypesSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((messageType) =>
+                isEqual(messageType, { key: "default", name: "Default" }),
+              ),
+            );
+
+            sinon.assert.calledOnceWithExactly(
+              upsertGuideStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    branch: "my-feature-branch-123",
+                    all: true,
+                    "guides-dir": {
+                      abspath: guidesSubdirPath,
+                      exists: true,
+                    },
+                  }),
+              ),
+              sinon.match((guide) =>
+                isEqual(guide, { key: "default", name: "Default" }),
               ),
             );
           });
