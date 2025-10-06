@@ -24,9 +24,6 @@ import {
 } from "@/lib/run-context";
 
 export default class GuidePull extends BaseCommand<typeof GuidePull> {
-  // Hide until guides are released in GA.
-  static hidden = true;
-
   static summary =
     "Pull one or more guides from an environment into a local file system.";
 

@@ -4,6 +4,8 @@ import { spinner } from "@/lib/helpers/ux";
 export default class Logout extends BaseCommand<typeof Logout> {
   protected requiresAuth = false;
 
+  static summary = "Log out of a Knock user account.";
+
   public async run(): Promise<void> {
     const { flags } = this.props;
 

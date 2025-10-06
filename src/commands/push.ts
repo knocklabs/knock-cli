@@ -13,7 +13,9 @@ import {
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
+import GuidePush from "./guide/push";
 import EmailLayoutPush from "./layout/push";
+import MessageTypePush from "./message-type/push";
 import PartialPush from "./partial/push";
 import TranslationPush from "./translation/push";
 import WorkflowPush from "./workflow/push";
@@ -105,6 +107,12 @@ const runResourcePushCommand = async (
 
     case "workflow":
       return WorkflowPush.run([...args, "--workflows-dir", subdirPath]);
+
+    case "message_type":
+      return MessageTypePush.run([...args, "--message-types-dir", subdirPath]);
+
+    case "guide":
+      return GuidePush.run([...args, "--guides-dir", subdirPath]);
 
     default: {
       const invalidResourceType: never = resourceType;

@@ -1,10 +1,7 @@
 import type { ResourceType } from "./run-context";
 
 // TODO Remove this once hidden option is removed from message types / guides
-export type NonHiddenResourceType = Exclude<
-  ResourceType,
-  "message_type" | "guide" | "reusable_step"
->;
+export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
 
 /**
  * An ordered array of all resource types.
@@ -19,6 +16,9 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   // Email layouts next, as workflows with email channel steps may reference them
   "email_layout",
   "workflow",
+  // Message types then guides, as guides use message types.
+  "message_type",
+  "guide",
   "translation",
 ];
 
@@ -31,4 +31,6 @@ export const RESOURCE_SUBDIRS: Record<NonHiddenResourceType, string> = {
   partial: "partials",
   translation: "translations",
   workflow: "workflows",
+  message_type: "message-types",
+  guide: "guides",
 } as const;

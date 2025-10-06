@@ -5,6 +5,8 @@ import { spinner } from "@/lib/helpers/ux";
 export default class Login extends BaseCommand<typeof Login> {
   protected requiresAuth = false;
 
+  static summary = "Log in with a Knock user account.";
+
   public async run(): Promise<void> {
     const { flags } = this.props;
 

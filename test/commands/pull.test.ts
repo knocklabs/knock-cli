@@ -10,6 +10,8 @@ import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
+import { GuideData } from "@/lib/marshal/guide";
+import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData } from "@/lib/marshal/partial";
 import { TranslationData } from "@/lib/marshal/translation";
 import { WorkflowData } from "@/lib/marshal/workflow";
@@ -21,6 +23,9 @@ const setupWithListStubs = (
   manyPartialsAttrs: Partial<PartialData>[],
   manyTranslationsAttrs: Partial<TranslationData>[],
   manyWorkflowAttrs: Partial<WorkflowData>[],
+  manyMessageTypeAttrs: Partial<MessageTypeData>[],
+  manyGuideAttrs: Partial<GuideData>[],
+  // eslint-disable-next-line max-params
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
@@ -68,6 +73,28 @@ const setupWithListStubs = (
         }),
       ),
     )
+    .stub(KnockApiV1.prototype, "listMessageTypes", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            entries: manyMessageTypeAttrs.map((attrs) =>
+              factory.messageType(attrs),
+            ),
+            page_info: factory.pageInfo(),
+          },
+        }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "listGuides", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            entries: manyGuideAttrs.map((attrs) => factory.guide(attrs)),
+            page_info: factory.pageInfo(),
+          },
+        }),
+      ),
+    )
     .stub(enquirer.prototype, "prompt", (stub) =>
       stub.onFirstCall().resolves({ input: "y" }),
     );
@@ -89,6 +116,8 @@ describe("commands/pull", () => {
       [{ key: "partial-a" }, { key: "partial-b" }],
       [{ locale_code: "en" }, { locale_code: "es-MX" }],
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
+      [{ key: "message-type-a" }, { key: "message-type-b" }],
+      [{ key: "guide-a" }, { key: "guide-b" }],
     )
       .stdout()
       .command(["pull", "--knock-dir", "."])
@@ -107,6 +136,8 @@ describe("commands/pull", () => {
       [{ key: "partial-a" }, { key: "partial-b" }],
       [{ locale_code: "en" }, { locale_code: "es-MX" }],
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
+      [{ key: "message-type-a" }, { key: "message-type-b" }],
+      [{ key: "guide-a" }, { key: "guide-b" }],
     )
       .stdout()
       .command(["pull", "--knock-dir", ".", "--environment", "staging"])
@@ -122,6 +153,8 @@ describe("commands/pull", () => {
       [{ key: "partial-a" }, { key: "partial-b" }],
       [{ locale_code: "en" }, { locale_code: "es-MX" }],
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
+      [{ key: "message-type-a" }, { key: "message-type-b" }],
+      [{ key: "guide-a" }, { key: "guide-b" }],
     )
       .stdout()
       .command([
@@ -146,6 +179,8 @@ describe("commands/pull", () => {
       [{ key: "partial-a" }, { key: "partial-b" }],
       [{ locale_code: "en" }, { locale_code: "es-MX" }],
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
+      [{ key: "message-type-a" }, { key: "message-type-b" }],
+      [{ key: "guide-a" }, { key: "guide-b" }],
     )
       .stdout()
       .command(["pull", "--knock-dir", ".", "--hide-uncommitted-changes"])
@@ -164,6 +199,8 @@ describe("commands/pull", () => {
       [{ key: "partial-a" }, { key: "partial-b" }],
       [{ locale_code: "en" }, { locale_code: "es-MX" }],
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
+      [{ key: "message-type-a" }, { key: "message-type-b" }],
+      [{ key: "guide-a" }, { key: "guide-b" }],
     )
       .env({ KNOCK_SERVICE_TOKEN: null })
       .stdout()
@@ -180,6 +217,8 @@ describe("commands/pull", () => {
       [{ key: "partial-a" }, { key: "partial-b" }],
       [{ locale_code: "en" }, { locale_code: "es-MX" }],
       [{ key: "workflow-a" }, { key: "workflow-bar" }],
+      [{ key: "message-type-a" }, { key: "message-type-b" }],
+      [{ key: "guide-a" }, { key: "guide-b" }],
     )
       .stdout()
       .command(["pull", "--knock-dir", ".", "--force"])
@@ -194,6 +233,8 @@ describe("commands/pull", () => {
     [{ key: "partial1" }, { key: "partial2" }],
     [{ locale_code: "en" }, { locale_code: "es-MX" }],
     [{ key: "workflow1" }, { key: "workflow2" }],
+    [{ key: "message-type1" }, { key: "message-type2" }],
+    [{ key: "guide1" }, { key: "guide2" }],
   )
     .stdout()
     .command(["pull", "--knock-dir", "resources"])
@@ -263,6 +304,38 @@ describe("commands/pull", () => {
           "workflow2",
         );
         expect(fs.pathExistsSync(path8)).to.equal(true);
+
+        const path9 = path.resolve(
+          sandboxDir,
+          "resources",
+          "message-types",
+          "message-type1",
+        );
+        expect(fs.pathExistsSync(path9)).to.equal(true);
+
+        const path10 = path.resolve(
+          sandboxDir,
+          "resources",
+          "message-types",
+          "message-type2",
+        );
+        expect(fs.pathExistsSync(path10)).to.equal(true);
+
+        const path11 = path.resolve(
+          sandboxDir,
+          "resources",
+          "guides",
+          "guide1",
+        );
+        expect(fs.pathExistsSync(path11)).to.equal(true);
+
+        const path12 = path.resolve(
+          sandboxDir,
+          "resources",
+          "guides",
+          "guide2",
+        );
+        expect(fs.pathExistsSync(path12)).to.equal(true);
       },
     );
 
