@@ -13,12 +13,12 @@ import {
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
+import GuidePush from "./guide/push";
 import EmailLayoutPush from "./layout/push";
+import MessageTypePush from "./message-type/push";
 import PartialPush from "./partial/push";
 import TranslationPush from "./translation/push";
 import WorkflowPush from "./workflow/push";
-import MessageTypePush from "./message-type/push";
-import GuidePush from "./guide/push";
 
 export default class Push extends BaseCommand<typeof Push> {
   static summary = "Push all resources from a local file system to Knock.";

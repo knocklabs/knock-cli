@@ -12,12 +12,12 @@ import {
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
+import GuidePull from "./guide/pull";
 import EmailLayoutPull from "./layout/pull";
+import MessageTypePull from "./message-type/pull";
 import PartialPull from "./partial/pull";
 import TranslationPull from "./translation/pull";
 import WorkflowPull from "./workflow/pull";
-import MessageTypePull from "./message-type/pull";
-import GuidePull from "./guide/pull";
 
 export default class Pull extends BaseCommand<typeof Pull> {
   static summary =

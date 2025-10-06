@@ -6,20 +6,20 @@ import * as fs from "fs-extra";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
+import GuideValidate from "@/commands/guide/validate";
 import EmailLayoutValidate from "@/commands/layout/validate";
+import MessageTypeValidate from "@/commands/message-type/validate";
 import PartialValidate from "@/commands/partial/validate";
 import TranslationValidate from "@/commands/translation/validate";
 import WorkflowValidate from "@/commands/workflow/validate";
-import MessageTypeValidate from "@/commands/message-type/validate";
-import GuideValidate from "@/commands/guide/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { EmailLayoutData, LAYOUT_JSON } from "@/lib/marshal/email-layout";
+import { GUIDE_JSON, GuideData } from "@/lib/marshal/guide";
+import { MESSAGE_TYPE_JSON, MessageTypeData } from "@/lib/marshal/message-type";
 import { PARTIAL_JSON, PartialData, PartialType } from "@/lib/marshal/partial";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { WORKFLOW_JSON, WorkflowData } from "@/lib/marshal/workflow";
-import { MESSAGE_TYPE_JSON, MessageTypeData } from "@/lib/marshal/message-type";
-import { GUIDE_JSON, GuideData } from "@/lib/marshal/guide";
 
 import { factory } from "../support";
 

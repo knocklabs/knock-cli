@@ -10,11 +10,11 @@ import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
+import { GuideData } from "@/lib/marshal/guide";
+import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData } from "@/lib/marshal/partial";
 import { TranslationData } from "@/lib/marshal/translation";
 import { WorkflowData } from "@/lib/marshal/workflow";
-import { MessageTypeData } from "@/lib/marshal/message-type";
-import { GuideData } from "@/lib/marshal/guide";
 
 const currCwd = process.cwd();
 
@@ -25,6 +25,7 @@ const setupWithListStubs = (
   manyWorkflowAttrs: Partial<WorkflowData>[],
   manyMessageTypeAttrs: Partial<MessageTypeData>[],
   manyGuideAttrs: Partial<GuideData>[],
+  // eslint-disable-next-line max-params
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
