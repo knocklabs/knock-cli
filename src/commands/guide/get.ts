@@ -18,9 +18,6 @@ import {
 export default class GuideGet extends BaseCommand<typeof GuideGet> {
   static summary = "Display a single guide from an environment.";
 
-  // Hide until guides are released in GA.
-  static hidden = true;
-
   static flags = {
     environment: Flags.string({
       default: "development",

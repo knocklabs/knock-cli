@@ -16,9 +16,6 @@ import MessageTypePush from "./push";
 export default class MessageTypeValidate extends BaseCommand<
   typeof MessageTypeValidate
 > {
-  // Hide until guides are released in GA.
-  static hidden = true;
-
   static summary =
     "Validate one or more message types from a local file system.";
 

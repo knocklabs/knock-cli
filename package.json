@@ -71,6 +71,15 @@
       "commit": {
         "description": "Commit or promote changes."
       },
+      "guide": {
+        "description": "Manage in-app guides."
+      },
+      "message-type": {
+        "description": "Manage message types for guides."
+      },
+      "partial": {
+        "description": "Manage template partials."
+      },
       "workflow": {
         "description": "Manage notification workflows."
       },

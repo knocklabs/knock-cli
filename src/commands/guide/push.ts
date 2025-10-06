@@ -15,9 +15,6 @@ import { WithAnnotation } from "@/lib/marshal/shared/types";
 import GuideValidate from "./validate";
 
 export default class GuidePush extends BaseCommand<typeof GuidePush> {
-  // Hide until guides are released in GA.
-  static hidden = true;
-
   static summary = "Push one or more guides from a local file system to Knock.";
 
   static flags = {

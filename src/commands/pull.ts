@@ -16,6 +16,8 @@ import EmailLayoutPull from "./layout/pull";
 import PartialPull from "./partial/pull";
 import TranslationPull from "./translation/pull";
 import WorkflowPull from "./workflow/pull";
+import MessageTypePull from "./message-type/pull";
+import GuidePull from "./guide/pull";
 
 export default class Pull extends BaseCommand<typeof Pull> {
   static summary =
@@ -89,11 +91,18 @@ const runResourcePullCommand = async (
     case "partial":
       return PartialPull.run([...args, "--partials-dir", subdirPath]);
 
+    // TODO(KNO-9451): Include translation in the knock pull
     case "translation":
       return TranslationPull.run([...args, "--translations-dir", subdirPath]);
 
     case "workflow":
       return WorkflowPull.run([...args, "--workflows-dir", subdirPath]);
+
+    case "message_type":
+      return MessageTypePull.run([...args, "--message-types-dir", subdirPath]);
+
+    case "guide":
+      return GuidePull.run([...args, "--guides-dir", subdirPath]);
 
     default: {
       const invalidResourceType: never = resourceType;

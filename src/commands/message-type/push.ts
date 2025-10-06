@@ -17,9 +17,6 @@ import MessageTypeValidate from "./validate";
 export default class MessageTypePush extends BaseCommand<
   typeof MessageTypePush
 > {
-  // Hide until guides are released in GA.
-  static hidden = true;
-
   static summary =
     "Push one or more message types from a local file system to Knock.";
 
