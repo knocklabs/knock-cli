@@ -17,6 +17,8 @@ import EmailLayoutPush from "./layout/push";
 import PartialPush from "./partial/push";
 import TranslationPush from "./translation/push";
 import WorkflowPush from "./workflow/push";
+import MessageTypePush from "./message-type/push";
+import GuidePush from "./guide/push";
 
 export default class Push extends BaseCommand<typeof Push> {
   static summary = "Push all resources from a local file system to Knock.";
@@ -105,6 +107,12 @@ const runResourcePushCommand = async (
 
     case "workflow":
       return WorkflowPush.run([...args, "--workflows-dir", subdirPath]);
+
+    case "message_type":
+      return MessageTypePush.run([...args, "--message-types-dir", subdirPath]);
+
+    case "guide":
+      return GuidePush.run([...args, "--guides-dir", subdirPath]);
 
     default: {
       const invalidResourceType: never = resourceType;
