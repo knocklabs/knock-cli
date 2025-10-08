@@ -27,10 +27,11 @@ describe("commands/branch/switch", () => {
       .stub(KnockMgmt.prototype, "get", (stub) =>
         stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
       )
+      .stdout()
       .command(["branch switch", "my-feature-branch-123"])
       .it(
         "fetches branch, updates .knock_current_branch file, and displays success message",
-        () => {
+        (ctx) => {
           sinon.assert.calledWith(
             KnockMgmt.prototype.get as any,
             "/v1/branches/my-feature-branch-123",
@@ -38,6 +39,10 @@ describe("commands/branch/switch", () => {
 
           expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
             "my-feature-branch-123\n",
+          );
+
+          expect(ctx.stdout).to.contain(
+            "‣ Successfully switched to branch `my-feature-branch-123`",
           );
         },
       );
