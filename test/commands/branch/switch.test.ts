@@ -1,10 +1,45 @@
+import * as path from "node:path";
+
 import KnockMgmt from "@knocklabs/mgmt";
 import { test } from "@oclif/test";
+import * as fs from "fs-extra";
 import * as sinon from "sinon";
 
-import { factory } from "../../support";
+import { factory } from "@/../test/support";
+import { BRANCH_FILE_NAME } from "@/lib/helpers/branch";
+import { sandboxDir } from "@/lib/helpers/const";
 
 describe("commands/branch/switch", () => {
+  beforeEach(() => {
+    const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
+    fs.ensureFileSync(branchFilePath);
+    process.chdir(sandboxDir);
+  });
+
+  afterEach(() => {
+    fs.removeSync(sandboxDir);
+  });
+
+  describe("given a valid branch slug", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockMgmt.prototype, "get", (stub) =>
+        stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
+      )
+      .command(["branch switch", "my-feature-branch-123"])
+      .it(
+        "fetches branch, updates .knock_current_branch file, and displays success message",
+        () => {
+          sinon.assert.calledWith(
+            KnockMgmt.prototype.get as any,
+            "/v1/branches/my-feature-branch-123",
+          );
+
+          // TODO
+        },
+      );
+  });
+
   describe("given an argument containing mixed casing and whitespace", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

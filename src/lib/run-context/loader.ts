@@ -11,7 +11,7 @@ import * as Partial from "@/lib/marshal/partial";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
-import { hasCurrentBranchFile } from "../helpers/branch";
+import { BRANCH_FILE_NAME, hasCurrentBranchFile } from "../helpers/branch";
 import { ResourceType, RunContext } from "./types";
 
 const buildResourceDirContext = (type: ResourceType, currDir: string) => {
@@ -61,7 +61,7 @@ const evaluateRecursively = async (
   if (!ctx.branchFilePath) {
     const currentBranchFileExists = await hasCurrentBranchFile(currDir);
     if (currentBranchFileExists) {
-      ctx.branchFilePath = path.resolve(currDir, ".knock_current_branch");
+      ctx.branchFilePath = path.resolve(currDir, BRANCH_FILE_NAME);
     }
   }
 
