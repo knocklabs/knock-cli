@@ -49,3 +49,10 @@ export const findCurrentBranchFile = async (
   const parentDir = path.resolve(currDir, "..");
   return findCurrentBranchFile(parentDir);
 };
+
+export const parseSlugFromBranchFile = async (
+  branchFilePath: string,
+): Promise<string | undefined> => {
+  const slug = await fs.readFile(branchFilePath, "utf-8");
+  return slug.split("\n")[0];
+};
