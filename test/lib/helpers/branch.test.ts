@@ -6,23 +6,35 @@ import * as fs from "fs-extra";
 import {
   BRANCH_FILE_NAME,
   parseSlugFromBranchFile,
+  writeSlugToBranchFile,
 } from "@/lib/helpers/branch";
 import { sandboxDir } from "@/lib/helpers/const";
 
 const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
 
 describe("lib/helpers/branch", () => {
+  beforeEach(() => {
+    fs.ensureDirSync(sandboxDir);
+    process.chdir(sandboxDir);
+    fs.ensureFileSync(branchFilePath);
+  });
+
+  afterEach(() => {
+    fs.removeSync(sandboxDir);
+  });
+
+  describe("writeSlugToBranchFile", () => {
+    it("writes the branch slug to the file with a newline", async () => {
+      const branchSlug = "my-feature-branch-123";
+
+      await writeSlugToBranchFile(branchFilePath, branchSlug);
+
+      const content = fs.readFileSync(branchFilePath, "utf-8");
+      expect(content).to.equal(`${branchSlug}\n`);
+    });
+  });
+
   describe("parseSlugFromBranchFile", () => {
-    beforeEach(() => {
-      fs.ensureDirSync(sandboxDir);
-      process.chdir(sandboxDir);
-      fs.ensureFileSync(branchFilePath);
-    });
-
-    afterEach(() => {
-      fs.removeSync(sandboxDir);
-    });
-
     describe("when the branch file exists and is formatted correctly (with a newline)", () => {
       beforeEach(async () => {
         fs.writeFileSync(branchFilePath, "my-feature-branch-123\n");

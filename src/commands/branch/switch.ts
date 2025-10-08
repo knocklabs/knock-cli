@@ -1,10 +1,7 @@
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
-import {
-  BRANCH_FILE_NAME,
-  updateCurrentBranchFile,
-} from "@/lib/helpers/branch";
+import { BRANCH_FILE_NAME, writeSlugToBranchFile } from "@/lib/helpers/branch";
 import { findFile } from "@/lib/helpers/fs";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 
@@ -40,7 +37,7 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
       this.apiV1.mgmtClient.get(`/v1/branches/${args.slug}`),
     );
 
-    await updateCurrentBranchFile(branchFilePath, branch.slug);
+    await writeSlugToBranchFile(branchFilePath, branch.slug);
 
     this.log(`‣ Successfully switched to branch \`${branch.slug}\``);
   }

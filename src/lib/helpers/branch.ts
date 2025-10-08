@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
  */
 export const BRANCH_FILE_NAME = ".knock_branch";
 
-export const updateCurrentBranchFile = async (
+export const writeSlugToBranchFile = async (
   branchFilePath: string,
   branchSlug: string,
 ): Promise<void> => {
