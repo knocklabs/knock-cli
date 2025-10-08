@@ -35,6 +35,6 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
 
     await updateCurrentBranchFile(this.runContext.branchFilePath, branch.slug);
 
-    this.log(`‣ Successfully switch to branch \`${branch.slug}\``);
+    this.log(`‣ Successfully switched to branch \`${branch.slug}\``);
   }
 }
