@@ -22,3 +22,30 @@ export const updateCurrentBranchFile = async (
 ): Promise<void> => {
   await fs.writeFile(branchFilePath, `${branchSlug}\n`);
 };
+
+/**
+ * Finds the branch file by recursively walking up the directory tree starting
+ * from the given directory.
+ * @param currDir the directory to start searching from
+ * @returns the path to the branch file, or `undefined` if no branch file is found
+ */
+export const findCurrentBranchFile = async (
+  currDir: string,
+): Promise<string | undefined> => {
+  const branchFilePath = path.resolve(currDir, BRANCH_FILE_NAME);
+  const fileExists = await fs.pathExists(branchFilePath);
+
+  if (fileExists) {
+    return branchFilePath;
+  }
+
+  // If we reached the root of the filesystem, nothing more to do
+  const { root } = path.parse(currDir);
+  if (currDir === root) {
+    return undefined;
+  }
+
+  // Keep walking up the directory tree
+  const parentDir = path.resolve(currDir, "..");
+  return findCurrentBranchFile(parentDir);
+};
