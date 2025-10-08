@@ -8,3 +8,10 @@ export const hasCurrentBranchFile = async (
   const currentBranchFilePath = path.resolve(currDir, ".knock_current_branch");
   return fs.pathExists(currentBranchFilePath);
 };
+
+export const updateCurrentBranchFile = async (
+  branchFilePath: string,
+  branchSlug: string,
+): Promise<void> => {
+  await fs.writeFile(branchFilePath, `${branchSlug}\n`);
+};
