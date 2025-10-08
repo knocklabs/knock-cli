@@ -17,6 +17,6 @@ export const updateCurrentBranchFile = async (
 export const parseSlugFromBranchFile = async (
   branchFilePath: string,
 ): Promise<string | undefined> => {
-  const slug = await fs.readFile(branchFilePath, "utf-8");
-  return slug.split("\n")[0];
+  const input = (await fs.readFile(branchFilePath, "utf-8")).trim();
+  return /^[\w-]+$/.test(input) ? input : undefined;
 };
