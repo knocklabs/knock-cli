@@ -1,7 +1,10 @@
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
-import { updateCurrentBranchFile } from "@/lib/helpers/branch";
+import {
+  findCurrentBranchFile,
+  updateCurrentBranchFile,
+} from "@/lib/helpers/branch";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 
 export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
@@ -20,7 +23,10 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
   async run(): Promise<void> {
     const { args } = this.props;
 
-    if (!this.runContext.branchFilePath) {
+    const currDir = process.cwd();
+    const branchFilePath = await findCurrentBranchFile(currDir);
+
+    if (!branchFilePath) {
       // TODO Automatically create .knock_current_branch file
       this.log(`‣ Cannot locate .knock_current_branch file, skipping switch`);
       return;
@@ -33,7 +39,7 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
       this.apiV1.mgmtClient.get(`/v1/branches/${args.slug}`),
     );
 
-    await updateCurrentBranchFile(this.runContext.branchFilePath, branch.slug);
+    await updateCurrentBranchFile(branchFilePath, branch.slug);
 
     this.log(`‣ Successfully switched to branch \`${branch.slug}\``);
   }

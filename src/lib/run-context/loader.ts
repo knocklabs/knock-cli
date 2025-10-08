@@ -11,7 +11,6 @@ import * as Partial from "@/lib/marshal/partial";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
-import { BRANCH_FILE_NAME, hasCurrentBranchFile } from "../helpers/branch";
 import { ResourceType, RunContext } from "./types";
 
 const buildResourceDirContext = (type: ResourceType, currDir: string) => {
@@ -58,17 +57,10 @@ const evaluateRecursively = async (
     }
   }
 
-  if (!ctx.branchFilePath) {
-    const currentBranchFileExists = await hasCurrentBranchFile(currDir);
-    if (currentBranchFileExists) {
-      ctx.branchFilePath = path.resolve(currDir, BRANCH_FILE_NAME);
-    }
-  }
-
-  // If we've identified the resource context and the branch file, no need to go further.
+  // If we've identified the resource context, no need to go further.
   // TODO: In the future, consider supporting a knock project config file which
   // we can use to (semi-)explicitly figure out the project directory structure.
-  if (ctx.resourceDir && ctx.branchFilePath) return ctx;
+  if (ctx.resourceDir) return ctx;
 
   // If we reached the root of the filesystem, nothing more to do.
   const { root } = path.parse(currDir);
@@ -86,7 +78,7 @@ const evaluateRecursively = async (
 export const load = async (
   commandId?: string | undefined,
 ): Promise<RunContext> => {
-  const ctx: RunContext = { commandId, cwd: process.cwd() };
+  const ctx = { commandId, cwd: process.cwd() };
 
   return evaluateRecursively(ctx, ctx.cwd);
 };
