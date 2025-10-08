@@ -5,7 +5,8 @@ import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
 
-import { BRANCH_FILE_NAME, findFile, parseSlugFromBranchFile } from "./branch";
+import { BRANCH_FILE_NAME, parseSlugFromBranchFile } from "./branch";
+import { findFile } from "./fs";
 import { tryJsonParse } from "./json";
 import { AnyObj } from "./object.isomorphic";
 import { slugify } from "./string";

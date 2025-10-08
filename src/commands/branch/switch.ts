@@ -8,9 +8,9 @@ import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
 import {
   BRANCH_FILE_NAME,
-  findFile,
   updateCurrentBranchFile,
 } from "@/lib/helpers/branch";
+import { findFile } from "@/lib/helpers/fs";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
