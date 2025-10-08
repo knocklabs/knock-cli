@@ -24,19 +24,20 @@ export const updateCurrentBranchFile = async (
 };
 
 /**
- * Finds the branch file by recursively walking up the directory tree starting
- * from the given directory.
+ * Finds a file by recursively walking up the directory tree starting from the given directory.
  * @param currDir the directory to start searching from
- * @returns the path to the branch file, or `undefined` if no branch file is found
+ * @param fileName the name of the file to find
+ * @returns the path to the file, or `undefined` if no file is found
  */
-export const findCurrentBranchFile = async (
+export const findFile = async (
   currDir: string,
+  fileName: string,
 ): Promise<string | undefined> => {
-  const branchFilePath = path.resolve(currDir, BRANCH_FILE_NAME);
-  const fileExists = await fs.pathExists(branchFilePath);
+  const filePath = path.resolve(currDir, fileName);
+  const fileExists = await fs.pathExists(filePath);
 
   if (fileExists) {
-    return branchFilePath;
+    return filePath;
   }
 
   // If we reached the root of the filesystem, nothing more to do
@@ -47,7 +48,7 @@ export const findCurrentBranchFile = async (
 
   // Keep walking up the directory tree
   const parentDir = path.resolve(currDir, "..");
-  return findCurrentBranchFile(parentDir);
+  return findFile(parentDir, fileName);
 };
 
 export const parseSlugFromBranchFile = async (

@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
 
-import { findCurrentBranchFile, parseSlugFromBranchFile } from "./branch";
+import { BRANCH_FILE_NAME, findFile, parseSlugFromBranchFile } from "./branch";
 import { tryJsonParse } from "./json";
 import { AnyObj } from "./object.isomorphic";
 import { slugify } from "./string";
@@ -118,7 +118,7 @@ export const branch = slug({
   multiple: false,
   default: async () => {
     const currDir = process.cwd();
-    const branchFilePath = await findCurrentBranchFile(currDir);
+    const branchFilePath = await findFile(currDir, BRANCH_FILE_NAME);
 
     const slug = branchFilePath
       ? await parseSlugFromBranchFile(branchFilePath)

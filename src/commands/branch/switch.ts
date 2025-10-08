@@ -2,7 +2,8 @@ import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
 import {
-  findCurrentBranchFile,
+  BRANCH_FILE_NAME,
+  findFile,
   updateCurrentBranchFile,
 } from "@/lib/helpers/branch";
 import { withSpinnerV2 } from "@/lib/helpers/request";
@@ -24,7 +25,7 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
     const { args } = this.props;
 
     const currDir = process.cwd();
-    const branchFilePath = await findCurrentBranchFile(currDir);
+    const branchFilePath = await findFile(currDir, BRANCH_FILE_NAME);
 
     if (!branchFilePath) {
       // TODO Automatically create .knock_current_branch file
