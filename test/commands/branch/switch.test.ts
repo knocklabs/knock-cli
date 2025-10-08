@@ -1,7 +1,7 @@
 import * as path from "node:path";
 
 import KnockMgmt from "@knocklabs/mgmt";
-import { test } from "@oclif/test";
+import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
 import * as sinon from "sinon";
 
@@ -9,9 +9,10 @@ import { factory } from "@/../test/support";
 import { BRANCH_FILE_NAME } from "@/lib/helpers/branch";
 import { sandboxDir } from "@/lib/helpers/const";
 
+const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
+
 describe("commands/branch/switch", () => {
   beforeEach(() => {
-    const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
     fs.ensureFileSync(branchFilePath);
     process.chdir(sandboxDir);
   });
@@ -35,7 +36,9 @@ describe("commands/branch/switch", () => {
             "/v1/branches/my-feature-branch-123",
           );
 
-          // TODO
+          expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
+            "my-feature-branch-123\n",
+          );
         },
       );
   });
