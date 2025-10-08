@@ -12,16 +12,16 @@ import { sandboxDir } from "@/lib/helpers/const";
 const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
 
 describe("commands/branch/switch", () => {
-  beforeEach(() => {
-    fs.ensureFileSync(branchFilePath);
-    process.chdir(sandboxDir);
-  });
-
   afterEach(() => {
     fs.removeSync(sandboxDir);
   });
 
   describe("given a valid branch slug", () => {
+    beforeEach(() => {
+      fs.ensureFileSync(branchFilePath);
+      process.chdir(sandboxDir);
+    });
+
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.prototype, "get", (stub) =>
@@ -49,6 +49,11 @@ describe("commands/branch/switch", () => {
   });
 
   describe("given an argument containing mixed casing and whitespace", () => {
+    beforeEach(() => {
+      fs.ensureFileSync(branchFilePath);
+      process.chdir(sandboxDir);
+    });
+
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.prototype, "get", (stub) =>
@@ -76,12 +81,17 @@ describe("commands/branch/switch", () => {
 
   describe("given no service token", () => {
     test
-      .command(["branch switch", "test-branch"])
+      .command(["branch switch", "my-feature-branch-123"])
       .exit(2)
       .it("exits with status 2");
   });
 
   describe("given API error", () => {
+    beforeEach(() => {
+      fs.ensureFileSync(branchFilePath);
+      process.chdir(sandboxDir);
+    });
+
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.prototype, "get", (stub) =>
@@ -105,4 +115,10 @@ describe("commands/branch/switch", () => {
       )
       .it("throws error when API returns error");
   });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .command(["branch switch", "my-feature-branch-123"])
+    .catch(/Cannot locate .knock_branch file, skipping switch/)
+    .it("throws error when .knock_branch file does not exist");
 });

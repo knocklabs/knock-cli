@@ -28,8 +28,9 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
     const branchFilePath = await findFile(currDir, BRANCH_FILE_NAME);
 
     if (!branchFilePath) {
-      this.log(`‣ Cannot locate ${BRANCH_FILE_NAME} file, skipping switch`);
-      return;
+      throw new Error(
+        `‣ Cannot locate ${BRANCH_FILE_NAME} file, skipping switch`,
+      );
     }
 
     this.log(`‣ Switching to branch \`${args.slug}\``);
