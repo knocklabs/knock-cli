@@ -22,8 +22,10 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
     this.log(`‣ Switching to branch \`${args.slug}\``);
 
     // Fetch the branch to make sure it exists
-    await withSpinnerV2<ApiV1.BranchData>(() =>
+    const branch = await withSpinnerV2<ApiV1.BranchData>(() =>
       this.apiV1.mgmtClient.get(`/v1/branches/${args.slug}`),
     );
+
+    this.log(`‣ Successfully switch to branch \`${branch.slug}\``);
   }
 }
