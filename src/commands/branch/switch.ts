@@ -19,6 +19,12 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
   async run(): Promise<void> {
     const { args } = this.props;
 
+    if (!this.runContext.branchFilePath) {
+      // TODO Automatically create .knock_current_branch file
+      this.log(`‣ Cannot locate .knock_current_branch file, skipping switch`);
+      return;
+    }
+
     this.log(`‣ Switching to branch \`${args.slug}\``);
 
     // Fetch the branch to make sure it exists

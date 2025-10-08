@@ -8,6 +8,7 @@ export type RunContext = {
   cwd: string;
   commandId: string | undefined;
   resourceDir?: ResourceDirContext;
+  branchFilePath?: string;
 };
 
 export type T = RunContext;
