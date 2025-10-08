@@ -2,6 +2,7 @@ import * as path from "node:path";
 
 import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
+import { once } from "lodash";
 
 import { DirContext } from "@/lib/helpers/fs";
 
@@ -115,5 +116,6 @@ export const branch = slug({
   summary: "The slug of the branch to use.",
   // TODO Hide until branching is released in GA
   hidden: true,
-  default: readSlugFromBranchFile,
+  // Memoize the default value to avoid unnecessarily reading the branch file multiple times
+  default: once(readSlugFromBranchFile),
 });
