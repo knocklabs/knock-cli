@@ -1,4 +1,3 @@
-import { execSync } from "node:child_process";
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
@@ -29,20 +28,4 @@ export const parseSlugFromBranchFile = async (
 ): Promise<string | undefined> => {
   const slug = await fs.readFile(branchFilePath, "utf-8");
   return slug.split("\n")[0];
-};
-
-export const isBranchFileIgnoredByGit = async (
-  gitIgnoreFilePath: string,
-): Promise<boolean> => {
-  const { dirname } = path;
-
-  try {
-    const output = execSync(`git check-ignore ${BRANCH_FILE_NAME}`, {
-      cwd: dirname(gitIgnoreFilePath),
-      encoding: "utf-8",
-    });
-    return output.trim() === BRANCH_FILE_NAME;
-  } catch {
-    return false;
-  }
 };
