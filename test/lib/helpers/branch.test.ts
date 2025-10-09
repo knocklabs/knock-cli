@@ -23,17 +23,6 @@ describe("lib/helpers/branch", () => {
     fs.removeSync(sandboxDir);
   });
 
-  describe("writeSlugToBranchFile", () => {
-    it("writes the branch slug to the file with a newline", async () => {
-      const branchSlug = "my-feature-branch-123";
-
-      await writeSlugToBranchFile(branchFilePath, branchSlug);
-
-      const content = fs.readFileSync(branchFilePath, "utf-8");
-      expect(content).to.equal(`${branchSlug}\n`);
-    });
-  });
-
   describe("parseSlugFromBranchFile", () => {
     describe("when the branch file exists and is formatted correctly (with a newline)", () => {
       beforeEach(async () => {
@@ -67,6 +56,17 @@ describe("lib/helpers/branch", () => {
         const result = await parseSlugFromBranchFile(branchFilePath);
         expect(result).to.be.undefined;
       });
+    });
+  });
+
+  describe("writeSlugToBranchFile", () => {
+    it("writes the branch slug to the file with a newline", async () => {
+      const branchSlug = "my-feature-branch-123";
+
+      await writeSlugToBranchFile(branchFilePath, branchSlug);
+
+      const content = fs.readFileSync(branchFilePath, "utf-8");
+      expect(content).to.equal(`${branchSlug}\n`);
     });
   });
 });
