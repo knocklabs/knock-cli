@@ -1,7 +1,5 @@
-import * as fs from "fs-extra";
-
 import BaseCommand from "@/lib/base-command";
-import { BRANCH_FILE_NAME } from "@/lib/helpers/branch";
+import { BRANCH_FILE_NAME, clearBranchFile } from "@/lib/helpers/branch";
 import { findFile } from "@/lib/helpers/fs";
 
 export default class BranchExit extends BaseCommand<typeof BranchExit> {
@@ -15,11 +13,12 @@ export default class BranchExit extends BaseCommand<typeof BranchExit> {
     const branchFilePath = await findFile(currDir, BRANCH_FILE_NAME);
 
     if (!branchFilePath) {
-      this.log("‣ No branch is currently active, skipping exit");
-      return;
+      throw new Error(
+        `No ${BRANCH_FILE_NAME} file found. Run \`knock branch switch\` to start working on a branch.`,
+      );
     }
 
-    await fs.remove(branchFilePath);
+    await clearBranchFile(branchFilePath);
 
     this.log("‣ Successfully exited the branch");
   }
