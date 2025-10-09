@@ -6,7 +6,11 @@ import findUp from "find-up";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
-import { BRANCH_FILE_NAME, writeSlugToBranchFile } from "@/lib/helpers/branch";
+import {
+  BRANCH_FILE_NAME,
+  findProjectRoot,
+  writeSlugToBranchFile,
+} from "@/lib/helpers/branch";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
@@ -36,11 +40,12 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
     let branchFilePath = await findUp(BRANCH_FILE_NAME, { cwd: currDir });
 
     if (!branchFilePath) {
-      const prompt = `Create \`${BRANCH_FILE_NAME}\` at ${currDir}?`;
+      const projectRoot = await findProjectRoot();
+      const prompt = `Create \`${BRANCH_FILE_NAME}\` at ${projectRoot}?`;
       const input = flags.force || (await promptToConfirm(prompt));
       if (!input) return;
 
-      branchFilePath = path.resolve(currDir, BRANCH_FILE_NAME);
+      branchFilePath = path.resolve(projectRoot, BRANCH_FILE_NAME);
     }
 
     await this.switchToBranch(branchFilePath, args.slug);

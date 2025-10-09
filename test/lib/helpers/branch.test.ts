@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 
 import {
   BRANCH_FILE_NAME,
+  findProjectRoot,
   parseSlugFromBranchFile,
   readSlugFromBranchFile,
   writeSlugToBranchFile,
@@ -116,6 +117,32 @@ describe("lib/helpers/branch", () => {
       const content = fs.readFileSync(branchFilePath, "utf-8");
       expect(content).to.equal(`${branchSlug}\n`);
       expect(content).to.not.equal("lorem-ipsum-dolor-sit\n");
+    });
+  });
+
+  describe("findProjectRoot", () => {
+    it("returns the current directory when no .gitignore file is found", async () => {
+      const projectRoot = await findProjectRoot();
+      expect(projectRoot).to.equal(sandboxDir);
+    });
+
+    it("returns the current directory when a .gitignore file exists in the current directory", async () => {
+      fs.ensureFileSync(path.resolve(sandboxDir, ".gitignore"));
+      const projectRoot = await findProjectRoot();
+      expect(projectRoot).to.equal(sandboxDir);
+    });
+
+    it("returns an ancestor directory when a .gitignore file is found in an ancestor directory", async () => {
+      // Create a .gitignore file in the sandbox directory
+      fs.ensureFileSync(path.resolve(sandboxDir, ".gitignore"));
+
+      // Navigate to a descendant directory
+      const currDir = path.resolve(sandboxDir, "a", "b");
+      fs.ensureDirSync(currDir);
+      process.chdir(currDir);
+
+      const projectRoot = await findProjectRoot();
+      expect(projectRoot).to.equal(sandboxDir);
     });
   });
 });
