@@ -1,3 +1,5 @@
+import { Flags } from "@oclif/core";
+
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
@@ -10,6 +12,12 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
   static hidden = true;
 
   static summary = "Switches to an existing branch with the given slug.";
+
+  static flags = {
+    force: Flags.boolean({
+      summary: "Remove the confirmation prompt.",
+    }),
+  };
 
   static args = {
     slug: CustomArgs.slug({
