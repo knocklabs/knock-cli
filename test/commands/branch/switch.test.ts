@@ -9,17 +9,24 @@ import { factory } from "@/../test/support";
 import { BRANCH_FILE_NAME } from "@/lib/helpers/branch";
 import { sandboxDir } from "@/lib/helpers/const";
 
+const currCwd = process.cwd();
 const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
 
 describe("commands/branch/switch", () => {
+  beforeEach(() => {
+    fs.removeSync(sandboxDir);
+    fs.ensureDirSync(sandboxDir);
+    process.chdir(sandboxDir);
+  });
+
   afterEach(() => {
+    process.chdir(currCwd);
     fs.removeSync(sandboxDir);
   });
 
   describe("given a valid branch slug", () => {
     beforeEach(() => {
       fs.ensureFileSync(branchFilePath);
-      process.chdir(sandboxDir);
     });
 
     test
@@ -51,7 +58,6 @@ describe("commands/branch/switch", () => {
   describe("given an argument containing mixed casing and whitespace", () => {
     beforeEach(() => {
       fs.ensureFileSync(branchFilePath);
-      process.chdir(sandboxDir);
     });
 
     test
@@ -89,7 +95,6 @@ describe("commands/branch/switch", () => {
   describe("given API error", () => {
     beforeEach(() => {
       fs.ensureFileSync(branchFilePath);
-      process.chdir(sandboxDir);
     });
 
     test
