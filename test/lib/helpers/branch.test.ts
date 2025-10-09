@@ -13,17 +13,21 @@ import { sandboxDir } from "@/lib/helpers/const";
 const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
 
 describe("lib/helpers/branch", () => {
-  beforeEach(() => {
-    fs.ensureDirSync(sandboxDir);
-    process.chdir(sandboxDir);
-    fs.ensureFileSync(branchFilePath);
-  });
-
-  afterEach(() => {
-    fs.removeSync(sandboxDir);
+  describe("readSlugFromBranchFile", () => {
+    // TODO
   });
 
   describe("parseSlugFromBranchFile", () => {
+    beforeEach(() => {
+      fs.ensureDirSync(sandboxDir);
+      process.chdir(sandboxDir);
+      fs.ensureFileSync(branchFilePath);
+    });
+
+    afterEach(() => {
+      fs.removeSync(sandboxDir);
+    });
+
     describe("when the branch file exists and is formatted correctly (with a newline)", () => {
       beforeEach(async () => {
         fs.writeFileSync(branchFilePath, "my-feature-branch-123\n");
@@ -60,6 +64,16 @@ describe("lib/helpers/branch", () => {
   });
 
   describe("writeSlugToBranchFile", () => {
+    beforeEach(() => {
+      fs.ensureDirSync(sandboxDir);
+      process.chdir(sandboxDir);
+      fs.ensureFileSync(branchFilePath);
+    });
+
+    afterEach(() => {
+      fs.removeSync(sandboxDir);
+    });
+
     it("writes the branch slug to the file with a newline", async () => {
       const branchSlug = "my-feature-branch-123";
 
