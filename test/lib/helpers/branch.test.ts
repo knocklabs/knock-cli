@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 
 import {
   BRANCH_FILE_NAME,
+  clearBranchFile,
   findProjectRoot,
   parseSlugFromBranchFile,
   readSlugFromBranchFile,
@@ -95,6 +96,15 @@ describe("lib/helpers/branch", () => {
         const result = await parseSlugFromBranchFile(branchFilePath);
         expect(result).to.be.undefined;
       });
+    });
+  });
+
+  describe("clearBranchFile", () => {
+    it("writes the empty string to the given file", async () => {
+      await fs.writeFile(branchFilePath, "my-feature-branch-123\n");
+      await clearBranchFile(branchFilePath);
+      const content = fs.readFileSync(branchFilePath, "utf-8");
+      expect(content).to.equal("");
     });
   });
 

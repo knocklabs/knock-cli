@@ -27,6 +27,13 @@ export const parseSlugFromBranchFile = async (
   return /^[\w-]+$/.test(input) ? input : undefined;
 };
 
+export const clearBranchFile = async (
+  branchFilePath: string,
+): Promise<void> => {
+  // The empty string indicates that no branch is currently active
+  await fs.writeFile(branchFilePath, "");
+};
+
 export const writeSlugToBranchFile = async (
   branchFilePath: string,
   branchSlug: string,

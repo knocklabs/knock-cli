@@ -23,16 +23,17 @@ describe("commands/branch/exit", () => {
 
   describe("given a branch file exists", () => {
     beforeEach(() => {
-      fs.ensureFileSync(branchFilePath);
+      // Write a branch slug to the branch file, as if a branch is active
+      fs.writeFileSync(branchFilePath, "my-feature-branch-123\n");
     });
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stdout()
       .command(["branch exit"])
-      .it("displays a message and deletes the branch file", (ctx) => {
+      .it("displays a message and clears the branch file", (ctx) => {
         expect(ctx.stdout).to.contain("‣ Successfully exited the branch");
-        expect(fs.existsSync(branchFilePath)).to.equal(false);
+        expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal("");
       });
   });
 
@@ -41,11 +42,10 @@ describe("commands/branch/exit", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stdout()
       .command(["branch exit"])
-      .it("displays a message and exits", (ctx) => {
-        expect(ctx.stdout).to.contain(
-          "‣ No branch is currently active, skipping exit",
-        );
-      });
+      .catch(
+        `No ${BRANCH_FILE_NAME} file found. Run \`knock branch switch\` to start working on a branch.`,
+      )
+      .it("displays a message and exits");
   });
 
   describe("given no service token", () => {
