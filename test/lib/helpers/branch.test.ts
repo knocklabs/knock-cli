@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import {
   BRANCH_FILE_NAME,
   parseSlugFromBranchFile,
+  readSlugFromBranchFile,
   writeSlugToBranchFile,
 } from "@/lib/helpers/branch";
 import { sandboxDir } from "@/lib/helpers/const";
@@ -15,6 +16,11 @@ const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
 describe("lib/helpers/branch", () => {
   describe("readSlugFromBranchFile", () => {
     // TODO
+
+    it("returns undefined when branch file is not found", async () => {
+      const actualSlug = await readSlugFromBranchFile();
+      expect(actualSlug).to.equal(undefined);
+    });
   });
 
   describe("parseSlugFromBranchFile", () => {
