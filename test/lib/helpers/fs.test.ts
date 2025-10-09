@@ -21,9 +21,9 @@ describe("lib/helpers/fs", () => {
 
     describe("given a nonexistent path", () => {
       it("returns false", async () => {
-        const abspath2 = path.resolve(sandboxDir, "foo");
+        const abspath = path.resolve(sandboxDir, "foo");
 
-        expect(await isDirectory(abspath2)).to.equal(false);
+        expect(await isDirectory(abspath)).to.equal(false);
       });
     });
 
