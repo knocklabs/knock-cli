@@ -30,11 +30,18 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
       );
     }
 
-    this.log(`‣ Switching to branch \`${args.slug}\``);
+    await this.switchToBranch(branchFilePath, args.slug);
+  }
+
+  private async switchToBranch(
+    branchFilePath: string,
+    slug: string,
+  ): Promise<void> {
+    this.log(`‣ Switching to branch \`${slug}\``);
 
     // Fetch the branch to make sure it exists
     const branch = await withSpinnerV2<ApiV1.BranchData>(() =>
-      this.apiV1.mgmtClient.get(`/v1/branches/${args.slug}`),
+      this.apiV1.mgmtClient.get(`/v1/branches/${slug}`),
     );
 
     await writeSlugToBranchFile(branchFilePath, branch.slug);
