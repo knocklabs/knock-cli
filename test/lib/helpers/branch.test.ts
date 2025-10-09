@@ -24,6 +24,12 @@ describe("lib/helpers/branch", () => {
       fs.removeSync(sandboxDir);
     });
 
+    it("returns slug when branch file is found in correct directory and formatted correctly", async () => {
+      fs.writeFileSync(branchFilePath, "my-feature-branch-123\n");
+      const actualSlug = await readSlugFromBranchFile();
+      expect(actualSlug).to.equal("my-feature-branch-123");
+    });
+
     it("returns undefined when branch file is found but is formatted incorrectly", async () => {
       // Write nothing but whitespace
       fs.writeFileSync(branchFilePath, "   ");
