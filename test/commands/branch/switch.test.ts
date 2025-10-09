@@ -123,36 +123,84 @@ describe("commands/branch/switch", () => {
   });
 
   describe("given no branch file exists", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
-        stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
-      )
-      .stub(enquirer.prototype, "prompt", (stub) =>
-        stub.onFirstCall().resolves({ input: "y" }),
-      )
-      .stdout()
-      .command(["branch switch", "my-feature-branch-123"])
-      .it("creates branch file when prompt is accepted by user", (ctx) => {
-        sinon.assert.calledWith(enquirer.prototype.prompt as any, {
-          type: "confirm",
-          name: "input",
-          message: `Create \`${BRANCH_FILE_NAME}\` at ${sandboxDir}?`,
-        });
+    describe("and no ancestor directory contains a .gitignore file", () => {
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.prototype, "get", (stub) =>
+          stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.onFirstCall().resolves({ input: "y" }),
+        )
+        .stdout()
+        .command(["branch switch", "my-feature-branch-123"])
+        .it(
+          "creates branch file in current directory when prompt is accepted by user",
+          (ctx) => {
+            sinon.assert.calledWith(enquirer.prototype.prompt as any, {
+              type: "confirm",
+              name: "input",
+              message: `Create \`${BRANCH_FILE_NAME}\` at ${sandboxDir}?`,
+            });
 
-        sinon.assert.calledWith(
-          KnockMgmt.prototype.get as any,
-          "/v1/branches/my-feature-branch-123",
-        );
+            sinon.assert.calledWith(
+              KnockMgmt.prototype.get as any,
+              "/v1/branches/my-feature-branch-123",
+            );
 
-        expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
-          "my-feature-branch-123\n",
-        );
+            expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
+              "my-feature-branch-123\n",
+            );
 
-        expect(ctx.stdout).to.contain(
-          "‣ Successfully switched to branch `my-feature-branch-123`",
+            expect(ctx.stdout).to.contain(
+              "‣ Successfully switched to branch `my-feature-branch-123`",
+            );
+          },
         );
+    });
+
+    describe("and ancestor directory contains a .gitignore file", () => {
+      beforeEach(() => {
+        fs.ensureFileSync(path.resolve(sandboxDir, ".gitignore"));
+        const descendantDir = path.resolve(sandboxDir, "a", "b");
+        fs.ensureDirSync(descendantDir);
+        process.chdir(descendantDir);
       });
+
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.prototype, "get", (stub) =>
+          stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.onFirstCall().resolves({ input: "y" }),
+        )
+        .stdout()
+        .command(["branch switch", "my-feature-branch-123"])
+        .it(
+          "creates branch file in directory containing .gitignore when prompt is accepted by user",
+          (ctx) => {
+            sinon.assert.calledWith(enquirer.prototype.prompt as any, {
+              type: "confirm",
+              name: "input",
+              message: `Create \`${BRANCH_FILE_NAME}\` at ${sandboxDir}?`,
+            });
+
+            sinon.assert.calledWith(
+              KnockMgmt.prototype.get as any,
+              "/v1/branches/my-feature-branch-123",
+            );
+
+            expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
+              "my-feature-branch-123\n",
+            );
+
+            expect(ctx.stdout).to.contain(
+              "‣ Successfully switched to branch `my-feature-branch-123`",
+            );
+          },
+        );
+    });
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

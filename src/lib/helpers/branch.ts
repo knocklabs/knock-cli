@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import * as fs from "fs-extra";
 
 import { findFile } from "./fs";
@@ -32,4 +34,18 @@ export const writeSlugToBranchFile = async (
   branchSlug: string,
 ): Promise<void> => {
   await fs.writeFile(branchFilePath, `${branchSlug}\n`);
+};
+
+/**
+ * Finds the "project root" directory, a best guess at the top-level directory
+ * for the current project. We always look for an ancestor directory containing
+ * a `.gitignore` file. If no `.gitignore` file is found, we return the current
+ * directory.
+ *
+ * @returns the path to the project root directory
+ */
+export const findProjectRoot = async (): Promise<string> => {
+  const currDir = process.cwd();
+  const gitIgnoreFilePath = await findFile(currDir, ".gitignore");
+  return gitIgnoreFilePath ? path.dirname(gitIgnoreFilePath) : currDir;
 };
