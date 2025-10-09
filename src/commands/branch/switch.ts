@@ -1,3 +1,4 @@
+import { Flags } from "@oclif/core";
 import findUp from "find-up";
 
 import * as ApiV1 from "@/lib/api-v1";
@@ -11,6 +12,12 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
   static hidden = true;
 
   static summary = "Switches to an existing branch with the given slug.";
+
+  static flags = {
+    force: Flags.boolean({
+      summary: "Remove the confirmation prompt.",
+    }),
+  };
 
   static args = {
     slug: CustomArgs.slug({
