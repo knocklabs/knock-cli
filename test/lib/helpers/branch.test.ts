@@ -98,17 +98,24 @@ describe("lib/helpers/branch", () => {
   });
 
   describe("writeSlugToBranchFile", () => {
-    beforeEach(() => {
-      fs.ensureFileSync(branchFilePath);
-    });
-
-    it("writes the branch slug to the file with a newline", async () => {
+    it("writes the branch slug to a new file", async () => {
       const branchSlug = "my-feature-branch-123";
 
       await writeSlugToBranchFile(branchFilePath, branchSlug);
 
       const content = fs.readFileSync(branchFilePath, "utf-8");
       expect(content).to.equal(`${branchSlug}\n`);
+    });
+
+    it("writes the branch slug to an existing file", async () => {
+      await fs.writeFile(branchFilePath, "lorem-ipsum-dolor-sit\n");
+      const branchSlug = "my-feature-branch-123";
+
+      await writeSlugToBranchFile(branchFilePath, branchSlug);
+
+      const content = fs.readFileSync(branchFilePath, "utf-8");
+      expect(content).to.equal(`${branchSlug}\n`);
+      expect(content).to.not.equal("lorem-ipsum-dolor-sit\n");
     });
   });
 });
