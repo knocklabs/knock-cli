@@ -15,7 +15,21 @@ const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
 
 describe("lib/helpers/branch", () => {
   describe("readSlugFromBranchFile", () => {
-    // TODO
+    beforeEach(() => {
+      fs.ensureDirSync(sandboxDir);
+      process.chdir(sandboxDir);
+    });
+
+    afterEach(() => {
+      fs.removeSync(sandboxDir);
+    });
+
+    it("returns undefined when branch file is found but is formatted incorrectly", async () => {
+      // Write nothing but whitespace
+      fs.writeFileSync(branchFilePath, "   ");
+      const actualSlug = await readSlugFromBranchFile();
+      expect(actualSlug).to.equal(undefined);
+    });
 
     it("returns undefined when branch file is not found", async () => {
       const actualSlug = await readSlugFromBranchFile();
