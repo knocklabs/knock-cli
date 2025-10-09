@@ -4,7 +4,7 @@ import { expect } from "@oclif/test";
 import * as fs from "fs-extra";
 
 import { sandboxDir } from "@/lib/helpers/const";
-import { isDirectory } from "@/lib/helpers/fs";
+import { findFile, isDirectory } from "@/lib/helpers/fs";
 
 const currCwd = process.cwd();
 
@@ -43,6 +43,42 @@ describe("lib/helpers/fs", () => {
 
         expect(await isDirectory(abspath)).to.equal(true);
       });
+    });
+  });
+
+  describe("findFile", () => {
+    beforeEach(() => {
+      fs.removeSync(sandboxDir);
+      fs.ensureDirSync(sandboxDir);
+    });
+
+    afterEach(() => {
+      process.chdir(currCwd);
+      fs.removeSync(sandboxDir);
+    });
+
+    it("returns file's path when file is present in the current directory", async () => {
+      const expectedFilePath = path.resolve(sandboxDir, "foo.txt");
+      fs.ensureFileSync(expectedFilePath);
+
+      const actualFilePath = await findFile(sandboxDir, "foo.txt");
+
+      expect(actualFilePath).to.equal(expectedFilePath);
+    });
+
+    it("returns file's path when file is present in an ancestor directory", async () => {
+      const expectedFilePath = path.resolve(sandboxDir, "foo.txt");
+      fs.ensureFileSync(expectedFilePath);
+
+      const currDir = path.resolve(sandboxDir, "a", "b");
+      const actualFilePath = await findFile(currDir, "foo.txt");
+
+      expect(actualFilePath).to.equal(expectedFilePath);
+    });
+
+    it("returns undefined when the file is not found", async () => {
+      const actualFilePath = await findFile(sandboxDir, "foo.txt");
+      expect(actualFilePath).to.equal(undefined);
     });
   });
 });
