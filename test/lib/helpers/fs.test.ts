@@ -71,6 +71,8 @@ describe("lib/helpers/fs", () => {
       fs.ensureFileSync(expectedFilePath);
 
       const currDir = path.resolve(sandboxDir, "a", "b");
+      fs.ensureDirSync(currDir);
+
       const actualFilePath = await findFile(currDir, "foo.txt");
 
       expect(actualFilePath).to.equal(expectedFilePath);

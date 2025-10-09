@@ -24,9 +24,20 @@ describe("lib/helpers/branch", () => {
       fs.removeSync(sandboxDir);
     });
 
-    it("returns slug when branch file is found in correct directory and formatted correctly", async () => {
+    it("returns slug when correctly formatted branch file is found in current directory", async () => {
       fs.writeFileSync(branchFilePath, "my-feature-branch-123\n");
       const actualSlug = await readSlugFromBranchFile();
+      expect(actualSlug).to.equal("my-feature-branch-123");
+    });
+
+    it("returns slug when correctly formatted branch file is found in ancestor directory", async () => {
+      fs.writeFileSync(branchFilePath, "my-feature-branch-123\n");
+      const descendantDir = path.resolve(sandboxDir, "a", "b");
+      fs.ensureDirSync(descendantDir);
+      process.chdir(descendantDir);
+
+      const actualSlug = await readSlugFromBranchFile();
+
       expect(actualSlug).to.equal("my-feature-branch-123");
     });
 
