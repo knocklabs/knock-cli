@@ -11,19 +11,22 @@ import {
 } from "@/lib/helpers/branch";
 import { sandboxDir } from "@/lib/helpers/const";
 
+const currCwd = process.cwd();
 const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
 
 describe("lib/helpers/branch", () => {
+  beforeEach(() => {
+    fs.removeSync(sandboxDir);
+    fs.ensureDirSync(sandboxDir);
+    process.chdir(sandboxDir);
+  });
+
+  afterEach(() => {
+    process.chdir(currCwd);
+    fs.removeSync(sandboxDir);
+  });
+
   describe("readSlugFromBranchFile", () => {
-    beforeEach(() => {
-      fs.ensureDirSync(sandboxDir);
-      process.chdir(sandboxDir);
-    });
-
-    afterEach(() => {
-      fs.removeSync(sandboxDir);
-    });
-
     it("returns slug when correctly formatted branch file is found in current directory", async () => {
       fs.writeFileSync(branchFilePath, "my-feature-branch-123\n");
       const actualSlug = await readSlugFromBranchFile();
@@ -56,13 +59,7 @@ describe("lib/helpers/branch", () => {
 
   describe("parseSlugFromBranchFile", () => {
     beforeEach(() => {
-      fs.ensureDirSync(sandboxDir);
-      process.chdir(sandboxDir);
       fs.ensureFileSync(branchFilePath);
-    });
-
-    afterEach(() => {
-      fs.removeSync(sandboxDir);
     });
 
     describe("when the branch file exists and is formatted correctly (with a newline)", () => {
@@ -102,13 +99,7 @@ describe("lib/helpers/branch", () => {
 
   describe("writeSlugToBranchFile", () => {
     beforeEach(() => {
-      fs.ensureDirSync(sandboxDir);
-      process.chdir(sandboxDir);
       fs.ensureFileSync(branchFilePath);
-    });
-
-    afterEach(() => {
-      fs.removeSync(sandboxDir);
     });
 
     it("writes the branch slug to the file with a newline", async () => {
