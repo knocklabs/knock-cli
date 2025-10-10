@@ -212,7 +212,10 @@ describe("commands/branch/switch", () => {
 
     describe("and ancestor directory contains a .gitignore file", () => {
       beforeEach(() => {
-        fs.ensureFileSync(path.resolve(sandboxDir, ".gitignore"));
+        const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
+        fs.ensureFileSync(gitIgnoreFilePath);
+        fs.writeFileSync(gitIgnoreFilePath, "foo\n");
+
         const descendantDir = path.resolve(sandboxDir, "a", "b");
         fs.ensureDirSync(descendantDir);
         process.chdir(descendantDir);
@@ -229,7 +232,7 @@ describe("commands/branch/switch", () => {
         .stdout()
         .command(["branch switch", "my-feature-branch-123"])
         .it(
-          "creates branch file in directory containing .gitignore when prompt is accepted by user",
+          "creates branch file in directory containing .gitignore when first prompt is accepted by user",
           (ctx) => {
             sinon.assert.calledWith(enquirer.prototype.prompt as any, {
               type: "confirm",
@@ -242,8 +245,16 @@ describe("commands/branch/switch", () => {
               "/v1/branches/my-feature-branch-123",
             );
 
+            // branch file should be created
             expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
               "my-feature-branch-123\n",
+            );
+
+            // .gitignore file should NOT be updated
+            const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
+            expect(fs.existsSync(gitIgnoreFilePath)).to.equal(true);
+            expect(fs.readFileSync(gitIgnoreFilePath, "utf-8")).not.contain(
+              BRANCH_FILE_NAME,
             );
 
             expect(ctx.stdout).to.contain(
