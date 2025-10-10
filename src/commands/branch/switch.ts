@@ -8,11 +8,12 @@ import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
 import {
+  appendBranchFileToGitIgnore,
   BRANCH_FILE_NAME,
   findProjectRoot,
   writeSlugToBranchFile,
 } from "@/lib/helpers/branch";
-import { isFileIgnoredByGit, updateGitIgnoreFile } from "@/lib/helpers/git";
+import { isFileIgnoredByGit } from "@/lib/helpers/git";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
@@ -76,7 +77,7 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
-    await updateGitIgnoreFile(gitIgnoreFilePath, BRANCH_FILE_NAME);
+    await appendBranchFileToGitIgnore(gitIgnoreFilePath, gitIgnoreFileExists);
   }
 
   private async switchToBranch(
