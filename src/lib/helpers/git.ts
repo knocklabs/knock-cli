@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 
 /**
- * Checks if a given file is ignored by by Git by running `git check-ignore`
+ * Checks if a given file is ignored by Git by running `git check-ignore`
  * from the specified directory.
  *
  * @param currDir the directory to run `git check-ignore` from
