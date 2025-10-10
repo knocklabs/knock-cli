@@ -349,7 +349,8 @@ describe("commands/branch/switch", () => {
       .it(
         "does not create branch file or .gitignore when prompt is declined by user",
         () => {
-          sinon.assert.calledWith(enquirer.prototype.prompt as any, {
+          // User should only be prompted once, to create the branch file
+          sinon.assert.calledOnceWithExactly(enquirer.prototype.prompt as any, {
             type: "confirm",
             name: "input",
             message: `Create \`${BRANCH_FILE_NAME}\` at ${sandboxDir}?`,
