@@ -2,6 +2,7 @@ import * as path from "node:path";
 
 import { Flags } from "@oclif/core";
 import findUp from "find-up";
+import * as fs from "fs-extra";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
@@ -11,6 +12,7 @@ import {
   findProjectRoot,
   writeSlugToBranchFile,
 } from "@/lib/helpers/branch";
+import { isFileIgnoredByGit, updateGitIgnoreFile } from "@/lib/helpers/git";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
@@ -46,9 +48,35 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
       if (!input) return;
 
       branchFilePath = path.resolve(projectRoot, BRANCH_FILE_NAME);
+
+      const isBranchFileIgnoredByGit = await isFileIgnoredByGit(
+        projectRoot,
+        branchFilePath,
+      );
+      if (!isBranchFileIgnoredByGit) {
+        await this.promptToUpdateGitIgnoreFile(projectRoot);
+      }
     }
 
     await this.switchToBranch(branchFilePath, args.slug);
+  }
+
+  private async promptToUpdateGitIgnoreFile(
+    projectRoot: string,
+  ): Promise<void> {
+    const { flags } = this.props;
+
+    const gitIgnoreFilePath = path.resolve(projectRoot, ".gitignore");
+    const gitIgnoreFileExists = await fs.exists(gitIgnoreFilePath);
+
+    const prompt = gitIgnoreFileExists
+      ? `Update \`${gitIgnoreFilePath}\` to ignore \`${BRANCH_FILE_NAME}\`?`
+      : `Create \`${gitIgnoreFilePath}\` to ignore \`${BRANCH_FILE_NAME}\`?`;
+
+    const input = flags.force || (await promptToConfirm(prompt));
+    if (!input) return;
+
+    await updateGitIgnoreFile(gitIgnoreFilePath, BRANCH_FILE_NAME);
   }
 
   private async switchToBranch(
