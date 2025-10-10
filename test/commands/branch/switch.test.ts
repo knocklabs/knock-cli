@@ -153,9 +153,55 @@ describe("commands/branch/switch", () => {
               "my-feature-branch-123\n",
             );
 
-            // .gitignore file should not be created
+            // .gitignore file should NOT be created
             const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
             expect(fs.existsSync(gitIgnoreFilePath)).to.equal(false);
+
+            expect(ctx.stdout).to.contain(
+              "‣ Successfully switched to branch `my-feature-branch-123`",
+            );
+          },
+        );
+
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.prototype, "get", (stub) =>
+          stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub
+            .onFirstCall()
+            .resolves({ input: "y" })
+            .onSecondCall()
+            .resolves({ input: "y" }),
+        )
+        .stdout()
+        .command(["branch switch", "my-feature-branch-123"])
+        .it(
+          "creates branch file and .gitignore in current directory when both prompts are accepted by user",
+          (ctx) => {
+            sinon.assert.calledWith(enquirer.prototype.prompt as any, {
+              type: "confirm",
+              name: "input",
+              message: `Create \`${BRANCH_FILE_NAME}\` at ${sandboxDir}?`,
+            });
+
+            sinon.assert.calledWith(
+              KnockMgmt.prototype.get as any,
+              "/v1/branches/my-feature-branch-123",
+            );
+
+            // branch file should be created
+            expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
+              "my-feature-branch-123\n",
+            );
+
+            // .gitignore file should be created
+            const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
+            expect(fs.existsSync(gitIgnoreFilePath)).to.equal(true);
+            expect(fs.readFileSync(gitIgnoreFilePath, "utf-8")).to.equal(
+              `# Knock CLI config files\n${BRANCH_FILE_NAME}\n`,
+            );
 
             expect(ctx.stdout).to.contain(
               "‣ Successfully switched to branch `my-feature-branch-123`",
@@ -226,10 +272,10 @@ describe("commands/branch/switch", () => {
 
           sinon.assert.notCalled(KnockMgmt.prototype.get as any);
 
-          // branch file should not be created
+          // branch file should NOT be created
           expect(fs.existsSync(branchFilePath)).to.equal(false);
 
-          // .gitignore file should not be created
+          // .gitignore file should NOT be created
           const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
           expect(fs.existsSync(gitIgnoreFilePath)).to.equal(false);
         },
