@@ -5,8 +5,9 @@ import * as fs from "fs-extra";
 
 /**
  * The name of the file used to store the current branch.
- * This file is stored as plain text and contains the slug of the current branch
- * followed by a newline.
+ * This file is stored as plain text and contains either:
+ * 1. The slug of the current branch followed by a newline, or
+ * 2. An empty string if no branch is currently active
  */
 export const BRANCH_FILE_NAME = ".knockbranch";
 
