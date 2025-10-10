@@ -207,21 +207,27 @@ describe("commands/branch/switch", () => {
       .stub(KnockMgmt.prototype, "get", (stub) =>
         stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
       )
-      .stub(enquirer.prototype, "prompt", (stub) =>
-        stub.onFirstCall().resolves(),
-      )
+      .stub(enquirer.prototype, "prompt", (stub) => stub.resolves())
       .stdout()
       .command(["branch switch", "my-feature-branch-123"])
-      .it("does not create branch file when prompt is declined by user", () => {
-        sinon.assert.calledWith(enquirer.prototype.prompt as any, {
-          type: "confirm",
-          name: "input",
-          message: `Create \`${BRANCH_FILE_NAME}\` at ${sandboxDir}?`,
-        });
+      .it(
+        "does not create branch file or .gitignore when prompt is declined by user",
+        () => {
+          sinon.assert.calledWith(enquirer.prototype.prompt as any, {
+            type: "confirm",
+            name: "input",
+            message: `Create \`${BRANCH_FILE_NAME}\` at ${sandboxDir}?`,
+          });
 
-        sinon.assert.notCalled(KnockMgmt.prototype.get as any);
+          sinon.assert.notCalled(KnockMgmt.prototype.get as any);
 
-        expect(fs.existsSync(branchFilePath)).to.equal(false);
-      });
+          // branch file should not be created
+          expect(fs.existsSync(branchFilePath)).to.equal(false);
+
+          // .gitignore file should not be created
+          const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
+          expect(fs.existsSync(gitIgnoreFilePath)).to.equal(false);
+        },
+      );
   });
 });
