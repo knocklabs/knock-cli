@@ -130,12 +130,12 @@ describe("commands/branch/switch", () => {
           stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
-          stub.onFirstCall().resolves({ input: "y" }),
+          stub.onFirstCall().resolves({ input: "y" }).onSecondCall().resolves(),
         )
         .stdout()
         .command(["branch switch", "my-feature-branch-123"])
         .it(
-          "creates branch file in current directory when prompt is accepted by user",
+          "creates branch file in current directory when first prompt is accepted by user",
           (ctx) => {
             sinon.assert.calledWith(enquirer.prototype.prompt as any, {
               type: "confirm",
@@ -148,9 +148,14 @@ describe("commands/branch/switch", () => {
               "/v1/branches/my-feature-branch-123",
             );
 
+            // branch file should be created
             expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
               "my-feature-branch-123\n",
             );
+
+            // .gitignore file should not be created
+            const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
+            expect(fs.existsSync(gitIgnoreFilePath)).to.equal(false);
 
             expect(ctx.stdout).to.contain(
               "‣ Successfully switched to branch `my-feature-branch-123`",
