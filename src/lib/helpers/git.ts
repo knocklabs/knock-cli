@@ -1,7 +1,5 @@
 import { execSync } from "node:child_process";
 
-import * as fs from "fs-extra";
-
 /**
  * Checks if a given file is ignored by by Git by running `git check-ignore`
  * from the specified directory.
@@ -27,12 +25,4 @@ export const isFileIgnoredByGit = async (
   } catch {
     return false;
   }
-};
-
-export const updateGitIgnoreFile = async (
-  gitIgnoreFilePath: string,
-  fileNameToIgnore: string,
-): Promise<void> => {
-  const newGitIgnoreFileContent = `\n# Knock CLI config files\n${fileNameToIgnore}\n`;
-  await fs.appendFile(gitIgnoreFilePath, newGitIgnoreFileContent);
 };

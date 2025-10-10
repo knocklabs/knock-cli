@@ -12,6 +12,11 @@ import { findFile } from "./fs";
  */
 export const BRANCH_FILE_NAME = ".knock_branch";
 
+/**
+ * A comment written to the `.gitignore` file when it's updated.
+ */
+const GITIGNORE_COMMENT = "# Knock CLI config files\n";
+
 export const readSlugFromBranchFile = async (): Promise<string | undefined> => {
   const currDir = process.cwd();
   const branchFilePath = await findFile(currDir, BRANCH_FILE_NAME);
@@ -56,4 +61,17 @@ export const findProjectRoot = async (): Promise<string> => {
   const currDir = process.cwd();
   const gitIgnoreFilePath = await findFile(currDir, ".gitignore");
   return gitIgnoreFilePath ? path.dirname(gitIgnoreFilePath) : currDir;
+};
+
+export const appendBranchFileToGitIgnore = async (
+  gitIgnoreFilePath: string,
+  addLeadingNewline = true,
+): Promise<void> => {
+  const appendedContent =
+    (addLeadingNewline ? "\n" : "") +
+    GITIGNORE_COMMENT +
+    BRANCH_FILE_NAME +
+    "\n";
+
+  await fs.appendFile(gitIgnoreFilePath, appendedContent);
 };
