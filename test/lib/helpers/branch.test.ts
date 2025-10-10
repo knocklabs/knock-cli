@@ -46,9 +46,15 @@ describe("lib/helpers/branch", () => {
       expect(actualSlug).to.equal("my-feature-branch-123");
     });
 
+    it("returns undefined when empty branch file is found", async () => {
+      fs.writeFileSync(branchFilePath, "");
+      const actualSlug = await readSlugFromBranchFile();
+      expect(actualSlug).to.equal(undefined);
+    });
+
     it("returns undefined when branch file is found but is formatted incorrectly", async () => {
       // Write nothing but whitespace
-      fs.writeFileSync(branchFilePath, "   ");
+      fs.writeFileSync(branchFilePath, "   \t\n");
       const actualSlug = await readSlugFromBranchFile();
       expect(actualSlug).to.equal(undefined);
     });
@@ -86,10 +92,21 @@ describe("lib/helpers/branch", () => {
       });
     });
 
+    describe("when the branch file exists but is empty", () => {
+      beforeEach(async () => {
+        fs.writeFileSync(branchFilePath, "");
+      });
+
+      it("returns undefined", async () => {
+        const result = await parseSlugFromBranchFile(branchFilePath);
+        expect(result).to.be.undefined;
+      });
+    });
+
     describe("when the branch file exists but is formatted incorrectly", () => {
       beforeEach(async () => {
         // Write nothing but whitespace
-        fs.writeFileSync(branchFilePath, "   ");
+        fs.writeFileSync(branchFilePath, "   \t\n");
       });
 
       it("returns undefined", async () => {
