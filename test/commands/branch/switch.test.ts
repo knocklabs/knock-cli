@@ -124,6 +124,6 @@ describe("commands/branch/switch", () => {
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .command(["branch switch", "my-feature-branch-123"])
-    .catch(/Cannot locate .knock_branch file, skipping switch/)
-    .it("throws error when .knock_branch file does not exist");
+    .catch(/Cannot locate .knockbranch file, skipping switch/)
+    .it("throws error when .knockbranch file does not exist");
 });

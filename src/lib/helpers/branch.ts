@@ -7,7 +7,7 @@ import { findFile } from "./fs";
  * This file is stored as plain text and contains the slug of the current branch
  * followed by a newline.
  */
-export const BRANCH_FILE_NAME = ".knock_branch";
+export const BRANCH_FILE_NAME = ".knockbranch";
 
 export const readSlugFromBranchFile = async (): Promise<string | undefined> => {
   const currDir = process.cwd();
