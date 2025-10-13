@@ -52,6 +52,25 @@ export const writeSlugToBranchFile = async (
  */
 export const findProjectRoot = async (): Promise<string> => {
   const currDir = process.cwd();
-  const gitIgnoreFilePath = await findUp(".gitignore", { cwd: currDir });
+
+  const gitIgnoreFilePath = await findUp(
+    async (directory) => {
+      const filePath = path.join(directory, ".gitignore");
+      const gitIgnoreFileExists = await fs.exists(filePath);
+
+      if (gitIgnoreFileExists) {
+        return filePath;
+      }
+
+      // Stop search when we find a .git directory
+      const gitDirExists = await fs.exists(path.join(directory, ".git"));
+
+      if (gitDirExists) {
+        return findUp.stop;
+      }
+    },
+    { cwd: currDir },
+  );
+
   return gitIgnoreFilePath ? path.dirname(gitIgnoreFilePath) : currDir;
 };

@@ -154,13 +154,16 @@ describe("lib/helpers/branch", () => {
     });
 
     it("returns the current directory when a .gitignore file exists in the current directory", async () => {
+      fs.ensureDirSync(path.resolve(sandboxDir, ".git"));
       fs.ensureFileSync(path.resolve(sandboxDir, ".gitignore"));
+
       const projectRoot = await findProjectRoot();
+
       expect(projectRoot).to.equal(sandboxDir);
     });
 
     it("returns an ancestor directory when a .gitignore file is found in an ancestor directory", async () => {
-      // Create a .gitignore file in the sandbox directory
+      fs.ensureDirSync(path.resolve(sandboxDir, ".git"));
       fs.ensureFileSync(path.resolve(sandboxDir, ".gitignore"));
 
       // Navigate to a descendant directory
@@ -170,6 +173,22 @@ describe("lib/helpers/branch", () => {
 
       const projectRoot = await findProjectRoot();
       expect(projectRoot).to.equal(sandboxDir);
+    });
+
+    it("stops searching when a .git directory is found", async () => {
+      // Create a .gitignore file higher up than the .git directory
+      fs.ensureDirSync(path.resolve(sandboxDir, "lorem", ".git"));
+      fs.ensureFileSync(path.resolve(sandboxDir, ".gitignore"));
+
+      // Navigate to a descendant directory
+      const currDir = path.resolve(sandboxDir, "lorem", "ipsum");
+      fs.ensureDirSync(currDir);
+      process.chdir(currDir);
+
+      // .gitignore is not found; we should return the current directory
+      const projectRoot = await findProjectRoot();
+      expect(projectRoot).to.not.equal(sandboxDir);
+      expect(projectRoot).to.equal(currDir);
     });
   });
 });
