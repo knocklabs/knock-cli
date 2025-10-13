@@ -146,9 +146,26 @@ describe("commands/branch/switch", () => {
         .stub(KnockMgmt.prototype, "post", (stub) =>
           stub.resolves(factory.branch({ slug: "nonexistent-branch" })),
         )
+        .stdout()
         .command(["branch switch", "nonexistent-branch", "--create"])
-        .it("automatically creates a new branch", () => {
-          // TODO: Implement me
+        .it("automatically creates a new branch", (ctx) => {
+          sinon.assert.calledWith(
+            KnockMgmt.prototype.get as any,
+            "/v1/branches/nonexistent-branch",
+          );
+
+          sinon.assert.calledWith(
+            KnockMgmt.prototype.post as any,
+            "/v1/branches/nonexistent-branch",
+          );
+
+          expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
+            "nonexistent-branch\n",
+          );
+
+          expect(ctx.stdout).to.contain(
+            "‣ Successfully switched to branch `nonexistent-branch`",
+          );
         });
     });
   });
