@@ -1,6 +1,5 @@
+import { findUp } from "find-up";
 import * as fs from "fs-extra";
-
-import { findFile } from "./fs";
 
 /**
  * The name of the file used to store the current branch.
@@ -10,8 +9,7 @@ import { findFile } from "./fs";
 export const BRANCH_FILE_NAME = ".knockbranch";
 
 export const readSlugFromBranchFile = async (): Promise<string | undefined> => {
-  const currDir = process.cwd();
-  const branchFilePath = await findFile(currDir, BRANCH_FILE_NAME);
+  const branchFilePath = await findUp(BRANCH_FILE_NAME);
 
   const slug = branchFilePath
     ? await parseSlugFromBranchFile(branchFilePath)

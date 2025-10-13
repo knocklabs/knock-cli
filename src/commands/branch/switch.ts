@@ -1,8 +1,9 @@
+import { findUp } from "find-up";
+
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
 import { BRANCH_FILE_NAME, writeSlugToBranchFile } from "@/lib/helpers/branch";
-import { findFile } from "@/lib/helpers/fs";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 
 export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
@@ -21,8 +22,7 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
   async run(): Promise<void> {
     const { args } = this.props;
 
-    const currDir = process.cwd();
-    const branchFilePath = await findFile(currDir, BRANCH_FILE_NAME);
+    const branchFilePath = await findUp(BRANCH_FILE_NAME);
 
     if (!branchFilePath) {
       throw new Error(
