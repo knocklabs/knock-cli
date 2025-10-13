@@ -1,4 +1,4 @@
-import { findUp } from "find-up";
+import findUp from "find-up";
 import * as fs from "fs-extra";
 
 /**

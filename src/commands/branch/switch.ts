@@ -1,4 +1,4 @@
-import { findUp } from "find-up";
+import findUp from "find-up";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
