@@ -108,7 +108,9 @@ export const withSpinnerV2 = async <T>(
   spinner.start(action);
 
   try {
-    return await requestFn();
+    const resp = await requestFn();
+    spinner.stop();
+    return resp;
   } catch (error) {
     if (error instanceof KnockMgmt.APIError) {
       const message = formatMgmtError(error);
@@ -116,7 +118,5 @@ export const withSpinnerV2 = async <T>(
     }
 
     throw error;
-  } finally {
-    spinner.stop();
   }
 };
