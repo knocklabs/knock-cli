@@ -125,7 +125,31 @@ describe("commands/branch/switch", () => {
     });
 
     describe("and the --create flag is provided", () => {
-      // TODO
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.prototype, "get", (stub) =>
+          stub.rejects(
+            new KnockMgmt.APIError(
+              404,
+              {
+                code: "branch_not_found",
+                message:
+                  "The branch you specified was not found in this project",
+                status: 404,
+                type: "invalid_request_error",
+              },
+              undefined,
+              new Headers(),
+            ),
+          ),
+        )
+        .stub(KnockMgmt.prototype, "post", (stub) =>
+          stub.resolves(factory.branch({ slug: "nonexistent-branch" })),
+        )
+        .command(["branch switch", "nonexistent-branch", "--create"])
+        .it("automatically creates a new branch", () => {
+          // TODO: Implement me
+        });
     });
   });
 
