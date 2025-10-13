@@ -93,33 +93,40 @@ describe("commands/branch/switch", () => {
       .it("exits with status 2");
   });
 
-  describe("given API error", () => {
+  describe("when the given branch does not exist", () => {
     beforeEach(() => {
       fs.ensureFileSync(branchFilePath);
     });
 
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
-        stub.rejects(
-          new KnockMgmt.APIError(
-            404,
-            {
-              code: "branch_not_found",
-              message: "The branch you specified was not found in this project",
-              status: 404,
-              type: "invalid_request_error",
-            },
-            undefined,
-            new Headers(),
+    describe("and the --create flag is not provided", () => {
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.prototype, "get", (stub) =>
+          stub.rejects(
+            new KnockMgmt.APIError(
+              404,
+              {
+                code: "branch_not_found",
+                message:
+                  "The branch you specified was not found in this project",
+                status: 404,
+                type: "invalid_request_error",
+              },
+              undefined,
+              new Headers(),
+            ),
           ),
-        ),
-      )
-      .command(["branch switch", "nonexistent-branch"])
-      .catch(
-        /The branch you specified was not found in this project \(status: 404\)/,
-      )
-      .it("throws error when API returns error");
+        )
+        .command(["branch switch", "nonexistent-branch"])
+        .catch(
+          /The branch you specified was not found in this project \(status: 404\)/,
+        )
+        .it("throws error when API returns error");
+    });
+
+    describe("and the --create flag is provided", () => {
+      // TODO
+    });
   });
 
   describe("given no branch file exists", () => {
