@@ -202,6 +202,8 @@ export const ensureValidCommandTarget = async (
 
   const targetDirPath = resourceDirCtx
     ? resourceDirCtx.abspath
+    : flags["translations-dir"]
+    ? path.resolve(flags["translations-dir"].abspath, localeCode)
     : path.resolve(runCwd, localeCode);
 
   // Got translationRef arg but no --all flag, which means target only a single

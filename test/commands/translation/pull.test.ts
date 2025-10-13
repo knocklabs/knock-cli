@@ -271,5 +271,42 @@ describe("commands/translation/pull", () => {
           expect(fs.pathExistsSync(path2)).to.equal(true);
         },
       );
+
+    setupWithListTranslationsStub(
+      { locale_code: "nl-NL", namespace: "assets" },
+      { locale_code: "nl-NL", namespace: "schedules" },
+    )
+      .stdout()
+      .command([
+        "translation pull",
+        "--all",
+        "nl-NL",
+        "--translations-dir",
+        "./knock/translation",
+      ])
+      .it(
+        "respects --translations-dir flag when pulling all translations for a locale",
+        () => {
+          const path1 = path.resolve(
+            sandboxDir,
+            "knock/translation",
+            "nl-NL",
+            "assets.nl-NL.json",
+          );
+          expect(fs.pathExistsSync(path1)).to.equal(true);
+
+          const path2 = path.resolve(
+            sandboxDir,
+            "knock/translation",
+            "nl-NL",
+            "schedules.nl-NL.json",
+          );
+          expect(fs.pathExistsSync(path2)).to.equal(true);
+
+          // Verify it doesn't create files in the default location
+          const wrongPath = path.resolve(sandboxDir, "nl-NL");
+          expect(fs.pathExistsSync(wrongPath)).to.equal(false);
+        },
+      );
   });
 });
