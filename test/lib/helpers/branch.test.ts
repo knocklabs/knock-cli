@@ -4,6 +4,7 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 
 import {
+  appendBranchFileToGitIgnore,
   BRANCH_FILE_NAME,
   clearBranchFile,
   findProjectRoot,
@@ -189,6 +190,43 @@ describe("lib/helpers/branch", () => {
       const projectRoot = await findProjectRoot();
       expect(projectRoot).to.not.equal(sandboxDir);
       expect(projectRoot).to.equal(currDir);
+    });
+  });
+
+  describe("appendBranchFileToGitIgnore", () => {
+    it("appends the branch file to a new .gitignore file", async () => {
+      const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
+
+      await appendBranchFileToGitIgnore(gitIgnoreFilePath);
+
+      const content = fs.readFileSync(gitIgnoreFilePath, "utf-8");
+      expect(content).to.equal(
+        `\n# Knock CLI config files\n${BRANCH_FILE_NAME}\n`,
+      );
+    });
+
+    it("appends the branch file to an existing .gitignore file", async () => {
+      const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
+      await fs.writeFile(gitIgnoreFilePath, "foo\n");
+
+      await appendBranchFileToGitIgnore(gitIgnoreFilePath);
+
+      const content = fs.readFileSync(gitIgnoreFilePath, "utf-8");
+      expect(content).to.equal(
+        `foo\n\n# Knock CLI config files\n${BRANCH_FILE_NAME}\n`,
+      );
+    });
+
+    it("appends the branch file without leading newline when addLeadingNewline is false", async () => {
+      const gitIgnoreFilePath = path.resolve(sandboxDir, ".gitignore");
+      await fs.writeFile(gitIgnoreFilePath, "foo\n");
+
+      await appendBranchFileToGitIgnore(gitIgnoreFilePath, false);
+
+      const content = fs.readFileSync(gitIgnoreFilePath, "utf-8");
+      expect(content).to.equal(
+        `foo\n# Knock CLI config files\n${BRANCH_FILE_NAME}\n`,
+      );
     });
   });
 });
