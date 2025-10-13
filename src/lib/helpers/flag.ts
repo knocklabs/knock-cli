@@ -2,9 +2,11 @@ import * as path from "node:path";
 
 import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
+import { once } from "lodash";
 
 import { DirContext } from "@/lib/helpers/fs";
 
+import { readSlugFromBranchFile } from "./branch";
 import { tryJsonParse } from "./json";
 import { AnyObj } from "./object.isomorphic";
 import { slugify } from "./string";
@@ -114,4 +116,7 @@ export const branch = slug({
   summary: "The slug of the branch to use.",
   // TODO Hide until branching is released in GA
   hidden: true,
+  // Memoize this flag's default. oclif runs this default function even when the flag is unused.
+  // Using lodash's once avoids unnecessarily reading the branch file multiple times.
+  default: once(readSlugFromBranchFile),
 });
