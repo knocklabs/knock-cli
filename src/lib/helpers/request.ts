@@ -108,15 +108,15 @@ export const withSpinnerV2 = async <T>(
   spinner.start(action);
 
   try {
-    const resp = await requestFn();
-    spinner.stop();
-    return resp;
+    return await requestFn();
   } catch (error) {
     if (error instanceof KnockMgmt.APIError) {
       const message = formatMgmtError(error);
-      return ux.error(new ApiError(message));
+      return ux.error(new ApiError(message, error.status, error.error.code));
     }
 
     throw error;
+  } finally {
+    spinner.stop();
   }
 };

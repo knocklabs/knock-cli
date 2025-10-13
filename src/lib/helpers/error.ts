@@ -22,7 +22,16 @@ class CustomError extends Error {
 }
 
 // Error response (non-2xx) from the Management API.
-export class ApiError extends CustomError {}
+export class ApiError extends CustomError {
+  status?: number;
+  code?: string;
+
+  constructor(message: string, status?: number, code?: string) {
+    super(message);
+    this.status = status;
+    this.code = code;
+  }
+}
 
 // Error to indicate a syntax error in json and where.
 export class JsonSyntaxError extends CustomError {}

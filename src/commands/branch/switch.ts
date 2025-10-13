@@ -13,6 +13,7 @@ import {
   findProjectRoot,
   writeSlugToBranchFile,
 } from "@/lib/helpers/branch";
+import { ApiError } from "@/lib/helpers/error";
 import { isFileIgnoredByGit } from "@/lib/helpers/git";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
@@ -24,6 +25,9 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
   static summary = "Switches to an existing branch with the given slug.";
 
   static flags = {
+    create: Flags.boolean({
+      summary: "Create the branch if it doesn't yet exist.",
+    }),
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
@@ -99,13 +103,44 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
   ): Promise<void> {
     this.log(`‣ Switching to branch \`${slug}\``);
 
-    // Fetch the branch to make sure it exists
-    const branch = await withSpinnerV2<ApiV1.BranchData>(() =>
-      this.apiV1.mgmtClient.get(`/v1/branches/${slug}`),
-    );
+    const branch = await this.resolveBranch(slug);
 
     await writeSlugToBranchFile(branchFilePath, branch.slug);
 
     this.log(`‣ Successfully switched to branch \`${branch.slug}\``);
+  }
+
+  private async resolveBranch(slug: string): Promise<ApiV1.BranchData> {
+    const { flags } = this.props;
+
+    try {
+      return await this.fetchBranch(slug);
+    } catch (error) {
+      // Create the branch when --create flag is provided and the branch is not found
+      if (
+        flags.create &&
+        error instanceof ApiError &&
+        error.status === 404 &&
+        error.code === "branch_not_found"
+      ) {
+        return this.createBranch(slug);
+      }
+
+      throw error;
+    }
+  }
+
+  private async fetchBranch(slug: string): Promise<ApiV1.BranchData> {
+    return withSpinnerV2<ApiV1.BranchData>(
+      () => this.apiV1.mgmtClient.get(`/v1/branches/${slug}`),
+      { action: "‣ Fetching branch" },
+    );
+  }
+
+  private async createBranch(slug: string): Promise<ApiV1.BranchData> {
+    return withSpinnerV2<ApiV1.BranchData>(
+      () => this.apiV1.mgmtClient.post(`/v1/branches/${slug}`),
+      { action: "‣ Creating branch" },
+    );
   }
 }
