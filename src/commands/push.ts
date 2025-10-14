@@ -62,6 +62,7 @@ export default class Push extends BaseCommand<typeof Push> {
       ...(flags["service-token"]
         ? ["--service-token", flags["service-token"]]
         : []),
+      ...(flags["api-origin"] ? ["--api-origin", flags["api-origin"]] : []),
       ...(flags.commit ? ["--commit"] : []),
       ...(flags["commit-message"]
         ? ["--commit-message", flags["commit-message"]]

@@ -63,6 +63,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
       ...(flags["service-token"]
         ? ["--service-token", flags["service-token"]]
         : []),
+      ...(flags["api-origin"] ? ["--api-origin", flags["api-origin"]] : []),
       // Always use the force flag to skip prompts
       "--force",
     ];
