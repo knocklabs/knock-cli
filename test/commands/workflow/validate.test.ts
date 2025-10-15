@@ -302,4 +302,32 @@ describe("commands/workflow/validate (all workflows)", () => {
         );
       });
   });
+
+  describe("given an environment flag", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, "foo/workflow.json");
+      fs.outputJsonSync(abspath, { name: "Foo", key: "foo" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["workflow validate", "foo", "--environment", "staging"])
+      .it("calls apiV1 validateWorkflow with the specified environment", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.validateWorkflow as any,
+          sinon.match(({ args, flags }) => {
+            return (
+              args.workflowKey === "foo" &&
+              flags["service-token"] === "valid-token" &&
+              flags.environment === "staging"
+            );
+          }),
+          sinon.match(
+            (workflow) => workflow.key === "foo" && workflow.name === "Foo",
+          ),
+        );
+      });
+  });
 });
