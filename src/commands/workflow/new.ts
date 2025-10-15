@@ -4,7 +4,7 @@ import { Args, Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
-import { merge } from "@/lib/helpers/object.isomorphic";
+import { KnockEnv } from "@/lib/helpers/const";
 import { spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
 import { WorkflowDirContext } from "@/lib/run-context";
@@ -13,6 +13,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
   static flags = {
     steps: Flags.string({ aliases: ["step"] }),
     force: Flags.boolean(),
+    environment: Flags.string({ hidden: true, default: KnockEnv.Development }),
   };
 
   static args = {
@@ -84,16 +85,14 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
     if (isExistingWorkflow) {
       this.log("");
       this.warn(
-        `Workflow \`${args.workflowKey}\` already exists in \`development\` environment`,
+        `Workflow \`${args.workflowKey}\` already exists in \`${flags.environment}\` environment`,
       );
     }
   }
 
   async checkExistingWorkflow(): Promise<boolean | undefined> {
-    const props = merge(this.props, { flags: { environment: "development" } });
-
     try {
-      const resp = await this.apiV1.getWorkflow(props);
+      const resp = await this.apiV1.getWorkflow(this.props);
       return resp.status === 200;
     } catch {}
   }

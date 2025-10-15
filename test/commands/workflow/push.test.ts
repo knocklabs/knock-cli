@@ -336,4 +336,33 @@ describe("commands/workflow/push", () => {
         );
       });
   });
+
+  describe("given an environment flag", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, "foo/workflow.json");
+      fs.outputJsonSync(abspath, { name: "Foo", key: "foo" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", "foo", "--environment", "staging"])
+      .it("calls apiV1 upsertWorkflow with the specified environment", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertWorkflow as any,
+          sinon.match(({ args, flags }) => {
+            return (
+              args.workflowKey === "foo" &&
+              flags["service-token"] === "valid-token" &&
+              flags.environment === "staging" &&
+              flags.annotate === true
+            );
+          }),
+          sinon.match(
+            (workflow) => workflow.key === "foo" && workflow.name === "Foo",
+          ),
+        );
+      });
+  });
 });

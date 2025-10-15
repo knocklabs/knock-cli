@@ -21,9 +21,8 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
   static flags = {
     environment: Flags.string({
       summary:
-        "Pushing a workflow is only allowed in the development environment",
+        "The environment to push the workflow to. Defaults to development.",
       default: KnockEnv.Development,
-      options: [KnockEnv.Development],
     }),
     branch: CustomFlags.branch,
     all: Flags.boolean({

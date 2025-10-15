@@ -21,9 +21,8 @@ export default class WorkflowValidate extends BaseCommand<
   static flags = {
     environment: Flags.string({
       summary:
-        "Validating a workflow is only done in the development environment",
+        "The environment to validate the workflow in. Defaults to development.",
       default: KnockEnv.Development,
-      options: [KnockEnv.Development],
     }),
     branch: CustomFlags.branch,
     all: Flags.boolean({
