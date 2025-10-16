@@ -13,6 +13,9 @@ import { sandboxDir } from "@/lib/helpers/const";
 const setupWithStub = (upsertRespAttrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "whoami", (stub) =>
+      stub.resolves(factory.resp({ data: factory.whoami() })),
+    )
     .stub(TranslationValidate, "validateAll", (stub) => stub.resolves([]))
     .stub(KnockApiV1.prototype, "upsertTranslation", (stub) =>
       stub.resolves(factory.resp(upsertRespAttrs)),
@@ -356,5 +359,36 @@ describe("commands/translation/push", () => {
           }),
         );
       });
+  });
+
+  describe("when translations feature is disabled for the account", () => {
+    beforeEach(() => {
+      const translationsDir = path.resolve(sandboxDir, "translations");
+      const abspath = path.resolve(translationsDir, "en", "admin.en.json");
+      fs.outputJsonSync(abspath, JSON.parse('{"welcome":"hello!"}'));
+      process.chdir(translationsDir);
+    });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.whoami({
+              account_features: {
+                translations_allowed: false,
+              },
+            }),
+          }),
+        ),
+      )
+      .stdout()
+      .command(["translation push", "admin.en"])
+      .catch((error) =>
+        expect(error.message).to.match(
+          /Translations are not enabled for your account/,
+        ),
+      )
+      .it("throws an error about translations not being enabled");
   });
 });
