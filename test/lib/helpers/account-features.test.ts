@@ -38,12 +38,13 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should return true for translations_allowed feature", async () => {
+      it("should return enabled: true for translations_allowed feature", async () => {
         const result = await checkAccountFeature(
           apiV1,
           "translations_allowed" as FeatureName,
         );
-        expect(result).to.be.true;
+        expect(result.enabled).to.be.true;
+        expect(result.message).to.be.undefined;
       });
 
       it("should call whoami once", async () => {
@@ -65,34 +66,28 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should throw an error with default message", async () => {
-        try {
-          await checkAccountFeature(
-            apiV1,
-            "translations_allowed" as FeatureName,
-          );
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(
-            "The translations_allowed feature is not enabled for your account. Please contact support to enable this feature.",
-          );
-        }
+      it("should return enabled: false with default message", async () => {
+        const result = await checkAccountFeature(
+          apiV1,
+          "translations_allowed" as FeatureName,
+        );
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "The translations_allowed feature is not enabled for your account. Please contact support to enable this feature.",
+        );
       });
 
-      it("should throw an error with custom message when provided", async () => {
+      it("should return enabled: false with custom message when provided", async () => {
         const customMessage = "Custom error message for disabled feature";
-        try {
-          await checkAccountFeature(
-            apiV1,
-            "translations_allowed" as FeatureName,
-            {
-              errorMessage: customMessage,
-            },
-          );
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(customMessage);
-        }
+        const result = await checkAccountFeature(
+          apiV1,
+          "translations_allowed" as FeatureName,
+          {
+            errorMessage: customMessage,
+          },
+        );
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(customMessage);
       });
     });
 
@@ -107,18 +102,15 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should throw an error", async () => {
-        try {
-          await checkAccountFeature(
-            apiV1,
-            "translations_allowed" as FeatureName,
-          );
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(
-            "The translations_allowed feature is not enabled for your account. Please contact support to enable this feature.",
-          );
-        }
+      it("should return enabled: false with default message", async () => {
+        const result = await checkAccountFeature(
+          apiV1,
+          "translations_allowed" as FeatureName,
+        );
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "The translations_allowed feature is not enabled for your account. Please contact support to enable this feature.",
+        );
       });
     });
 
@@ -133,18 +125,15 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should throw an error", async () => {
-        try {
-          await checkAccountFeature(
-            apiV1,
-            "translations_allowed" as FeatureName,
-          );
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(
-            "The translations_allowed feature is not enabled for your account. Please contact support to enable this feature.",
-          );
-        }
+      it("should return enabled: false with default message", async () => {
+        const result = await checkAccountFeature(
+          apiV1,
+          "translations_allowed" as FeatureName,
+        );
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "The translations_allowed feature is not enabled for your account. Please contact support to enable this feature.",
+        );
       });
     });
 
@@ -159,18 +148,15 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should throw an error about unable to retrieve account information", async () => {
-        try {
-          await checkAccountFeature(
-            apiV1,
-            "translations_allowed" as FeatureName,
-          );
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(
-            "Unable to retrieve account information: 400 Bad Request",
-          );
-        }
+      it("should return enabled: false with error message about unable to retrieve account information", async () => {
+        const result = await checkAccountFeature(
+          apiV1,
+          "translations_allowed" as FeatureName,
+        );
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "Unable to retrieve account information: 400 Bad Request",
+        );
       });
     });
 
@@ -185,18 +171,30 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should throw an error about unable to retrieve account information", async () => {
-        try {
-          await checkAccountFeature(
-            apiV1,
-            "translations_allowed" as FeatureName,
-          );
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(
-            "Unable to retrieve account information: 500 Internal Server Error",
-          );
-        }
+      it("should return enabled: false with error message about unable to retrieve account information", async () => {
+        const result = await checkAccountFeature(
+          apiV1,
+          "translations_allowed" as FeatureName,
+        );
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "Unable to retrieve account information: 500 Internal Server Error",
+        );
+      });
+    });
+
+    describe("when whoami API call throws an exception", () => {
+      beforeEach(() => {
+        whoamiStub.rejects(new Error("Network error"));
+      });
+
+      it("should return enabled: false with the exception message", async () => {
+        const result = await checkAccountFeature(
+          apiV1,
+          "translations_allowed" as FeatureName,
+        );
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal("Network error");
       });
     });
   });
@@ -215,9 +213,10 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should return true", async () => {
+      it("should return enabled: true", async () => {
         const result = await checkTranslationsFeature(apiV1);
-        expect(result).to.be.true;
+        expect(result.enabled).to.be.true;
+        expect(result.message).to.be.undefined;
       });
 
       it("should call whoami once", async () => {
@@ -239,27 +238,21 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should throw an error with default translations message", async () => {
-        try {
-          await checkTranslationsFeature(apiV1);
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(
-            "Translations are not enabled for your account. Please contact support to enable the translations feature.",
-          );
-        }
+      it("should return enabled: false with default translations message", async () => {
+        const result = await checkTranslationsFeature(apiV1);
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "Translations are not enabled for your account. Please contact support to enable the translations feature.",
+        );
       });
 
-      it("should throw an error with custom message when provided", async () => {
+      it("should return enabled: false with custom message when provided", async () => {
         const customMessage = "Custom translations disabled message";
-        try {
-          await checkTranslationsFeature(apiV1, {
-            errorMessage: customMessage,
-          });
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(customMessage);
-        }
+        const result = await checkTranslationsFeature(apiV1, {
+          errorMessage: customMessage,
+        });
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(customMessage);
       });
     });
 
@@ -274,15 +267,32 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should throw an error", async () => {
-        try {
-          await checkTranslationsFeature(apiV1);
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(
-            "Translations are not enabled for your account. Please contact support to enable the translations feature.",
-          );
-        }
+      it("should return enabled: false with default message", async () => {
+        const result = await checkTranslationsFeature(apiV1);
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "Translations are not enabled for your account. Please contact support to enable the translations feature.",
+        );
+      });
+    });
+
+    describe("when account_features is undefined", () => {
+      beforeEach(() => {
+        whoamiStub.resolves(
+          factory.resp({
+            data: factory.whoami({
+              account_features: undefined,
+            }),
+          }),
+        );
+      });
+
+      it("should return enabled: false with default message", async () => {
+        const result = await checkTranslationsFeature(apiV1);
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "Translations are not enabled for your account. Please contact support to enable the translations feature.",
+        );
       });
     });
 
@@ -297,15 +307,24 @@ describe("lib/helpers/account-features", () => {
         );
       });
 
-      it("should throw an error about unable to retrieve account information", async () => {
-        try {
-          await checkTranslationsFeature(apiV1);
-          expect.fail("Expected error to be thrown");
-        } catch (error) {
-          expect((error as Error).message).to.equal(
-            "Unable to retrieve account information: 401 Unauthorized",
-          );
-        }
+      it("should return enabled: false with error message about unable to retrieve account information", async () => {
+        const result = await checkTranslationsFeature(apiV1);
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal(
+          "Unable to retrieve account information: 401 Unauthorized",
+        );
+      });
+    });
+
+    describe("when whoami API call throws an exception", () => {
+      beforeEach(() => {
+        whoamiStub.rejects(new Error("Network error"));
+      });
+
+      it("should return enabled: false with the exception message", async () => {
+        const result = await checkTranslationsFeature(apiV1);
+        expect(result.enabled).to.be.false;
+        expect(result.message).to.equal("Network error");
       });
     });
   });

@@ -384,11 +384,13 @@ describe("commands/translation/push", () => {
       )
       .stdout()
       .command(["translation push", "admin.en"])
-      .catch((error) =>
-        expect(error.message).to.match(
-          /Translations are not enabled for your account/,
-        ),
-      )
-      .it("throws an error about translations not being enabled");
+      .it(
+        "logs a message about translations not being enabled and exits gracefully",
+        (ctx) => {
+          expect(ctx.stdout).to.contain(
+            "Translations are not enabled for your account. Please contact support to enable the translations feature.",
+          );
+        },
+      );
   });
 });

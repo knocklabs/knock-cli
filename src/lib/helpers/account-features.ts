@@ -17,31 +17,44 @@ export interface FeatureCheckOptions {
  * @param apiV1 - The API v1 client instance
  * @param featureName - The name of the feature to check
  * @param options - Additional options for the feature check
- * @returns Promise that resolves to true if the feature is enabled, false otherwise
- * @throws Error if the account information cannot be retrieved or if the feature is disabled
+ * @returns Promise that resolves to an object with enabled status and optional message
  */
 export async function checkAccountFeature(
   apiV1: ApiV1,
   featureName: FeatureName,
   options: FeatureCheckOptions = {},
-): Promise<boolean> {
-  const whoamiResp = await apiV1.whoami();
+): Promise<{ enabled: boolean; message?: string }> {
+  try {
+    const whoamiResp = await apiV1.whoami();
 
-  if (!isSuccessResp(whoamiResp)) {
-    throw new Error(
-      `Unable to retrieve account information: ${whoamiResp.status} ${whoamiResp.statusText}`,
-    );
+    if (!isSuccessResp(whoamiResp)) {
+      return {
+        enabled: false,
+        message: `Unable to retrieve account information: ${whoamiResp.status} ${whoamiResp.statusText}`,
+      };
+    }
+
+    const accountFeatures = whoamiResp.data.account_features;
+    const isFeatureEnabled = accountFeatures?.[featureName] === true;
+
+    if (!isFeatureEnabled) {
+      const defaultMessage = `The ${featureName} feature is not enabled for your account. Please contact support to enable this feature.`;
+      return {
+        enabled: false,
+        message: options.errorMessage || defaultMessage,
+      };
+    }
+
+    return { enabled: true };
+  } catch (error) {
+    return {
+      enabled: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unknown error occurred while checking translations feature",
+    };
   }
-
-  const accountFeatures = whoamiResp.data.account_features;
-  const isFeatureEnabled = accountFeatures?.[featureName] === true;
-
-  if (!isFeatureEnabled) {
-    const defaultMessage = `The ${featureName} feature is not enabled for your account. Please contact support to enable this feature.`;
-    throw new Error(options.errorMessage || defaultMessage);
-  }
-
-  return true;
 }
 
 /**
@@ -50,13 +63,13 @@ export async function checkAccountFeature(
  *
  * @param apiV1 - The API v1 client instance
  * @param options - Additional options for the feature check
- * @returns Promise that resolves to true if translations are enabled
+ * @returns Promise that resolves to an object with enabled status and optional message
  * @throws Error if translations are not enabled for the account
  */
 export async function checkTranslationsFeature(
   apiV1: ApiV1,
   options: FeatureCheckOptions = {},
-): Promise<boolean> {
+): Promise<{ enabled: boolean; message?: string }> {
   return checkAccountFeature(apiV1, "translations_allowed", {
     errorMessage:
       options.errorMessage ||

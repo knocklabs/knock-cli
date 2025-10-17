@@ -54,7 +54,12 @@ export default class TranslationPush extends BaseCommand<
   async run(): Promise<void> {
     const { flags } = this.props;
 
-    await checkTranslationsFeature(this.apiV1);
+    const featureCheck = await checkTranslationsFeature(this.apiV1);
+
+    if (!featureCheck.enabled) {
+      this.log(featureCheck.message!);
+      return;
+    }
 
     // 1. First read all translation files found for the given command.
     const target = await Translation.ensureValidCommandTarget(

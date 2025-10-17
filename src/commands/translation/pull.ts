@@ -59,7 +59,12 @@ export default class TranslationPull extends BaseCommand<
   };
 
   async run(): Promise<void> {
-    await checkTranslationsFeature(this.apiV1);
+    const featureCheck = await checkTranslationsFeature(this.apiV1);
+
+    if (!featureCheck.enabled) {
+      this.log(featureCheck.message!);
+      return;
+    }
 
     const target = await Translation.ensureValidCommandTarget(
       this.props,
