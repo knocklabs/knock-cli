@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
-import { type BranchData } from "@/lib/api-v1";
+import { type BranchData, type WhoamiResp } from "@/lib/api-v1";
 import { AuthenticatedSession } from "@/lib/auth";
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo } from "@/lib/helpers/page";
@@ -70,6 +70,19 @@ export const pageInfo = (attrs: Partial<PageInfo> = {}): PageInfo => {
     after: null,
     before: null,
     page_size: 50,
+    ...attrs,
+  };
+};
+
+export const whoami = (attrs: Partial<WhoamiResp> = {}): WhoamiResp => {
+  return {
+    account_name: "Test Account",
+    account_slug: "test-account",
+    service_token_name: "test-service-token",
+    user_id: null,
+    account_features: {
+      translations_allowed: true,
+    },
     ...attrs,
   };
 };

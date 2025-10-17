@@ -557,11 +557,18 @@ export type T = ApiV1;
 /*
  * API v1 response types:
  */
+export type AccountFeatures = {
+  translations_allowed?: boolean;
+  // Add other features as needed in the future
+  [key: string]: boolean | undefined;
+};
+
 export type WhoamiResp = {
   account_name: string;
   account_slug: string;
   service_token_name: string | null;
   user_id: string | null;
+  account_features?: AccountFeatures;
 };
 
 export type ListWorkflowResp<A extends MaybeWithAnnotation = unknown> =

@@ -1,6 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { checkTranslationsFeature } from "@/lib/helpers/account-features";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
@@ -52,6 +53,13 @@ export default class TranslationPush extends BaseCommand<
 
   async run(): Promise<void> {
     const { flags } = this.props;
+
+    const featureCheck = await checkTranslationsFeature(this.apiV1);
+
+    if (!featureCheck.enabled) {
+      this.log(featureCheck.message!);
+      return;
+    }
 
     // 1. First read all translation files found for the given command.
     const target = await Translation.ensureValidCommandTarget(

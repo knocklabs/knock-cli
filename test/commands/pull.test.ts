@@ -29,6 +29,9 @@ const setupWithListStubs = (
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "whoami", (stub) =>
+      stub.resolves(factory.resp({ data: factory.whoami() })),
+    )
     .stub(KnockApiV1.prototype, "listEmailLayouts", (stub) =>
       stub.resolves(
         factory.resp({

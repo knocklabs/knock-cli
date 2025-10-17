@@ -394,6 +394,10 @@ describe("commands/push", () => {
         let upsertTranslationStub: sinon.SinonStub;
 
         beforeEach(() => {
+          sinon
+            .stub(KnockApiV1.prototype, "whoami")
+            .resolves(factory.resp({ data: factory.whoami() }));
+
           translationValidateAllStub = sinon
             .stub(TranslationValidate, "validateAll")
             .resolves([]);
@@ -917,6 +921,10 @@ describe("commands/push", () => {
         let upsertWorkflowStub: sinon.SinonStub;
 
         beforeEach(() => {
+          sinon
+            .stub(KnockApiV1.prototype, "whoami")
+            .resolves(factory.resp({ data: factory.whoami() }));
+
           layoutValidateAllStub = sinon
             .stub(EmailLayoutValidate, "validateAll")
             .resolves([]);
@@ -1027,6 +1035,10 @@ describe("commands/push", () => {
           sinon.stub(WorkflowValidate, "validateAll").resolves([]);
           sinon.stub(MessageTypeValidate, "validateAll").resolves([]);
           sinon.stub(GuideValidate, "validateAll").resolves([]);
+
+          sinon
+            .stub(KnockApiV1.prototype, "whoami")
+            .resolves(factory.resp({ data: factory.whoami() }));
 
           upsertLayoutStub = sinon
             .stub(KnockApiV1.prototype, "upsertEmailLayout")
@@ -1292,9 +1304,17 @@ describe("commands/push", () => {
         let translationsDirPath: string;
 
         beforeEach(() => {
+          sinon
+            .stub(KnockApiV1.prototype, "whoami")
+            .resolves(factory.resp({ data: factory.whoami() }));
+
           translationsDirPath = path.resolve(sandboxDir, "translations");
           fs.ensureDirSync(translationsDirPath);
           process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          sinon.restore();
         });
 
         test
