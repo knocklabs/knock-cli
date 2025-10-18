@@ -21,7 +21,7 @@
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
     "@prantlf/jsonlint": "^14.1.0",
-    "axios": "^1.11.0",
+    "axios": "^1.12.2",
     "date-fns": "^2.30.0",
     "enquirer": "^2.4.1",
     "find-up": "^5.0.0",
