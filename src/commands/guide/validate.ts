@@ -16,9 +16,9 @@ export default class GuideValidate extends BaseCommand<typeof GuideValidate> {
 
   static flags = {
     environment: Flags.string({
-      summary: "Validating a guide is only done in the development environment",
+      summary:
+        "The environment to validate the guide in. Defaults to development.",
       default: KnockEnv.Development,
-      options: [KnockEnv.Development],
     }),
     branch: CustomFlags.branch,
     all: Flags.boolean({
