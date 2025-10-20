@@ -19,9 +19,8 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
 
   static flags = {
     environment: Flags.string({
-      summary: "Pushing a guide is only allowed in the development environment",
+      summary: "The environment to push the guide to. Defaults to development.",
       default: KnockEnv.Development,
-      options: [KnockEnv.Development],
     }),
     branch: CustomFlags.branch,
     all: Flags.boolean({

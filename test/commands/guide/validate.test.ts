@@ -92,6 +92,36 @@ describe("commands/guide/validate (a single guide)", () => {
           );
         });
     });
+
+    describe("given an environment flag", () => {
+      setupWithStub()
+        .stdout()
+        .command([
+          "guide validate",
+          "welcome-guide",
+          "--environment",
+          "staging",
+        ])
+        .it("calls apiV1 validateGuide with the specified environment", () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.validateGuide as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { guideKey: "welcome-guide" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+                  environment: "staging",
+                }),
+            ),
+            sinon.match((guide) =>
+              isEqual(guide, {
+                key: "welcome-guide",
+                name: "Welcome Guide",
+              }),
+            ),
+          );
+        });
+    });
   });
 
   describe("given a guide.json file, with syntax errors", () => {
