@@ -64,6 +64,7 @@
     "bin": "knock",
     "dirname": "knock",
     "commands": "./dist/commands",
+    "additionalHelpFlags": ["-h"],
     "plugins": [
       "@oclif/plugin-help"
     ],
