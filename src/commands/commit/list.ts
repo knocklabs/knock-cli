@@ -31,7 +31,8 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
     }),
     "resource-type": Flags.string({
       summary:
-        "Filter commits by resource type. Must be used together with resource-id.",
+        "Filter commits by resource type. Can be used alone or together with resource-id. Use multiple --resource-type flags for multiple values.",
+      multiple: true,
       options: [
         "email_layout",
         "guide",
@@ -51,15 +52,27 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
   static enableJsonFlag = true;
 
   async run(): Promise<ApiV1.ListCommitResp | void> {
-    // Validate that resource-type and resource-id are used together
+    // Validate flag combinations
     const { flags } = this.props;
-    const hasResourceType = Boolean(flags["resource-type"]);
+    const hasResourceType = Boolean(flags["resource-type"]?.length);
+    const hasResourceTypes = Boolean(
+      flags["resource-type"]?.length
+        ? flags["resource-type"].length > 1
+        : false,
+    );
     const hasResourceId = Boolean(flags["resource-id"]);
 
-    if (hasResourceType !== hasResourceId) {
+    if (hasResourceId && !hasResourceType) {
       this.error(
-        "The --resource-type and --resource-id flags must be used together. " +
-          "You cannot use one without the other.",
+        "The --resource-id flag must be used together with --resource-type. " +
+          "You cannot use --resource-id without --resource-type.",
+      );
+    }
+
+    if (hasResourceId && hasResourceTypes) {
+      this.error(
+        "The --resource-id flag cannot be used with multiple --resource-type. " +
+          "Use --resource-id only with --resource-type for filtering by a specific resource.",
       );
     }
 
