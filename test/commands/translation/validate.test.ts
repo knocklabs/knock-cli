@@ -12,6 +12,9 @@ import { sandboxDir } from "@/lib/helpers/const";
 const setupWithStub = (attrs = {}) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "whoami", (stub) =>
+      stub.resolves(factory.resp({ data: factory.whoami() })),
+    )
     .stub(KnockApiV1.prototype, "validateTranslation", (stub) =>
       stub.resolves(factory.resp(attrs)),
     );
@@ -363,6 +366,39 @@ describe("commands/translation/validate (all translations)", () => {
                 format: "json",
               }),
             ),
+          );
+        },
+      );
+  });
+
+  describe("when translations feature is disabled for the account", () => {
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, "en", "en.json");
+      fs.outputJsonSync(abspath, { hello: "Hello" });
+      process.chdir(sandboxDir);
+    });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.whoami({
+              account_features: {
+                translations_allowed: false,
+              },
+            }),
+          }),
+        ),
+      )
+      .stdout()
+      .command(["translation validate", "en"])
+      .exit(0)
+      .it(
+        "logs a message about translations not being enabled and exits gracefully",
+        (ctx) => {
+          expect(ctx.stdout).to.contain(
+            "Translations are not enabled for your account. Please contact support to enable the translations feature.",
           );
         },
       );

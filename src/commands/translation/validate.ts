@@ -19,6 +19,8 @@ export default class TranslationValidate extends BaseCommand<
   static summary =
     "Validate one or more translations from a local file system.";
 
+  static verifyFeatureEnabled = "translations" as const;
+
   static flags = {
     environment: Flags.string({
       summary:

@@ -1,4 +1,4 @@
-import { test } from "@oclif/test";
+import { expect, test } from "@oclif/test";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
@@ -17,6 +17,9 @@ describe("commands/translation/get", () => {
   describe("given a translation ref arg, and no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
         stub.resolves(
           factory.resp({
@@ -53,6 +56,9 @@ describe("commands/translation/get", () => {
   describe("given a translation ref arg, and flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
         stub.resolves(
           factory.resp({
@@ -96,6 +102,9 @@ describe("commands/translation/get", () => {
   describe("given a branch flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
         stub.resolves(
           factory.resp({
@@ -138,6 +147,9 @@ describe("commands/translation/get", () => {
   describe("given a translation ref that does not exist", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
         stub.resolves(
           factory.resp({
@@ -156,5 +168,32 @@ describe("commands/translation/get", () => {
       .command(["translation get", "en"])
       .catch("The resource you requested does not exist")
       .it("throws an error for resource not found");
+  });
+
+  describe("when translations feature is disabled for the account", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.whoami({
+              account_features: {
+                translations_allowed: false,
+              },
+            }),
+          }),
+        ),
+      )
+      .stdout()
+      .command(["translation get", "en"])
+      .exit(0)
+      .it(
+        "logs a message about translations not being enabled and exits gracefully",
+        (ctx) => {
+          expect(ctx.stdout).to.contain(
+            "Translations are not enabled for your account. Please contact support to enable the translations feature.",
+          );
+        },
+      );
   });
 });

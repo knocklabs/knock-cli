@@ -20,6 +20,8 @@ export default class TranslationList extends BaseCommand<
 > {
   static summary = "Display all translations for an environment.";
 
+  static verifyFeatureEnabled = "translations" as const;
+
   static flags = {
     environment: Flags.string({
       default: "development",

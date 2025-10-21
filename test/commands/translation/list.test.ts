@@ -17,6 +17,9 @@ describe("commands/translation/list", () => {
   describe("given no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
         stub.resolves(emptyTranslationListResp),
       )
@@ -41,6 +44,9 @@ describe("commands/translation/list", () => {
   describe("given flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
         stub.resolves(emptyTranslationListResp),
       )
@@ -76,6 +82,9 @@ describe("commands/translation/list", () => {
   describe("given a branch flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
         stub.resolves(emptyTranslationListResp),
       )
@@ -100,6 +109,9 @@ describe("commands/translation/list", () => {
   describe("given a list of translations in response", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
         stub.resolves(
           factory.resp({
@@ -143,6 +155,9 @@ describe("commands/translation/list", () => {
     describe("plus a next page action from the prompt input", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockApiV1.prototype, "whoami", (stub) =>
+          stub.resolves(factory.resp({ data: factory.whoami() })),
+        )
         .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
           stub.resolves(paginatedTranslationsResp),
         )
@@ -198,6 +213,9 @@ describe("commands/translation/list", () => {
     describe("plus a previous page action input from the prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockApiV1.prototype, "whoami", (stub) =>
+          stub.resolves(factory.resp({ data: factory.whoami() })),
+        )
         .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
           stub.resolves(paginatedTranslationsResp),
         )
@@ -215,5 +233,32 @@ describe("commands/translation/list", () => {
           },
         );
     });
+  });
+
+  describe("when translations feature is disabled for the account", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.whoami({
+              account_features: {
+                translations_allowed: false,
+              },
+            }),
+          }),
+        ),
+      )
+      .stdout()
+      .command(["translation list"])
+      .exit(0)
+      .it(
+        "logs a message about translations not being enabled and exits gracefully",
+        (ctx) => {
+          expect(ctx.stdout).to.contain(
+            "Translations are not enabled for your account. Please contact support to enable the translations feature.",
+          );
+        },
+      );
   });
 });

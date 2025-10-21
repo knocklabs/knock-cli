@@ -343,6 +343,7 @@ describe("commands/translation/pull", () => {
       )
       .stdout()
       .command(["translation pull", "en"])
+      .exit(0)
       .it(
         "logs a message about translations not being enabled and exits gracefully",
         (ctx) => {

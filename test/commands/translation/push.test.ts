@@ -384,6 +384,7 @@ describe("commands/translation/push", () => {
       )
       .stdout()
       .command(["translation push", "admin.en"])
+      .exit(0)
       .it(
         "logs a message about translations not being enabled and exits gracefully",
         (ctx) => {

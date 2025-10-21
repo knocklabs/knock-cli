@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
-import { checkTranslationsFeature } from "@/lib/helpers/account-features";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -23,6 +22,8 @@ export default class TranslationPull extends BaseCommand<
 > {
   static summary =
     "Pull one or more translations from an environment into a local file system.";
+
+  static verifyFeatureEnabled = "translations" as const;
 
   static flags = {
     environment: Flags.string({
@@ -59,13 +60,6 @@ export default class TranslationPull extends BaseCommand<
   };
 
   async run(): Promise<void> {
-    const featureCheck = await checkTranslationsFeature(this.apiV1);
-
-    if (!featureCheck.enabled) {
-      this.log(featureCheck.message!);
-      return;
-    }
-
     const target = await Translation.ensureValidCommandTarget(
       this.props,
       this.runContext,

@@ -4,6 +4,7 @@ import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import KnockApiV1 from "./api-v1";
 import auth from "./auth";
+import { checkTranslationsFeature } from "./helpers/account-features";
 import * as RunContext from "./run-context";
 import {
   OAuthTokenContext,
@@ -59,6 +60,7 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   protected configStore!: UserConfigStore;
 
   protected requiresAuth = true;
+  protected static verifyFeatureEnabled?: "translations";
 
   public async init(): Promise<void> {
     await super.init();
@@ -88,7 +90,13 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     // 6. Instantiate a knock api client.
     this.apiV1 = new KnockApiV1(this.sessionContext, this.config);
 
-    // 7. Load the run context of the invoked command.
+    // 7. Verify that required features are enabled for the account.
+    const ctor = this.ctor as typeof BaseCommand;
+    if (ctor.verifyFeatureEnabled) {
+      await this.verifyFeatureEnabled(ctor.verifyFeatureEnabled);
+    }
+
+    // 8. Load the run context of the invoked command.
     this.runContext = await RunContext.load(this.id);
   }
 
@@ -123,6 +131,16 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
       (this.sessionContext.type === "oauth" && !this.sessionContext.session)
     ) {
       this.error("No token found. Refusing to run command.");
+    }
+  }
+
+  private async verifyFeatureEnabled(feature: "translations"): Promise<void> {
+    if (feature === "translations") {
+      const featureCheck = await checkTranslationsFeature(this.apiV1);
+      if (!featureCheck.enabled) {
+        this.log(featureCheck.message!);
+        this.exit(0);
+      }
     }
   }
 
