@@ -100,7 +100,6 @@ export default class TranslationPull extends BaseCommand<
 
     await Translation.writeTranslationFile(targetCtx, resp.data, {
       format: flags.format,
-      withSchema: true,
     });
 
     const actioned = targetCtx.exists ? "updated" : "created";
@@ -133,7 +132,6 @@ export default class TranslationPull extends BaseCommand<
     const translations = await this.listAllTranslations(filters);
     await Translation.writeTranslationFiles(targetCtx, translations, {
       format: flags.format,
-      withSchema: true,
     });
     spinner.stop();
 
