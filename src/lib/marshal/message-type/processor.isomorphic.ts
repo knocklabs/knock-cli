@@ -52,11 +52,12 @@ const compileExtractionSettings = (
  */
 export const buildMessageTypeDirBundle = (
   remoteMessageType: MessageTypeData<WithAnnotation>,
-  localMessageType: AnyObj = {},
+  localMessageType?: AnyObj,
   $schema?: string,
 ): MessageTypeDirBundle => {
   const bundle: MessageTypeDirBundle = {};
   const mutRemoteMessageType = cloneDeep(remoteMessageType);
+  localMessageType = localMessageType || {};
   // A map of extraction settings of every field in the message type
   const compiledExtractionSettings =
     compileExtractionSettings(mutRemoteMessageType);

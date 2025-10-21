@@ -340,10 +340,11 @@ const recursivelyBuildWorkflowDirBundle = (
  */
 export const buildWorkflowDirBundle = (
   remoteWorkflow: WorkflowData<WithAnnotation>,
-  localWorkflow: AnyObj = {},
+  localWorkflow?: AnyObj,
   $schema?: string,
 ): WorkflowDirBundle => {
   const bundle: WorkflowDirBundle = {};
+  localWorkflow = localWorkflow || {};
   const mutWorkflow = cloneDeep(remoteWorkflow);
   const localWorkflowStepsByRef = keyLocalWorkflowStepsByRef(
     localWorkflow.steps,

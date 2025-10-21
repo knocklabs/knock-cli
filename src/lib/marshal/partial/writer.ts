@@ -141,8 +141,6 @@ export const writePartialsIndexDir = async (
   remotePartials: PartialData<WithAnnotation>[],
   options?: WriteOpts,
 ): Promise<void> => {
-  const { withSchema = false } = options || {};
-
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
   try {

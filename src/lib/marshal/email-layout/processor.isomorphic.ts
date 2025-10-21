@@ -55,10 +55,11 @@ const compileExtractionSettings = (
  */
 export const buildEmailLayoutDirBundle = (
   remoteEmailLayout: EmailLayoutData<WithAnnotation>,
-  localEmailLayout: AnyObj = {},
+  localEmailLayout?: AnyObj,
   $schema?: string,
 ): EmailLayoutDirBundle => {
   const bundle: EmailLayoutDirBundle = {};
+  localEmailLayout = localEmailLayout || {};
   const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
   // A map of extraction settings of every field in the email layout
   const compiledExtractionSettings =

@@ -72,10 +72,11 @@ const compileExtractionSettings = (
  */
 export const buildPartialDirBundle = (
   remotePartial: PartialData<WithAnnotation>,
-  localPartial: AnyObj = {},
+  localPartial?: AnyObj,
   $schema?: string,
 ): PartialDirBundle => {
   const bundle: PartialDirBundle = {};
+  localPartial = localPartial || {};
   const mutRemotePartial = cloneDeep(remotePartial);
   // A map of extraction settings of every field in the partial
   const compiledExtractionSettings =

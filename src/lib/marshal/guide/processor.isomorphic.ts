@@ -59,10 +59,11 @@ const compileExtractionSettings = (
  */
 export const buildGuideDirBundle = (
   remoteGuide: GuideData<WithAnnotation>,
-  localGuide: AnyObj = {},
+  localGuide?: AnyObj,
   $schema?: string,
 ): GuideDirBundle => {
   const bundle: GuideDirBundle = {};
+  localGuide = localGuide || {};
   const mutRemoteGuide = cloneDeep(remoteGuide);
 
   // A map of extraction settings of every field in the guide.

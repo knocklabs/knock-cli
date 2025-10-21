@@ -36,7 +36,7 @@ export const prepareResourceJson = (
   const filteredReadonlyFields = omit(readonly, REMOVED_READONLY_FIELDS);
 
   // Move remaining read only fields under the dedicated field "__readonly".
-  let resourceJson = { ...remainder, __readonly: filteredReadonlyFields };
+  const resourceJson = { ...remainder, __readonly: filteredReadonlyFields };
 
   // Append the $schema property to the resource JSON if it is provided.
   if ($schema) {
