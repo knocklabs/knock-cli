@@ -205,6 +205,7 @@ describe("commands/message-type/push", () => {
           const messageTypeJson = fs.readJsonSync(abspath);
 
           expect(messageTypeJson).to.eql({
+            $schema: "https://schemas.knock.app/cli/message-type.json",
             name: "Banner",
             description: "My little banner",
             variants: [

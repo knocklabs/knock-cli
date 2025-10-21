@@ -28,6 +28,7 @@ const REMOVED_READONLY_FIELDS = ["sha", "updated_at"];
 
 export const prepareResourceJson = (
   resource: ResourceData<WithAnnotation>,
+  $schema?: string,
 ): AnyObj => {
   const readonlyFields = resource.__annotation?.readonly_fields || [];
   const [readonly, remainder] = split(resource, readonlyFields);
@@ -35,7 +36,12 @@ export const prepareResourceJson = (
   const filteredReadonlyFields = omit(readonly, REMOVED_READONLY_FIELDS);
 
   // Move remaining read only fields under the dedicated field "__readonly".
-  const resourceJson = { ...remainder, __readonly: filteredReadonlyFields };
+  let resourceJson = { ...remainder, __readonly: filteredReadonlyFields };
+
+  // Append the $schema property to the resource JSON if it is provided.
+  if ($schema) {
+    Object.assign(resourceJson, { $schema });
+  }
 
   // Strip out all schema annotations, so not to expose them to end users.
   return omitDeep(resourceJson, ["__annotation"]);

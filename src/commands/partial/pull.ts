@@ -88,7 +88,9 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
       return this.apiV1.getPartial(props);
     });
 
-    await Partial.writePartialDirFromData(dirContext, resp.data);
+    await Partial.writePartialDirFromData(dirContext, resp.data, {
+      withSchema: true,
+    });
 
     const action = dirContext.exists ? "updated" : "created";
     const scope = formatCommandScope(flags);
@@ -115,7 +117,9 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
 
     const partials = await this.listAllPartials();
 
-    await Partial.writePartialsIndexDir(targetDirCtx, partials);
+    await Partial.writePartialsIndexDir(targetDirCtx, partials, {
+      withSchema: true,
+    });
     spinner.stop();
 
     const action = targetDirCtx.exists ? "updated" : "created";

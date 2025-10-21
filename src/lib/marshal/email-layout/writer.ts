@@ -14,6 +14,12 @@ import { buildEmailLayoutDirBundle, LAYOUT_JSON } from "./processor.isomorphic";
 import { readEmailLayoutDir } from "./reader";
 import { EmailLayoutData } from "./types";
 
+const EMAIL_LAYOUT_SCHEMA = "https://schemas.knock.app/cli/email-layout.json";
+
+type WriteOpts = {
+  withSchema?: boolean;
+};
+
 /*
  * Builds an email layout dir bundle, which consist of the email layout JSON +
  * the extractable files.  Then writes them into a layout directory on a local
@@ -22,14 +28,21 @@ import { EmailLayoutData } from "./types";
 export const writeEmailLayoutDirFromData = async (
   emailLayoutDirCtx: EmailLayoutDirContext,
   remoteEmailLayout: EmailLayoutData<WithAnnotation>,
+  options?: WriteOpts,
 ): Promise<void> => {
+  const { withSchema = false } = options || {};
+
   // If the layout directory exists on the file system (i.e. previously
   // pulled before), then read the layout file to use as a reference.
   const [localEmailLayout] = emailLayoutDirCtx.exists
     ? await readEmailLayoutDir(emailLayoutDirCtx, { withExtractedFiles: true })
     : [];
 
-  const bundle = buildEmailLayoutDirBundle(remoteEmailLayout, localEmailLayout);
+  const bundle = buildEmailLayoutDirBundle(
+    remoteEmailLayout,
+    localEmailLayout,
+    withSchema ? EMAIL_LAYOUT_SCHEMA : undefined,
+  );
 
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
   try {
@@ -72,6 +85,7 @@ export const writeEmailLayoutDirFromData = async (
 export const writeEmailLayoutIndexDir = async (
   indexDirCtx: DirContext,
   remoteEmailLayouts: EmailLayoutData<WithAnnotation>[],
+  options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
@@ -100,6 +114,7 @@ export const writeEmailLayoutIndexDir = async (
         return writeEmailLayoutDirFromData(
           emailLayoutDirCtx,
           remoteEmailLayout,
+          options,
         );
       },
     );

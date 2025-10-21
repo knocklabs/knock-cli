@@ -53,6 +53,7 @@ const compileExtractionSettings = (
 export const buildMessageTypeDirBundle = (
   remoteMessageType: MessageTypeData<WithAnnotation>,
   localMessageType: AnyObj = {},
+  $schema?: string,
 ): MessageTypeDirBundle => {
   const bundle: MessageTypeDirBundle = {};
   const mutRemoteMessageType = cloneDeep(remoteMessageType);
@@ -105,6 +106,6 @@ export const buildMessageTypeDirBundle = (
   return set(
     bundle,
     [MESSAGE_TYPE_JSON],
-    prepareResourceJson(mutRemoteMessageType),
+    prepareResourceJson(mutRemoteMessageType, $schema),
   );
 };

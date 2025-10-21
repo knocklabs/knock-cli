@@ -60,6 +60,7 @@ const compileExtractionSettings = (
 export const buildGuideDirBundle = (
   remoteGuide: GuideData<WithAnnotation>,
   localGuide: AnyObj = {},
+  $schema?: string,
 ): GuideDirBundle => {
   const bundle: GuideDirBundle = {};
   const mutRemoteGuide = cloneDeep(remoteGuide);
@@ -109,5 +110,9 @@ export const buildGuideDirBundle = (
   // At this point the bundle contains all extractable files, so we finally add
   // the guide JSON relative path + the file content.
 
-  return set(bundle, [GUIDE_JSON], prepareResourceJson(mutRemoteGuide));
+  return set(
+    bundle,
+    [GUIDE_JSON],
+    prepareResourceJson(mutRemoteGuide, $schema),
+  );
 };

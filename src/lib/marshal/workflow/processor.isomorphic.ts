@@ -341,6 +341,7 @@ const recursivelyBuildWorkflowDirBundle = (
 export const buildWorkflowDirBundle = (
   remoteWorkflow: WorkflowData<WithAnnotation>,
   localWorkflow: AnyObj = {},
+  $schema?: string,
 ): WorkflowDirBundle => {
   const bundle: WorkflowDirBundle = {};
   const mutWorkflow = cloneDeep(remoteWorkflow);
@@ -357,7 +358,11 @@ export const buildWorkflowDirBundle = (
   );
 
   // Then, prepare the workflow data to be written into a workflow json file.
-  return set(bundle, [WORKFLOW_JSON], prepareResourceJson(mutWorkflow));
+  return set(
+    bundle,
+    [WORKFLOW_JSON],
+    prepareResourceJson(mutWorkflow, $schema),
+  );
 };
 
 // Exported for tests.

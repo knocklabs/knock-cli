@@ -167,6 +167,7 @@ describe("commands/layout/push", () => {
         const emailLayoutJson = fs.readJsonSync(abspath);
 
         expect(emailLayoutJson).to.eql({
+          $schema: "https://schemas.knock.app/cli/email-layout.json",
           name: "Default",
           footer_links: [],
           "html_layout@": "html_layout.html",

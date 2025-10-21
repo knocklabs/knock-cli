@@ -100,7 +100,9 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
         // Update the workflow directory with the successfully pushed workflow
         // payload from the server.
         // eslint-disable-next-line no-await-in-loop
-        await Workflow.writeWorkflowDirFromData(workflow, resp.data.workflow!);
+        await Workflow.writeWorkflowDirFromData(workflow, resp.data.workflow!, {
+          withSchema: true,
+        });
         continue;
       }
 

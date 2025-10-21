@@ -56,6 +56,7 @@ const compileExtractionSettings = (
 export const buildEmailLayoutDirBundle = (
   remoteEmailLayout: EmailLayoutData<WithAnnotation>,
   localEmailLayout: AnyObj = {},
+  $schema?: string,
 ): EmailLayoutDirBundle => {
   const bundle: EmailLayoutDirBundle = {};
   const mutRemoteEmailLayout = cloneDeep(remoteEmailLayout);
@@ -106,5 +107,9 @@ export const buildEmailLayoutDirBundle = (
   // At this point the bundle contains all extractable files, so we finally add
   // the layout JSON realtive path + the file content.
 
-  return set(bundle, [LAYOUT_JSON], prepareResourceJson(mutRemoteEmailLayout));
+  return set(
+    bundle,
+    [LAYOUT_JSON],
+    prepareResourceJson(mutRemoteEmailLayout, $schema),
+  );
 };

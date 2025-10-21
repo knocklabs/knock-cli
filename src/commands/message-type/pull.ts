@@ -99,7 +99,9 @@ export default class MessageTypePull extends BaseCommand<
       },
     );
 
-    await MessageType.writeMessageTypeDirFromData(dirContext, resp.data);
+    await MessageType.writeMessageTypeDirFromData(dirContext, resp.data, {
+      withSchema: true,
+    });
 
     const action = dirContext.exists ? "updated" : "created";
     const scope = formatCommandScope(flags);
@@ -168,7 +170,9 @@ export default class MessageTypePull extends BaseCommand<
 
     const messageTypes = await this.listAllMessageTypes();
 
-    await MessageType.writeMessageTypesIndexDir(targetDirCtx, messageTypes);
+    await MessageType.writeMessageTypesIndexDir(targetDirCtx, messageTypes, {
+      withSchema: true,
+    });
     spinner.stop();
 
     const action = targetDirCtx.exists ? "updated" : "created";
