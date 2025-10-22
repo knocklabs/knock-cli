@@ -129,7 +129,7 @@ FLAGS
   --resource-id=<value>     Filter commits by resource identifier. Must be used together with resource-type. For most
                             resources, this will be the resource key. In the case of translations, this will be the
                             locale code and namespace, separated by a /. For example, en/courses or en.
-  --resource-type=<option>  Filter commits by resource type. Must be used together with resource-id.
+  --resource-type=<option>  Filter commits by resource type. Can be used alone or together with resource-id. Use multiple --resource-type flags for multiple values.
                             <options: email_layout|guide|message_type|partial|translation|workflow>
   --service-token=<value>   The service token to authenticate with.
 

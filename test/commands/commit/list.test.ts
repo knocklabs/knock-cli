@@ -72,7 +72,7 @@ describe("commands/commit/list", () => {
                 limit: 5,
                 after: "xyz",
                 json: true,
-                "resource-type": "email_layout",
+                "resource-type": ["email_layout"],
                 "resource-id": "123",
               }),
           ),
@@ -218,15 +218,111 @@ describe("commands/commit/list", () => {
   describe("given a resource-type but not resource-id", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "listCommits", (stub) =>
+        stub.resolves(emptyCommitListResp),
+      )
       .stdout()
       .command(["commit list", "--resource-type", "email_layout"])
-      .exit(2)
-      .it("exits with status 2");
+      .it("calls apiV1 listCommits with correct props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listCommits as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {}) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                "resource-type": ["email_layout"],
+              }),
+          ),
+        );
+      });
+  });
 
+  describe("given a resource-id but not resource-type", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stdout()
       .command(["commit list", "--resource-id", "123"])
+      .exit(2)
+      .it("exits with status 2");
+  });
+
+  describe("given multiple resource-type flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "listCommits", (stub) =>
+        stub.resolves(emptyCommitListResp),
+      )
+      .stdout()
+      .command([
+        "commit list",
+        "--resource-type",
+        "email_layout",
+        "--resource-type",
+        "workflow",
+      ])
+      .it("calls apiV1 listCommits with correct props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listCommits as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {}) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                "resource-type": ["email_layout", "workflow"],
+              }),
+          ),
+        );
+      });
+  });
+
+  describe("given multiple resource-type flags", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "listCommits", (stub) =>
+        stub.resolves(emptyCommitListResp),
+      )
+      .stdout()
+      .command([
+        "commit list",
+        "--resource-type",
+        "email_layout",
+        "--resource-type",
+        "workflow",
+        "--resource-type",
+        "partial",
+      ])
+      .it("calls apiV1 listCommits with correct props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listCommits as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {}) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                "resource-type": ["email_layout", "workflow", "partial"],
+              }),
+          ),
+        );
+      });
+  });
+
+  describe("given resource-id with multiple resource-type", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
+      .command([
+        "commit list",
+        "--resource-id",
+        "123",
+        "--resource-type",
+        "workflow",
+        "--resource-type",
+        "partial",
+      ])
       .exit(2)
       .it("exits with status 2");
   });
