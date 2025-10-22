@@ -18,6 +18,9 @@ const setupWithListTranslationsStub = (
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "whoami", (stub) =>
+      stub.resolves(factory.resp({ data: factory.whoami() })),
+    )
     .stub(KnockApiV1.prototype, "listTranslations", (stub) =>
       stub.resolves(
         factory.resp({
@@ -37,6 +40,9 @@ const setupWithListTranslationsStub = (
 const setupWithGetTranslationStub = (attrs: Partial<TranslationData>) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "whoami", (stub) =>
+      stub.resolves(factory.resp({ data: factory.whoami() })),
+    )
     .stub(KnockApiV1.prototype, "getTranslation", (stub) =>
       stub.resolves(factory.resp({ data: factory.translation(attrs) })),
     )
@@ -58,6 +64,9 @@ describe("commands/translation/pull", () => {
   describe("given neither --all flag nor a translation ref arg", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stdout()
       .command(["translation pull"])
       .catch((error) =>
@@ -214,6 +223,9 @@ describe("commands/translation/pull", () => {
   describe("given a --all flag with a namespaced translation ref", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(factory.resp({ data: factory.whoami() })),
+      )
       .stdout()
       .command(["translation pull", "admin.en", "--all"])
       .catch((error) =>
@@ -306,6 +318,38 @@ describe("commands/translation/pull", () => {
           // Verify it doesn't create files in the default location
           const wrongPath = path.resolve(sandboxDir, "nl-NL");
           expect(fs.pathExistsSync(wrongPath)).to.equal(false);
+        },
+      );
+  });
+
+  describe("when translations feature is disabled for the account", () => {
+    afterEach(() => {
+      process.chdir(currCwd);
+      fs.removeSync(sandboxDir);
+    });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "whoami", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: factory.whoami({
+              account_features: {
+                translations_allowed: false,
+              },
+            }),
+          }),
+        ),
+      )
+      .stdout()
+      .command(["translation pull", "en"])
+      .exit(0)
+      .it(
+        "logs a message about translations not being enabled and exits gracefully",
+        (ctx) => {
+          expect(ctx.stdout).to.contain(
+            "Translations are not enabled for your account. Please contact support to enable the translations feature.",
+          );
         },
       );
   });

@@ -23,6 +23,8 @@ export default class TranslationPull extends BaseCommand<
   static summary =
     "Pull one or more translations from an environment into a local file system.";
 
+  static verifyFeatureEnabled = "translations" as const;
+
   static flags = {
     environment: Flags.string({
       default: "development",

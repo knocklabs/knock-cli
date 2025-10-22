@@ -18,6 +18,8 @@ export default class TranslationPush extends BaseCommand<
   static summary =
     "Push one or more translations from a local file system to Knock.";
 
+  static verifyFeatureEnabled = "translations" as const;
+
   static flags = {
     environment: Flags.string({
       summary:

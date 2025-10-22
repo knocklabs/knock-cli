@@ -11,6 +11,8 @@ import * as Translation from "@/lib/marshal/translation";
 export default class TranslationGet extends BaseCommand<typeof TranslationGet> {
   static summary = "Display a single translation from an environment.";
 
+  static verifyFeatureEnabled = "translations" as const;
+
   static flags = {
     environment: Flags.string({
       default: "development",
