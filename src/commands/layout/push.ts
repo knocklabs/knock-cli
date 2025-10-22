@@ -110,6 +110,7 @@ export default class EmailLayoutPush extends BaseCommand<
         await EmailLayout.writeEmailLayoutDirFromData(
           layout,
           resp.data.email_layout!,
+          { withSchema: true },
         );
         continue;
       }

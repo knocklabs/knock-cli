@@ -18,6 +18,12 @@ import {
 import { readWorkflowDir } from "./reader";
 import { WorkflowData } from "./types";
 
+type WriteOpts = {
+  withSchema?: boolean;
+};
+
+const WORKFLOW_SCHEMA = "https://schemas.knock.app/cli/workflow.json";
+
 /*
  * The main write function that takes the fetched workflow data from Knock API
  * (remote workflow), and reads the same workflow from the local file system
@@ -27,14 +33,21 @@ import { WorkflowData } from "./types";
 export const writeWorkflowDirFromData = async (
   workflowDirCtx: WorkflowDirContext,
   remoteWorkflow: WorkflowData<WithAnnotation>,
+  options?: WriteOpts,
 ): Promise<void> => {
+  const { withSchema = false } = options || {};
+
   // If the workflow directory exists on the file system (i.e. previously
   // pulled before), then read the workflow file to use as a reference.
   const [localWorkflow] = workflowDirCtx.exists
     ? await readWorkflowDir(workflowDirCtx, { withExtractedFiles: true })
     : [];
 
-  const bundle = buildWorkflowDirBundle(remoteWorkflow, localWorkflow);
+  const bundle = buildWorkflowDirBundle(
+    remoteWorkflow,
+    localWorkflow,
+    withSchema ? WORKFLOW_SCHEMA : undefined,
+  );
 
   return writeWorkflowDirFromBundle(workflowDirCtx, bundle);
 };
@@ -126,6 +139,7 @@ const pruneWorkflowsIndexDir = async (
 export const writeWorkflowsIndexDir = async (
   indexDirCtx: DirContext,
   remoteWorkflows: WorkflowData<WithAnnotation>[],
+  options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
@@ -150,7 +164,7 @@ export const writeWorkflowsIndexDir = async (
           : false,
       };
 
-      return writeWorkflowDirFromData(workflowDirCtx, workflow);
+      return writeWorkflowDirFromData(workflowDirCtx, workflow, options);
     });
 
     await Promise.all(writeWorkflowDirPromises);

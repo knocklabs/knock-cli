@@ -134,6 +134,7 @@ describe("commands/workflow/push", () => {
         const workflowJson = fs.readJsonSync(abspath);
 
         expect(workflowJson).to.eql({
+          $schema: "https://schemas.knock.app/cli/workflow.json",
           name: "New comment",
           steps: [],
           __readonly: {

@@ -108,6 +108,7 @@ export default class MessageTypePush extends BaseCommand<
         await MessageType.writeMessageTypeDirFromData(
           messageType,
           resp.data.message_type!,
+          { withSchema: true },
         );
         continue;
       }

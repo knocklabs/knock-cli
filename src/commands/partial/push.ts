@@ -104,7 +104,10 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
         // Update the partial directory with the successfully pushed partial
         // payload from the server.
         // eslint-disable-next-line no-await-in-loop
-        await Partial.writePartialDirFromData(partial, resp.data.partial!);
+        await Partial.writePartialDirFromData(partial, resp.data.partial!, {
+          withSchema: true,
+        });
+
         continue;
       }
 

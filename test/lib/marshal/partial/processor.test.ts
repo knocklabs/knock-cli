@@ -114,5 +114,19 @@ describe("lib/marshal/partial/processor", () => {
         });
       });
     });
+
+    describe("when called with a $schema", () => {
+      it("returns a dir bundle with the $schema in the partial.json", () => {
+        const result = buildPartialDirBundle(
+          remotePartial,
+          {},
+          "https://schemas.knock.app/cli/partial.json",
+        );
+
+        expect(result["partial.json"]).to.contain({
+          $schema: "https://schemas.knock.app/cli/partial.json",
+        });
+      });
+    });
   });
 });

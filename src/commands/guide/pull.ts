@@ -87,7 +87,9 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
       return this.apiV1.getGuide(props);
     });
 
-    await Guide.writeGuideDirFromData(dirContext, resp.data);
+    await Guide.writeGuideDirFromData(dirContext, resp.data, {
+      withSchema: true,
+    });
 
     const action = dirContext.exists ? "updated" : "created";
     const scope = formatCommandScope(flags);
@@ -113,7 +115,9 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
 
     const guides = await this.listAllGuides();
 
-    await Guide.writeGuidesIndexDir(targetDirCtx, guides);
+    await Guide.writeGuidesIndexDir(targetDirCtx, guides, {
+      withSchema: true,
+    });
     spinner.stop();
 
     const action = targetDirCtx.exists ? "updated" : "created";

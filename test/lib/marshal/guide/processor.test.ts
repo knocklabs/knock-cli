@@ -108,5 +108,19 @@ describe("lib/marshal/guide/processor", () => {
         },
       });
     });
+
+    describe("when called with a $schema", () => {
+      it("returns a dir bundle with the $schema in the guide.json", () => {
+        const result = buildGuideDirBundle(
+          remoteGuide,
+          {},
+          "https://schemas.knock.app/cli/guide.json",
+        );
+
+        expect(result["guide.json"]).to.contain({
+          $schema: "https://schemas.knock.app/cli/guide.json",
+        });
+      });
+    });
   });
 });

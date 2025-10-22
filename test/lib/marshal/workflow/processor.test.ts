@@ -633,5 +633,19 @@ describe("lib/marshal/workflow/processor", () => {
         });
       });
     });
+
+    describe("when called with a $schema", () => {
+      it("returns a dir bundle with the $schema in the workflow.json", () => {
+        const result = buildWorkflowDirBundle(
+          remoteWorkflow,
+          {},
+          "https://schemas.knock.app/cli/workflow.json",
+        );
+
+        expect(result["workflow.json"]).to.contain({
+          $schema: "https://schemas.knock.app/cli/workflow.json",
+        });
+      });
+    });
   });
 });

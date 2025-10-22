@@ -169,5 +169,19 @@ describe("lib/marshal/message-type/processor", () => {
         });
       });
     });
+
+    describe("when called with a $schema", () => {
+      it("returns a dir bundle with the $schema in the message_type.json", () => {
+        const result = buildMessageTypeDirBundle(
+          remoteMessageType,
+          {},
+          "https://schemas.knock.app/cli/message-type.json",
+        );
+
+        expect(result["message_type.json"]).to.contain({
+          $schema: "https://schemas.knock.app/cli/message-type.json",
+        });
+      });
+    });
   });
 });

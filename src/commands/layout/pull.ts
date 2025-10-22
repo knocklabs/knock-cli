@@ -94,7 +94,9 @@ export default class EmailLayoutPull extends BaseCommand<
       },
     );
 
-    await EmailLayout.writeEmailLayoutDirFromData(dirContext, resp.data);
+    await EmailLayout.writeEmailLayoutDirFromData(dirContext, resp.data, {
+      withSchema: true,
+    });
 
     const action = dirContext.exists ? "updated" : "created";
     const scope = formatCommandScope(flags);
@@ -121,7 +123,10 @@ export default class EmailLayoutPull extends BaseCommand<
 
     const emailLayouts = await this.listAllEmailLayouts();
 
-    await EmailLayout.writeEmailLayoutIndexDir(targetDirCtx, emailLayouts);
+    await EmailLayout.writeEmailLayoutIndexDir(targetDirCtx, emailLayouts, {
+      withSchema: true,
+    });
+
     spinner.stop();
 
     const action = targetDirCtx.exists ? "updated" : "created";

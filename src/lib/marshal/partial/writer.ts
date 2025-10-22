@@ -18,6 +18,12 @@ import {
 import { readPartialDir } from "./reader";
 import { PartialData } from "./types";
 
+type WriteOpts = {
+  withSchema?: boolean;
+};
+
+const PARTIAL_SCHEMA = "https://schemas.knock.app/cli/partial.json";
+
 /*
  * The main write function that takes the fetched partial data from Knock API
  * (remote partial), and reads the same partial from the local file system
@@ -27,14 +33,21 @@ import { PartialData } from "./types";
 export const writePartialDirFromData = async (
   partialDirCtx: PartialDirContext,
   remotePartial: PartialData<WithAnnotation>,
+  options?: WriteOpts,
 ): Promise<void> => {
+  const { withSchema = false } = options || {};
+
   // If the partial directory exists on the file system (i.e. previously
   // pulled before), then read the partial file to use as a reference.
   const [localPartial] = partialDirCtx.exists
     ? await readPartialDir(partialDirCtx, { withExtractedFiles: true })
     : [];
 
-  const bundle = buildPartialDirBundle(remotePartial, localPartial);
+  const bundle = buildPartialDirBundle(
+    remotePartial,
+    localPartial,
+    withSchema ? PARTIAL_SCHEMA : undefined,
+  );
 
   return writePartialDirFromBundle(partialDirCtx, bundle);
 };
@@ -126,6 +139,7 @@ const prunePartialsIndexDir = async (
 export const writePartialsIndexDir = async (
   indexDirCtx: DirContext,
   remotePartials: PartialData<WithAnnotation>[],
+  options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
@@ -148,7 +162,7 @@ export const writePartialsIndexDir = async (
         exists: indexDirCtx.exists ? await isPartialDir(partialDirPath) : false,
       };
 
-      return writePartialDirFromData(partialDirCtx, partial);
+      return writePartialDirFromData(partialDirCtx, partial, options);
     });
 
     await Promise.all(writePartialDirPromises);

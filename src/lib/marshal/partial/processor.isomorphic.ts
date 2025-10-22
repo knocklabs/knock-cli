@@ -72,9 +72,11 @@ const compileExtractionSettings = (
  */
 export const buildPartialDirBundle = (
   remotePartial: PartialData<WithAnnotation>,
-  localPartial: AnyObj = {},
+  localPartial?: AnyObj,
+  $schema?: string,
 ): PartialDirBundle => {
   const bundle: PartialDirBundle = {};
+  localPartial = localPartial || {};
   const mutRemotePartial = cloneDeep(remotePartial);
   // A map of extraction settings of every field in the partial
   const compiledExtractionSettings =
@@ -122,5 +124,9 @@ export const buildPartialDirBundle = (
   // At this point the bundle contains all extractable files, so we finally add
   // the partial JSON relative path + the file content.
 
-  return set(bundle, [PARTIAL_JSON], prepareResourceJson(mutRemotePartial));
+  return set(
+    bundle,
+    [PARTIAL_JSON],
+    prepareResourceJson(mutRemotePartial, $schema),
+  );
 };

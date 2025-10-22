@@ -18,6 +18,12 @@ import {
 import { readGuideDir } from "./reader";
 import { GuideData } from "./types";
 
+type WriteOpts = {
+  withSchema?: boolean;
+};
+
+const GUIDE_SCHEMA = "https://schemas.knock.app/cli/guide.json";
+
 /*
  * The main write function that takes the fetched guide data from Knock API
  * (remote guide), and reads the same guide from the local file system
@@ -27,14 +33,21 @@ import { GuideData } from "./types";
 export const writeGuideDirFromData = async (
   guideDirCtx: GuideDirContext,
   remoteGuide: GuideData<WithAnnotation>,
+  options?: WriteOpts,
 ): Promise<void> => {
+  const { withSchema = false } = options || {};
+
   // If the guide directory exists on the file system (i.e. previously
   // pulled before), then read the guide file to use as a reference.
   const [localGuide] = guideDirCtx.exists
     ? await readGuideDir(guideDirCtx, { withExtractedFiles: true })
     : [];
 
-  const bundle = buildGuideDirBundle(remoteGuide, localGuide);
+  const bundle = buildGuideDirBundle(
+    remoteGuide,
+    localGuide,
+    withSchema ? GUIDE_SCHEMA : undefined,
+  );
 
   return writeGuideDirFromBundle(guideDirCtx, bundle);
 };
@@ -126,6 +139,7 @@ const pruneGuidesIndexDir = async (
 export const writeGuidesIndexDir = async (
   indexDirCtx: DirContext,
   remoteGuides: GuideData<WithAnnotation>[],
+  options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
@@ -148,7 +162,7 @@ export const writeGuidesIndexDir = async (
         exists: indexDirCtx.exists ? await isGuideDir(guideDirPath) : false,
       };
 
-      return writeGuideDirFromData(guideDirCtx, guide);
+      return writeGuideDirFromData(guideDirCtx, guide, options);
     });
 
     await Promise.all(writeGuideDirPromises);

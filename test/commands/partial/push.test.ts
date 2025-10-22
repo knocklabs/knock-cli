@@ -174,6 +174,7 @@ describe("commands/partial/push", () => {
         const partialJson = fs.readJsonSync(abspath);
 
         expect(partialJson).to.eql({
+          $schema: "https://schemas.knock.app/cli/partial.json",
           name: "Default",
           "content@": "content.html",
           description: "This is a default partial",

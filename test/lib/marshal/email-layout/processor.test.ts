@@ -102,5 +102,19 @@ describe("lib/marshal/layout/processor", () => {
         });
       });
     });
+
+    describe("when called with a $schema", () => {
+      it("returns a dir bundle with the $schema in the layout.json", () => {
+        const result = buildEmailLayoutDirBundle(
+          remoteEmailLayout,
+          {},
+          "https://schemas.knock.app/cli/email-layout.json",
+        );
+
+        expect(result["layout.json"]).to.contain({
+          $schema: "https://schemas.knock.app/cli/email-layout.json",
+        });
+      });
+    });
   });
 });

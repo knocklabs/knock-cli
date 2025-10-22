@@ -18,6 +18,12 @@ import {
 import { readMessageTypeDir } from "./reader";
 import { MessageTypeData } from "./types";
 
+type WriteOpts = {
+  withSchema?: boolean;
+};
+
+const MESSAGE_TYPE_SCHEMA = "https://schemas.knock.app/cli/message-type.json";
+
 /*
  * The main write function that takes the fetched message type data from Knock
  * API (remote message type), and reads the same message type from the local file
@@ -27,14 +33,21 @@ import { MessageTypeData } from "./types";
 export const writeMessageTypeDirFromData = async (
   messageTypeDirCtx: MessageTypeDirContext,
   remoteMessageType: MessageTypeData<WithAnnotation>,
+  options?: WriteOpts,
 ): Promise<void> => {
+  const { withSchema = false } = options || {};
+
   // If the message type directory exists on the file system (i.e. previously
   // pulled before), then read the message type file to use as a reference.
   const [localMessageType] = messageTypeDirCtx.exists
     ? await readMessageTypeDir(messageTypeDirCtx, { withExtractedFiles: true })
     : [];
 
-  const bundle = buildMessageTypeDirBundle(remoteMessageType, localMessageType);
+  const bundle = buildMessageTypeDirBundle(
+    remoteMessageType,
+    localMessageType,
+    withSchema ? MESSAGE_TYPE_SCHEMA : undefined,
+  );
 
   return writeMessageTypeDirFromBundle(messageTypeDirCtx, bundle);
 };
@@ -126,6 +139,7 @@ const pruneMessageTypesIndexDir = async (
 export const writeMessageTypesIndexDir = async (
   indexDirCtx: DirContext,
   remoteMessageTypes: MessageTypeData<WithAnnotation>[],
+  options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
@@ -153,7 +167,11 @@ export const writeMessageTypesIndexDir = async (
           : false,
       };
 
-      return writeMessageTypeDirFromData(messageTypeDirCtx, messageType);
+      return writeMessageTypeDirFromData(
+        messageTypeDirCtx,
+        messageType,
+        options,
+      );
     });
 
     await Promise.all(promises);

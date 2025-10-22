@@ -98,7 +98,9 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
         // Update the guide directory with the successfully pushed guide
         // payload from the server.
         // eslint-disable-next-line no-await-in-loop
-        await Guide.writeGuideDirFromData(guide, resp.data.guide!);
+        await Guide.writeGuideDirFromData(guide, resp.data.guide!, {
+          withSchema: true,
+        });
         continue;
       }
 
