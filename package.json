@@ -1,6 +1,6 @@
 {
   "name": "@knocklabs/cli",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Knock CLI",
   "author": "@knocklabs",
   "bin": {
@@ -64,7 +64,9 @@
     "bin": "knock",
     "dirname": "knock",
     "commands": "./dist/commands",
-    "additionalHelpFlags": ["-h"],
+    "additionalHelpFlags": [
+      "-h"
+    ],
     "plugins": [
       "@oclif/plugin-help"
     ],
