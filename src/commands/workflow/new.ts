@@ -1,7 +1,8 @@
 import * as path from "node:path";
 
-import { Args, Flags } from "@oclif/core";
+import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
+import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
@@ -9,91 +10,191 @@ import { spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
 import { WorkflowDirContext } from "@/lib/run-context";
 
-export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
-  static flags = {
-    steps: Flags.string({ aliases: ["step"] }),
-    force: Flags.boolean(),
-    environment: Flags.string({ hidden: true, default: KnockEnv.Development }),
-  };
+import { slugify } from "@/lib/helpers/string";
+import {
+  parseStepsInput,
+  StepTag,
+  StepTagChoices,
+} from "@/lib/marshal/workflow/generator";
+import WorkflowPush from "./push";
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 
-  static args = {
-    workflowKey: Args.string({
-      required: true,
+export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
+  static summary = "Create a new workflow with a minimal configuration.";
+
+  static flags = {
+    name: Flags.string({
+      summary: "The name of the workflow",
+      char: "n",
+    }),
+    key: Flags.string({
+      summary: "The key of the workflow",
+      char: "k",
+    }),
+    steps: Flags.string({
+      summary: "Comma-separated list of step types to include in the workflow",
+      char: "s",
+    }),
+    environment: Flags.string({
+      summary:
+        "The environment to create the workflow in. Defaults to development.",
+      default: KnockEnv.Development,
     }),
   };
 
-  // TODO(KNO-3072): Unhide after we move the generator logic to the backend.
-  static hidden = true;
+  static args = {};
 
   async run(): Promise<void> {
-    const { args, flags } = this.props;
+    const { flags } = this.props;
     const { cwd, resourceDir } = this.runContext;
 
-    spinner.start("‣ Validating");
-
     // 1. Ensure we aren't in any existing resource directory already.
-    // TODO: In the future, maybe check for the project context and if we are in
-    // /workflows directory.
     if (resourceDir) {
       return this.error(
-        `Cannot generate inside an existing ${resourceDir.type} directory`,
+        `Cannot create a new workflow inside an existing ${resourceDir.type} directory`,
       );
     }
 
-    // 2. Ensure the workflow key is in the valid format.
-    const workflowKeyError = Workflow.validateWorkflowKey(args.workflowKey);
+    // 2. Prompt for name and key if not provided
+    let name = flags.name;
+    let key = flags.key;
+
+    if (!name) {
+      const nameResponse = await prompt<{ name: string }>({
+        type: "input",
+        name: "name",
+        message: "Workflow name",
+        validate: (value: string) => {
+          if (!value || value.trim().length === 0) {
+            return "Workflow name is required";
+          }
+          return true;
+        },
+      });
+      name = nameResponse.name;
+    }
+
+    if (!key) {
+      const keyResponse = await prompt<{ key: string }>({
+        type: "input",
+        name: "key",
+        message: "Workflow key (immutable slug)",
+        initial: slugify(name),
+        validate: (value: string) => {
+          if (!value || value.trim().length === 0) {
+            return "Workflow key is required";
+          }
+          const keyError = Workflow.validateWorkflowKey(value);
+          if (keyError) {
+            return `Invalid workflow key: ${keyError}`;
+          }
+          return true;
+        },
+      });
+      key = keyResponse.key;
+    }
+
+    // 3. Handle step selection
+    let steps: StepTag[] = [];
+    const channelsByType = await this.listAllChannelsByType();
+    const channelTypes = Object.keys(channelsByType) as Channel["type"][];
+    const availableStepTypes = Workflow.getStepAvailableStepTypes(channelTypes);
+
+    if (flags.steps) {
+      // Parse steps from flag
+      const [parsedSteps, stepsError] = parseStepsInput(
+        flags.steps,
+        availableStepTypes,
+      );
+      if (stepsError) {
+        return this.error(`Invalid --steps \`${flags.steps}\` (${stepsError})`);
+      }
+      steps = parsedSteps || [];
+    } else {
+      // Prompt for steps with multiselect
+      const stepChoices = availableStepTypes.map((stepType) => ({
+        name: stepType,
+        message: StepTagChoices[stepType],
+      }));
+
+      const stepsResponse = await prompt<{ steps: string[] }>({
+        type: "multiselect",
+        name: "steps",
+        message: "(optional) Select step types to bootstrap the workflow with",
+        choices: stepChoices,
+      });
+
+      if (!stepsResponse.steps || stepsResponse.steps.length === 0) {
+        steps = [];
+      } else {
+        steps = stepsResponse.steps as StepTag[];
+      }
+    }
+
+    // // 4. Validate the workflow key
+    const workflowKeyError = Workflow.validateWorkflowKey(key);
     if (workflowKeyError) {
       return this.error(
-        `Invalid workflow key \`${args.workflowKey}\` (${workflowKeyError})`,
+        `Invalid workflow key \`${key}\` (${workflowKeyError})`,
       );
     }
 
-    // 3. Parse and validate the steps flag, if given.
-    const [steps, stepsError] = Workflow.parseStepsInput(flags.steps || "");
-    if (stepsError) {
-      return this.error(`Invalid --steps \`${flags.steps}\` (${stepsError})`);
-    }
-
-    // 4. Ensure not to overwrite any existing path accidentally.
-    const newWorkflowDirPath = path.resolve(cwd, args.workflowKey);
+    // // 5. Ensure not to overwrite any existing path accidentally.
+    const newWorkflowDirPath = path.resolve(cwd, key);
     const pathExists = await fs.pathExists(newWorkflowDirPath);
-    if (pathExists && !flags.force) {
+    if (pathExists) {
       return this.error(
-        `Cannot overwrite an existing path at ${newWorkflowDirPath}` +
-          " (use --force to overwrite)",
+        `Cannot overwrite an existing path at ${newWorkflowDirPath}`,
       );
+    }
+
+    // // 6. Generate workflow with steps using the generator
+    const dirContext: WorkflowDirContext = {
+      type: "workflow",
+      key: key,
+      abspath: newWorkflowDirPath,
+      exists: false,
+    };
+
+    // // Generate the workflow directory with scaffolded steps
+    await Workflow.generateWorkflowDir(
+      dirContext,
+      {
+        name,
+        steps,
+      },
+      channelsByType,
+    );
+
+    // // 7. Push the workflow to Knock and update with the response
+    spinner.start("‣ Pushing workflow to Knock");
+
+    try {
+      await WorkflowPush.run([key]);
+    } catch (error) {
+      this.error(`Failed to push workflow to Knock: ${error}`);
     }
 
     spinner.stop();
 
-    // 5-A. We are good to generate a new workflow directory.
-    const dirContext: WorkflowDirContext = {
-      type: "workflow",
-      key: args.workflowKey,
-      abspath: newWorkflowDirPath,
-      exists: await Workflow.isWorkflowDir(newWorkflowDirPath),
-    };
-    const attrs = { name: args.workflowKey, steps };
-
-    await Workflow.generateWorkflowDir(dirContext, attrs);
+    // // 8. Display a success message.
     this.log(
-      `‣ Successfully generated a workflow directory at ${dirContext.abspath}`,
+      `‣ Successfully created workflow \`${key}\` at ${dirContext.abspath}`,
     );
-
-    // 5-B. Lastly warn if this workflow already exists in Knock.
-    const isExistingWorkflow = await this.checkExistingWorkflow();
-    if (isExistingWorkflow) {
-      this.log("");
-      this.warn(
-        `Workflow \`${args.workflowKey}\` already exists in \`${flags.environment}\` environment`,
-      );
-    }
   }
 
-  async checkExistingWorkflow(): Promise<boolean | undefined> {
-    try {
-      const resp = await this.apiV1.getWorkflow(this.props);
-      return resp.status === 200;
-    } catch {}
+  async listAllChannelsByType() {
+    const channels = await this.apiV1.listAllChannels();
+
+    // Group channels by type
+    const channelsByType = channels.reduce(
+      (acc, channel) => ({
+        ...acc,
+        [channel.type]: (acc[channel.type] || []).concat(channel),
+      }),
+      {} as Record<Channel["type"], Channel[]>,
+    );
+
+    return channelsByType;
   }
 }
