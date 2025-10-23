@@ -1,13 +1,27 @@
 import { expect } from "@oclif/test";
 
-import { xpath } from "@/../test/support";
+import { factory, xpath } from "@/../test/support";
 import { scaffoldWorkflowDirBundle } from "@/lib/marshal/workflow/generator";
+import { Channel } from "@knocklabs/mgmt/resources/channels";
+
+const channelsByType: Record<any, Channel[]> = {
+  email: [factory.channel({ type: "email", key: "email-channel" })],
+  sms: [factory.channel({ type: "sms", key: "sms-channel" })],
+  push: [factory.channel({ type: "push", key: "push-channel" })],
+  chat: [factory.channel({ type: "chat", key: "chat-channel" })],
+  in_app_feed: [
+    factory.channel({ type: "in_app_feed", key: "in-app-feed-channel" }),
+  ],
+};
 
 describe("lib/marshal/workflow/generator", () => {
   describe("scaffoldWorkflowDirBundle", () => {
     describe("given no steps attrs", () => {
       it("returns a bundle with scaffolded workflow.json", () => {
-        const bundle = scaffoldWorkflowDirBundle({ name: "My new workflow" });
+        const bundle = scaffoldWorkflowDirBundle(
+          { name: "My new workflow" },
+          channelsByType,
+        );
 
         expect(bundle).to.eql({
           "workflow.json": {
@@ -20,10 +34,13 @@ describe("lib/marshal/workflow/generator", () => {
 
     describe("given a single function step", () => {
       it("returns a bundle with scaffolded workflow.json", () => {
-        const bundle = scaffoldWorkflowDirBundle({
-          name: "My new workflow",
-          steps: ["fetch"],
-        });
+        const bundle = scaffoldWorkflowDirBundle(
+          {
+            name: "My new workflow",
+            steps: ["fetch"],
+          },
+          channelsByType,
+        );
 
         expect(bundle).to.eql({
           "workflow.json": {
@@ -45,10 +62,13 @@ describe("lib/marshal/workflow/generator", () => {
 
     describe("given a single channel step", () => {
       it("returns a bundle with scaffolded workflow.json and template files", () => {
-        const bundle = scaffoldWorkflowDirBundle({
-          name: "My new workflow",
-          steps: ["sms"],
-        });
+        const bundle = scaffoldWorkflowDirBundle(
+          {
+            name: "My new workflow",
+            steps: ["sms"],
+          },
+          channelsByType,
+        );
 
         expect(bundle).to.eql({
           "workflow.json": {
@@ -57,7 +77,7 @@ describe("lib/marshal/workflow/generator", () => {
               {
                 ref: "sms_1",
                 type: "channel",
-                channel_key: "<SMS CHANNEL KEY>",
+                channel_key: "sms-channel",
                 template: {
                   "text_body@": xpath("sms_1/text_body.txt"),
                 },
@@ -71,20 +91,23 @@ describe("lib/marshal/workflow/generator", () => {
 
     describe("given a mix of all function and channel steps", () => {
       it("returns a bundle with scaffolded workflow.json and template files", () => {
-        const bundle = scaffoldWorkflowDirBundle({
-          name: "My new workflow",
-          steps: [
-            "email",
-            "sms",
-            "delay",
-            "push",
-            "batch",
-            "fetch",
-            "chat",
-            "in-app",
-            "sms",
-          ],
-        });
+        const bundle = scaffoldWorkflowDirBundle(
+          {
+            name: "My new workflow",
+            steps: [
+              "email",
+              "sms",
+              "delay",
+              "push",
+              "batch",
+              "fetch",
+              "chat",
+              "in-app-feed",
+              "sms",
+            ],
+          },
+          channelsByType,
+        );
 
         expect(bundle).to.eql({
           "workflow.json": {
@@ -93,7 +116,7 @@ describe("lib/marshal/workflow/generator", () => {
               {
                 ref: "email_1",
                 type: "channel",
-                channel_key: "<EMAIL CHANNEL KEY>",
+                channel_key: "email-channel",
                 template: {
                   settings: {
                     layout_key: "default",
@@ -105,7 +128,7 @@ describe("lib/marshal/workflow/generator", () => {
               {
                 ref: "sms_1",
                 type: "channel",
-                channel_key: "<SMS CHANNEL KEY>",
+                channel_key: "sms-channel",
                 template: {
                   "text_body@": xpath("sms_1/text_body.txt"),
                 },
@@ -123,7 +146,7 @@ describe("lib/marshal/workflow/generator", () => {
               {
                 ref: "push_1",
                 type: "channel",
-                channel_key: "<PUSH CHANNEL KEY>",
+                channel_key: "push-channel",
                 template: {
                   settings: {
                     delivery_type: "content",
@@ -154,7 +177,7 @@ describe("lib/marshal/workflow/generator", () => {
               {
                 ref: "chat_1",
                 type: "channel",
-                channel_key: "<CHAT CHANNEL KEY>",
+                channel_key: "chat-channel",
                 template: {
                   "markdown_body@": xpath("chat_1/markdown_body.md"),
                 },
@@ -162,7 +185,7 @@ describe("lib/marshal/workflow/generator", () => {
               {
                 ref: "in_app_feed_1",
                 type: "channel",
-                channel_key: "<IN-APP-FEED CHANNEL KEY>",
+                channel_key: "in-app-feed-channel",
                 template: {
                   "markdown_body@": xpath("in_app_feed_1/markdown_body.md"),
                   action_url: "{{ vars.app_url }}",
@@ -172,7 +195,7 @@ describe("lib/marshal/workflow/generator", () => {
                 // A second SMS step.
                 ref: "sms_2",
                 type: "channel",
-                channel_key: "<SMS CHANNEL KEY>",
+                channel_key: "sms-channel",
                 template: {
                   "text_body@": xpath("sms_2/text_body.txt"),
                 },

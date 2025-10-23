@@ -16,6 +16,7 @@ import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
 import { SessionContext } from "./types";
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 
 const API_VERSION = "v1";
 
@@ -532,6 +533,14 @@ export default class ApiV1 {
     });
 
     return this.put(`/guides/${args.guideKey}/activate`, {}, { params });
+  }
+
+  async listAllChannels(): Promise<Channel[]> {
+    const channels: Channel[] = [];
+    for await (const channel of this.mgmtClient.channels.list()) {
+      channels.push(channel);
+    }
+    return channels;
   }
 
   // By methods:

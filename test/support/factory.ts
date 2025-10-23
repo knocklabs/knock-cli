@@ -22,6 +22,7 @@ import {
 import { ServiceTokenContext, SessionContext } from "@/lib/types";
 
 import { sequence } from "./helpers";
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 
 export const sessionContext = (
   attrs: Partial<SessionContext> = {},
@@ -321,4 +322,13 @@ export const reusableStep = (
     sha: "<SOME_SHA>",
     ...attrs,
   };
+};
+
+export const channel = (attrs: Partial<Channel> = {}): Channel => {
+  return {
+    key: "test-channel",
+    name: "Test Channel",
+    type: "email",
+    ...attrs,
+  } as any as Channel;
 };
