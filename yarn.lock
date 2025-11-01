@@ -1157,10 +1157,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@knocklabs/mgmt@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@knocklabs/mgmt/-/mgmt-0.8.0.tgz#bc90c0efd53c7190c9b11813d217cb0c64ebc00a"
-  integrity sha512-XtvhJe1EbU4WR+aF++RJdMHvITKOLcCqTPGhn6DwRxyFMyTpE50R2vu02d52PZyp6WBrBomrYDSn5ptjixFFng==
+"@knocklabs/mgmt@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@knocklabs/mgmt/-/mgmt-0.9.0.tgz#8683230855b8697a662791e066a014f5c2747fda"
+  integrity sha512-CgPAuY7deQ7Sa3ZxZUPhFRwNnV80cQEot/LdvOoyn2UqsLhqq/yaWE9u9DtxznpCT3Z1FcR0ll1J8mOiLxoH0g==
 
 "@napi-rs/nice-android-arm-eabi@1.0.1":
   version "1.0.1"
