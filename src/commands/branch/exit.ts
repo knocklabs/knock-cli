@@ -4,9 +4,6 @@ import BaseCommand from "@/lib/base-command";
 import { BRANCH_FILE_NAME, clearBranchFile } from "@/lib/helpers/branch";
 
 export default class BranchExit extends BaseCommand<typeof BranchExit> {
-  // Hide until branches are released in GA
-  static hidden = true;
-
   static summary = "Exits the current branch.";
 
   async run(): Promise<void> {

@@ -19,9 +19,6 @@ import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
-  // Hide until branches are released in GA
-  static hidden = true;
-
   static summary = "Switches to an existing branch with the given slug.";
 
   static flags = {

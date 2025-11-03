@@ -4,9 +4,6 @@ import { CustomArgs } from "@/lib/helpers/arg";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 
 export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
-  // Hide until branches are released in GA
-  static hidden = true;
-
   static summary = "Creates a new branch off of the development environment.";
 
   static enableJsonFlag = true;
