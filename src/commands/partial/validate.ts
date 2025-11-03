@@ -46,6 +46,7 @@ export default class PartialValidate extends BaseCommand<
     const target = await Partial.ensureValidCommandTarget(
       this.props,
       this.runContext,
+      this.projectConfig,
     );
 
     const [partials, readErrors] = await Partial.readAllForCommandTarget(

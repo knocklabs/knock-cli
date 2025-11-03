@@ -5,6 +5,10 @@ import * as fs from "fs-extra";
 import localeData from "locale-codes";
 
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
 import {
@@ -152,6 +156,7 @@ export type TranslationCommandTarget =
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<TranslationCommandTarget> => {
   const { flags, args } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -176,11 +181,17 @@ export const ensureValidCommandTarget = async (
     }
 
     // Targeting all translation files in the translations index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["translations-dir"] || defaultToCwd;
+    // Default to knock project config first if present, otherwise cwd.
+    const indexDirCtx = await resolveResourceDir(
+      projectConfig,
+      "translation",
+      runCwd,
+    );
 
-    return { type: "translationsIndexDir", context: indexDirCtx };
+    return {
+      type: "translationsIndexDir",
+      context: flags["translations-dir"] || indexDirCtx,
+    };
   }
 
   // From this point on, we have translationRef so parse and validate the format.

@@ -12,6 +12,10 @@ import {
 } from "quicktype-core";
 
 import { DirContext } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { SupportedTypeLanguage } from "@/lib/helpers/typegen";
 import { GuideDirContext, RunContext } from "@/lib/run-context";
 
@@ -99,6 +103,7 @@ export type GuideCommandTarget = GuideDirTarget | GuidesIndexDirTarget;
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<GuideCommandTarget> => {
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -127,11 +132,17 @@ export const ensureValidCommandTarget = async (
     }
 
     // Targeting all guide dirs in the guides index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["guides-dir"] || defaultToCwd;
+    // Default to knock project config first if present, otherwise cwd.
+    const indexDirCtx = await resolveResourceDir(
+      projectConfig,
+      "guide",
+      runCwd,
+    );
 
-    return { type: "guidesIndexDir", context: indexDirCtx };
+    return {
+      type: "guidesIndexDir",
+      context: flags["guides-dir"] || indexDirCtx,
+    };
   }
 
   // Guide key arg is given, which means no --all flag.

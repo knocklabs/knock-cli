@@ -49,6 +49,7 @@ export default class MessageTypeValidate extends BaseCommand<
     const target = await MessageType.ensureValidCommandTarget(
       this.props,
       this.runContext,
+      this.projectConfig,
     );
 
     const [messageTypes, readErrors] =

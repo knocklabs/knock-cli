@@ -63,6 +63,7 @@ export default class TranslationPull extends BaseCommand<
     const target = await Translation.ensureValidCommandTarget(
       this.props,
       this.runContext,
+      this.projectConfig,
     );
 
     switch (target.type) {

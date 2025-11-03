@@ -41,6 +41,7 @@ export default class GuideValidate extends BaseCommand<typeof GuideValidate> {
     const target = await Guide.ensureValidCommandTarget(
       this.props,
       this.runContext,
+      this.projectConfig,
     );
 
     const [guides, readErrors] = await Guide.readAllForCommandTarget(target, {

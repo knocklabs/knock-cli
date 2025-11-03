@@ -59,6 +59,7 @@ export default class EmailLayoutPush extends BaseCommand<
     const target = await EmailLayout.ensureValidCommandTarget(
       this.props,
       this.runContext,
+      this.projectConfig,
     );
 
     const [layouts, readErrors] = await EmailLayout.readAllForCommandTarget(

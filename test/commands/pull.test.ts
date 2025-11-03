@@ -342,12 +342,76 @@ describe("commands/pull", () => {
       },
     );
 
-  describe("without directory", () => {
+  describe("with knock.json config", () => {
+    setupWithListStubs(
+      [{ key: "messages" }],
+      [{ key: "partial-a" }],
+      [{ locale_code: "en" }],
+      [{ key: "workflow-a" }],
+      [{ key: "message-type-a" }],
+      [{ key: "guide-a" }],
+    )
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+      })
+      .command(["pull", "--force"])
+      .it("uses knock directory from knock.json", () => {
+        // Verify resources were pulled
+        const workflowsPath = path.resolve(
+          sandboxDir,
+          "my-resources",
+          "workflows",
+        );
+        expect(fs.pathExistsSync(workflowsPath)).to.equal(true);
+      });
+  });
+
+  describe("with knock.json and --knock-dir flag", () => {
+    setupWithListStubs(
+      [{ key: "messages" }],
+      [{ key: "partial-a" }],
+      [{ locale_code: "en" }],
+      [{ key: "workflow-a" }],
+      [{ key: "message-type-a" }],
+      [{ key: "guide-a" }],
+    )
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+      })
+      .command(["pull", "--knock-dir", "flag-resources", "--force"])
+      .it("flag takes precedence over knock.json", () => {
+        // Verify it used the flag value, not the config (flag-resources, not config-resources)
+        const flagPath = path.resolve(
+          sandboxDir,
+          "flag-resources",
+          "workflows",
+        );
+        expect(fs.pathExistsSync(flagPath)).to.equal(true);
+
+        // Verify config-resources was NOT used
+        const configPath = path.resolve(
+          sandboxDir,
+          "config-resources",
+          "workflows",
+        );
+        expect(fs.pathExistsSync(configPath)).to.equal(false);
+      });
+  });
+
+  describe("without directory flag or knock.json", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .command(["pull"])
-      .exit(2)
-      .it("exits with status 2");
+      .catch((error) =>
+        expect(error.message).to.match(/No knock directory specified/),
+      )
+      .it("throws an error with helpful message");
   });
 
   describe("without service token", () => {

@@ -4,6 +4,10 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { EmailLayoutDirContext, RunContext } from "@/lib/run-context";
 
 import { LAYOUT_JSON } from "./processor.isomorphic";
@@ -60,6 +64,7 @@ export type EmailLayoutCommandTarget =
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<EmailLayoutCommandTarget> => {
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -87,9 +92,14 @@ export const ensureValidCommandTarget = async (
     }
 
     // Targeting all layout dirs in the layouts index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["layouts-dir"] || defaultToCwd;
+    // Default to knock project config first if present, otherwise cwd.
+    const defaultDir = await resolveResourceDir(
+      projectConfig,
+      "email_layout",
+      runCwd,
+    );
+
+    const indexDirCtx = flags["layouts-dir"] || defaultDir;
 
     return { type: "emailLayoutsIndexDir", context: indexDirCtx };
   }
