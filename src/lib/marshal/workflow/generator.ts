@@ -6,9 +6,17 @@ import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { WorkflowDirContext } from "@/lib/run-context";
 
 import { WORKFLOW_JSON, WorkflowDirBundle } from "./processor.isomorphic";
-import { StepType, WorkflowStepData } from "./types";
-import { writeWorkflowDirFromBundle } from "./writer";
+import {
+  ChannelStepData,
+  StepType,
+  WorkflowData,
+  WorkflowStepData,
+} from "./types";
+import { writeWorkflowDirFromBundle, writeWorkflowDirFromData } from "./writer";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
+import * as Templates from "@/lib/templates";
+import { readWorkflowDir } from "./reader";
+import { WithAnnotation } from "../shared/types";
 
 const newTemplateFilePath = (
   stepRef: string,
@@ -345,6 +353,95 @@ export const generateWorkflowDir = async (
   const bundle = scaffoldWorkflowDirBundle(attrs, channelsByType);
 
   return writeWorkflowDirFromBundle(workflowDirCtx, bundle);
+};
+
+function swapChannelReferences(
+  step: ChannelStepData,
+  channelsByType: Record<Channel["type"], Channel[]>,
+) {
+  // Temporary until we figure out a better way of doing this
+  switch (step.channel_key) {
+    case "postmark":
+    case "sendgrid":
+      return { ...step, channel_key: channelsByType.email[0]?.key };
+    case "in-app-feed":
+      return { ...step, channel_key: channelsByType.in_app_feed[0]?.key };
+    case "sms":
+    case "twilio":
+      return { ...step, channel_key: channelsByType.sms[0]?.key };
+    case "push":
+      return { ...step, channel_key: channelsByType.push[0]?.key };
+    case "chat":
+      return { ...step, channel_key: channelsByType.chat[0]?.key };
+    default:
+      throw new Error(`Unknown channel type: ${step.channel_key}`);
+  }
+}
+
+function walkWorkflowSteps(
+  steps: WorkflowStepData[],
+  channelsByType: Record<Channel["type"], Channel[]>,
+) {
+  // TODO: handle batch steps
+  return steps.map((step) => {
+    switch (step.type) {
+      case StepType.Channel:
+        return swapChannelReferences(step, channelsByType);
+      default:
+        return step;
+    }
+  });
+}
+
+export const generateWorkflowFromTemplate = async (
+  workflowDirCtx: WorkflowDirContext,
+  templateString: string,
+  attrs: NewWorkflowAttrs,
+  channelsByType: Record<Channel["type"], Channel[]>,
+) => {
+  let tempDir: string | undefined;
+  try {
+    // Download the template directory into a temp directory
+    tempDir = await Templates.downloadTemplate(templateString);
+
+    // Create a workflow directory context for the temp directory
+    const tempWorkflowDirCtx: WorkflowDirContext = {
+      type: "workflow",
+      key: "temp",
+      abspath: tempDir,
+      exists: true,
+    };
+
+    // Read the workflow.json from the temp directory we downloaded
+    const [workflow, errors] = await readWorkflowDir(tempWorkflowDirCtx, {
+      withExtractedFiles: true,
+    });
+
+    if (errors.length > 0 || !workflow) {
+      throw new Error(`Invalid workflow template: ${errors.join(", ")}`);
+    }
+
+    // Modify the workflow data with the new attributes
+    workflow.name = attrs.name;
+
+    // Parse the workflow steps, and replace any channel steps with the correct `channel_key`
+    workflow.steps = walkWorkflowSteps(
+      (workflow.steps ?? []) as WorkflowStepData[],
+      channelsByType,
+    );
+
+    // Finally, we write the workflow into the target workflow directory
+    writeWorkflowDirFromData(
+      workflowDirCtx,
+      workflow as WorkflowData<WithAnnotation>,
+    );
+
+    return;
+  } catch (error) {
+    throw error;
+  } finally {
+    await Templates.cleanupTempDir(tempDir);
+  }
 };
 
 // Exported for tests.

@@ -40,13 +40,18 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
         "The environment to create the workflow in. Defaults to development.",
       default: KnockEnv.Development,
     }),
+    template: Flags.string({
+      summary:
+        "The template to use for the workflow. You cannot use this flag with --steps.",
+      char: "t",
+    }),
   };
 
   static args = {};
 
   async run(): Promise<void> {
     const { flags } = this.props;
-    const { cwd, resourceDir } = this.runContext;
+    const { resourceDir } = this.runContext;
 
     // 1. Ensure we aren't in any existing resource directory already.
     if (resourceDir) {
@@ -94,12 +99,74 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
       key = keyResponse.key;
     }
 
-    // 3. Handle step selection
-    let steps: StepTag[] = [];
+    // Validate the workflow key
+    const workflowKeyError = Workflow.validateWorkflowKey(key);
+    if (workflowKeyError) {
+      return this.error(
+        `Invalid workflow key \`${key}\` (${workflowKeyError})`,
+      );
+    }
+
+    // Generate the workflow either from a template or from scratch
+    if (flags.template) {
+      await this.fromTemplate(name, key, flags.template);
+    } else {
+      await this.fromEmpty(name, key);
+    }
+
+    spinner.start("‣ Pushing workflow to Knock");
+
+    try {
+      await WorkflowPush.run([key]);
+    } catch (error) {
+      this.error(`Failed to push workflow to Knock: ${error}`);
+    } finally {
+      spinner.stop();
+    }
+
+    this.log(`‣ Successfully created workflow \`${key}\``);
+  }
+
+  async fromTemplate(name: string, key: string, templateString: string) {
+    // When being called from the template string, we want to try and generate
+    // the workflow from the provided template.
+    const { cwd } = this.runContext;
+    const channelsByType = await this.listAllChannelsByType();
+    const workflowDirCtx: WorkflowDirContext = {
+      type: "workflow",
+      key: key,
+      abspath: path.resolve(cwd, key),
+      exists: false,
+    };
+
+    spinner.start(`‣ Generating workflow from template \`${templateString}\``);
+
+    try {
+      await Workflow.generateWorkflowFromTemplate(
+        workflowDirCtx,
+        templateString,
+        { name },
+        channelsByType,
+      );
+    } catch (error) {
+      this.error(`Failed to generate workflow from template: ${error}`);
+    } finally {
+      spinner.stop();
+    }
+
+    spinner.stop();
+  }
+
+  async fromEmpty(name: string, key: string) {
+    const { flags } = this.props;
+    const { cwd } = this.runContext;
     const channelsByType = await this.listAllChannelsByType();
     const channelTypes = Object.keys(channelsByType) as Channel["type"][];
     const availableStepTypes = Workflow.getStepAvailableStepTypes(channelTypes);
 
+    let steps: StepTag[] = [];
+
+    // Stuff with steps
     if (flags.steps) {
       // Parse steps from flag
       const [parsedSteps, stepsError] = parseStepsInput(
@@ -130,15 +197,6 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
         steps = stepsResponse.steps as StepTag[];
       }
     }
-
-    // // 4. Validate the workflow key
-    const workflowKeyError = Workflow.validateWorkflowKey(key);
-    if (workflowKeyError) {
-      return this.error(
-        `Invalid workflow key \`${key}\` (${workflowKeyError})`,
-      );
-    }
-
     // // 5. Ensure not to overwrite any existing path accidentally.
     const newWorkflowDirPath = path.resolve(cwd, key);
     const pathExists = await fs.pathExists(newWorkflowDirPath);
@@ -156,7 +214,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
       exists: false,
     };
 
-    // // Generate the workflow directory with scaffolded steps
+    // 7. Generate the workflow directory with scaffolded steps
     await Workflow.generateWorkflowDir(
       dirContext,
       {
@@ -164,22 +222,6 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
         steps,
       },
       channelsByType,
-    );
-
-    // // 7. Push the workflow to Knock and update with the response
-    spinner.start("‣ Pushing workflow to Knock");
-
-    try {
-      await WorkflowPush.run([key]);
-    } catch (error) {
-      this.error(`Failed to push workflow to Knock: ${error}`);
-    }
-
-    spinner.stop();
-
-    // // 8. Display a success message.
-    this.log(
-      `‣ Successfully created workflow \`${key}\` at ${dirContext.abspath}`,
     );
   }
 
