@@ -114,8 +114,6 @@ const slug = Flags.custom<string>({
 
 export const branch = slug({
   summary: "The slug of the branch to use.",
-  // TODO Hide until branching is released in GA
-  hidden: true,
   // Memoize this flag's default. oclif runs this default function even when the flag is unused.
   // Using lodash's once avoids unnecessarily reading the branch file multiple times.
   default: once(readSlugFromBranchFile),

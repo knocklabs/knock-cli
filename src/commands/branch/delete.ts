@@ -6,9 +6,6 @@ import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class BranchDelete extends BaseCommand<typeof BranchDelete> {
-  // Hide until branches are released in GA
-  static hidden = true;
-
   static summary = "Deletes an existing branch with the given slug.";
 
   static args = {
