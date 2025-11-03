@@ -72,6 +72,9 @@
     ],
     "topicSeparator": " ",
     "topics": {
+      "branch": {
+        "description": "Manage branches."
+      },
       "commit": {
         "description": "Commit or promote changes."
       },
