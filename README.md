@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/0.3.0 darwin-arm64 node-v20.9.0
+@knocklabs/cli/0.3.1 darwin-arm64 node-v20.9.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -27,6 +27,11 @@ USAGE
 # Commands
 
 <!-- commands -->
+* [`knock branch create SLUG`](#knock-branch-create-slug)
+* [`knock branch delete SLUG`](#knock-branch-delete-slug)
+* [`knock branch exit`](#knock-branch-exit)
+* [`knock branch list`](#knock-branch-list)
+* [`knock branch switch SLUG`](#knock-branch-switch-slug)
 * [`knock commit`](#knock-commit)
 * [`knock commit get ID`](#knock-commit-get-id)
 * [`knock commit list`](#knock-commit-list)
@@ -73,24 +78,117 @@ USAGE
 * [`knock workflow run WORKFLOWKEY`](#knock-workflow-run-workflowkey)
 * [`knock workflow validate [WORKFLOWKEY]`](#knock-workflow-validate-workflowkey)
 
+## `knock branch create SLUG`
+
+Creates a new branch off of the development environment.
+
+```
+USAGE
+  $ knock branch create SLUG [--json] [--service-token <value>]
+
+ARGUMENTS
+  SLUG  The slug for the new branch
+
+FLAGS
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/branch/create.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/branch/create.ts)_
+
+## `knock branch delete SLUG`
+
+Deletes an existing branch with the given slug.
+
+```
+USAGE
+  $ knock branch delete SLUG [--service-token <value>] [--force]
+
+ARGUMENTS
+  SLUG  The slug of the branch to delete
+
+FLAGS
+  --force                  Remove the confirmation prompt.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
+```
+
+_See code: [src/commands/branch/delete.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/branch/delete.ts)_
+
+## `knock branch exit`
+
+Exits the current branch.
+
+```
+USAGE
+  $ knock branch exit [--service-token <value>]
+
+FLAGS
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
+```
+
+_See code: [src/commands/branch/exit.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/branch/exit.ts)_
+
+## `knock branch list`
+
+Display all existing branches off of the development environment.
+
+```
+USAGE
+  $ knock branch list [--json] [--service-token <value>] [--after <value>] [--before <value>] [--limit <value>]
+
+FLAGS
+  --after=<value>          The cursor after which to fetch the next page.
+  --before=<value>         The cursor before which to fetch the previous page.
+  --limit=<value>          The total number of entries to fetch per page.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/branch/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/branch/list.ts)_
+
+## `knock branch switch SLUG`
+
+Switches to an existing branch with the given slug.
+
+```
+USAGE
+  $ knock branch switch SLUG [--service-token <value>] [--create] [--force]
+
+ARGUMENTS
+  SLUG  The slug of the branch to switch to
+
+FLAGS
+  --create                 Create the branch if it doesn't yet exist.
+  --force                  Remove the confirmation prompt.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
+```
+
+_See code: [src/commands/branch/switch.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/branch/switch.ts)_
+
 ## `knock commit`
 
 Commit all changes in development environment.
 
 ```
 USAGE
-  $ knock commit [--service-token <value>] [--environment development] [-m <value>] [--force]
+  $ knock commit [--service-token <value>] [--environment development] [--branch <value>] [-m <value>]
+    [--force]
 
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message.
+      --branch=<value>          The slug of the branch to use.
       --environment=<option>    [default: development] Committing changes applies to the development environment only,
                                 use `commit promote` to promote changes to a subsequent environment.
                                 <options: development>
       --force                   Remove the confirmation prompt.
-      --service-token=<value>   The service token to authenticate with.
+      --service-token=<value>   [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/commit/index.ts)_
+_See code: [src/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/commit/index.ts)_
 
 ## `knock commit get ID`
 
@@ -101,13 +199,13 @@ USAGE
   $ knock commit get ID [--json] [--service-token <value>]
 
 FLAGS
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/commit/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/commit/get.ts)_
+_See code: [src/commands/commit/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/commit/get.ts)_
 
 ## `knock commit list`
 
@@ -115,13 +213,14 @@ Display all commits in an environment
 
 ```
 USAGE
-  $ knock commit list [--json] [--service-token <value>] [--environment <value>] [--promoted] [--resource-type
-    email_layout|guide|message_type|partial|translation|workflow...] [--resource-id <value>] [--after <value>] [--before
-    <value>] [--limit <value>]
+  $ knock commit list [--json] [--service-token <value>] [--environment <value>] [--branch <value>] [--promoted]
+    [--resource-type email_layout|guide|message_type|partial|translation|workflow...] [--resource-id <value>] [--after
+    <value>] [--before <value>] [--limit <value>]
 
 FLAGS
   --after=<value>              The cursor after which to fetch the next page.
   --before=<value>             The cursor before which to fetch the previous page.
+  --branch=<value>             The slug of the branch to use.
   --environment=<value>        [default: development] The environment to use.
   --limit=<value>              The total number of entries to fetch per page.
   --[no-]promoted              Show only promoted or unpromoted changes between the given environment and the subsequent
@@ -132,13 +231,13 @@ FLAGS
   --resource-type=<option>...  Filter commits by resource type. Can be used alone or together with resource-id. Use
                                multiple --resource-type flags for multiple values.
                                <options: email_layout|guide|message_type|partial|translation|workflow>
-  --service-token=<value>      The service token to authenticate with.
+  --service-token=<value>      [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/commit/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/commit/list.ts)_
+_See code: [src/commands/commit/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/commit/list.ts)_
 
 ## `knock commit promote`
 
@@ -151,11 +250,11 @@ USAGE
 FLAGS
   --force                  Remove the confirmation prompt.
   --only=<value>           The target commit id to promote to the subsequent environment
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
   --to=<value>             The destination environment to promote all changes from the preceding environment.
 ```
 
-_See code: [src/commands/commit/promote.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/commit/promote.ts)_
+_See code: [src/commands/commit/promote.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/commit/promote.ts)_
 
 ## `knock guide activate GUIDEKEY`
 
@@ -163,14 +262,15 @@ Activate or deactivate a guide in a given environment.
 
 ```
 USAGE
-  $ knock guide activate GUIDEKEY --environment <value> [--service-token <value>] [--status true|false | --from
-    <value> | --until <value>] [--force]
+  $ knock guide activate GUIDEKEY --environment <value> [--service-token <value>] [--branch <value>] [--status
+    true|false | --from <value> | --until <value>] [--force]
 
 FLAGS
+  --branch=<value>         The slug of the branch to use.
   --environment=<value>    (required) The environment to use.
   --force                  Remove the confirmation prompt.
   --from=<value>           Activate the guide from this ISO8601 UTC datetime (e.g., '2024-01-15T10:30:00Z').
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
   --status=<option>        The guide active status to set. Cannot be used with --from/--until.
                            <options: true|false>
   --until=<value>          Deactivate the guide at this ISO8601 UTC datetime (e.g., '2024-01-15T18:30:00Z').
@@ -185,7 +285,7 @@ DESCRIPTION
   or deactivated at a later time using the --from and --until flags.
 ```
 
-_See code: [src/commands/guide/activate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/guide/activate.ts)_
+_See code: [src/commands/guide/activate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/guide/activate.ts)_
 
 ## `knock guide generate-types`
 
@@ -193,20 +293,22 @@ Generate types for all guides in an environment and write them to a file.
 
 ```
 USAGE
-  $ knock guide generate-types --output-file <value> [--service-token <value>] [--environment <value>]
+  $ knock guide generate-types --output-file <value> [--service-token <value>] [--environment <value>] [--branch
+  <value>]
 
 FLAGS
+  --branch=<value>         The slug of the branch to use.
   --environment=<value>    [default: development] Select the environment to generate types for.
   --output-file=<value>    (required) The output file to write the generated types to. We currently support .ts, .py,
                            .go, .rb files only. Your file extension will determine the target language for the generated
                            types.
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 DESCRIPTION
   Generate types for all guides in an environment and write them to a file.
 ```
 
-_See code: [src/commands/guide/generate-types.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/guide/generate-types.ts)_
+_See code: [src/commands/guide/generate-types.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/guide/generate-types.ts)_
 
 ## `knock guide get GUIDEKEY`
 
@@ -214,19 +316,20 @@ Display a single guide from an environment.
 
 ```
 USAGE
-  $ knock guide get GUIDEKEY [--json] [--service-token <value>] [--environment <value>]
+  $ knock guide get GUIDEKEY [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
     [--hide-uncommitted-changes]
 
 FLAGS
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/guide/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/guide/get.ts)_
+_See code: [src/commands/guide/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/guide/get.ts)_
 
 ## `knock guide list`
 
@@ -234,22 +337,23 @@ Display all guides for an environment.
 
 ```
 USAGE
-  $ knock guide list [--json] [--service-token <value>] [--environment <value>] [--hide-uncommitted-changes]
-    [--after <value>] [--before <value>] [--limit <value>]
+  $ knock guide list [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--hide-uncommitted-changes] [--after <value>] [--before <value>] [--limit <value>]
 
 FLAGS
   --after=<value>             The cursor after which to fetch the next page.
   --before=<value>            The cursor before which to fetch the previous page.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --limit=<value>             The total number of entries to fetch per page.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/guide/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/guide/list.ts)_
+_See code: [src/commands/guide/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/guide/list.ts)_
 
 ## `knock guide pull [GUIDEKEY]`
 
@@ -257,19 +361,20 @@ Pull one or more guides from an environment into a local file system.
 
 ```
 USAGE
-  $ knock guide pull [GUIDEKEY] [--service-token <value>] [--environment <value>] [--guides-dir <value> --all]
-    [--hide-uncommitted-changes] [--force]
+  $ knock guide pull [GUIDEKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--guides-dir <value> --all] [--hide-uncommitted-changes] [--force]
 
 FLAGS
   --all                       Whether to pull all guides from the specified environment.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --force                     Remove the confirmation prompt.
   --guides-dir=<value>        The target directory path to pull all guides into.
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/guide/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/guide/pull.ts)_
+_See code: [src/commands/guide/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/guide/pull.ts)_
 
 ## `knock guide push [GUIDEKEY]`
 
@@ -277,19 +382,20 @@ Push one or more guides from a local file system to Knock.
 
 ```
 USAGE
-  $ knock guide push [GUIDEKEY] [--service-token <value>] [--environment <value>] [--guides-dir <value> --all]
-    [-m <value> --commit]
+  $ knock guide push [GUIDEKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--guides-dir <value> --all] [-m <value> --commit]
 
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message
       --all                     Whether to push all guides from the target directory.
+      --branch=<value>          The slug of the branch to use.
       --commit                  Push and commit the guide(s) at the same time
       --environment=<value>     [default: development] The environment to push the guide to. Defaults to development.
       --guides-dir=<value>      The target directory path to find all guides to push.
-      --service-token=<value>   The service token to authenticate with.
+      --service-token=<value>   [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/guide/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/guide/push.ts)_
+_See code: [src/commands/guide/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/guide/push.ts)_
 
 ## `knock guide validate [GUIDEKEY]`
 
@@ -297,16 +403,18 @@ Validate one or more guides from a local file system.
 
 ```
 USAGE
-  $ knock guide validate [GUIDEKEY] [--service-token <value>] [--environment <value>] [--guides-dir <value> --all]
+  $ knock guide validate [GUIDEKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--guides-dir <value> --all]
 
 FLAGS
   --all                    Whether to validate all guides from the target directory.
+  --branch=<value>         The slug of the branch to use.
   --environment=<value>    [default: development] The environment to validate the guide in. Defaults to development.
   --guides-dir=<value>     The target directory path to find all guides to validate.
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/guide/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/guide/validate.ts)_
+_See code: [src/commands/guide/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/guide/validate.ts)_
 
 ## `knock help [COMMAND]`
 
@@ -326,7 +434,7 @@ DESCRIPTION
   Display help for knock.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.33/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.35/src/commands/help.ts)_
 
 ## `knock layout get EMAILLAYOUTKEY`
 
@@ -334,19 +442,20 @@ Display a single email layout from an environment.
 
 ```
 USAGE
-  $ knock layout get EMAILLAYOUTKEY [--json] [--service-token <value>] [--environment <value>]
-    [--hide-uncommitted-changes]
+  $ knock layout get EMAILLAYOUTKEY [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--hide-uncommitted-changes]
 
 FLAGS
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/layout/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/layout/get.ts)_
+_See code: [src/commands/layout/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/layout/get.ts)_
 
 ## `knock layout list`
 
@@ -354,22 +463,23 @@ Display all email layouts for an environment.
 
 ```
 USAGE
-  $ knock layout list [--json] [--service-token <value>] [--environment <value>] [--hide-uncommitted-changes]
-    [--after <value>] [--before <value>] [--limit <value>]
+  $ knock layout list [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--hide-uncommitted-changes] [--after <value>] [--before <value>] [--limit <value>]
 
 FLAGS
   --after=<value>             The cursor after which to fetch the next page.
   --before=<value>            The cursor before which to fetch the previous page.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --limit=<value>             The total number of entries to fetch per page.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/layout/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/layout/list.ts)_
+_See code: [src/commands/layout/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/layout/list.ts)_
 
 ## `knock layout pull [EMAILLAYOUTKEY]`
 
@@ -377,19 +487,20 @@ Pull one or more email layouts from an environment into a local file system.
 
 ```
 USAGE
-  $ knock layout pull [EMAILLAYOUTKEY] [--service-token <value>] [--environment <value>] [--layouts-dir <value>
-    --all] [--hide-uncommitted-changes] [--force]
+  $ knock layout pull [EMAILLAYOUTKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--layouts-dir <value> --all] [--hide-uncommitted-changes] [--force]
 
 FLAGS
   --all                       Whether to pull all email layouts from the specified environment.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --force                     Remove the confirmation prompt.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --layouts-dir=<value>       The target directory path to pull all email layouts into.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/layout/pull.ts)_
+_See code: [src/commands/layout/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/layout/pull.ts)_
 
 ## `knock layout push [EMAILLAYOUTKEY]`
 
@@ -397,21 +508,22 @@ Push one or more email layouts from a local file system to Knock.
 
 ```
 USAGE
-  $ knock layout push [EMAILLAYOUTKEY] [--service-token <value>] [--environment development] [--layouts-dir
-    <value> --all] [-m <value> --commit]
+  $ knock layout push [EMAILLAYOUTKEY] [--service-token <value>] [--environment development] [--branch <value>]
+    [--layouts-dir <value> --all] [-m <value> --commit]
 
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message
       --all                     Whether to push all layouts from the target directory.
+      --branch=<value>          The slug of the branch to use.
       --commit                  Push and commit the layout(s) at the same time
       --environment=<option>    [default: development] Pushing an email layout is only allowed in the development
                                 environment
                                 <options: development>
       --layouts-dir=<value>     The target directory path to find all layouts to push.
-      --service-token=<value>   The service token to authenticate with.
+      --service-token=<value>   [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/layout/push.ts)_
+_See code: [src/commands/layout/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/layout/push.ts)_
 
 ## `knock layout validate [EMAILLAYOUTKEY]`
 
@@ -419,18 +531,19 @@ Validate one or more layouts from a local file system.
 
 ```
 USAGE
-  $ knock layout validate [EMAILLAYOUTKEY] [--service-token <value>] [--environment development] [--layouts-dir
-    <value> --all]
+  $ knock layout validate [EMAILLAYOUTKEY] [--service-token <value>] [--environment development] [--branch <value>]
+    [--layouts-dir <value> --all]
 
 FLAGS
   --all                    Whether to validate all layouts from the target directory.
+  --branch=<value>         The slug of the branch to use.
   --environment=<option>   [default: development] Validating a layout is only done in the development environment
                            <options: development>
   --layouts-dir=<value>    The target directory path to find all layouts to validate.
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/layout/validate.ts)_
+_See code: [src/commands/layout/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/layout/validate.ts)_
 
 ## `knock login`
 
@@ -441,10 +554,10 @@ USAGE
   $ knock login [--service-token <value>]
 
 FLAGS
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/login.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/login.ts)_
 
 ## `knock logout`
 
@@ -455,10 +568,10 @@ USAGE
   $ knock logout [--service-token <value>]
 
 FLAGS
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/logout.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/logout.ts)_
+_See code: [src/commands/logout.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/logout.ts)_
 
 ## `knock message-type get MESSAGETYPEKEY`
 
@@ -466,19 +579,20 @@ Display a single in-app message type from an environment.
 
 ```
 USAGE
-  $ knock message-type get MESSAGETYPEKEY [--json] [--service-token <value>] [--environment <value>]
-    [--hide-uncommitted-changes]
+  $ knock message-type get MESSAGETYPEKEY [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--hide-uncommitted-changes]
 
 FLAGS
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/message-type/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/message-type/get.ts)_
+_See code: [src/commands/message-type/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/message-type/get.ts)_
 
 ## `knock message-type list`
 
@@ -486,22 +600,23 @@ Display all in-app message types for an environment.
 
 ```
 USAGE
-  $ knock message-type list [--json] [--service-token <value>] [--environment <value>] [--hide-uncommitted-changes]
-    [--after <value>] [--before <value>] [--limit <value>]
+  $ knock message-type list [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--hide-uncommitted-changes] [--after <value>] [--before <value>] [--limit <value>]
 
 FLAGS
   --after=<value>             The cursor after which to fetch the next page.
   --before=<value>            The cursor before which to fetch the previous page.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --limit=<value>             The total number of entries to fetch per page.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/message-type/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/message-type/list.ts)_
+_See code: [src/commands/message-type/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/message-type/list.ts)_
 
 ## `knock message-type pull [MESSAGETYPEKEY]`
 
@@ -509,19 +624,20 @@ Pull one or more in-app message types from an environment into a local file syst
 
 ```
 USAGE
-  $ knock message-type pull [MESSAGETYPEKEY] [--service-token <value>] [--environment <value>] [--message-types-dir
-    <value> --all] [--hide-uncommitted-changes] [--force]
+  $ knock message-type pull [MESSAGETYPEKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--message-types-dir <value> --all] [--hide-uncommitted-changes] [--force]
 
 FLAGS
   --all                        Whether to pull all in-app message types from the specified environment.
+  --branch=<value>             The slug of the branch to use.
   --environment=<value>        [default: development] The environment to use.
   --force                      Remove the confirmation prompt.
   --hide-uncommitted-changes   Hide any uncommitted changes.
   --message-types-dir=<value>  The target directory path to pull all in-app message types into.
-  --service-token=<value>      The service token to authenticate with.
+  --service-token=<value>      [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/message-type/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/message-type/pull.ts)_
+_See code: [src/commands/message-type/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/message-type/pull.ts)_
 
 ## `knock message-type push [MESSAGETYPEKEY]`
 
@@ -529,21 +645,22 @@ Push one or more message types from a local file system to Knock.
 
 ```
 USAGE
-  $ knock message-type push [MESSAGETYPEKEY] [--service-token <value>] [--environment development] [--message-types-dir
-    <value> --all] [-m <value> --commit]
+  $ knock message-type push [MESSAGETYPEKEY] [--service-token <value>] [--environment development] [--branch <value>]
+    [--message-types-dir <value> --all] [-m <value> --commit]
 
 FLAGS
   -m, --commit-message=<value>     Use the given value as the commit message
       --all                        Whether to push all message types from the target directory.
+      --branch=<value>             The slug of the branch to use.
       --commit                     Push and commit the message type(s) at the same time
       --environment=<option>       [default: development] Pushing a message type is only allowed in the development
                                    environment
                                    <options: development>
       --message-types-dir=<value>  The target directory path to find all message types to push.
-      --service-token=<value>      The service token to authenticate with.
+      --service-token=<value>      [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/message-type/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/message-type/push.ts)_
+_See code: [src/commands/message-type/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/message-type/push.ts)_
 
 ## `knock message-type validate [MESSAGETYPEKEY]`
 
@@ -551,19 +668,20 @@ Validate one or more message types from a local file system.
 
 ```
 USAGE
-  $ knock message-type validate [MESSAGETYPEKEY] [--service-token <value>] [--environment development] [--message-types-dir
-    <value> --all]
+  $ knock message-type validate [MESSAGETYPEKEY] [--service-token <value>] [--environment development] [--branch <value>]
+    [--message-types-dir <value> --all]
 
 FLAGS
   --all                        Whether to validate all message types from the target directory.
+  --branch=<value>             The slug of the branch to use.
   --environment=<option>       [default: development] Validating a message type is only done in the development
                                environment
                                <options: development>
   --message-types-dir=<value>  The target directory path to find all message types to validate.
-  --service-token=<value>      The service token to authenticate with.
+  --service-token=<value>      [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/message-type/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/message-type/validate.ts)_
+_See code: [src/commands/message-type/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/message-type/validate.ts)_
 
 ## `knock partial get PARTIALKEY`
 
@@ -571,19 +689,20 @@ Display a single partial from an environment.
 
 ```
 USAGE
-  $ knock partial get PARTIALKEY [--json] [--service-token <value>] [--environment <value>]
+  $ knock partial get PARTIALKEY [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
     [--hide-uncommitted-changes]
 
 FLAGS
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/partial/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/partial/get.ts)_
+_See code: [src/commands/partial/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/partial/get.ts)_
 
 ## `knock partial list`
 
@@ -591,22 +710,23 @@ Display all partials for an environment.
 
 ```
 USAGE
-  $ knock partial list [--json] [--service-token <value>] [--environment <value>] [--hide-uncommitted-changes]
-    [--after <value>] [--before <value>] [--limit <value>]
+  $ knock partial list [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--hide-uncommitted-changes] [--after <value>] [--before <value>] [--limit <value>]
 
 FLAGS
   --after=<value>             The cursor after which to fetch the next page.
   --before=<value>            The cursor before which to fetch the previous page.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --limit=<value>             The total number of entries to fetch per page.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/partial/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/partial/list.ts)_
+_See code: [src/commands/partial/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/partial/list.ts)_
 
 ## `knock partial pull [PARTIALKEY]`
 
@@ -614,19 +734,20 @@ Pull one or more partial from an environment into a local file system.
 
 ```
 USAGE
-  $ knock partial pull [PARTIALKEY] [--service-token <value>] [--environment <value>] [--partials-dir <value>
-    --all] [--hide-uncommitted-changes] [--force]
+  $ knock partial pull [PARTIALKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--partials-dir <value> --all] [--hide-uncommitted-changes] [--force]
 
 FLAGS
   --all                       Whether to pull all partials from the specified environment.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --force                     Remove the confirmation prompt.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --partials-dir=<value>      The target directory path to pull all partials into.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/partial/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/partial/pull.ts)_
+_See code: [src/commands/partial/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/partial/pull.ts)_
 
 ## `knock partial push [PARTIALKEY]`
 
@@ -634,20 +755,21 @@ Push one or more partials from a local file system to Knock.
 
 ```
 USAGE
-  $ knock partial push [PARTIALKEY] [--service-token <value>] [--environment development] [--partials-dir <value>
-    --all] [-m <value> --commit]
+  $ knock partial push [PARTIALKEY] [--service-token <value>] [--environment development] [--branch <value>]
+    [--partials-dir <value> --all] [-m <value> --commit]
 
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message
       --all                     Whether to push all partials from the target directory.
+      --branch=<value>          The slug of the branch to use.
       --commit                  Push and commit the partial(s) at the same time
       --environment=<option>    [default: development] Pushing a partial is only allowed in the development environment
                                 <options: development>
       --partials-dir=<value>    The target directory path to find all partials to push.
-      --service-token=<value>   The service token to authenticate with.
+      --service-token=<value>   [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/partial/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/partial/push.ts)_
+_See code: [src/commands/partial/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/partial/push.ts)_
 
 ## `knock partial validate [PARTIALKEY]`
 
@@ -655,18 +777,19 @@ Validate one or more partials from a local file system.
 
 ```
 USAGE
-  $ knock partial validate [PARTIALKEY] [--service-token <value>] [--environment development] [--partials-dir <value>
-    --all]
+  $ knock partial validate [PARTIALKEY] [--service-token <value>] [--environment development] [--branch <value>]
+    [--partials-dir <value> --all]
 
 FLAGS
   --all                    Whether to validate all partials from the target directory.
+  --branch=<value>         The slug of the branch to use.
   --environment=<option>   [default: development] Validating a partial is only done in the development environment
                            <options: development>
   --partials-dir=<value>   The target directory path to find all partials to validate.
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/partial/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/partial/validate.ts)_
+_See code: [src/commands/partial/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/partial/validate.ts)_
 
 ## `knock pull`
 
@@ -674,18 +797,19 @@ Pull all resources from an environment into a local file system.
 
 ```
 USAGE
-  $ knock pull --knock-dir <value> [--service-token <value>] [--environment <value>]
+  $ knock pull --knock-dir <value> [--service-token <value>] [--environment <value>] [--branch <value>]
     [--hide-uncommitted-changes] [--force]
 
 FLAGS
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --force                     Remove the confirmation prompt.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --knock-dir=<value>         (required) The target directory path to pull all resources into.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/pull.ts)_
+_See code: [src/commands/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/pull.ts)_
 
 ## `knock push`
 
@@ -693,19 +817,20 @@ Push all resources from a local file system to Knock.
 
 ```
 USAGE
-  $ knock push --knock-dir <value> [--service-token <value>] [--environment development] [-m <value>
-    --commit]
+  $ knock push --knock-dir <value> [--service-token <value>] [--environment development] [--branch
+    <value>] [-m <value> --commit]
 
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message
+      --branch=<value>          The slug of the branch to use.
       --commit                  Push and commit the resource(s) at the same time
       --environment=<option>    [default: development] Pushing resources is only allowed in the development environment
                                 <options: development>
       --knock-dir=<value>       (required) The target directory path to find all resources to push.
-      --service-token=<value>   The service token to authenticate with.
+      --service-token=<value>   [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 ```
 
-_See code: [src/commands/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/push.ts)_
+_See code: [src/commands/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/push.ts)_
 
 ## `knock translation get TRANSLATIONREF`
 
@@ -713,8 +838,8 @@ Display a single translation from an environment.
 
 ```
 USAGE
-  $ knock translation get TRANSLATIONREF [--json] [--service-token <value>] [--environment <value>]
-    [--hide-uncommitted-changes] [--format json|po]
+  $ knock translation get TRANSLATIONREF [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--hide-uncommitted-changes] [--format json|po]
 
 ARGUMENTS
   TRANSLATIONREF  Translation ref is a identifier string that refers to a unique translation.
@@ -722,17 +847,18 @@ ARGUMENTS
                   If namespaced, it is formatted as namespace.locale, e.g. `admin.en`.
 
 FLAGS
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --format=<option>           [default: json] Specify the output format of the returned translations.
                               <options: json|po>
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/translation/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/translation/get.ts)_
+_See code: [src/commands/translation/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/translation/get.ts)_
 
 ## `knock translation list`
 
@@ -740,22 +866,23 @@ Display all translations for an environment.
 
 ```
 USAGE
-  $ knock translation list [--json] [--service-token <value>] [--environment <value>] [--hide-uncommitted-changes]
-    [--after <value>] [--before <value>] [--limit <value>]
+  $ knock translation list [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--hide-uncommitted-changes] [--after <value>] [--before <value>] [--limit <value>]
 
 FLAGS
   --after=<value>             The cursor after which to fetch the next page.
   --before=<value>            The cursor before which to fetch the previous page.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --limit=<value>             The total number of entries to fetch per page.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/translation/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/translation/list.ts)_
+_See code: [src/commands/translation/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/translation/list.ts)_
 
 ## `knock translation pull [TRANSLATIONREF]`
 
@@ -763,8 +890,8 @@ Pull one or more translations from an environment into a local file system.
 
 ```
 USAGE
-  $ knock translation pull [TRANSLATIONREF] [--service-token <value>] [--environment <value>] [--translations-dir
-    <value> --all] [--hide-uncommitted-changes] [--force] [--format json|po]
+  $ knock translation pull [TRANSLATIONREF] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--translations-dir <value> --all] [--hide-uncommitted-changes] [--force] [--format json|po]
 
 ARGUMENTS
   [TRANSLATIONREF]  Translation ref is a identifier string that refers to a unique translation.
@@ -773,16 +900,17 @@ ARGUMENTS
 
 FLAGS
   --all                       Whether to pull all translations from the specified environment.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --force                     Remove the confirmation prompt.
   --format=<option>           [default: json] Specify the output format of the returned translations.
                               <options: json|po>
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
   --translations-dir=<value>  The target directory path to pull all translations into.
 ```
 
-_See code: [src/commands/translation/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/translation/pull.ts)_
+_See code: [src/commands/translation/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/translation/pull.ts)_
 
 ## `knock translation push [TRANSLATIONREF]`
 
@@ -790,8 +918,8 @@ Push one or more translations from a local file system to Knock.
 
 ```
 USAGE
-  $ knock translation push [TRANSLATIONREF] [--service-token <value>] [--environment development] [--translations-dir
-    <value> --all] [-m <value> --commit]
+  $ knock translation push [TRANSLATIONREF] [--service-token <value>] [--environment development] [--branch <value>]
+    [--translations-dir <value> --all] [-m <value> --commit]
 
 ARGUMENTS
   [TRANSLATIONREF]  Translation ref is a identifier string that refers to a unique translation.
@@ -801,15 +929,16 @@ ARGUMENTS
 FLAGS
   -m, --commit-message=<value>    Use the given value as the commit message
       --all                       Whether to push all translations from the target directory.
+      --branch=<value>            The slug of the branch to use.
       --commit                    Push and commit the translation(s) at the same time
       --environment=<option>      [default: development] Pushing a translation is only allowed in the development
                                   environment
                                   <options: development>
-      --service-token=<value>     The service token to authenticate with.
+      --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
       --translations-dir=<value>  The target directory path to find all translations to push.
 ```
 
-_See code: [src/commands/translation/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/translation/push.ts)_
+_See code: [src/commands/translation/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/translation/push.ts)_
 
 ## `knock translation validate [TRANSLATIONREF]`
 
@@ -817,8 +946,8 @@ Validate one or more translations from a local file system.
 
 ```
 USAGE
-  $ knock translation validate [TRANSLATIONREF] [--service-token <value>] [--environment development] [--translations-dir
-    <value> --all]
+  $ knock translation validate [TRANSLATIONREF] [--service-token <value>] [--environment development] [--branch <value>]
+    [--translations-dir <value> --all]
 
 ARGUMENTS
   [TRANSLATIONREF]  Translation ref is a identifier string that refers to a unique translation.
@@ -827,14 +956,15 @@ ARGUMENTS
 
 FLAGS
   --all                       Whether to validate all translations from the target directory.
+  --branch=<value>            The slug of the branch to use.
   --environment=<option>      [default: development] Validating a translation is only done in the development
                               environment
                               <options: development>
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
   --translations-dir=<value>  The target directory path to find all translations to validate.
 ```
 
-_See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/translation/validate.ts)_
+_See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/translation/validate.ts)_
 
 ## `knock whoami`
 
@@ -845,13 +975,13 @@ USAGE
   $ knock whoami [--json] [--service-token <value>]
 
 FLAGS
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/whoami.ts)_
+_See code: [src/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/whoami.ts)_
 
 ## `knock workflow activate WORKFLOWKEY`
 
@@ -859,12 +989,14 @@ Activate or deactivate a workflow in a given environment.
 
 ```
 USAGE
-  $ knock workflow activate WORKFLOWKEY --environment <value> [--service-token <value>] [--status true|false] [--force]
+  $ knock workflow activate WORKFLOWKEY --environment <value> [--service-token <value>] [--branch <value>] [--status
+    true|false] [--force]
 
 FLAGS
+  --branch=<value>         The slug of the branch to use.
   --environment=<value>    (required) The environment to use.
   --force                  Remove the confirmation prompt.
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
   --status=<option>        [default: true] The workflow active status to set.
                            <options: true|false>
 
@@ -878,7 +1010,7 @@ DESCRIPTION
   with `false` in order to deactivate it.
 ```
 
-_See code: [src/commands/workflow/activate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/workflow/activate.ts)_
+_See code: [src/commands/workflow/activate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/workflow/activate.ts)_
 
 ## `knock workflow generate-types`
 
@@ -886,20 +1018,22 @@ Generate types for all workflows in an environment and write them to a file.
 
 ```
 USAGE
-  $ knock workflow generate-types --output-file <value> [--service-token <value>] [--environment <value>]
+  $ knock workflow generate-types --output-file <value> [--service-token <value>] [--environment <value>] [--branch
+  <value>]
 
 FLAGS
+  --branch=<value>         The slug of the branch to use.
   --environment=<value>    [default: development] Select the environment to generate types for.
   --output-file=<value>    (required) The output file to write the generated types to. We currently support .ts, .rb,
                            .go, .py files only. Your file extension will determine the target language for the generated
                            types.
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 DESCRIPTION
   Generate types for all workflows in an environment and write them to a file.
 ```
 
-_See code: [src/commands/workflow/generate-types.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/workflow/generate-types.ts)_
+_See code: [src/commands/workflow/generate-types.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/workflow/generate-types.ts)_
 
 ## `knock workflow get WORKFLOWKEY`
 
@@ -907,19 +1041,20 @@ Display a single workflow from an environment.
 
 ```
 USAGE
-  $ knock workflow get WORKFLOWKEY [--json] [--service-token <value>] [--environment <value>]
+  $ knock workflow get WORKFLOWKEY [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
     [--hide-uncommitted-changes]
 
 FLAGS
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/workflow/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/workflow/get.ts)_
+_See code: [src/commands/workflow/get.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/workflow/get.ts)_
 
 ## `knock workflow list`
 
@@ -927,22 +1062,23 @@ Display all workflows for an environment.
 
 ```
 USAGE
-  $ knock workflow list [--json] [--service-token <value>] [--environment <value>] [--hide-uncommitted-changes]
-    [--after <value>] [--before <value>] [--limit <value>]
+  $ knock workflow list [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--hide-uncommitted-changes] [--after <value>] [--before <value>] [--limit <value>]
 
 FLAGS
   --after=<value>             The cursor after which to fetch the next page.
   --before=<value>            The cursor before which to fetch the previous page.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --hide-uncommitted-changes  Hide any uncommitted changes.
   --limit=<value>             The total number of entries to fetch per page.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/workflow/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/workflow/list.ts)_
+_See code: [src/commands/workflow/list.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/workflow/list.ts)_
 
 ## `knock workflow pull [WORKFLOWKEY]`
 
@@ -950,19 +1086,20 @@ Pull one or more workflows from an environment into a local file system.
 
 ```
 USAGE
-  $ knock workflow pull [WORKFLOWKEY] [--service-token <value>] [--environment <value>] [--workflows-dir <value>
-    --all] [--hide-uncommitted-changes] [--force]
+  $ knock workflow pull [WORKFLOWKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--workflows-dir <value> --all] [--hide-uncommitted-changes] [--force]
 
 FLAGS
   --all                       Whether to pull all workflows from the specified environment.
+  --branch=<value>            The slug of the branch to use.
   --environment=<value>       [default: development] The environment to use.
   --force                     Remove the confirmation prompt.
   --hide-uncommitted-changes  Hide any uncommitted changes.
-  --service-token=<value>     The service token to authenticate with.
+  --service-token=<value>     [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
   --workflows-dir=<value>     The target directory path to pull all workflows into.
 ```
 
-_See code: [src/commands/workflow/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/workflow/pull.ts)_
+_See code: [src/commands/workflow/pull.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/workflow/pull.ts)_
 
 ## `knock workflow push [WORKFLOWKEY]`
 
@@ -970,19 +1107,20 @@ Push one or more workflows from a local file system to Knock.
 
 ```
 USAGE
-  $ knock workflow push [WORKFLOWKEY] [--service-token <value>] [--environment <value>] [--workflows-dir <value>
-    --all] [-m <value> --commit]
+  $ knock workflow push [WORKFLOWKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--workflows-dir <value> --all] [-m <value> --commit]
 
 FLAGS
   -m, --commit-message=<value>  Use the given value as the commit message
       --all                     Whether to push all workflows from the target directory.
+      --branch=<value>          The slug of the branch to use.
       --commit                  Push and commit the workflow(s) at the same time
       --environment=<value>     [default: development] The environment to push the workflow to. Defaults to development.
-      --service-token=<value>   The service token to authenticate with.
+      --service-token=<value>   [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
       --workflows-dir=<value>   The target directory path to find all workflows to push.
 ```
 
-_See code: [src/commands/workflow/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/workflow/push.ts)_
+_See code: [src/commands/workflow/push.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/workflow/push.ts)_
 
 ## `knock workflow run WORKFLOWKEY`
 
@@ -990,20 +1128,21 @@ Test run a workflow using the latest version from Knock.
 
 ```
 USAGE
-  $ knock workflow run WORKFLOWKEY --recipients <value> [--service-token <value>] [--environment <value>] [--actor
-    <value>] [--tenant <value>] [--data <value>]
+  $ knock workflow run WORKFLOWKEY --recipients <value> [--service-token <value>] [--environment <value>]
+    [--branch <value>] [--actor <value>] [--tenant <value>] [--data <value>]
 
 FLAGS
   --actor=<value>          An actor id, or a JSON string of an actor object reference for the workflow run.
+  --branch=<value>         The slug of the branch to use.
   --data=<value>           A JSON string of the data for this workflow
   --environment=<value>    [default: development] The environment in which to run the workflow
   --recipients=<value>     (required) One or more recipient user ids separated by comma, or a JSON string containing one
                            or more recipient object references for this workflow run.
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
   --tenant=<value>         A tenant id for the workflow run.
 ```
 
-_See code: [src/commands/workflow/run.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/workflow/run.ts)_
+_See code: [src/commands/workflow/run.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/workflow/run.ts)_
 
 ## `knock workflow validate [WORKFLOWKEY]`
 
@@ -1011,15 +1150,16 @@ Validate one or more workflows from a local file system.
 
 ```
 USAGE
-  $ knock workflow validate [WORKFLOWKEY] [--service-token <value>] [--environment <value>] [--workflows-dir <value>
-    --all]
+  $ knock workflow validate [WORKFLOWKEY] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--workflows-dir <value> --all]
 
 FLAGS
   --all                    Whether to validate all workflows from the target directory.
+  --branch=<value>         The slug of the branch to use.
   --environment=<value>    [default: development] The environment to validate the workflow in. Defaults to development.
-  --service-token=<value>  The service token to authenticate with.
+  --service-token=<value>  [env: KNOCK_SERVICE_TOKEN] The service token to authenticate with.
   --workflows-dir=<value>  The target directory path to find all workflows to validate.
 ```
 
-_See code: [src/commands/workflow/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.0/src/commands/workflow/validate.ts)_
+_See code: [src/commands/workflow/validate.ts](https://github.com/knocklabs/knock-cli/blob/v0.3.1/src/commands/workflow/validate.ts)_
 <!-- commandsstop -->
