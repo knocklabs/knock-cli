@@ -123,6 +123,13 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const guidesIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "guide",
+    runCwd,
+  );
+
   // --all flag is given, which means no guide key arg.
   if (flags.all) {
     // If --all flag used inside a guide directory, then require a guides
@@ -131,17 +138,9 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag guides-dir");
     }
 
-    // Targeting all guide dirs in the guides index dir.
-    // Default to knock project config first if present, otherwise cwd.
-    const indexDirCtx = await resolveResourceDir(
-      projectConfig,
-      "guide",
-      runCwd,
-    );
-
     return {
       type: "guidesIndexDir",
-      context: flags["guides-dir"] || indexDirCtx,
+      context: flags["guides-dir"] || guidesIndexDirCtx,
     };
   }
 
@@ -155,7 +154,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.guideKey);
+      : path.resolve(guidesIndexDirCtx.abspath, args.guideKey);
 
     const guideDirCtx: GuideDirContext = {
       type: "guide",

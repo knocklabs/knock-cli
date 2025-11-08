@@ -366,4 +366,66 @@ describe("commands/workflow/push", () => {
         );
       });
   });
+
+  describe("with knock.json config", () => {
+    const indexDirPath = path.resolve(sandboxDir, "my-resources", "workflows");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+      const fooWorkflowJson = path.resolve(indexDirPath, "foo", WORKFLOW_JSON);
+      fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", "--all"])
+      .it("uses workflows directory from knock.json knockDir", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertWorkflow as any,
+          sinon.match(({ args, flags }) => {
+            return !flags["workflows-dir"];
+          }),
+          sinon.match((workflow) => workflow.key === "foo"),
+        );
+      });
+  });
+
+  describe("with knock.json and --workflows-dir flag", () => {
+    const flagIndexDirPath = path.resolve(sandboxDir, "flag-workflows");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+
+      const fooWorkflowJson = path.resolve(
+        flagIndexDirPath,
+        "foo",
+        WORKFLOW_JSON,
+      );
+      fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", "--all", "--workflows-dir", "flag-workflows"])
+      .it("flag takes precedence over knock.json", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertWorkflow as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["workflows-dir"].abspath === flagIndexDirPath &&
+              flags["workflows-dir"].exists === true,
+          ),
+          sinon.match((workflow) => workflow.key === "foo"),
+        );
+      });
+  });
 });

@@ -40,6 +40,7 @@ describe("commands/branch/create", () => {
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
       .stub(KnockMgmt.prototype, "post", (stub) =>
         stub.resolves(factory.branch({ slug: expectedSlug })),
       )

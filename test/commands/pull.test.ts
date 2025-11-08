@@ -356,6 +356,9 @@ describe("commands/pull", () => {
         // Create knock.json with knockDir config
         const configPath = path.resolve(sandboxDir, "knock.json");
         fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+        // Create the knock directory
+        fs.ensureDirSync(path.resolve(sandboxDir, "my-resources"));
       })
       .command(["pull", "--force"])
       .it("uses knock directory from knock.json", () => {

@@ -173,6 +173,13 @@ export const ensureValidCommandTarget = async (
     ux.error("At least one of translation ref arg or --all flag must be given");
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const translationsIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "translation",
+    runCwd,
+  );
+
   // No translationRef arg, which means --all flag is used.
   if (!args.translationRef) {
     // Targeting all translation files in the current locale directory.
@@ -180,17 +187,9 @@ export const ensureValidCommandTarget = async (
       return { type: "translationDir", context: resourceDirCtx };
     }
 
-    // Targeting all translation files in the translations index dir.
-    // Default to knock project config first if present, otherwise cwd.
-    const indexDirCtx = await resolveResourceDir(
-      projectConfig,
-      "translation",
-      runCwd,
-    );
-
     return {
       type: "translationsIndexDir",
-      context: flags["translations-dir"] || indexDirCtx,
+      context: flags["translations-dir"] || translationsIndexDirCtx,
     };
   }
 
@@ -215,7 +214,7 @@ export const ensureValidCommandTarget = async (
     ? resourceDirCtx.abspath
     : flags["translations-dir"]
     ? path.resolve(flags["translations-dir"].abspath, localeCode)
-    : path.resolve(runCwd, localeCode);
+    : path.resolve(translationsIndexDirCtx.abspath, localeCode);
 
   // Got translationRef arg but no --all flag, which means target only a single
   // translation file.

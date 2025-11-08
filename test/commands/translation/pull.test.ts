@@ -353,4 +353,74 @@ describe("commands/translation/pull", () => {
         },
       );
   });
+
+  describe("with knock.json config", () => {
+    setupWithListTranslationsStub(
+      { locale_code: "en" },
+      { locale_code: "es-MX" },
+    )
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+        // Create the translations directory
+        fs.ensureDirSync(
+          path.resolve(sandboxDir, "my-resources", "translations"),
+        );
+      })
+      .command(["translation pull", "--all", "--force"])
+      .it("uses translations directory from knock.json knockDir", () => {
+        // Verify resources were pulled to the config directory
+        const translationPath = path.resolve(
+          sandboxDir,
+          "my-resources",
+          "translations",
+          "en",
+          "en.json",
+        );
+        expect(fs.pathExistsSync(translationPath)).to.equal(true);
+      });
+  });
+
+  describe("with knock.json and --translations-dir flag", () => {
+    setupWithListTranslationsStub(
+      { locale_code: "en" },
+      { locale_code: "es-MX" },
+    )
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+      })
+      .command([
+        "translation pull",
+        "--all",
+        "--translations-dir",
+        "flag-translations",
+        "--force",
+      ])
+      .it("flag takes precedence over knock.json", () => {
+        // Verify it used the flag value, not the config
+        const flagPath = path.resolve(
+          sandboxDir,
+          "flag-translations",
+          "en",
+          "en.json",
+        );
+        expect(fs.pathExistsSync(flagPath)).to.equal(true);
+
+        // Verify config-resources was NOT used
+        const configPath = path.resolve(
+          sandboxDir,
+          "config-resources",
+          "translations",
+          "en",
+          "en.json",
+        );
+        expect(fs.pathExistsSync(configPath)).to.equal(false);
+      });
+  });
 });

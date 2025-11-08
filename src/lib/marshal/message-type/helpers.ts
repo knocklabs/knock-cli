@@ -83,6 +83,13 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const messageTypesIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "message_type",
+    runCwd,
+  );
+
   // --all flag is given, which means no message type key arg.
   if (flags.all) {
     // If --all flag used inside a message type directory, then require a message
@@ -91,17 +98,9 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag message-types-dir");
     }
 
-    // Targeting all message type dirs in the message types index dir.
-    // Default to knock project config first if present, otherwise cwd.
-    const indexDirCtx = await resolveResourceDir(
-      projectConfig,
-      "message_type",
-      runCwd,
-    );
-
     return {
       type: "messageTypesIndexDir",
-      context: flags["message-types-dir"] || indexDirCtx,
+      context: flags["message-types-dir"] || messageTypesIndexDirCtx,
     };
   }
 
@@ -115,7 +114,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.messageTypeKey);
+      : path.resolve(messageTypesIndexDirCtx.abspath, args.messageTypeKey);
 
     const messageTypeDirCtx: MessageTypeDirContext = {
       type: "message_type",

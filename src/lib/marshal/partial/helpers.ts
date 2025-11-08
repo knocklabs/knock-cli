@@ -80,6 +80,13 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const partialsIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "partial",
+    runCwd,
+  );
+
   // --all flag is given, which means no partial key arg.
   if (flags.all) {
     // If --all flag used inside a partial directory, then require a partials
@@ -88,17 +95,9 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag partials-dir");
     }
 
-    // Targeting all partial dirs in the partials index dir.
-    // Default to knock project config first if present, otherwise cwd.
-    const indexDirCtx = await resolveResourceDir(
-      projectConfig,
-      "partial",
-      runCwd,
-    );
-
     return {
       type: "partialsIndexDir",
-      context: flags["partials-dir"] || indexDirCtx,
+      context: flags["partials-dir"] || partialsIndexDirCtx,
     };
   }
 
@@ -112,7 +111,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.partialKey);
+      : path.resolve(partialsIndexDirCtx.abspath, args.partialKey);
 
     const partialDirCtx: PartialDirContext = {
       type: "partial",

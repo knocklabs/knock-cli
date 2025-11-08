@@ -442,4 +442,99 @@ describe("commands/guide/push", () => {
         );
       });
   });
+
+  describe("with knock.json config", () => {
+    const indexDirPath = path.resolve(sandboxDir, "my-resources", "guides");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+      const welcomeGuideJson = path.resolve(
+        indexDirPath,
+        "welcome-guide",
+        GUIDE_JSON,
+      );
+      fs.outputJsonSync(welcomeGuideJson, {
+        name: "Welcome Guide",
+        description: "A guide to help new users get started",
+        channel_key: "in-app-guide",
+        type: "banner",
+        steps: [
+          {
+            ref: "step_1",
+            name: "Welcome Step",
+            schema_key: "banner",
+            schema_variant_key: "default",
+            fields: [],
+          },
+        ],
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { guide: mockGuideData } })
+      .stdout()
+      .command(["guide push", "--all"])
+      .it("uses guides directory from knock.json knockDir", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertGuide as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["service-token"] === "valid-token" && flags["all"] === true,
+          ),
+          sinon.match((guide) => guide.key === "welcome-guide"),
+        );
+      });
+  });
+
+  describe("with knock.json and --guides-dir flag", () => {
+    const flagIndexDirPath = path.resolve(sandboxDir, "flag-guides");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+
+      const welcomeGuideJson = path.resolve(
+        flagIndexDirPath,
+        "welcome-guide",
+        GUIDE_JSON,
+      );
+      fs.outputJsonSync(welcomeGuideJson, {
+        name: "Welcome Guide",
+        description: "A guide to help new users get started",
+        channel_key: "in-app-guide",
+        type: "banner",
+        steps: [
+          {
+            ref: "step_1",
+            name: "Welcome Step",
+            schema_key: "banner",
+            schema_variant_key: "default",
+            fields: [],
+          },
+        ],
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { guide: mockGuideData } })
+      .stdout()
+      .command(["guide push", "--all", "--guides-dir", "flag-guides"])
+      .it("flag takes precedence over knock.json", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertGuide as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["guides-dir"].abspath === flagIndexDirPath &&
+              flags["guides-dir"].exists === true,
+          ),
+          sinon.match((guide) => guide.key === "welcome-guide"),
+        );
+      });
+  });
 });

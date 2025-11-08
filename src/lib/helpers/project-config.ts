@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 import { z } from "zod";
 
 import { ResourceType } from "../run-context/types";
-import { DirContext } from "./fs";
+import { DirContext, isDirectory } from "./fs";
 
 /**
  * The name of the project configuration file.
@@ -69,19 +69,24 @@ export const resolveKnockDir = async (
     return undefined;
   }
 
+  // Project configuration exists, must is invalid. So we error out.
+  if (["", undefined, null].includes(projectConfig.knockDir)) {
+    throw new Error(
+      "No knock directory specified in the project configuration",
+    );
+  }
+
   const abspath = path.isAbsolute(projectConfig.knockDir)
     ? projectConfig.knockDir
     : path.resolve(process.cwd(), projectConfig.knockDir);
 
   const exists = await fs.pathExists(abspath);
 
-  // TODO: should we be erroring here if the directory does not exist? or is not a directory?
-  // if (!exists) {
-  //   throw new Error(`${projectConfig.knockDir} does not exist`);
-  // }
-  // if (await isDirectory(abspath)) {
-  //   throw new Error(`${projectConfig.knockDir} is not a directory`);
-  // }
+  if (!exists || !(await isDirectory(abspath))) {
+    throw new Error(
+      `${projectConfig.knockDir} does not exist or is not a directory`,
+    );
+  }
 
   return { abspath, exists };
 };
@@ -120,6 +125,8 @@ export const ResourceDirectoriesByType: Record<
   translation: "translations",
 } as const;
 
+type ValidResourceType = Exclude<ResourceType, "reusable_step">;
+
 /**
  * Resolves the full path to a resource directory within the knock directory.
  *
@@ -130,7 +137,7 @@ export const ResourceDirectoriesByType: Record<
  */
 export const resolveResourceDir = async (
   projectConfig: ProjectConfig | undefined,
-  resourceType: ResourceType,
+  resourceType: ValidResourceType,
   basePath: string = process.cwd(),
 ): Promise<DirContext> => {
   if (!projectConfig) {
@@ -144,24 +151,14 @@ export const resolveResourceDir = async (
     ? projectConfig.knockDir
     : path.resolve(basePath, projectConfig.knockDir);
 
-  const resourceDir =
-    resourceType in ResourceDirectoriesByType
-      ? ResourceDirectoriesByType[
-          resourceType as Exclude<ResourceType, "reusable_step">
-        ]
-      : undefined;
-
-  if (!resourceDir) {
-    throw new Error(`Unknown resource type: ${resourceType}`);
-  }
+  const resourceDir = ResourceDirectoriesByType[resourceType];
 
   const absResourceDirPath = path.resolve(absoluteKnockDir, resourceDir);
   const exists = await fs.pathExists(absResourceDirPath);
 
-  // TODO: should we be erroring here if the directory does not exist?
-  // if (!(await isDirectory(absResourceDirPath))) {
-  //   throw new Error(`${absResourceDirPath} is not a directory`);
-  // }
+  if (exists && !(await isDirectory(absResourceDirPath))) {
+    throw new Error(`${absResourceDirPath} is not a directory`);
+  }
 
   return {
     abspath: absResourceDirPath,

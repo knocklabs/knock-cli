@@ -177,4 +177,59 @@ describe("commands/partial/pull", () => {
       )
       .it("throws an error");
   });
+
+  describe("with knock.json config", () => {
+    setupWithListPartialsStub({ key: "partial-a" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+        // Create the partials directory
+        fs.ensureDirSync(path.resolve(sandboxDir, "my-resources", "partials"));
+      })
+      .command(["partial pull", "--all", "--force"])
+      .it("uses partials directory from knock.json knockDir", () => {
+        // Verify resources were pulled to the config directory
+        const partialPath = path.resolve(
+          sandboxDir,
+          "my-resources",
+          "partials",
+          "partial-a",
+        );
+        expect(fs.pathExistsSync(partialPath)).to.equal(true);
+      });
+  });
+
+  describe("with knock.json and --partials-dir flag", () => {
+    setupWithListPartialsStub({ key: "partial-a" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+      })
+      .command([
+        "partial pull",
+        "--all",
+        "--partials-dir",
+        "flag-partials",
+        "--force",
+      ])
+      .it("flag takes precedence over knock.json", () => {
+        // Verify it used the flag value, not the config
+        const flagPath = path.resolve(sandboxDir, "flag-partials", "partial-a");
+        expect(fs.pathExistsSync(flagPath)).to.equal(true);
+
+        // Verify config-resources was NOT used
+        const configPath = path.resolve(
+          sandboxDir,
+          "config-resources",
+          "partials",
+          "partial-a",
+        );
+        expect(fs.pathExistsSync(configPath)).to.equal(false);
+      });
+  });
 });

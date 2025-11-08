@@ -249,6 +249,14 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Targeting all workflow dirs in the workflows index dir.
+  // Default to knock project config first if present, otherwise cwd.
+  const workflowsIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "workflow",
+    runCwd,
+  );
+
   // --all flag is given, which means no workflow key arg.
   if (flags.all) {
     // If --all flag used inside a workflow directory, then require a workflows
@@ -257,17 +265,9 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag workflows-dir");
     }
 
-    // Targeting all workflow dirs in the workflows index dir.
-    // Default to knock project config first if present, otherwise cwd.
-    const indexDirCtx = await resolveResourceDir(
-      projectConfig,
-      "workflow",
-      runCwd,
-    );
-
     return {
       type: "workflowsIndexDir",
-      context: flags["workflows-dir"] || indexDirCtx,
+      context: flags["workflows-dir"] || workflowsIndexDirCtx,
     };
   }
 
@@ -281,7 +281,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.workflowKey);
+      : path.resolve(workflowsIndexDirCtx.abspath, args.workflowKey);
 
     const workflowDirCtx: WorkflowDirContext = {
       type: "workflow",

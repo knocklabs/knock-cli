@@ -84,6 +84,13 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const layoutsIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "email_layout",
+    runCwd,
+  );
+
   // --all flag is given, which means no layout key arg.
   if (flags.all) {
     // If --all flag used inside a layout directory, then require a layouts dir path.
@@ -91,15 +98,7 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag layouts-dir");
     }
 
-    // Targeting all layout dirs in the layouts index dir.
-    // Default to knock project config first if present, otherwise cwd.
-    const defaultDir = await resolveResourceDir(
-      projectConfig,
-      "email_layout",
-      runCwd,
-    );
-
-    const indexDirCtx = flags["layouts-dir"] || defaultDir;
+    const indexDirCtx = flags["layouts-dir"] || layoutsIndexDirCtx;
 
     return { type: "emailLayoutsIndexDir", context: indexDirCtx };
   }
@@ -114,7 +113,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.emailLayoutKey);
+      : path.resolve(layoutsIndexDirCtx.abspath, args.emailLayoutKey);
 
     const layoutDirCtx: EmailLayoutDirContext = {
       type: "email_layout",
