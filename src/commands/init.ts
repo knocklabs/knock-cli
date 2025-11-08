@@ -4,10 +4,7 @@ import enquirer from "enquirer";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
-import {
-  PROJECT_CONFIG_FILE_NAME,
-  ResourceDirectoriesByType,
-} from "@/lib/helpers/project-config";
+import { PROJECT_CONFIG_FILE_NAME } from "@/lib/helpers/project-config";
 
 export default class Init extends BaseCommand<typeof Init> {
   protected requiresAuth = false;
@@ -41,20 +38,6 @@ export default class Init extends BaseCommand<typeof Init> {
     // 3. Create the knock directory and resource subdirectories
     const knockDirPath = path.resolve(process.cwd(), knockDir);
     await fs.ensureDir(knockDirPath);
-
-    // Create resource subdirectories with .gitignore files
-    for (const resourceDir of Object.values(ResourceDirectoriesByType)) {
-      const resourceDirPath = path.resolve(knockDirPath, resourceDir);
-
-      // eslint-disable-next-line no-await-in-loop
-      await fs.ensureDir(resourceDirPath);
-
-      // Create a .gitignore file in each resource directory
-      const gitignorePath = path.resolve(resourceDirPath, ".gitignore");
-
-      // eslint-disable-next-line no-await-in-loop
-      await fs.writeFile(gitignorePath, "");
-    }
 
     // 4. Write the knock.json configuration file
     await fs.outputJson(

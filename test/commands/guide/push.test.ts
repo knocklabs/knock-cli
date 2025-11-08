@@ -483,7 +483,7 @@ describe("commands/guide/push", () => {
           KnockApiV1.prototype.upsertGuide as any,
           sinon.match(
             ({ flags }) =>
-              flags["service-token"] === "valid-token" && flags["all"] === true,
+              flags["service-token"] === "valid-token" && flags.all === true,
           ),
           sinon.match((guide) => guide.key === "welcome-guide"),
         );

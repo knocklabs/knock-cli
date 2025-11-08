@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
   isSuccessResp,
@@ -22,7 +23,6 @@ import {
   ResourceTarget,
   WorkflowDirContext,
 } from "@/lib/run-context";
-import { resolveResourceDir } from "@/lib/helpers/project-config";
 
 export default class WorkflowPull extends BaseCommand<typeof WorkflowPull> {
   static summary =

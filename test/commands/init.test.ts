@@ -64,24 +64,6 @@ describe("commands/init", () => {
         // Verify the knock directory was created
         expect(fs.pathExistsSync(knockDirPath)).to.equal(true);
 
-        // Verify resource subdirectories and .gitignore files were created
-        const resourceDirs = [
-          "workflows",
-          "layouts",
-          "message-types",
-          "partials",
-          "guides",
-          "translations",
-        ];
-
-        for (const resourceDir of resourceDirs) {
-          const resourceDirPath = path.resolve(knockDirPath, resourceDir);
-          const gitignorePath = path.resolve(resourceDirPath, ".gitignore");
-
-          expect(fs.pathExistsSync(resourceDirPath)).to.equal(true);
-          expect(fs.pathExistsSync(gitignorePath)).to.equal(true);
-        }
-
         // Verify the success messages
         expect(ctx.stdout).to.contain("Successfully initialized Knock project");
         expect(ctx.stdout).to.contain("Resources directory: .knock");
@@ -108,24 +90,6 @@ describe("commands/init", () => {
 
         // Verify the custom knock directory was created
         expect(fs.pathExistsSync(knockDirPath)).to.equal(true);
-
-        // Verify resource subdirectories and .gitignore files were created
-        const resourceDirs = [
-          "workflows",
-          "layouts",
-          "message-types",
-          "partials",
-          "guides",
-          "translations",
-        ];
-
-        for (const resourceDir of resourceDirs) {
-          const resourceDirPath = path.resolve(knockDirPath, resourceDir);
-          const gitignorePath = path.resolve(resourceDirPath, ".gitignore");
-
-          expect(fs.pathExistsSync(resourceDirPath)).to.equal(true);
-          expect(fs.pathExistsSync(gitignorePath)).to.equal(true);
-        }
 
         // Verify the success messages
         expect(ctx.stdout).to.contain("Successfully initialized Knock project");

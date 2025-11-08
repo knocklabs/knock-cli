@@ -533,7 +533,7 @@ describe("commands/message-type/push", () => {
           KnockApiV1.prototype.upsertMessageType as any,
           sinon.match(
             ({ flags }) =>
-              flags["service-token"] === "valid-token" && flags["all"] === true,
+              flags["service-token"] === "valid-token" && flags.all === true,
           ),
           sinon.match((messageType) => messageType.key === "banner"),
         );

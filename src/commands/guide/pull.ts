@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
   isSuccessResp,
@@ -22,7 +23,6 @@ import {
   GuideDirContext,
   ResourceTarget,
 } from "@/lib/run-context";
-import { resolveResourceDir } from "@/lib/helpers/project-config";
 
 export default class GuidePull extends BaseCommand<typeof GuidePull> {
   static summary =
@@ -177,7 +177,7 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
     const guidesIndexDirCtx = await resolveResourceDir(
       this.projectConfig,
       "guide",
-      this.runContext.cwd,
+      runCwd,
     );
 
     // Not inside any existing guide directory, which means either create a

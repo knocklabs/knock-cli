@@ -378,14 +378,14 @@ describe("commands/partial/push", () => {
     });
 
     setupWithStub({ data: { partial: mockPartialData } })
-      //.stdout()
+      // .stdout()
       .command(["partial push", "--all"])
       .it("uses partials directory from knock.json knockDir", () => {
         sinon.assert.calledWith(
           KnockApiV1.prototype.upsertPartial as any,
           sinon.match(
             ({ flags }) =>
-              flags["service-token"] === "valid-token" && flags["all"] === true,
+              flags["service-token"] === "valid-token" && flags.all === true,
           ),
           sinon.match((partial) => partial.key === "messages"),
         );

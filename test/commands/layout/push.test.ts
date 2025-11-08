@@ -375,7 +375,7 @@ describe("commands/layout/push", () => {
           KnockApiV1.prototype.upsertEmailLayout as any,
           sinon.match(
             ({ flags }) =>
-              flags["service-token"] === "valid-token" && flags["all"] === true,
+              flags["service-token"] === "valid-token" && flags.all === true,
           ),
           sinon.match((layout) => layout.key === "messages"),
         );

@@ -387,7 +387,7 @@ describe("commands/workflow/push", () => {
       .it("uses workflows directory from knock.json knockDir", () => {
         sinon.assert.calledWith(
           KnockApiV1.prototype.upsertWorkflow as any,
-          sinon.match(({ args, flags }) => {
+          sinon.match(({ flags }) => {
             return !flags["workflows-dir"];
           }),
           sinon.match((workflow) => workflow.key === "foo"),
