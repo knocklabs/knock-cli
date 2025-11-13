@@ -94,13 +94,17 @@ describe("commands/workflow/new", () => {
         "My New Workflow",
         "--key",
         "b",
+        "--force",
         "--steps",
         "delay",
       ])
-      .catch((error) =>
-        expect(error.message).to.match(/^Cannot overwrite an existing path/),
-      )
-      .it("throws an error");
+      .it("writes a workflow dir to the file system", () => {
+        const exists = fs.pathExistsSync(
+          path.resolve(sandboxDir, "a", "b", "workflow.json"),
+        );
+
+        expect(exists).to.equal(true);
+      });
   });
 
   describe("given an invalid steps flag, with a nonexistent step tag", () => {
@@ -111,6 +115,7 @@ describe("commands/workflow/new", () => {
         "my-new-workflow",
         "--name",
         "My New Workflow",
+        "--force",
         "--steps",
         "blah",
       ])
@@ -156,6 +161,8 @@ describe("commands/workflow/new", () => {
         "my-new-workflow",
         "--name",
         "My New Workflow",
+        "--force",
+        "--push",
         "--steps",
         "delay",
       ])
@@ -165,6 +172,33 @@ describe("commands/workflow/new", () => {
           sinon.assert.calledOnce(workflowValidateAllStub);
           sinon.assert.calledOnce(upsertWorkflowStub);
 
+          const exists = fs.pathExistsSync(
+            path.resolve(sandboxDir, "a", "my-new-workflow", "workflow.json"),
+          );
+
+          expect(exists).to.equal(true);
+        },
+      );
+  });
+
+  describe("given a valid workflow key and a template flag", () => {
+    setupWithStub()
+      .command([
+        "workflow new",
+        "--key",
+        "my-new-workflow",
+        "--name",
+        "My New Workflow",
+        "--template",
+        // Note: this is real template from the templates repo:
+        // https://github.com/knocklabs/templates/tree/main/workflows/reset-password
+        "workflows/reset-password",
+        "--force",
+      ])
+      .stdout()
+      .it(
+        "generates a new workflow dir with a scaffolded workflow.json",
+        () => {
           const exists = fs.pathExistsSync(
             path.resolve(sandboxDir, "a", "my-new-workflow", "workflow.json"),
           );

@@ -1,14 +1,17 @@
 import * as path from "node:path";
 
 import { Flags } from "@oclif/core";
-import * as fs from "fs-extra";
 import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import { spinner } from "@/lib/helpers/ux";
+import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
-import { WorkflowDirContext } from "@/lib/run-context";
+import {
+  ensureResourceDirForTarget,
+  ResourceTarget,
+  WorkflowDirContext,
+} from "@/lib/run-context";
 
 import { slugify } from "@/lib/helpers/string";
 import {
@@ -18,6 +21,7 @@ import {
 } from "@/lib/marshal/workflow/generator";
 import WorkflowPush from "./push";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
 
 export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
   static summary = "Create a new workflow with a minimal configuration.";
@@ -39,6 +43,15 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
       summary:
         "The environment to create the workflow in. Defaults to development.",
       default: KnockEnv.Development,
+    }),
+    force: Flags.boolean({
+      summary:
+        "Force the creation of the workflow directory without confirmation.",
+    }),
+    push: Flags.boolean({
+      summary: "Whether or not to push the workflow to Knock after creation.",
+      default: false,
+      char: "p",
     }),
     template: Flags.string({
       summary:
@@ -107,37 +120,49 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
       );
     }
 
-    // Generate the workflow either from a template or from scratch
-    if (flags.template) {
-      await this.fromTemplate(name, key, flags.template);
+    const workflowDirCtx = await this.getWorkflowDirContext(key);
+
+    // Check if the workflow directory already exists, and prompt to confirm if not.
+    if (workflowDirCtx.exists) {
+      this.log(
+        `‣ Found \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}`,
+      );
     } else {
-      await this.fromEmpty(name, key);
+      const prompt = `Create a new workflow directory \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}?`;
+      const input = flags.force || (await promptToConfirm(prompt));
+      if (!input) return;
     }
 
-    spinner.start("‣ Pushing workflow to Knock");
+    // Generate the workflow either from a template or from scratch
+    if (flags.template) {
+      await this.fromTemplate(workflowDirCtx, name, flags.template);
+    } else {
+      await this.fromEmpty(workflowDirCtx, name);
+    }
 
-    try {
-      await WorkflowPush.run([key]);
-    } catch (error) {
-      this.error(`Failed to push workflow to Knock: ${error}`);
-    } finally {
-      spinner.stop();
+    if (flags.push) {
+      spinner.start("‣ Pushing workflow to Knock");
+
+      try {
+        await WorkflowPush.run([key]);
+      } catch (error) {
+        this.error(`Failed to push workflow to Knock: ${error}`);
+      } finally {
+        spinner.stop();
+      }
     }
 
     this.log(`‣ Successfully created workflow \`${key}\``);
   }
 
-  async fromTemplate(name: string, key: string, templateString: string) {
+  async fromTemplate(
+    workflowDirCtx: WorkflowDirContext,
+    name: string,
+    templateString: string,
+  ) {
     // When being called from the template string, we want to try and generate
     // the workflow from the provided template.
-    const { cwd } = this.runContext;
     const channelsByType = await this.listAllChannelsByType();
-    const workflowDirCtx: WorkflowDirContext = {
-      type: "workflow",
-      key: key,
-      abspath: path.resolve(cwd, key),
-      exists: false,
-    };
 
     spinner.start(`‣ Generating workflow from template \`${templateString}\``);
 
@@ -157,9 +182,9 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
     spinner.stop();
   }
 
-  async fromEmpty(name: string, key: string) {
+  async fromEmpty(workflowDirCtx: WorkflowDirContext, name: string) {
     const { flags } = this.props;
-    const { cwd } = this.runContext;
+
     const channelsByType = await this.listAllChannelsByType();
     const channelTypes = Object.keys(channelsByType) as Channel["type"][];
     const availableStepTypes = Workflow.getStepAvailableStepTypes(channelTypes);
@@ -197,32 +222,60 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
         steps = stepsResponse.steps as StepTag[];
       }
     }
-    // // 5. Ensure not to overwrite any existing path accidentally.
-    const newWorkflowDirPath = path.resolve(cwd, key);
-    const pathExists = await fs.pathExists(newWorkflowDirPath);
-    if (pathExists) {
-      return this.error(
-        `Cannot overwrite an existing path at ${newWorkflowDirPath}`,
-      );
-    }
 
-    // // 6. Generate workflow with steps using the generator
-    const dirContext: WorkflowDirContext = {
-      type: "workflow",
-      key: key,
-      abspath: newWorkflowDirPath,
-      exists: false,
-    };
-
-    // 7. Generate the workflow directory with scaffolded steps
+    // 6. Generate the workflow directory with scaffolded steps
     await Workflow.generateWorkflowDir(
-      dirContext,
+      workflowDirCtx,
       {
         name,
         steps,
       },
       channelsByType,
     );
+  }
+
+  async getWorkflowDirContext(
+    workflowKey?: string,
+  ): Promise<WorkflowDirContext> {
+    const { resourceDir, cwd: runCwd } = this.runContext;
+
+    // Inside an existing resource dir, use it if valid for the target workflow.
+    if (resourceDir) {
+      const target: ResourceTarget = {
+        commandId: BaseCommand.id,
+        type: "workflow",
+        key: workflowKey,
+      };
+
+      return ensureResourceDirForTarget(
+        resourceDir,
+        target,
+      ) as WorkflowDirContext;
+    }
+
+    // Default to knock project config first if present, otherwise cwd.
+    const dirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "workflow",
+      runCwd,
+    );
+
+    // Not inside any existing workflow directory, which means either create a
+    // new worfklow directory in the cwd, or update it if there is one already.
+    if (workflowKey) {
+      const dirPath = path.resolve(dirCtx.abspath, workflowKey);
+      const exists = await Workflow.isWorkflowDir(dirPath);
+
+      return {
+        type: "workflow",
+        key: workflowKey,
+        abspath: dirPath,
+        exists,
+      };
+    }
+
+    // Not in any workflow directory, nor a workflow key arg was given so error.
+    return this.error("Missing 1 required arg:\nworkflowKey");
   }
 
   async listAllChannelsByType() {

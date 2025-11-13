@@ -381,12 +381,21 @@ function swapChannelReferences(
 function walkWorkflowSteps(
   steps: WorkflowStepData[],
   channelsByType: Record<Channel["type"], Channel[]>,
-) {
-  // TODO: handle batch steps
+): WorkflowStepData[] {
   return steps.map((step) => {
     switch (step.type) {
       case StepType.Channel:
         return swapChannelReferences(step, channelsByType);
+      case StepType.Branch:
+        return {
+          ...step,
+          branches: (step.branches ?? []).map((branch) => {
+            return {
+              ...branch,
+              steps: walkWorkflowSteps(branch.steps ?? [], channelsByType),
+            };
+          }),
+        };
       default:
         return step;
     }
