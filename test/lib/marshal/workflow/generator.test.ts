@@ -1,8 +1,8 @@
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 import { expect } from "@oclif/test";
 
 import { factory, xpath } from "@/../test/support";
 import { scaffoldWorkflowDirBundle } from "@/lib/marshal/workflow/generator";
-import { Channel } from "@knocklabs/mgmt/resources/channels";
 
 const channelsByType: Record<any, Channel[]> = {
   email: [factory.channel({ type: "email", key: "email-channel" })],
