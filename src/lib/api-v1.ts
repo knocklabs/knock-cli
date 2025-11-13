@@ -1,4 +1,5 @@
 import KnockMgmt from "@knocklabs/mgmt";
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
@@ -16,7 +17,6 @@ import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
 import { SessionContext } from "./types";
-import { Channel } from "@knocklabs/mgmt/resources/channels";
 
 const API_VERSION = "v1";
 
@@ -540,6 +540,7 @@ export default class ApiV1 {
     for await (const channel of this.mgmtClient.channels.list()) {
       channels.push(channel);
     }
+
     return channels;
   }
 
