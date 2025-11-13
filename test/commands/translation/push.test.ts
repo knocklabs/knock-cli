@@ -394,4 +394,77 @@ describe("commands/translation/push", () => {
         },
       );
   });
+
+  describe("with knock.json config", () => {
+    const indexDirPath = path.resolve(
+      sandboxDir,
+      "my-resources",
+      "translations",
+    );
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+      fs.outputJsonSync(path.resolve(indexDirPath, "en", "en.json"), {
+        hello: "Hello",
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["translation push", "--all"])
+      .it("uses translations directory from knock.json knockDir", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertTranslation as any,
+          sinon.match(({ flags }) => {
+            return isEqual(flags, {
+              "service-token": "valid-token",
+              environment: "development",
+              all: true,
+            });
+          }),
+          sinon.match((translation) => translation.locale_code === "en"),
+        );
+      });
+  });
+
+  describe("with knock.json and --translations-dir flag", () => {
+    const flagIndexDirPath = path.resolve(sandboxDir, "flag-translations");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+
+      fs.outputJsonSync(path.resolve(flagIndexDirPath, "en", "en.json"), {
+        hello: "Hello",
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command([
+        "translation push",
+        "--all",
+        "--translations-dir",
+        "flag-translations",
+      ])
+      .it("flag takes precedence over knock.json", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertTranslation as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["translations-dir"].abspath === flagIndexDirPath &&
+              flags["translations-dir"].exists === true,
+          ),
+          sinon.match((translation) => translation.locale_code === "en"),
+        );
+      });
+  });
 });

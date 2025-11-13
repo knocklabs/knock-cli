@@ -12,6 +12,10 @@ import {
 } from "quicktype-core";
 
 import { DirContext } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { SupportedTypeLanguage, transformSchema } from "@/lib/helpers/typegen";
 import { RunContext, WorkflowDirContext } from "@/lib/run-context";
@@ -225,6 +229,7 @@ export type WorkflowCommandTarget = WorkflowDirTarget | WorkflowsIndexDirTarget;
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<WorkflowCommandTarget> => {
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -244,6 +249,14 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Targeting all workflow dirs in the workflows index dir.
+  // Default to knock project config first if present, otherwise cwd.
+  const workflowsIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "workflow",
+    runCwd,
+  );
+
   // --all flag is given, which means no workflow key arg.
   if (flags.all) {
     // If --all flag used inside a workflow directory, then require a workflows
@@ -252,12 +265,10 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag workflows-dir");
     }
 
-    // Targeting all workflow dirs in the workflows index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["workflows-dir"] || defaultToCwd;
-
-    return { type: "workflowsIndexDir", context: indexDirCtx };
+    return {
+      type: "workflowsIndexDir",
+      context: flags["workflows-dir"] || workflowsIndexDirCtx,
+    };
   }
 
   // Workflow key arg is given, which means no --all flag.
@@ -270,7 +281,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.workflowKey);
+      : path.resolve(workflowsIndexDirCtx.abspath, args.workflowKey);
 
     const workflowDirCtx: WorkflowDirContext = {
       type: "workflow",

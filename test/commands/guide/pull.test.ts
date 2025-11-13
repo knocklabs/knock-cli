@@ -189,4 +189,59 @@ describe("commands/guide/pull", () => {
       )
       .it("throws an error");
   });
+
+  describe("with knock.json config", () => {
+    setupWithListGuidesStub({ key: "guide-a" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+        // Create the guides directory
+        fs.ensureDirSync(path.resolve(sandboxDir, "my-resources", "guides"));
+      })
+      .command(["guide pull", "--all", "--force"])
+      .it("uses guides directory from knock.json knockDir", () => {
+        // Verify resources were pulled to the config directory
+        const guidePath = path.resolve(
+          sandboxDir,
+          "my-resources",
+          "guides",
+          "guide-a",
+        );
+        expect(fs.pathExistsSync(guidePath)).to.equal(true);
+      });
+  });
+
+  describe("with knock.json and --guides-dir flag", () => {
+    setupWithListGuidesStub({ key: "guide-a" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+      })
+      .command([
+        "guide pull",
+        "--all",
+        "--guides-dir",
+        "flag-guides",
+        "--force",
+      ])
+      .it("flag takes precedence over knock.json", () => {
+        // Verify it used the flag value, not the config
+        const flagPath = path.resolve(sandboxDir, "flag-guides", "guide-a");
+        expect(fs.pathExistsSync(flagPath)).to.equal(true);
+
+        // Verify config-resources was NOT used
+        const configPath = path.resolve(
+          sandboxDir,
+          "config-resources",
+          "guides",
+          "guide-a",
+        );
+        expect(fs.pathExistsSync(configPath)).to.equal(false);
+      });
+  });
 });

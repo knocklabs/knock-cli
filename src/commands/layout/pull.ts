@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
   isSuccessResp,
@@ -109,8 +110,13 @@ export default class EmailLayoutPull extends BaseCommand<
   async pullAllEmailLayouts(): Promise<void> {
     const { flags } = this.props;
 
-    const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags["layouts-dir"] || defaultToCwd;
+    const layoutsIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "email_layout",
+      this.runContext.cwd,
+    );
+
+    const targetDirCtx = flags["layouts-dir"] || layoutsIndexDirCtx;
 
     const prompt = targetDirCtx.exists
       ? `Pull latest layouts into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`
@@ -180,10 +186,16 @@ export default class EmailLayoutPull extends BaseCommand<
       ) as EmailLayoutDirContext;
     }
 
+    const layoutsIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "email_layout",
+      runCwd,
+    );
+
     // Not inside any existing email layout directory, which means either create a
     // new email layout directory in the cwd, or update it if there is one already.
     if (emailLayoutKey) {
-      const dirPath = path.resolve(runCwd, emailLayoutKey);
+      const dirPath = path.resolve(layoutsIndexDirCtx.abspath, emailLayoutKey);
       const exists = await EmailLayout.isEmailLayoutDir(dirPath);
 
       return {

@@ -348,4 +348,71 @@ describe("commands/layout/push", () => {
         );
       });
   });
+
+  describe("with knock.json config", () => {
+    const indexDirPath = path.resolve(sandboxDir, "my-resources", "layouts");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+      const messagesLayoutJson = path.resolve(
+        indexDirPath,
+        "messages",
+        LAYOUT_JSON,
+      );
+      fs.outputJsonSync(messagesLayoutJson, { name: "Messages" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { email_layout: mockEmailLayoutData } })
+      .stdout()
+      .command(["layout push", "--all"])
+      .it("uses layouts directory from knock.json knockDir", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertEmailLayout as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["service-token"] === "valid-token" && flags.all === true,
+          ),
+          sinon.match((layout) => layout.key === "messages"),
+        );
+      });
+  });
+
+  describe("with knock.json and --layouts-dir flag", () => {
+    const flagIndexDirPath = path.resolve(sandboxDir, "flag-layouts");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+
+      const messagesLayoutJson = path.resolve(
+        flagIndexDirPath,
+        "messages",
+        LAYOUT_JSON,
+      );
+      fs.outputJsonSync(messagesLayoutJson, { name: "Messages" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { email_layout: mockEmailLayoutData } })
+      .stdout()
+      .command(["layout push", "--all", "--layouts-dir", "flag-layouts"])
+      .it("flag takes precedence over knock.json", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertEmailLayout as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["layouts-dir"].abspath === flagIndexDirPath &&
+              flags["layouts-dir"].exists === true,
+          ),
+          sinon.match((layout) => layout.key === "messages"),
+        );
+      });
+  });
 });

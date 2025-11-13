@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
   isSuccessResp,
@@ -114,6 +115,12 @@ export default class MessageTypePull extends BaseCommand<
     const { messageTypeKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
 
+    const messageTypesIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "message_type",
+      runCwd,
+    );
+
     // Inside an existing resource dir, use it if valid for the target message
     // type.
     if (resourceDir) {
@@ -133,7 +140,10 @@ export default class MessageTypePull extends BaseCommand<
     // a new message type directory in the cwd, or update it if there is one
     // already.
     if (messageTypeKey) {
-      const dirPath = path.resolve(runCwd, messageTypeKey);
+      const dirPath = path.resolve(
+        messageTypesIndexDirCtx.abspath,
+        messageTypeKey,
+      );
       const exists = await MessageType.isMessageTypeDir(dirPath);
 
       return {
@@ -156,8 +166,13 @@ export default class MessageTypePull extends BaseCommand<
   async pullAllMessageTypes(): Promise<void> {
     const { flags } = this.props;
 
-    const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags["message-types-dir"] || defaultToCwd;
+    const messageTypesIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "message_type",
+      this.runContext.cwd,
+    );
+
+    const targetDirCtx = flags["message-types-dir"] || messageTypesIndexDirCtx;
 
     const prompt = targetDirCtx.exists
       ? `Pull latest message types into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`

@@ -177,4 +177,63 @@ describe("commands/workflow/pull", () => {
       )
       .it("throws an error");
   });
+
+  describe("with knock.json config", () => {
+    setupWithListWorkflowsStub({ key: "workflow-a" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+        // Create the workflows directory
+        fs.ensureDirSync(path.resolve(sandboxDir, "my-resources", "workflows"));
+      })
+      .command(["workflow pull", "--all", "--force"])
+      .it("uses workflows directory from knock.json knockDir", () => {
+        // Verify resources were pulled to the config directory
+        const workflowPath = path.resolve(
+          sandboxDir,
+          "my-resources",
+          "workflows",
+          "workflow-a",
+        );
+        expect(fs.pathExistsSync(workflowPath)).to.equal(true);
+      });
+  });
+
+  describe("with knock.json and --workflows-dir flag", () => {
+    setupWithListWorkflowsStub({ key: "workflow-a" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+      })
+      .command([
+        "workflow pull",
+        "--all",
+        "--workflows-dir",
+        "flag-workflows",
+        "--force",
+      ])
+      .it("flag takes precedence over knock.json", () => {
+        // Verify it used the flag value, not the config
+        const flagPath = path.resolve(
+          sandboxDir,
+          "flag-workflows",
+          "workflow-a",
+        );
+        expect(fs.pathExistsSync(flagPath)).to.equal(true);
+
+        // Verify config-resources was NOT used
+        const configPath = path.resolve(
+          sandboxDir,
+          "config-resources",
+          "workflows",
+          "workflow-a",
+        );
+        expect(fs.pathExistsSync(configPath)).to.equal(false);
+      });
+  });
 });

@@ -203,4 +203,61 @@ describe("commands/message-type/pull", () => {
       )
       .it("throws an error");
   });
+
+  describe("with knock.json config", () => {
+    setupWithListMessageTypesStub({ key: "card" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+        // Create the message types directory
+        fs.ensureDirSync(
+          path.resolve(sandboxDir, "my-resources", "message-types"),
+        );
+      })
+      .command(["message-type pull", "--all", "--force"])
+      .it("uses message types directory from knock.json knockDir", () => {
+        // Verify resources were pulled to the config directory
+        const messageTypePath = path.resolve(
+          sandboxDir,
+          "my-resources",
+          "message-types",
+          "card",
+        );
+        expect(fs.pathExistsSync(messageTypePath)).to.equal(true);
+      });
+  });
+
+  describe("with knock.json and --message-types-dir flag", () => {
+    setupWithListMessageTypesStub({ key: "card" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+      })
+      .command([
+        "message-type pull",
+        "--all",
+        "--message-types-dir",
+        "flag-message-types",
+        "--force",
+      ])
+      .it("flag takes precedence over knock.json", () => {
+        // Verify it used the flag value, not the config
+        const flagPath = path.resolve(sandboxDir, "flag-message-types", "card");
+        expect(fs.pathExistsSync(flagPath)).to.equal(true);
+
+        // Verify config-resources was NOT used
+        const configPath = path.resolve(
+          sandboxDir,
+          "config-resources",
+          "message-types",
+          "card",
+        );
+        expect(fs.pathExistsSync(configPath)).to.equal(false);
+      });
+  });
 });

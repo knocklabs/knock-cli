@@ -58,6 +58,7 @@ export default class MessageTypePush extends BaseCommand<
     const target = await MessageType.ensureValidCommandTarget(
       this.props,
       this.runContext,
+      this.projectConfig,
     );
     const [messageTypes, readErrors] =
       await MessageType.readAllForCommandTarget(target, {

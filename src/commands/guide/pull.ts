@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
   isSuccessResp,
@@ -101,8 +102,13 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
   async pullAllGuides(): Promise<void> {
     const { flags } = this.props;
 
-    const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags["guides-dir"] || defaultToCwd;
+    const guidesIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "guide",
+      this.runContext.cwd,
+    );
+
+    const targetDirCtx = flags["guides-dir"] || guidesIndexDirCtx;
 
     const prompt = targetDirCtx.exists
       ? `Pull latest guides into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`
@@ -168,10 +174,16 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
       return ensureResourceDirForTarget(resourceDir, target) as GuideDirContext;
     }
 
+    const guidesIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "guide",
+      runCwd,
+    );
+
     // Not inside any existing guide directory, which means either create a
     // new guide directory in the cwd, or update it if there is one already.
     if (guideKey) {
-      const dirPath = path.resolve(runCwd, guideKey);
+      const dirPath = path.resolve(guidesIndexDirCtx.abspath, guideKey);
       const exists = await Guide.isGuideDir(dirPath);
 
       return {

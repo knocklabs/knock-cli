@@ -12,6 +12,10 @@ import {
 } from "quicktype-core";
 
 import { DirContext } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { SupportedTypeLanguage } from "@/lib/helpers/typegen";
 import { GuideDirContext, RunContext } from "@/lib/run-context";
 
@@ -99,6 +103,7 @@ export type GuideCommandTarget = GuideDirTarget | GuidesIndexDirTarget;
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<GuideCommandTarget> => {
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -118,6 +123,13 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const guidesIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "guide",
+    runCwd,
+  );
+
   // --all flag is given, which means no guide key arg.
   if (flags.all) {
     // If --all flag used inside a guide directory, then require a guides
@@ -126,12 +138,10 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag guides-dir");
     }
 
-    // Targeting all guide dirs in the guides index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["guides-dir"] || defaultToCwd;
-
-    return { type: "guidesIndexDir", context: indexDirCtx };
+    return {
+      type: "guidesIndexDir",
+      context: flags["guides-dir"] || guidesIndexDirCtx,
+    };
   }
 
   // Guide key arg is given, which means no --all flag.
@@ -144,7 +154,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.guideKey);
+      : path.resolve(guidesIndexDirCtx.abspath, args.guideKey);
 
     const guideDirCtx: GuideDirContext = {
       type: "guide",

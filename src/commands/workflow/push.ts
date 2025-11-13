@@ -55,6 +55,7 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
     const target = await Workflow.ensureValidCommandTarget(
       this.props,
       this.runContext,
+      this.projectConfig,
     );
     const [workflows, readErrors] = await Workflow.readAllForCommandTarget(
       target,

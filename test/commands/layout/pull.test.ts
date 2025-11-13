@@ -187,4 +187,59 @@ describe("commands/layout/pull", () => {
       )
       .it("throws an error");
   });
+
+  describe("with knock.json config", () => {
+    setupWithListLayoutsStub({ key: "messages" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+        // Create the layouts directory
+        fs.ensureDirSync(path.resolve(sandboxDir, "my-resources", "layouts"));
+      })
+      .command(["layout pull", "--all", "--force"])
+      .it("uses layouts directory from knock.json knockDir", () => {
+        // Verify resources were pulled to the config directory
+        const layoutPath = path.resolve(
+          sandboxDir,
+          "my-resources",
+          "layouts",
+          "messages",
+        );
+        expect(fs.pathExistsSync(layoutPath)).to.equal(true);
+      });
+  });
+
+  describe("with knock.json and --layouts-dir flag", () => {
+    setupWithListLayoutsStub({ key: "messages" })
+      .stdout()
+      .do(() => {
+        // Create knock.json with knockDir config
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+      })
+      .command([
+        "layout pull",
+        "--all",
+        "--layouts-dir",
+        "flag-layouts",
+        "--force",
+      ])
+      .it("flag takes precedence over knock.json", () => {
+        // Verify it used the flag value, not the config
+        const flagPath = path.resolve(sandboxDir, "flag-layouts", "messages");
+        expect(fs.pathExistsSync(flagPath)).to.equal(true);
+
+        // Verify config-resources was NOT used
+        const configPath = path.resolve(
+          sandboxDir,
+          "config-resources",
+          "layouts",
+          "messages",
+        );
+        expect(fs.pathExistsSync(configPath)).to.equal(false);
+      });
+  });
 });

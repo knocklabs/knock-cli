@@ -5,6 +5,7 @@ import { Flags } from "@oclif/core";
 import BaseCommand from "@/lib/base-command";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
+import { resolveKnockDir } from "@/lib/helpers/project-config";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import {
   ALL_RESOURCE_TYPES,
@@ -31,7 +32,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
     branch: CustomFlags.branch,
     "knock-dir": CustomFlags.dirPath({
       summary: "The target directory path to pull all resources into.",
-      required: true,
+      required: false,
     }),
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",
@@ -43,7 +44,18 @@ export default class Pull extends BaseCommand<typeof Pull> {
 
   public async run(): Promise<void> {
     const { flags } = this.props;
-    const targetDirCtx = flags["knock-dir"];
+
+    // Resolve knock directory: flag takes precedence, otherwise use knock.json
+    const targetDirCtx = await resolveKnockDir(
+      flags["knock-dir"],
+      this.projectConfig,
+    );
+
+    if (!targetDirCtx) {
+      this.error(
+        "No knock directory specified. Either provide --knock-dir flag or run `knock init` to create a knock.json configuration file.",
+      );
+    }
 
     const prompt = targetDirCtx.exists
       ? `Pull latest resources into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`

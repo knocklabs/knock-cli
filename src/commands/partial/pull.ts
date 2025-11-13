@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
   isSuccessResp,
@@ -103,8 +104,13 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
   async pullAllPartials(): Promise<void> {
     const { flags } = this.props;
 
-    const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags["partials-dir"] || defaultToCwd;
+    const partialsIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "partial",
+      this.runContext.cwd,
+    );
+
+    const targetDirCtx = flags["partials-dir"] || partialsIndexDirCtx;
 
     const prompt = targetDirCtx.exists
       ? `Pull latest partials into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`
@@ -173,10 +179,16 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
       ) as PartialDirContext;
     }
 
+    const partialsIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "partial",
+      runCwd,
+    );
+
     // Not inside any existing partial directory, which means either create a
     // new partial directory in the cwd, or update it if there is one already.
     if (partialKey) {
-      const dirPath = path.resolve(runCwd, partialKey);
+      const dirPath = path.resolve(partialsIndexDirCtx.abspath, partialKey);
       const exists = await Partial.isPartialDir(dirPath);
 
       return {

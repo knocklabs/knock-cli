@@ -53,6 +53,7 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
     const target = await Guide.ensureValidCommandTarget(
       this.props,
       this.runContext,
+      this.projectConfig,
     );
 
     const [guides, readErrors] = await Guide.readAllForCommandTarget(target, {

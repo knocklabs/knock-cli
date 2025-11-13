@@ -7,6 +7,7 @@ import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
+import { resolveKnockDir } from "@/lib/helpers/project-config";
 import {
   ALL_RESOURCE_TYPES,
   NonHiddenResourceType,
@@ -33,7 +34,7 @@ export default class Push extends BaseCommand<typeof Push> {
     branch: CustomFlags.branch,
     "knock-dir": CustomFlags.dirPath({
       summary: "The target directory path to find all resources to push.",
-      required: true,
+      required: false,
     }),
     commit: Flags.boolean({
       summary: "Push and commit the resource(s) at the same time",
@@ -48,10 +49,16 @@ export default class Push extends BaseCommand<typeof Push> {
   async run(): Promise<void> {
     const { flags } = this.props;
 
-    const targetDirCtx = flags["knock-dir"];
+    // Resolve knock directory: flag takes precedence, otherwise use knock.json
+    const targetDirCtx = await resolveKnockDir(
+      flags["knock-dir"],
+      this.projectConfig,
+    );
 
-    if (!targetDirCtx.exists) {
-      this.error(`Directory ${targetDirCtx.abspath} does not exist`);
+    if (!targetDirCtx) {
+      this.error(
+        "No knock directory specified. Either provide --knock-dir flag or run `knock init` to create a knock.json configuration file.",
+      );
     }
 
     const args = [

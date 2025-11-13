@@ -4,6 +4,10 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { PartialDirContext, RunContext } from "@/lib/run-context";
 
 import { PARTIAL_JSON } from "./processor.isomorphic";
@@ -56,6 +60,7 @@ export type PartialCommandTarget = PartialDirTarget | PartialsIndexDirTarget;
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<PartialCommandTarget> => {
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -75,6 +80,13 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const partialsIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "partial",
+    runCwd,
+  );
+
   // --all flag is given, which means no partial key arg.
   if (flags.all) {
     // If --all flag used inside a partial directory, then require a partials
@@ -83,12 +95,10 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag partials-dir");
     }
 
-    // Targeting all partial dirs in the partials index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["partials-dir"] || defaultToCwd;
-
-    return { type: "partialsIndexDir", context: indexDirCtx };
+    return {
+      type: "partialsIndexDir",
+      context: flags["partials-dir"] || partialsIndexDirCtx,
+    };
   }
 
   // Partial key arg is given, which means no --all flag.
@@ -101,7 +111,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.partialKey);
+      : path.resolve(partialsIndexDirCtx.abspath, args.partialKey);
 
     const partialDirCtx: PartialDirContext = {
       type: "partial",

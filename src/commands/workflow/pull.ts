@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
   isSuccessResp,
@@ -126,10 +127,17 @@ export default class WorkflowPull extends BaseCommand<typeof WorkflowPull> {
       ) as WorkflowDirContext;
     }
 
+    // Default to knock project config first if present, otherwise cwd.
+    const dirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "workflow",
+      runCwd,
+    );
+
     // Not inside any existing workflow directory, which means either create a
     // new worfklow directory in the cwd, or update it if there is one already.
     if (workflowKey) {
-      const dirPath = path.resolve(runCwd, workflowKey);
+      const dirPath = path.resolve(dirCtx.abspath, workflowKey);
       const exists = await Workflow.isWorkflowDir(dirPath);
 
       return {
@@ -151,10 +159,13 @@ export default class WorkflowPull extends BaseCommand<typeof WorkflowPull> {
   async pullAllWorkflows(): Promise<void> {
     const { flags } = this.props;
 
-    // TODO: In the future we should default to the knock project config first
-    // if present, before defaulting to the cwd.
-    const defaultToCwd = { abspath: this.runContext.cwd, exists: true };
-    const targetDirCtx = flags["workflows-dir"] || defaultToCwd;
+    const workflowsIndexDirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "workflow",
+      this.runContext.cwd,
+    );
+
+    const targetDirCtx = flags["workflows-dir"] || workflowsIndexDirCtx;
 
     const prompt = targetDirCtx.exists
       ? `Pull latest workflows into ${targetDirCtx.abspath}?\n  This will overwrite the contents of this directory.`

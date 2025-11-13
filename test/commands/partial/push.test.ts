@@ -358,4 +358,71 @@ describe("commands/partial/push", () => {
         );
       });
   });
+
+  describe("with knock.json config", () => {
+    const indexDirPath = path.resolve(sandboxDir, "my-resources", "partials");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+      const messagesPartialJson = path.resolve(
+        indexDirPath,
+        "messages",
+        PARTIAL_JSON,
+      );
+      fs.outputJsonSync(messagesPartialJson, { name: "Messages" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { partial: mockPartialData } })
+      // .stdout()
+      .command(["partial push", "--all"])
+      .it("uses partials directory from knock.json knockDir", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertPartial as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["service-token"] === "valid-token" && flags.all === true,
+          ),
+          sinon.match((partial) => partial.key === "messages"),
+        );
+      });
+  });
+
+  describe("with knock.json and --partials-dir flag", () => {
+    const flagIndexDirPath = path.resolve(sandboxDir, "flag-partials");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+
+      const messagesPartialJson = path.resolve(
+        flagIndexDirPath,
+        "messages",
+        PARTIAL_JSON,
+      );
+      fs.outputJsonSync(messagesPartialJson, { name: "Messages" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { partial: mockPartialData } })
+      .stdout()
+      .command(["partial push", "--all", "--partials-dir", "flag-partials"])
+      .it("flag takes precedence over knock.json", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertPartial as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["partials-dir"].abspath === flagIndexDirPath &&
+              flags["partials-dir"].exists === true,
+          ),
+          sinon.match((partial) => partial.key === "messages"),
+        );
+      });
+  });
 });

@@ -486,4 +486,112 @@ describe("commands/message-type/push", () => {
         );
       });
   });
+
+  describe("with knock.json config", () => {
+    const indexDirPath = path.resolve(
+      sandboxDir,
+      "my-resources",
+      "message-types",
+    );
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+      const bannerMessageTypeJson = path.resolve(
+        indexDirPath,
+        "banner",
+        MESSAGE_TYPE_JSON,
+      );
+      fs.outputJsonSync(bannerMessageTypeJson, {
+        name: "Banner",
+        variants: [
+          {
+            key: "default",
+            name: "Default",
+            fields: [
+              {
+                type: "text",
+                key: "title",
+                label: "Title",
+              },
+            ],
+          },
+        ],
+        preview: "<div>{{ title }}</div>",
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { message_type: mockMessageTypeData } })
+      .stdout()
+      .command(["message-type push", "--all"])
+      .it("uses message types directory from knock.json knockDir", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertMessageType as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["service-token"] === "valid-token" && flags.all === true,
+          ),
+          sinon.match((messageType) => messageType.key === "banner"),
+        );
+      });
+  });
+
+  describe("with knock.json and --message-types-dir flag", () => {
+    const flagIndexDirPath = path.resolve(sandboxDir, "flag-message-types");
+
+    beforeEach(() => {
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+
+      const bannerMessageTypeJson = path.resolve(
+        flagIndexDirPath,
+        "banner",
+        MESSAGE_TYPE_JSON,
+      );
+      fs.outputJsonSync(bannerMessageTypeJson, {
+        name: "Banner",
+        variants: [
+          {
+            key: "default",
+            name: "Default",
+            fields: [
+              {
+                type: "text",
+                key: "title",
+                label: "Title",
+              },
+            ],
+          },
+        ],
+        preview: "<div>{{ title }}</div>",
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { message_type: mockMessageTypeData } })
+      .stdout()
+      .command([
+        "message-type push",
+        "--all",
+        "--message-types-dir",
+        "flag-message-types",
+      ])
+      .it("flag takes precedence over knock.json", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertMessageType as any,
+          sinon.match(
+            ({ flags }) =>
+              flags["message-types-dir"].abspath === flagIndexDirPath &&
+              flags["message-types-dir"].exists === true,
+          ),
+          sinon.match((messageType) => messageType.key === "banner"),
+        );
+      });
+  });
 });

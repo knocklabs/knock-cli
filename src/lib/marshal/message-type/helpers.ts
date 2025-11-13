@@ -4,6 +4,10 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { MessageTypeDirContext, RunContext } from "@/lib/run-context";
 
 import { MESSAGE_TYPE_JSON } from "./processor.isomorphic";
@@ -59,6 +63,7 @@ export type MessageTypeCommandTarget =
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<MessageTypeCommandTarget> => {
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -78,6 +83,13 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const messageTypesIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "message_type",
+    runCwd,
+  );
+
   // --all flag is given, which means no message type key arg.
   if (flags.all) {
     // If --all flag used inside a message type directory, then require a message
@@ -86,12 +98,10 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag message-types-dir");
     }
 
-    // Targeting all message type dirs in the message types index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["message-types-dir"] || defaultToCwd;
-
-    return { type: "messageTypesIndexDir", context: indexDirCtx };
+    return {
+      type: "messageTypesIndexDir",
+      context: flags["message-types-dir"] || messageTypesIndexDirCtx,
+    };
   }
 
   // Message type key arg is given, which means no --all flag.
@@ -104,7 +114,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.messageTypeKey);
+      : path.resolve(messageTypesIndexDirCtx.abspath, args.messageTypeKey);
 
     const messageTypeDirCtx: MessageTypeDirContext = {
       type: "message_type",

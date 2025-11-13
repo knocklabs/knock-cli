@@ -5,6 +5,10 @@ import * as fs from "fs-extra";
 import localeData from "locale-codes";
 
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { RunContext, TranslationDirContext } from "@/lib/run-context";
 
 import {
@@ -152,6 +156,7 @@ export type TranslationCommandTarget =
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<TranslationCommandTarget> => {
   const { flags, args } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -168,6 +173,13 @@ export const ensureValidCommandTarget = async (
     ux.error("At least one of translation ref arg or --all flag must be given");
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const translationsIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "translation",
+    runCwd,
+  );
+
   // No translationRef arg, which means --all flag is used.
   if (!args.translationRef) {
     // Targeting all translation files in the current locale directory.
@@ -175,12 +187,10 @@ export const ensureValidCommandTarget = async (
       return { type: "translationDir", context: resourceDirCtx };
     }
 
-    // Targeting all translation files in the translations index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["translations-dir"] || defaultToCwd;
-
-    return { type: "translationsIndexDir", context: indexDirCtx };
+    return {
+      type: "translationsIndexDir",
+      context: flags["translations-dir"] || translationsIndexDirCtx,
+    };
   }
 
   // From this point on, we have translationRef so parse and validate the format.
@@ -204,7 +214,7 @@ export const ensureValidCommandTarget = async (
     ? resourceDirCtx.abspath
     : flags["translations-dir"]
     ? path.resolve(flags["translations-dir"].abspath, localeCode)
-    : path.resolve(runCwd, localeCode);
+    : path.resolve(translationsIndexDirCtx.abspath, localeCode);
 
   // Got translationRef arg but no --all flag, which means target only a single
   // translation file.

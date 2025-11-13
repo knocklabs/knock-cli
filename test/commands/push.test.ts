@@ -1354,12 +1354,112 @@ describe("commands/push", () => {
       .it("exits with status 2");
   });
 
-  describe("without directory", () => {
+  describe("with knock.json config", () => {
+    const workflowsSubdirPath = path.resolve(
+      sandboxDir,
+      "my-resources",
+      "workflows",
+    );
+
+    let workflowValidateAllStub: sinon.SinonStub;
+    let upsertWorkflowStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      workflowValidateAllStub = sinon
+        .stub(WorkflowValidate, "validateAll")
+        .resolves([]);
+
+      upsertWorkflowStub = sinon
+        .stub(KnockApiV1.prototype, "upsertWorkflow")
+        .resolves(factory.resp({ data: { workflow: mockWorkflowData } }));
+
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "my-resources" });
+
+      const fooWorkflowJson = path.resolve(
+        workflowsSubdirPath,
+        "foo",
+        WORKFLOW_JSON,
+      );
+      fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+      process.chdir(sandboxDir);
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
     test
       .env({ KNOCK_SERVICE_TOKEN })
       .command(["push"])
-      .exit(2)
-      .it("exits with status 2");
+      .it("uses knock directory from knock.json", () => {
+        sinon.assert.calledOnce(workflowValidateAllStub);
+        sinon.assert.calledOnce(upsertWorkflowStub);
+      });
+  });
+
+  describe("with knock.json and --knock-dir flag", () => {
+    const workflowsSubdirPath = path.resolve(
+      sandboxDir,
+      "flag-resources",
+      "workflows",
+    );
+
+    let workflowValidateAllStub: sinon.SinonStub;
+    let upsertWorkflowStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      workflowValidateAllStub = sinon
+        .stub(WorkflowValidate, "validateAll")
+        .resolves([]);
+
+      upsertWorkflowStub = sinon
+        .stub(KnockApiV1.prototype, "upsertWorkflow")
+        .resolves(factory.resp({ data: { workflow: mockWorkflowData } }));
+
+      // Create knock.json with knockDir config
+      const configPath = path.resolve(sandboxDir, "knock.json");
+      fs.writeJsonSync(configPath, { knockDir: "config-resources" });
+
+      const fooWorkflowJson = path.resolve(
+        workflowsSubdirPath,
+        "foo",
+        WORKFLOW_JSON,
+      );
+      fs.outputJsonSync(fooWorkflowJson, { name: "Foo" });
+
+      process.chdir(sandboxDir);
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN })
+      .command(["push", "--knock-dir", "flag-resources"])
+      .it("flag takes precedence over knock.json", () => {
+        sinon.assert.calledOnce(workflowValidateAllStub);
+        sinon.assert.calledOnce(upsertWorkflowStub);
+      });
+  });
+
+  describe("without directory flag or knock.json", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN })
+      .do(() => {
+        // Ensure knock.json doesn't exist from previous tests
+        const configPath = path.resolve(sandboxDir, "knock.json");
+        fs.removeSync(configPath);
+        process.chdir(sandboxDir);
+      })
+      .command(["push"])
+      .catch((error) =>
+        expect(error.message).to.match(/No knock directory specified/),
+      )
+      .it("throws an error with helpful message");
   });
 
   describe("without service token", () => {

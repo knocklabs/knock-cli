@@ -5,6 +5,10 @@ import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import KnockApiV1 from "./api-v1";
 import auth from "./auth";
 import { checkTranslationsFeature } from "./helpers/account-features";
+import {
+  findAndReadProjectConfig,
+  ProjectConfig,
+} from "./helpers/project-config";
 import * as RunContext from "./run-context";
 import {
   OAuthTokenContext,
@@ -58,6 +62,7 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   protected runContext!: RunContext.T;
   protected sessionContext!: SessionContext;
   protected configStore!: UserConfigStore;
+  protected projectConfig?: ProjectConfig;
 
   protected requiresAuth = true;
   protected static verifyFeatureEnabled?: "translations";
@@ -70,33 +75,36 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     // 1. Load user's config from the config dir, as available.
     await this.configStore.load();
 
-    // 2. Parse flags and args, must come after the user config load.
+    // 2. Load project config (knock.json) if available.
+    this.projectConfig = await findAndReadProjectConfig();
+
+    // 3. Parse flags and args, must come after the user config load.
     const { args, flags } = await this.parse(this.ctor);
     this.props = { args: args as TArgs<T>, flags: flags as TFlags<T> };
 
-    // 3. Build the initial session context.
+    // 4. Build the initial session context.
     this.sessionContext = this.buildSessionContext();
 
-    // 4. If the command requires authentication, ensure the session is authenticated.
+    // 5. If the command requires authentication, ensure the session is authenticated.
     if (this.requiresAuth) {
       this.ensureAuthenticated();
     }
 
-    // 5. If the session context is an OAuth session, refresh the access token.
+    // 6. If the session context is an OAuth session, refresh the access token.
     if (this.sessionContext.type === "oauth") {
       await this.refreshAccessTokenForSession();
     }
 
-    // 6. Instantiate a knock api client.
+    // 7. Instantiate a knock api client.
     this.apiV1 = new KnockApiV1(this.sessionContext, this.config);
 
-    // 7. Verify that required features are enabled for the account.
+    // 8. Verify that required features are enabled for the account.
     const ctor = this.ctor as typeof BaseCommand;
     if (ctor.verifyFeatureEnabled) {
       await this.verifyFeatureEnabled(ctor.verifyFeatureEnabled);
     }
 
-    // 8. Load the run context of the invoked command.
+    // 9. Load the run context of the invoked command.
     this.runContext = await RunContext.load(this.id);
   }
 

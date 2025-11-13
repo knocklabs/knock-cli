@@ -4,6 +4,10 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
+import {
+  ProjectConfig,
+  resolveResourceDir,
+} from "@/lib/helpers/project-config";
 import { EmailLayoutDirContext, RunContext } from "@/lib/run-context";
 
 import { LAYOUT_JSON } from "./processor.isomorphic";
@@ -60,6 +64,7 @@ export type EmailLayoutCommandTarget =
 export const ensureValidCommandTarget = async (
   props: CommandTargetProps,
   runContext: RunContext,
+  projectConfig?: ProjectConfig,
 ): Promise<EmailLayoutCommandTarget> => {
   const { args, flags } = props;
   const { commandId, resourceDir: resourceDirCtx, cwd: runCwd } = runContext;
@@ -79,6 +84,13 @@ export const ensureValidCommandTarget = async (
     );
   }
 
+  // Default to knock project config first if present, otherwise cwd.
+  const layoutsIndexDirCtx = await resolveResourceDir(
+    projectConfig,
+    "email_layout",
+    runCwd,
+  );
+
   // --all flag is given, which means no layout key arg.
   if (flags.all) {
     // If --all flag used inside a layout directory, then require a layouts dir path.
@@ -86,10 +98,7 @@ export const ensureValidCommandTarget = async (
       return ux.error("Missing required flag layouts-dir");
     }
 
-    // Targeting all layout dirs in the layouts index dir.
-    // TODO: Default to the knock project config first if present before cwd.
-    const defaultToCwd = { abspath: runCwd, exists: true };
-    const indexDirCtx = flags["layouts-dir"] || defaultToCwd;
+    const indexDirCtx = flags["layouts-dir"] || layoutsIndexDirCtx;
 
     return { type: "emailLayoutsIndexDir", context: indexDirCtx };
   }
@@ -104,7 +113,7 @@ export const ensureValidCommandTarget = async (
 
     const targetDirPath = resourceDirCtx
       ? resourceDirCtx.abspath
-      : path.resolve(runCwd, args.emailLayoutKey);
+      : path.resolve(layoutsIndexDirCtx.abspath, args.emailLayoutKey);
 
     const layoutDirCtx: EmailLayoutDirContext = {
       type: "email_layout",
