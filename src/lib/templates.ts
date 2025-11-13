@@ -60,8 +60,6 @@ export async function downloadTemplate(templateString: string, options = {}) {
 
   const source = buildSource(org, repo, subdir);
 
-  console.error(source);
-
   // Create temp directory for template
   const tempDir = path.join(
     os.tmpdir(),
@@ -75,7 +73,7 @@ export async function downloadTemplate(templateString: string, options = {}) {
     const emitter = degit(source, {
       cache: false,
       force: true,
-      verbose: true,
+      verbose: false,
     });
 
     await emitter.clone(tempDir);
