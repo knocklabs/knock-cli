@@ -420,8 +420,6 @@ describe("commands/guide/generate-types", () => {
         const appendFileCall = (fs.appendFile as any).getCall(0);
         const appendedContent = appendFileCall.args[1];
 
-        console.error(appendedContent);
-
         // Check mapping by key
         expect(appendedContent).to.contain(
           '"onboarding-guide": GuideOnboardingGuideStep1Banner001Default',

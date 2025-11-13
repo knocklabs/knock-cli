@@ -1,11 +1,15 @@
 import * as path from "node:path";
 
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 import { assign, get, zip } from "lodash";
 
 import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { WorkflowDirContext } from "@/lib/run-context";
+import * as Templates from "@/lib/templates";
 
+import { WithAnnotation } from "../shared/types";
 import { WORKFLOW_JSON, WorkflowDirBundle } from "./processor.isomorphic";
+import { readWorkflowDir } from "./reader";
 import {
   ChannelStepData,
   StepType,
@@ -13,10 +17,6 @@ import {
   WorkflowStepData,
 } from "./types";
 import { writeWorkflowDirFromBundle, writeWorkflowDirFromData } from "./writer";
-import { Channel } from "@knocklabs/mgmt/resources/channels";
-import * as Templates from "@/lib/templates";
-import { readWorkflowDir } from "./reader";
-import { WithAnnotation } from "../shared/types";
 
 const newTemplateFilePath = (
   stepRef: string,
@@ -276,7 +276,9 @@ export const parseStepsInput = (
   return [tags as StepTag[], undefined];
 };
 
-export const getStepAvailableStepTypes = (channelTypes: Channel["type"][]) => {
+export const getStepAvailableStepTypes = (
+  channelTypes: Channel["type"][],
+): StepTag[] => {
   // Return a list of step
   return STEP_TAGS.filter((stepTag) => {
     switch (stepTag) {
@@ -333,7 +335,6 @@ const scaffoldWorkflowDirBundle = (
             get(channelsByType, "in_app_feed", []),
           );
         default:
-          console.log("default", tag);
           return (stepScaffoldFuncs[tag] as StepScaffoldFunc)(stepCount);
       }
     }),
@@ -358,18 +359,27 @@ export const generateWorkflowDir = async (
 function swapChannelReferences(
   step: ChannelStepData,
   channelsByType: Record<Channel["type"], Channel[]>,
-) {
-  // Temporary until we figure out a better way of doing this
+): WorkflowStepData {
+  // Temporary until we start shipping the `channel_type` field on channel steps
+  // so that we can then branch by that value.
   switch (step.channel_key) {
     case "postmark":
     case "sendgrid":
+    case "resend":
+    case "email":
+    case "knock-email":
       return { ...step, channel_key: channelsByType.email[0]?.key };
     case "in-app-feed":
+    case "knock-in-app-feed":
+    case "knock-feed":
       return { ...step, channel_key: channelsByType.in_app_feed[0]?.key };
     case "sms":
+    case "knock-sms":
     case "twilio":
       return { ...step, channel_key: channelsByType.sms[0]?.key };
     case "push":
+    case "apns":
+    case "fcm":
       return { ...step, channel_key: channelsByType.push[0]?.key };
     case "chat":
       return { ...step, channel_key: channelsByType.chat[0]?.key };
@@ -407,7 +417,7 @@ export const generateWorkflowFromTemplate = async (
   templateString: string,
   attrs: NewWorkflowAttrs,
   channelsByType: Record<Channel["type"], Channel[]>,
-) => {
+): Promise<void> => {
   let tempDir: string | undefined;
   try {
     // Download the template directory into a temp directory
@@ -446,8 +456,6 @@ export const generateWorkflowFromTemplate = async (
     );
 
     return;
-  } catch (error) {
-    throw error;
   } finally {
     await Templates.cleanupTempDir(tempDir);
   }

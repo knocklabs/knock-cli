@@ -5,9 +5,9 @@ import * as fs from "fs-extra";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
+import WorkflowValidate from "@/commands/workflow/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
-import WorkflowValidate from "@/commands/workflow/validate";
 
 const files = ["a/b/workflow.json", "a/b/c/foo.txt"];
 const currCwd = process.cwd();

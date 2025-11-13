@@ -1,7 +1,8 @@
 import * as os from "node:os";
-import * as fs from "fs-extra";
-import path from "path";
+import path from "node:path";
+
 import { default as degit } from "degit";
+import * as fs from "fs-extra";
 
 const DEFAULT_ORG = "knocklabs";
 const DEFAULT_REPO = "templates";
@@ -12,10 +13,16 @@ const TEMP_DIR_PREFIX = "knock-cli-templates";
 Accepts a template string, like `knocklabs/templates/workflows/my-workflow` and resolves
 it back to a Github repo URL, like `https://github.com/knocklabs/templates/workflows/my-workflow`.
 */
-export function resolveTemplate(templateString: string) {
+export function resolveTemplate(templateString: string): {
+  org: string;
+  repo: string;
+  subdir: string;
+} {
   const parts = templateString.split("/");
 
-  let org, repo, subdir;
+  let org;
+  let repo;
+  let subdir;
 
   if (parts.length === 2) {
     // workflows/some-workflow
@@ -55,7 +62,9 @@ function buildSource(
   return `${base}#${branch}`;
 }
 
-export async function downloadTemplate(templateString: string, options = {}) {
+export async function downloadTemplate(
+  templateString: string,
+): Promise<string> {
   const { org, repo, subdir } = resolveTemplate(templateString);
 
   const source = buildSource(org, repo, subdir);
@@ -84,12 +93,14 @@ export async function downloadTemplate(templateString: string, options = {}) {
     throw new Error(
       `Failed to download template: ${
         error instanceof Error ? error.message : "Unknown error"
-      }\n` + `Source: ${source}`,
+      }\n\nSource: ${source}`,
     );
   }
 }
 
-export async function cleanupTempDir(tempDir: string | undefined) {
+export async function cleanupTempDir(
+  tempDir: string | undefined,
+): Promise<void> {
   if (tempDir && tempDir.includes(TEMP_DIR_PREFIX)) {
     await fs.remove(tempDir);
   }

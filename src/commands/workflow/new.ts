@@ -1,27 +1,27 @@
 import * as path from "node:path";
 
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 import { Flags } from "@oclif/core";
 import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
+import { slugify } from "@/lib/helpers/string";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
+import {
+  parseStepsInput,
+  StepTag,
+  StepTagChoices,
+} from "@/lib/marshal/workflow/generator";
 import {
   ensureResourceDirForTarget,
   ResourceTarget,
   WorkflowDirContext,
 } from "@/lib/run-context";
 
-import { slugify } from "@/lib/helpers/string";
-import {
-  parseStepsInput,
-  StepTag,
-  StepTagChoices,
-} from "@/lib/marshal/workflow/generator";
 import WorkflowPush from "./push";
-import { Channel } from "@knocklabs/mgmt/resources/channels";
-import { resolveResourceDir } from "@/lib/helpers/project-config";
 
 export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
   static summary = "Create a new workflow with a minimal configuration.";
@@ -86,6 +86,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
           if (!value || value.trim().length === 0) {
             return "Workflow name is required";
           }
+
           return true;
         },
       });
@@ -102,10 +103,12 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
           if (!value || value.trim().length === 0) {
             return "Workflow key is required";
           }
+
           const keyError = Workflow.validateWorkflowKey(value);
           if (keyError) {
             return `Invalid workflow key: ${keyError}`;
           }
+
           return true;
         },
       });
@@ -134,11 +137,9 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
     }
 
     // Generate the workflow either from a template or from scratch
-    if (flags.template) {
-      await this.fromTemplate(workflowDirCtx, name, flags.template);
-    } else {
-      await this.fromEmpty(workflowDirCtx, name);
-    }
+    await (flags.template
+      ? this.fromTemplate(workflowDirCtx, name, flags.template)
+      : this.fromEmpty(workflowDirCtx, name));
 
     if (flags.push) {
       spinner.start("‣ Pushing workflow to Knock");
@@ -159,7 +160,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
     workflowDirCtx: WorkflowDirContext,
     name: string,
     templateString: string,
-  ) {
+  ): Promise<void> {
     // When being called from the template string, we want to try and generate
     // the workflow from the provided template.
     const channelsByType = await this.listAllChannelsByType();
@@ -182,7 +183,10 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
     spinner.stop();
   }
 
-  async fromEmpty(workflowDirCtx: WorkflowDirContext, name: string) {
+  async fromEmpty(
+    workflowDirCtx: WorkflowDirContext,
+    name: string,
+  ): Promise<void> {
     const { flags } = this.props;
 
     const channelsByType = await this.listAllChannelsByType();
@@ -201,6 +205,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
       if (stepsError) {
         return this.error(`Invalid --steps \`${flags.steps}\` (${stepsError})`);
       }
+
       steps = parsedSteps || [];
     } else {
       // Prompt for steps with multiselect
@@ -216,11 +221,10 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
         choices: stepChoices,
       });
 
-      if (!stepsResponse.steps || stepsResponse.steps.length === 0) {
-        steps = [];
-      } else {
-        steps = stepsResponse.steps as StepTag[];
-      }
+      steps =
+        !stepsResponse.steps || stepsResponse.steps.length === 0
+          ? []
+          : (stepsResponse.steps as StepTag[]);
     }
 
     // 6. Generate the workflow directory with scaffolded steps
@@ -278,14 +282,15 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
     return this.error("Missing 1 required arg:\nworkflowKey");
   }
 
-  async listAllChannelsByType() {
+  async listAllChannelsByType(): Promise<Record<Channel["type"], Channel[]>> {
     const channels = await this.apiV1.listAllChannels();
 
     // Group channels by type
+    // eslint-disable-next-line unicorn/no-array-reduce
     const channelsByType = channels.reduce(
       (acc, channel) => ({
         ...acc,
-        [channel.type]: (acc[channel.type] || []).concat(channel),
+        [channel.type]: [...(acc[channel.type] || []), channel],
       }),
       {} as Record<Channel["type"], Channel[]>,
     );

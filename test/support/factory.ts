@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
@@ -22,7 +23,6 @@ import {
 import { ServiceTokenContext, SessionContext } from "@/lib/types";
 
 import { sequence } from "./helpers";
-import { Channel } from "@knocklabs/mgmt/resources/channels";
 
 export const sessionContext = (
   attrs: Partial<SessionContext> = {},
