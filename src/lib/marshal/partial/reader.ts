@@ -83,6 +83,15 @@ export const readPartialDir = async (
 
   let [partialJson] = result;
 
+  if (
+    !partialJson.type &&
+    partialJson.__readonly &&
+    typeof partialJson.__readonly === "object" &&
+    "type" in partialJson.__readonly
+  ) {
+    partialJson.type = (partialJson.__readonly as AnyObj).type;
+  }
+
   partialJson = omitDeep(partialJson, ["__readonly"]);
 
   return withExtractedFiles

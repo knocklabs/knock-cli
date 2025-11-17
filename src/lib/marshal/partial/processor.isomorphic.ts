@@ -124,9 +124,11 @@ export const buildPartialDirBundle = (
   // At this point the bundle contains all extractable files, so we finally add
   // the partial JSON relative path + the file content.
 
-  return set(
-    bundle,
-    [PARTIAL_JSON],
-    prepareResourceJson(mutRemotePartial, $schema),
-  );
+  const resourceJson = prepareResourceJson(mutRemotePartial, $schema);
+
+  if (remotePartial.type && !resourceJson.type) {
+    resourceJson.type = remotePartial.type;
+  }
+
+  return set(bundle, [PARTIAL_JSON], resourceJson);
 };
