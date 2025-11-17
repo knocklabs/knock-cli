@@ -75,6 +75,7 @@ describe("lib/marshal/partial/processor", () => {
           visual_block_enabled: true,
           description: "Default HTML partial",
           "content@": "content.html",
+          type: PartialType.Html,
           __readonly: {
             key: "default",
             valid: true,
@@ -103,6 +104,7 @@ describe("lib/marshal/partial/processor", () => {
             visual_block_enabled: true,
             description: "Default HTML partial",
             "content@": "foo/bar/partial.html",
+            type: PartialType.Html,
             __readonly: {
               key: "default",
               valid: true,
