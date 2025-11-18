@@ -180,6 +180,7 @@ describe("commands/partial/push", () => {
           description: "This is a default partial",
           icon_name: "Microphone",
           visual_block_enabled: true,
+          type: "html",
           __readonly: {
             valid: true,
             type: "html",
