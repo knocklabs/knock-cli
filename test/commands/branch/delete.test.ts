@@ -6,11 +6,13 @@ import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as sinon from "sinon";
 
+import { KnockEnv } from "@/lib/helpers/const";
+
 describe("commands/branch/delete", () => {
   describe("given confirmation accepted", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "delete", (stub) => stub.resolves())
+      .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .stub(enquirer.prototype, "prompt", (stub) =>
         stub.resolves({ input: "y" }),
       )
@@ -20,8 +22,9 @@ describe("commands/branch/delete", () => {
         "calls knockMgmt.delete with correct parameters and shows success message",
         (ctx) => {
           sinon.assert.calledWith(
-            KnockMgmt.prototype.delete as any,
-            "/v1/branches/test-branch",
+            KnockMgmt.Branches.prototype.delete as any,
+            "test-branch",
+            { environment: KnockEnv.Development },
           );
           expect(ctx.stdout).to.contain(
             "Successfully deleted branch `test-branch`",
@@ -33,15 +36,16 @@ describe("commands/branch/delete", () => {
   describe("given --force flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "delete", (stub) => stub.resolves())
+      .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .stdout()
       .command(["branch delete", "test-branch", "--force"])
       .it(
         "calls knockMgmt.delete without prompting for confirmation",
         (ctx) => {
           sinon.assert.calledWith(
-            KnockMgmt.prototype.delete as any,
-            "/v1/branches/test-branch",
+            KnockMgmt.Branches.prototype.delete as any,
+            "test-branch",
+            { environment: KnockEnv.Development },
           );
           expect(ctx.stdout).to.contain(
             "Successfully deleted branch `test-branch`",
@@ -53,7 +57,7 @@ describe("commands/branch/delete", () => {
   describe("given confirmation declined", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "delete", (stub) => stub.resolves())
+      .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .stub(enquirer.prototype, "prompt", (stub) =>
         stub.resolves({ input: false }),
       )
@@ -62,7 +66,7 @@ describe("commands/branch/delete", () => {
       .it(
         "does not call knockMgmt.delete and shows no success message",
         (ctx) => {
-          sinon.assert.notCalled(KnockMgmt.prototype.delete as any);
+          sinon.assert.notCalled(KnockMgmt.Branches.prototype.delete as any);
           expect(ctx.stdout).to.not.contain("Successfully deleted branch");
         },
       );
@@ -71,12 +75,13 @@ describe("commands/branch/delete", () => {
   describe("given an argument containing mixed casing and whitespace", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "delete", (stub) => stub.resolves())
+      .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .command(["branch delete", " Mixed Case   With Whitespace ", "--force"])
       .it("slugifies input before calling knockMgmt.delete", () => {
         sinon.assert.calledWith(
-          KnockMgmt.prototype.delete as any,
-          "/v1/branches/mixed-case-with-whitespace",
+          KnockMgmt.Branches.prototype.delete as any,
+          "mixed-case-with-whitespace",
+          { environment: KnockEnv.Development },
         );
       });
   });
@@ -102,7 +107,7 @@ describe("commands/branch/delete", () => {
   describe("given API error", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "delete", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "delete", (stub) =>
         stub.rejects(
           new KnockMgmt.APIError(
             404,

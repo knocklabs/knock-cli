@@ -2,6 +2,7 @@ import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
+import { KnockEnv } from "@/lib/helpers/const";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
@@ -30,7 +31,10 @@ export default class BranchDelete extends BaseCommand<typeof BranchDelete> {
     if (!input) return;
 
     await withSpinnerV2(
-      () => this.apiV1.mgmtClient.delete(`/v1/branches/${args.slug}`),
+      () =>
+        this.apiV1.mgmtClient.branches.delete(args.slug, {
+          environment: KnockEnv.Development,
+        }),
       { action: "‣ Deleting branch" },
     );
 
