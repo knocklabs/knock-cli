@@ -20,20 +20,26 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
+    "skip-deletion": Flags.boolean({
+      summary: "Skip deleting the branch after merging.",
+    }),
   };
 
   async run(): Promise<void> {
     const { args, flags } = this.props;
+
     const promotePrompt = `Merge all changes from branch \`${args.slug}\` into the development environment?`;
-    const promoteInput = flags.force || (await promptToConfirm(promotePrompt));
-    if (!promoteInput) return;
+    const shouldPromote = flags.force || (await promptToConfirm(promotePrompt));
+    if (!shouldPromote) return;
 
     await this.promoteBranchCommits();
 
-    // Confirm before deleting the branch, unless forced
     const deletePrompt = `Delete branch \`${args.slug}\`?`;
-    const deleteInput = flags.force || (await promptToConfirm(deletePrompt));
-    if (!deleteInput) return;
+    const shouldDeleteBranch =
+      !flags["skip-deletion"] &&
+      (flags.force || (await promptToConfirm(deletePrompt)));
+
+    if (!shouldDeleteBranch) return;
 
     await this.deleteBranch();
   }
