@@ -39,9 +39,9 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
       !flags["skip-deletion"] &&
       (flags.force || (await promptToConfirm(deletePrompt)));
 
-    if (!shouldDeleteBranch) return;
-
-    await this.deleteBranch();
+    if (shouldDeleteBranch) {
+      await this.deleteBranch();
+    }
   }
 
   private async promoteBranchCommits(): Promise<void> {
