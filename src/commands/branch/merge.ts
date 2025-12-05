@@ -24,9 +24,22 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
 
   async run(): Promise<void> {
     const { args, flags } = this.props;
-    const prompt = `Merge all changes from branch \`${args.slug}\` into the development environment?`;
-    const input = flags.force || (await promptToConfirm(prompt));
-    if (!input) return;
+    const promotePrompt = `Merge all changes from branch \`${args.slug}\` into the development environment?`;
+    const promoteInput = flags.force || (await promptToConfirm(promotePrompt));
+    if (!promoteInput) return;
+
+    await this.promoteBranchCommits();
+
+    // Confirm before deleting the branch, unless forced
+    const deletePrompt = `Delete branch \`${args.slug}\`?`;
+    const deleteInput = flags.force || (await promptToConfirm(deletePrompt));
+    if (!deleteInput) return;
+
+    await this.deleteBranch();
+  }
+
+  private async promoteBranchCommits(): Promise<void> {
+    const { args } = this.props;
 
     await withSpinnerV2(() =>
       this.apiV1.mgmtClient.commits.promoteAll({
@@ -38,7 +51,19 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
     this.log(
       `‣ Successfully merged all changes into the development environment`,
     );
+  }
 
-    // TODO
+  private async deleteBranch(): Promise<void> {
+    const { args } = this.props;
+
+    await withSpinnerV2(
+      () =>
+        this.apiV1.mgmtClient.branches.delete(args.slug, {
+          environment: KnockEnv.Development,
+        }),
+      { action: "‣ Deleting branch" },
+    );
+
+    this.log(`‣ Successfully deleted branch \`${args.slug}\``);
   }
 }
