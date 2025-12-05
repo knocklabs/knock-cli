@@ -12,7 +12,7 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
   static args = {
     slug: CustomArgs.slug({
       required: true,
-      description: "The slug of the branch to delete",
+      description: "The slug of the branch to merge",
     }),
   };
 
