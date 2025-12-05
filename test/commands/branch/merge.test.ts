@@ -13,7 +13,7 @@ describe("commands/branch/merge", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.Commits.prototype, "promoteAll", (stub) =>
-        stub.resolves({ promoted: [] }),
+        stub.resolves({ result: "success" }),
       )
       .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .stub(enquirer.prototype, "prompt", (stub) =>
@@ -50,7 +50,7 @@ describe("commands/branch/merge", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.Commits.prototype, "promoteAll", (stub) =>
-        stub.resolves({ promoted: [] }),
+        stub.resolves({ result: "success" }),
       )
       .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .stdout()
@@ -84,7 +84,7 @@ describe("commands/branch/merge", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.Commits.prototype, "promoteAll", (stub) =>
-        stub.resolves({ promoted: [] }),
+        stub.resolves({ result: "success" }),
       )
       .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .stub(enquirer.prototype, "prompt", (stub) =>
@@ -115,7 +115,7 @@ describe("commands/branch/merge", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.Commits.prototype, "promoteAll", (stub) =>
-        stub.resolves({ promoted: [] }),
+        stub.resolves({ result: "success" }),
       )
       .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .stub(enquirer.prototype, "prompt", (stub) =>
@@ -138,7 +138,7 @@ describe("commands/branch/merge", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.Commits.prototype, "promoteAll", (stub) =>
-        stub.resolves({ promoted: [] }),
+        stub.resolves({ result: "success" }),
       )
       .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .stub(enquirer.prototype, "prompt", (stub) =>
@@ -173,7 +173,7 @@ describe("commands/branch/merge", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.Commits.prototype, "promoteAll", (stub) =>
-        stub.resolves({ promoted: [] }),
+        stub.resolves({ result: "success" }),
       )
       .stub(KnockMgmt.Branches.prototype, "delete", (stub) => stub.resolves())
       .command(["branch merge", " Mixed Case   With Whitespace ", "--force"])
@@ -240,7 +240,7 @@ describe("commands/branch/merge", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.Commits.prototype, "promoteAll", (stub) =>
-        stub.resolves({ promoted: [] }),
+        stub.resolves({ result: "success" }),
       )
       .stub(KnockMgmt.Branches.prototype, "delete", (stub) =>
         stub.rejects(
