@@ -21,29 +21,23 @@ describe("commands/branch/merge", () => {
       )
       .stdout()
       .command(["branch merge", "test-branch"])
-      .it(
-        "calls promoteAll and delete with correct parameters and shows success messages",
-        (ctx) => {
-          sinon.assert.calledWith(
-            KnockMgmt.Commits.prototype.promoteAll as any,
-            {
-              branch: "test-branch",
-              to_environment: KnockEnv.Development,
-            },
-          );
-          sinon.assert.calledWith(
-            KnockMgmt.Branches.prototype.delete as any,
-            "test-branch",
-            { environment: KnockEnv.Development },
-          );
-          expect(ctx.stdout).to.contain(
-            "Successfully merged all changes into the development environment",
-          );
-          expect(ctx.stdout).to.contain(
-            "Successfully deleted branch `test-branch`",
-          );
-        },
-      );
+      .it("calls promoteAll and delete with correct parameters", (ctx) => {
+        sinon.assert.calledWith(KnockMgmt.Commits.prototype.promoteAll as any, {
+          branch: "test-branch",
+          to_environment: KnockEnv.Development,
+        });
+        sinon.assert.calledWith(
+          KnockMgmt.Branches.prototype.delete as any,
+          "test-branch",
+          { environment: KnockEnv.Development },
+        );
+        expect(ctx.stdout).to.contain(
+          "Successfully merged all changes into the development environment",
+        );
+        expect(ctx.stdout).to.contain(
+          "Successfully deleted branch `test-branch`",
+        );
+      });
   });
 
   describe("given --force flag", () => {
@@ -92,23 +86,17 @@ describe("commands/branch/merge", () => {
       )
       .stdout()
       .command(["branch merge", "test-branch", "--skip-deletion"])
-      .it(
-        "calls promoteAll but skips branch deletion and does not show deletion success message",
-        (ctx) => {
-          sinon.assert.calledWith(
-            KnockMgmt.Commits.prototype.promoteAll as any,
-            {
-              branch: "test-branch",
-              to_environment: KnockEnv.Development,
-            },
-          );
-          sinon.assert.notCalled(KnockMgmt.Branches.prototype.delete as any);
-          expect(ctx.stdout).to.contain(
-            "Successfully merged all changes into the development environment",
-          );
-          expect(ctx.stdout).to.not.contain("Successfully deleted branch");
-        },
-      );
+      .it("calls promoteAll but skips branch deletion", (ctx) => {
+        sinon.assert.calledWith(KnockMgmt.Commits.prototype.promoteAll as any, {
+          branch: "test-branch",
+          to_environment: KnockEnv.Development,
+        });
+        sinon.assert.notCalled(KnockMgmt.Branches.prototype.delete as any);
+        expect(ctx.stdout).to.contain(
+          "Successfully merged all changes into the development environment",
+        );
+        expect(ctx.stdout).to.not.contain("Successfully deleted branch");
+      });
   });
 
   describe("given confirmation declined for promote", () => {
@@ -123,15 +111,12 @@ describe("commands/branch/merge", () => {
       )
       .stdout()
       .command(["branch merge", "test-branch"])
-      .it(
-        "does not call promoteAll or delete and shows no success messages",
-        (ctx) => {
-          sinon.assert.notCalled(KnockMgmt.Commits.prototype.promoteAll as any);
-          sinon.assert.notCalled(KnockMgmt.Branches.prototype.delete as any);
-          expect(ctx.stdout).to.not.contain("Successfully merged all changes");
-          expect(ctx.stdout).to.not.contain("Successfully deleted branch");
-        },
-      );
+      .it("does not call promoteAll or delete", (ctx) => {
+        sinon.assert.notCalled(KnockMgmt.Commits.prototype.promoteAll as any);
+        sinon.assert.notCalled(KnockMgmt.Branches.prototype.delete as any);
+        expect(ctx.stdout).to.not.contain("Successfully merged all changes");
+        expect(ctx.stdout).to.not.contain("Successfully deleted branch");
+      });
   });
 
   describe("given confirmation accepted for promote but declined for delete", () => {
@@ -150,23 +135,17 @@ describe("commands/branch/merge", () => {
       )
       .stdout()
       .command(["branch merge", "test-branch"])
-      .it(
-        "calls promoteAll but not delete and only shows merge success message",
-        (ctx) => {
-          sinon.assert.calledWith(
-            KnockMgmt.Commits.prototype.promoteAll as any,
-            {
-              branch: "test-branch",
-              to_environment: KnockEnv.Development,
-            },
-          );
-          sinon.assert.notCalled(KnockMgmt.Branches.prototype.delete as any);
-          expect(ctx.stdout).to.contain(
-            "Successfully merged all changes into the development environment",
-          );
-          expect(ctx.stdout).to.not.contain("Successfully deleted branch");
-        },
-      );
+      .it("calls promoteAll but not delete", (ctx) => {
+        sinon.assert.calledWith(KnockMgmt.Commits.prototype.promoteAll as any, {
+          branch: "test-branch",
+          to_environment: KnockEnv.Development,
+        });
+        sinon.assert.notCalled(KnockMgmt.Branches.prototype.delete as any);
+        expect(ctx.stdout).to.contain(
+          "Successfully merged all changes into the development environment",
+        );
+        expect(ctx.stdout).to.not.contain("Successfully deleted branch");
+      });
   });
 
   describe("given an argument containing mixed casing and whitespace", () => {
