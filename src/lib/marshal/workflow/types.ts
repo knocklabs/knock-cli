@@ -6,7 +6,13 @@ import {
   MaybeWithAnnotation,
 } from "@/lib/marshal/shared/types";
 
-export type ChannelType = "chat" | "email" | "in_app_feed" | "push" | "sms";
+export type ChannelType =
+  | "chat"
+  | "email"
+  | "in_app_feed"
+  | "push"
+  | "sms"
+  | "http";
 
 export enum StepType {
   Channel = "channel",
