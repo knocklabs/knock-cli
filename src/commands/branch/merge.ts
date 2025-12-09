@@ -20,8 +20,10 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
-    "skip-deletion": Flags.boolean({
-      summary: "Skip deleting the branch after merging.",
+    "delete": Flags.boolean({
+      summary: "Delete the branch after merging.",
+      default: true,
+      allowNo: true,
     }),
   };
 
