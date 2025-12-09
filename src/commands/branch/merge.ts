@@ -39,10 +39,9 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
     const deletePrompt = `Delete branch \`${args.slug}\`?`;
     const shouldDeleteBranch =
       flags.delete && (flags.force || (await promptToConfirm(deletePrompt)));
+    if (!shouldDeleteBranch) return;
 
-    if (shouldDeleteBranch) {
-      await this.deleteBranch();
-    }
+    await this.deleteBranch();
   }
 
   private async promoteBranchCommits(): Promise<void> {
