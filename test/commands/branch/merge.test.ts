@@ -71,7 +71,7 @@ describe("commands/branch/merge", () => {
       );
   });
 
-  describe("given --skip-deletion flag", () => {
+  describe("given --no-delete flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockMgmt.Commits.prototype, "promoteAll", (stub) =>
@@ -82,7 +82,7 @@ describe("commands/branch/merge", () => {
         stub.resolves({ input: "y" }),
       )
       .stdout()
-      .command(["branch merge", "test-branch", "--skip-deletion"])
+      .command(["branch merge", "test-branch", "--no-delete"])
       .it("calls promoteAll but skips branch deletion", (ctx) => {
         sinon.assert.calledWith(KnockMgmt.Commits.prototype.promoteAll as any, {
           branch: "test-branch",

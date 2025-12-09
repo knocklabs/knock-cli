@@ -20,7 +20,7 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
-    "delete": Flags.boolean({
+    delete: Flags.boolean({
       summary: "Delete the branch after merging.",
       default: true,
       allowNo: true,
@@ -38,8 +38,7 @@ export default class BranchMerge extends BaseCommand<typeof BranchMerge> {
 
     const deletePrompt = `Delete branch \`${args.slug}\`?`;
     const shouldDeleteBranch =
-      !flags["skip-deletion"] &&
-      (flags.force || (await promptToConfirm(deletePrompt)));
+      flags.delete && (flags.force || (await promptToConfirm(deletePrompt)));
 
     if (shouldDeleteBranch) {
       await this.deleteBranch();
