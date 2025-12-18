@@ -11,7 +11,7 @@ import { PartialData, PartialType } from "./types";
 export const PARTIAL_JSON = "partial.json";
 
 export type PartialDirBundle = {
-  [relpath: string]: string;
+  [relpath: string]: string | Record<string, unknown>;
 };
 
 // Maps the partial type to the correct file extension. Defaults to 'txt'

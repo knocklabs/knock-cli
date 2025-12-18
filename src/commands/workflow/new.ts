@@ -6,6 +6,7 @@ import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import { slugify } from "@/lib/helpers/string";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
@@ -44,6 +45,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
         "The environment to create the workflow in. Defaults to development.",
       default: KnockEnv.Development,
     }),
+    branch: CustomFlags.branch,
     force: Flags.boolean({
       summary:
         "Force the creation of the workflow directory without confirmation.",
