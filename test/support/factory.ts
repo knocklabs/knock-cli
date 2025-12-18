@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
+import { Environment } from "@knocklabs/mgmt/resources/environments";
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 import { type BranchData, type WhoamiResp } from "@/lib/api-v1";
@@ -331,4 +332,16 @@ export const channel = (attrs: Partial<Channel> = {}): Channel => {
     type: "email",
     ...attrs,
   } as any as Channel;
+};
+
+export const environment = (attrs: Partial<Environment> = {}): Environment => {
+  return {
+    slug: "test-environment",
+    name: "Test Environment",
+    order: 1,
+    owner: "user",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+    ...attrs,
+  } as any as Environment;
 };
