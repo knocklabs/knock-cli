@@ -91,9 +91,12 @@ describe("lib/marshal/workflow/reader", () => {
     };
 
     beforeEach(() => {
+      fs.emptyDirSync(sandboxDir);
       fs.removeSync(sandboxDir);
+
       fs.ensureDir(workflowDirCtx.abspath);
     });
+
     after(() => fs.removeSync(sandboxDir));
 
     describe("given a valid liquid html template", () => {

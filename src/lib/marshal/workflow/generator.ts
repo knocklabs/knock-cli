@@ -276,7 +276,7 @@ export const parseStepsInput = (
   return [tags as StepTag[], undefined];
 };
 
-export const getStepAvailableStepTypes = (
+export const getAvailableStepTypes = (
   channelTypes: Channel["type"][],
 ): StepTag[] => {
   // Return a list of step
