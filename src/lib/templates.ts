@@ -31,7 +31,7 @@ export function resolveTemplate(templateString: string): {
     subdir = parts.join("/");
   }
 
-  if (parts.length >= 3) {
+  if (parts.length === 4) {
     // knocklabs/templates/workflows/some-workflow
     org = parts[0];
     repo = parts[1];

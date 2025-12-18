@@ -55,7 +55,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
     }),
     template: Flags.string({
       summary:
-        "The template to use for the workflow. You cannot use this flag with --steps.",
+        "The template repository to use for the workflow. Should be `workflows/{type}`. You cannot use this flag with --steps.",
       char: "t",
     }),
   };
@@ -125,21 +125,18 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
 
     const workflowDirCtx = await this.getWorkflowDirContext(key);
 
+    const promptMessage = workflowDirCtx.exists
+      ? `Found \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}, overwrite?`
+      : `Create a new workflow directory \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}?`;
+
     // Check if the workflow directory already exists, and prompt to confirm if not.
-    if (workflowDirCtx.exists) {
-      this.log(
-        `‣ Found \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}`,
-      );
-    } else {
-      const prompt = `Create a new workflow directory \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}?`;
-      const input = flags.force || (await promptToConfirm(prompt));
-      if (!input) return;
-    }
+    const input = flags.force || (await promptToConfirm(promptMessage));
+    if (!input) return;
 
     // Generate the workflow either from a template or from scratch
     await (flags.template
       ? this.fromTemplate(workflowDirCtx, name, flags.template)
-      : this.fromEmpty(workflowDirCtx, name));
+      : this.fromSteps(workflowDirCtx, name, flags.steps));
 
     if (flags.push) {
       spinner.start("‣ Pushing workflow to Knock");
@@ -179,31 +176,28 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
     } finally {
       spinner.stop();
     }
-
-    spinner.stop();
   }
 
-  async fromEmpty(
+  async fromSteps(
     workflowDirCtx: WorkflowDirContext,
     name: string,
+    stepStr: string | undefined,
   ): Promise<void> {
-    const { flags } = this.props;
-
     const channelsByType = await this.listAllChannelsByType();
     const channelTypes = Object.keys(channelsByType) as Channel["type"][];
-    const availableStepTypes = Workflow.getStepAvailableStepTypes(channelTypes);
+    const availableStepTypes = Workflow.getAvailableStepTypes(channelTypes);
 
     let steps: StepTag[] = [];
 
     // Stuff with steps
-    if (flags.steps) {
+    if (stepStr) {
       // Parse steps from flag
       const [parsedSteps, stepsError] = parseStepsInput(
-        flags.steps,
+        stepStr,
         availableStepTypes,
       );
       if (stepsError) {
-        return this.error(`Invalid --steps \`${flags.steps}\` (${stepsError})`);
+        return this.error(`Invalid --steps \`${stepStr}\` (${stepsError})`);
       }
 
       steps = parsedSteps || [];
@@ -221,10 +215,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
         choices: stepChoices,
       });
 
-      steps =
-        !stepsResponse.steps || stepsResponse.steps.length === 0
-          ? []
-          : (stepsResponse.steps as StepTag[]);
+      steps = (stepsResponse?.steps || []) as StepTag[];
     }
 
     // 6. Generate the workflow directory with scaffolded steps
