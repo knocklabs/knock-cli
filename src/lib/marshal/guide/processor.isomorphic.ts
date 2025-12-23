@@ -19,7 +19,7 @@ import { GuideData } from "./types";
 export const GUIDE_JSON = "guide.json";
 
 export type GuideDirBundle = {
-  [relpath: string]: string;
+  [relpath: string]: string | AnyObj;
 };
 
 /*

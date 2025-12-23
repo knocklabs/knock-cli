@@ -6,6 +6,7 @@
 import * as path from "node:path";
 
 import * as EmailLayout from "@/lib/marshal/email-layout";
+import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
 import * as Translation from "@/lib/marshal/translation";
@@ -31,6 +32,11 @@ const evaluateRecursively = async (
     const isWorkflowDir = await Workflow.isWorkflowDir(currDir);
     if (isWorkflowDir) {
       ctx.resourceDir = buildResourceDirContext("workflow", currDir);
+    }
+
+    const isGuideDir = await Guide.isGuideDir(currDir);
+    if (isGuideDir) {
+      ctx.resourceDir = buildResourceDirContext("guide", currDir);
     }
 
     const isEmailLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
