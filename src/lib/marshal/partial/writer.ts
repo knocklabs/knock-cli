@@ -78,7 +78,7 @@ const writePartialDirFromBundle = async (
 
         return relpath === PARTIAL_JSON
           ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
-          : fs.outputFile(filePath, fileContent ?? "");
+          : fs.outputFile(filePath, (fileContent as string) ?? "");
       },
     );
     await Promise.all(promises);
@@ -185,4 +185,4 @@ export const writePartialsIndexDir = async (
 };
 
 // Exported for tests.
-export { prunePartialsIndexDir };
+export { prunePartialsIndexDir, writePartialDirFromBundle };
