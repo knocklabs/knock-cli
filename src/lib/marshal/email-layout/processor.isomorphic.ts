@@ -14,7 +14,7 @@ import { EmailLayoutData } from "./types";
 export const LAYOUT_JSON = "layout.json";
 
 export type EmailLayoutDirBundle = {
-  [relpath: string]: string;
+  [relpath: string]: string | Record<string, unknown>;
 };
 
 /*

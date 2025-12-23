@@ -10,7 +10,11 @@ import { WithAnnotation } from "@/lib/marshal/shared/types";
 import { EmailLayoutDirContext } from "@/lib/run-context";
 
 import { isEmailLayoutDir } from "./helpers";
-import { buildEmailLayoutDirBundle, LAYOUT_JSON } from "./processor.isomorphic";
+import {
+  buildEmailLayoutDirBundle,
+  EmailLayoutDirBundle,
+  LAYOUT_JSON,
+} from "./processor.isomorphic";
 import { readEmailLayoutDir } from "./reader";
 import { EmailLayoutData } from "./types";
 
@@ -44,22 +48,38 @@ export const writeEmailLayoutDirFromData = async (
     withSchema ? EMAIL_LAYOUT_SCHEMA : undefined,
   );
 
+  return writeEmailLayoutDirFromBundle(emailLayoutDirCtx, bundle);
+};
+
+/*
+ * A lower level write function that takes a constructed email layout dir bundle
+ * and writes it into a layout directory on a local file system.
+ *
+ * It does not make any assumptions about how the email layout directory bundle was
+ * built; for example, it can be from parsing the layout data fetched from
+ * the Knock API, or built manually for scaffolding purposes.
+ */
+const writeEmailLayoutDirFromBundle = async (
+  emailLayoutDirCtx: EmailLayoutDirContext,
+  emailLayoutDirBundle: EmailLayoutDirBundle,
+): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+
   try {
-    // We store a backup in case there's an error.
     if (emailLayoutDirCtx.exists) {
       await fs.copy(emailLayoutDirCtx.abspath, backupDirPath);
       await fs.emptyDir(emailLayoutDirCtx.abspath);
     }
 
-    const promises = Object.entries(bundle).map(([relpath, fileContent]) => {
-      const filePath = path.resolve(emailLayoutDirCtx.abspath, relpath);
+    const promises = Object.entries(emailLayoutDirBundle).map(
+      ([relpath, fileContent]) => {
+        const filePath = path.resolve(emailLayoutDirCtx.abspath, relpath);
 
-      return relpath === LAYOUT_JSON
-        ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
-        : fs.outputFile(filePath, fileContent);
-    });
-
+        return relpath === LAYOUT_JSON
+          ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
+          : fs.outputFile(filePath, (fileContent as string) ?? "");
+      },
+    );
     await Promise.all(promises);
   } catch (error) {
     // In case of any error, wipe the target directory that is likely in a bad
@@ -167,4 +187,4 @@ const pruneLayoutsIndexDir = async (
 };
 
 // Exported for tests
-export { pruneLayoutsIndexDir };
+export { pruneLayoutsIndexDir, writeEmailLayoutDirFromBundle };
