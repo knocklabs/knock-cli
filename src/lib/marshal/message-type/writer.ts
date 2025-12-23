@@ -78,7 +78,7 @@ const writeMessageTypeDirFromBundle = async (
 
         return relpath === MESSAGE_TYPE_JSON
           ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
-          : fs.outputFile(filePath, fileContent ?? "");
+          : fs.outputFile(filePath, fileContent.toString() ?? "");
       },
     );
     await Promise.all(promises);
@@ -194,4 +194,4 @@ export const writeMessageTypesIndexDir = async (
 };
 
 // Exported for tests.
-export { pruneMessageTypesIndexDir };
+export { pruneMessageTypesIndexDir, writeMessageTypeDirFromBundle };
