@@ -1,6 +1,7 @@
 import KnockMgmt from "@knocklabs/mgmt";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
+import { Environment } from "@knocklabs/mgmt/resources/environments";
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -542,6 +543,15 @@ export default class ApiV1 {
     }
 
     return channels;
+  }
+
+  async listAllEnvironments(): Promise<Environment[]> {
+    const environments: Environment[] = [];
+    for await (const environment of this.mgmtClient.environments.list()) {
+      environments.push(environment);
+    }
+
+    return environments;
   }
 
   // By methods:
