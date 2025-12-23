@@ -8,7 +8,7 @@ import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { type BranchData, type WhoamiResp } from "@/lib/api-v1";
 import { AuthenticatedSession } from "@/lib/auth";
 import { BFlags, Props } from "@/lib/base-command";
-import { PageInfo } from "@/lib/helpers/page";
+import { PageInfo, PaginatedResp } from "@/lib/helpers/page";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
@@ -73,6 +73,16 @@ export const pageInfo = (attrs: Partial<PageInfo> = {}): PageInfo => {
     before: null,
     page_size: 50,
     ...attrs,
+  };
+};
+
+export const paginatedResp = <T>(
+  entries: T[],
+  pageInfoAttrs: Partial<PageInfo> = {},
+): PaginatedResp<T> => {
+  return {
+    entries,
+    page_info: pageInfo(pageInfoAttrs),
   };
 };
 
@@ -247,6 +257,7 @@ export const messageType = (
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",
     environment: "development",
+    sha: "<SOME_SHA>",
     ...attrs,
   };
 };
@@ -268,12 +279,13 @@ export const guide = (attrs: Partial<GuideData> = {}): GuideData => {
         schema_key: "banner",
         schema_semver: "0.0.1",
         schema_variant_key: "default",
-        fields: [],
+        values: {},
       },
     ],
     updated_at: "2022-12-31T12:00:00.000000Z",
     created_at: "2022-12-31T12:00:00.000000Z",
     environment: "development",
+    sha: "<SOME_SHA>",
     ...attrs,
   };
 };

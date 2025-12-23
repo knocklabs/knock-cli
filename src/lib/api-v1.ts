@@ -2,6 +2,7 @@ import KnockMgmt from "@knocklabs/mgmt";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { Environment } from "@knocklabs/mgmt/resources/environments";
+import { MessageTypeListParams } from "@knocklabs/mgmt/resources/message-types";
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -412,6 +413,18 @@ export default class ApiV1 {
     });
 
     return this.get("/message_types", { params });
+  }
+
+  async listAllMessageTypes(
+    params: MessageTypeListParams,
+  ): Promise<MessageType.MessageTypeData[]> {
+    const messageTypes: MessageType.MessageTypeData[] = [];
+
+    for await (const messageType of this.mgmtClient.messageTypes.list(params)) {
+      messageTypes.push(messageType as MessageType.MessageTypeData);
+    }
+
+    return messageTypes;
   }
 
   async getMessageType<A extends MaybeWithAnnotation>({

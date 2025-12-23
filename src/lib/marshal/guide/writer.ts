@@ -60,7 +60,7 @@ export const writeGuideDirFromData = async (
  * built; for example, it can be from parsing the guide data fetched from
  * the Knock API, or built manually for scaffolding purposes.
  */
-const writeGuideDirFromBundle = async (
+export const writeGuideDirFromBundle = async (
   guideDirCtx: GuideDirContext,
   guideDirBundle: GuideDirBundle,
 ): Promise<void> => {
@@ -78,7 +78,10 @@ const writeGuideDirFromBundle = async (
 
         return relpath === GUIDE_JSON
           ? fs.outputJson(filePath, fileContent, { spaces: DOUBLE_SPACES })
-          : fs.outputFile(filePath, fileContent ?? "");
+          : fs.outputFile(
+              filePath,
+              typeof fileContent === "string" ? fileContent : "",
+            );
       },
     );
     await Promise.all(promises);
