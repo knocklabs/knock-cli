@@ -1,4 +1,5 @@
 import KnockMgmt from "@knocklabs/mgmt";
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
@@ -532,6 +533,15 @@ export default class ApiV1 {
     });
 
     return this.put(`/guides/${args.guideKey}/activate`, {}, { params });
+  }
+
+  async listAllChannels(): Promise<Channel[]> {
+    const channels: Channel[] = [];
+    for await (const channel of this.mgmtClient.channels.list()) {
+      channels.push(channel);
+    }
+
+    return channels;
   }
 
   // By methods:

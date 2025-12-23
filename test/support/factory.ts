@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
@@ -321,4 +322,13 @@ export const reusableStep = (
     sha: "<SOME_SHA>",
     ...attrs,
   };
+};
+
+export const channel = (attrs: Partial<Channel> = {}): Channel => {
+  return {
+    key: "test-channel",
+    name: "Test Channel",
+    type: "email",
+    ...attrs,
+  } as any as Channel;
 };

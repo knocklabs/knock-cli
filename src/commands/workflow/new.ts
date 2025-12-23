@@ -1,99 +1,291 @@
 import * as path from "node:path";
 
-import { Args, Flags } from "@oclif/core";
-import * as fs from "fs-extra";
+import { Channel } from "@knocklabs/mgmt/resources/channels";
+import { Flags } from "@oclif/core";
+import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
 import { KnockEnv } from "@/lib/helpers/const";
-import { spinner } from "@/lib/helpers/ux";
+import { resolveResourceDir } from "@/lib/helpers/project-config";
+import { slugify } from "@/lib/helpers/string";
+import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
-import { WorkflowDirContext } from "@/lib/run-context";
+import {
+  parseStepsInput,
+  StepTag,
+  StepTagChoices,
+} from "@/lib/marshal/workflow/generator";
+import {
+  ensureResourceDirForTarget,
+  ResourceTarget,
+  WorkflowDirContext,
+} from "@/lib/run-context";
+
+import WorkflowPush from "./push";
 
 export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
-  static flags = {
-    steps: Flags.string({ aliases: ["step"] }),
-    force: Flags.boolean(),
-    environment: Flags.string({ hidden: true, default: KnockEnv.Development }),
-  };
+  static summary = "Create a new workflow with a minimal configuration.";
 
-  static args = {
-    workflowKey: Args.string({
-      required: true,
+  static flags = {
+    name: Flags.string({
+      summary: "The name of the workflow",
+      char: "n",
+    }),
+    key: Flags.string({
+      summary: "The key of the workflow",
+      char: "k",
+    }),
+    steps: Flags.string({
+      summary: "Comma-separated list of step types to include in the workflow",
+      char: "s",
+    }),
+    environment: Flags.string({
+      summary:
+        "The environment to create the workflow in. Defaults to development.",
+      default: KnockEnv.Development,
+    }),
+    force: Flags.boolean({
+      summary:
+        "Force the creation of the workflow directory without confirmation.",
+    }),
+    push: Flags.boolean({
+      summary: "Whether or not to push the workflow to Knock after creation.",
+      default: false,
+      char: "p",
+    }),
+    template: Flags.string({
+      summary:
+        "The template repository to use for the workflow. Should be `workflows/{type}`. You cannot use this flag with --steps.",
+      char: "t",
     }),
   };
 
-  // TODO(KNO-3072): Unhide after we move the generator logic to the backend.
-  static hidden = true;
+  static args = {};
 
   async run(): Promise<void> {
-    const { args, flags } = this.props;
-    const { cwd, resourceDir } = this.runContext;
-
-    spinner.start("‣ Validating");
+    const { flags } = this.props;
+    const { resourceDir } = this.runContext;
 
     // 1. Ensure we aren't in any existing resource directory already.
-    // TODO: In the future, maybe check for the project context and if we are in
-    // /workflows directory.
     if (resourceDir) {
       return this.error(
-        `Cannot generate inside an existing ${resourceDir.type} directory`,
+        `Cannot create a new workflow inside an existing ${resourceDir.type} directory`,
       );
     }
 
-    // 2. Ensure the workflow key is in the valid format.
-    const workflowKeyError = Workflow.validateWorkflowKey(args.workflowKey);
+    // 2. Prompt for name and key if not provided
+    let name = flags.name;
+    let key = flags.key;
+
+    if (!name) {
+      const nameResponse = await prompt<{ name: string }>({
+        type: "input",
+        name: "name",
+        message: "Workflow name",
+        validate: (value: string) => {
+          if (!value || value.trim().length === 0) {
+            return "Workflow name is required";
+          }
+
+          return true;
+        },
+      });
+      name = nameResponse.name;
+    }
+
+    if (!key) {
+      const keyResponse = await prompt<{ key: string }>({
+        type: "input",
+        name: "key",
+        message: "Workflow key (immutable slug)",
+        initial: slugify(name),
+        validate: (value: string) => {
+          if (!value || value.trim().length === 0) {
+            return "Workflow key is required";
+          }
+
+          const keyError = Workflow.validateWorkflowKey(value);
+          if (keyError) {
+            return `Invalid workflow key: ${keyError}`;
+          }
+
+          return true;
+        },
+      });
+      key = keyResponse.key;
+    }
+
+    // Validate the workflow key
+    const workflowKeyError = Workflow.validateWorkflowKey(key);
     if (workflowKeyError) {
       return this.error(
-        `Invalid workflow key \`${args.workflowKey}\` (${workflowKeyError})`,
+        `Invalid workflow key \`${key}\` (${workflowKeyError})`,
       );
     }
 
-    // 3. Parse and validate the steps flag, if given.
-    const [steps, stepsError] = Workflow.parseStepsInput(flags.steps || "");
-    if (stepsError) {
-      return this.error(`Invalid --steps \`${flags.steps}\` (${stepsError})`);
+    const workflowDirCtx = await this.getWorkflowDirContext(key);
+
+    const promptMessage = workflowDirCtx.exists
+      ? `Found \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}, overwrite?`
+      : `Create a new workflow directory \`${workflowDirCtx.key}\` at ${workflowDirCtx.abspath}?`;
+
+    // Check if the workflow directory already exists, and prompt to confirm if not.
+    const input = flags.force || (await promptToConfirm(promptMessage));
+    if (!input) return;
+
+    // Generate the workflow either from a template or from scratch
+    await (flags.template
+      ? this.fromTemplate(workflowDirCtx, name, flags.template)
+      : this.fromSteps(workflowDirCtx, name, flags.steps));
+
+    if (flags.push) {
+      spinner.start("‣ Pushing workflow to Knock");
+
+      try {
+        await WorkflowPush.run([key]);
+      } catch (error) {
+        this.error(`Failed to push workflow to Knock: ${error}`);
+      } finally {
+        spinner.stop();
+      }
     }
 
-    // 4. Ensure not to overwrite any existing path accidentally.
-    const newWorkflowDirPath = path.resolve(cwd, args.workflowKey);
-    const pathExists = await fs.pathExists(newWorkflowDirPath);
-    if (pathExists && !flags.force) {
-      return this.error(
-        `Cannot overwrite an existing path at ${newWorkflowDirPath}` +
-          " (use --force to overwrite)",
+    this.log(`‣ Successfully created workflow \`${key}\``);
+  }
+
+  async fromTemplate(
+    workflowDirCtx: WorkflowDirContext,
+    name: string,
+    templateString: string,
+  ): Promise<void> {
+    // When being called from the template string, we want to try and generate
+    // the workflow from the provided template.
+    const channelsByType = await this.listAllChannelsByType();
+
+    spinner.start(`‣ Generating workflow from template \`${templateString}\``);
+
+    try {
+      await Workflow.generateWorkflowFromTemplate(
+        workflowDirCtx,
+        templateString,
+        { name },
+        channelsByType,
       );
-    }
-
-    spinner.stop();
-
-    // 5-A. We are good to generate a new workflow directory.
-    const dirContext: WorkflowDirContext = {
-      type: "workflow",
-      key: args.workflowKey,
-      abspath: newWorkflowDirPath,
-      exists: await Workflow.isWorkflowDir(newWorkflowDirPath),
-    };
-    const attrs = { name: args.workflowKey, steps };
-
-    await Workflow.generateWorkflowDir(dirContext, attrs);
-    this.log(
-      `‣ Successfully generated a workflow directory at ${dirContext.abspath}`,
-    );
-
-    // 5-B. Lastly warn if this workflow already exists in Knock.
-    const isExistingWorkflow = await this.checkExistingWorkflow();
-    if (isExistingWorkflow) {
-      this.log("");
-      this.warn(
-        `Workflow \`${args.workflowKey}\` already exists in \`${flags.environment}\` environment`,
-      );
+    } catch (error) {
+      this.error(`Failed to generate workflow from template: ${error}`);
+    } finally {
+      spinner.stop();
     }
   }
 
-  async checkExistingWorkflow(): Promise<boolean | undefined> {
-    try {
-      const resp = await this.apiV1.getWorkflow(this.props);
-      return resp.status === 200;
-    } catch {}
+  async fromSteps(
+    workflowDirCtx: WorkflowDirContext,
+    name: string,
+    stepStr: string | undefined,
+  ): Promise<void> {
+    const channelsByType = await this.listAllChannelsByType();
+    const channelTypes = Object.keys(channelsByType) as Channel["type"][];
+    const availableStepTypes = Workflow.getAvailableStepTypes(channelTypes);
+
+    let steps: StepTag[] = [];
+
+    // Stuff with steps
+    if (stepStr) {
+      // Parse steps from flag
+      const [parsedSteps, stepsError] = parseStepsInput(
+        stepStr,
+        availableStepTypes,
+      );
+      if (stepsError) {
+        return this.error(`Invalid --steps \`${stepStr}\` (${stepsError})`);
+      }
+
+      steps = parsedSteps || [];
+    } else {
+      // Prompt for steps with multiselect
+      const stepChoices = availableStepTypes.map((stepType) => ({
+        name: stepType,
+        message: StepTagChoices[stepType],
+      }));
+
+      const stepsResponse = await prompt<{ steps: string[] }>({
+        type: "multiselect",
+        name: "steps",
+        message: "(optional) Select step types to bootstrap the workflow with",
+        choices: stepChoices,
+      });
+
+      steps = (stepsResponse?.steps || []) as StepTag[];
+    }
+
+    // 6. Generate the workflow directory with scaffolded steps
+    await Workflow.generateWorkflowDir(
+      workflowDirCtx,
+      {
+        name,
+        steps,
+      },
+      channelsByType,
+    );
+  }
+
+  async getWorkflowDirContext(
+    workflowKey?: string,
+  ): Promise<WorkflowDirContext> {
+    const { resourceDir, cwd: runCwd } = this.runContext;
+
+    // Inside an existing resource dir, use it if valid for the target workflow.
+    if (resourceDir) {
+      const target: ResourceTarget = {
+        commandId: BaseCommand.id,
+        type: "workflow",
+        key: workflowKey,
+      };
+
+      return ensureResourceDirForTarget(
+        resourceDir,
+        target,
+      ) as WorkflowDirContext;
+    }
+
+    // Default to knock project config first if present, otherwise cwd.
+    const dirCtx = await resolveResourceDir(
+      this.projectConfig,
+      "workflow",
+      runCwd,
+    );
+
+    // Not inside any existing workflow directory, which means either create a
+    // new worfklow directory in the cwd, or update it if there is one already.
+    if (workflowKey) {
+      const dirPath = path.resolve(dirCtx.abspath, workflowKey);
+      const exists = await Workflow.isWorkflowDir(dirPath);
+
+      return {
+        type: "workflow",
+        key: workflowKey,
+        abspath: dirPath,
+        exists,
+      };
+    }
+
+    // Not in any workflow directory, nor a workflow key arg was given so error.
+    return this.error("Missing 1 required arg:\nworkflowKey");
+  }
+
+  async listAllChannelsByType(): Promise<Record<Channel["type"], Channel[]>> {
+    const channels = await this.apiV1.listAllChannels();
+
+    // Group channels by type
+    // eslint-disable-next-line unicorn/no-array-reduce
+    const channelsByType = channels.reduce(
+      (acc, channel) => ({
+        ...acc,
+        [channel.type]: [...(acc[channel.type] || []), channel],
+      }),
+      {} as Record<Channel["type"], Channel[]>,
+    );
+
+    return channelsByType;
   }
 }

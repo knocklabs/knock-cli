@@ -1,13 +1,22 @@
 import * as path from "node:path";
 
+import { Channel } from "@knocklabs/mgmt/resources/channels";
 import { assign, get, zip } from "lodash";
 
 import { FILEPATH_MARKER } from "@/lib/marshal/shared/const.isomorphic";
 import { WorkflowDirContext } from "@/lib/run-context";
+import * as Templates from "@/lib/templates";
 
+import { WithAnnotation } from "../shared/types";
 import { WORKFLOW_JSON, WorkflowDirBundle } from "./processor.isomorphic";
-import { StepType, WorkflowStepData } from "./types";
-import { writeWorkflowDirFromBundle } from "./writer";
+import { readWorkflowDir } from "./reader";
+import {
+  ChannelStepData,
+  StepType,
+  WorkflowData,
+  WorkflowStepData,
+} from "./types";
+import { writeWorkflowDirFromBundle, writeWorkflowDirFromData } from "./writer";
 
 const newTemplateFilePath = (
   stepRef: string,
@@ -68,14 +77,18 @@ const scaffoldHttpFetchStep = (refSuffix: number): StepScaffoldFuncRet => {
   return [scaffoldedStep, {}];
 };
 
-const scaffoldEmailChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
+const scaffoldEmailChannelStep = (
+  refSuffix: number,
+  channels: Channel[],
+): StepScaffoldFuncRet => {
   const stepRef = `email_${refSuffix}`;
   const templateFilePath = newTemplateFilePath(stepRef, "html_body", "html");
+  const firstChannel = channels[0];
 
   const scaffoldedStep: WorkflowStepData = {
     ref: stepRef,
     type: StepType.Channel,
-    channel_key: "<EMAIL CHANNEL KEY>",
+    channel_key: firstChannel ? firstChannel.key : "<EMAIL CHANNEL KEY>",
     template: {
       settings: {
         layout_key: "default",
@@ -94,14 +107,16 @@ const scaffoldEmailChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
 
 const scaffoldInAppFeedChannelStep = (
   refSuffix: number,
+  channels: Channel[],
 ): StepScaffoldFuncRet => {
   const stepRef = `in_app_feed_${refSuffix}`;
   const templateFilePath = newTemplateFilePath(stepRef, "markdown_body", "md");
+  const firstChannel = channels[0];
 
   const scaffoldedStep: WorkflowStepData = {
     ref: stepRef,
     type: StepType.Channel,
-    channel_key: "<IN-APP-FEED CHANNEL KEY>",
+    channel_key: firstChannel ? firstChannel.key : "<IN-APP-FEED CHANNEL KEY>",
     template: {
       action_url: "{{ vars.app_url }}",
       ["markdown_body" + FILEPATH_MARKER]: templateFilePath,
@@ -115,14 +130,18 @@ const scaffoldInAppFeedChannelStep = (
   return [scaffoldedStep, bundleFragment];
 };
 
-const scaffoldSmsChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
+const scaffoldSmsChannelStep = (
+  refSuffix: number,
+  channels: Channel[],
+): StepScaffoldFuncRet => {
   const stepRef = `sms_${refSuffix}`;
   const templateFilePath = newTemplateFilePath(stepRef, "text_body", "txt");
+  const firstChannel = channels[0];
 
   const scaffoldedStep: WorkflowStepData = {
     ref: stepRef,
     type: StepType.Channel,
-    channel_key: "<SMS CHANNEL KEY>",
+    channel_key: firstChannel ? firstChannel.key : "<SMS CHANNEL KEY>",
     template: {
       ["text_body" + FILEPATH_MARKER]: templateFilePath,
     },
@@ -135,14 +154,18 @@ const scaffoldSmsChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
   return [scaffoldedStep, bundleFragment];
 };
 
-const scaffoldPushChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
+const scaffoldPushChannelStep = (
+  refSuffix: number,
+  channels: Channel[],
+): StepScaffoldFuncRet => {
   const stepRef = `push_${refSuffix}`;
   const templateFilePath = newTemplateFilePath(stepRef, "text_body", "txt");
+  const firstChannel = channels[0];
 
   const scaffoldedStep: WorkflowStepData = {
     ref: stepRef,
     type: StepType.Channel,
-    channel_key: "<PUSH CHANNEL KEY>",
+    channel_key: firstChannel ? firstChannel.key : "<PUSH CHANNEL KEY>",
     template: {
       settings: {
         delivery_type: "content",
@@ -158,14 +181,18 @@ const scaffoldPushChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
   return [scaffoldedStep, bundleFragment];
 };
 
-const scaffoldChatChannelStep = (refSuffix: number): StepScaffoldFuncRet => {
+const scaffoldChatChannelStep = (
+  refSuffix: number,
+  channels: Channel[],
+): StepScaffoldFuncRet => {
   const stepRef = `chat_${refSuffix}`;
   const templateFilePath = newTemplateFilePath(stepRef, "markdown_body", "md");
+  const firstChannel = channels[0];
 
   const scaffoldedStep: WorkflowStepData = {
     ref: stepRef,
     type: StepType.Channel,
-    channel_key: "<CHAT CHANNEL KEY>",
+    channel_key: firstChannel ? firstChannel.key : "<CHAT CHANNEL KEY>",
     template: {
       ["markdown_body" + FILEPATH_MARKER]: templateFilePath,
     },
@@ -183,16 +210,36 @@ const STEP_TAGS = [
   "batch",
   "fetch",
   "email",
-  "in-app",
+  "in-app-feed",
   "sms",
   "push",
   "chat",
 ] as const;
 
+export const StepTagChoices = {
+  delay: "Delay step",
+  batch: "Batch step",
+  fetch: "HTTP Fetch step",
+  email: "Email channel step",
+  "in-app-feed": "In-app feed channel step",
+  sms: "SMS channel step",
+  push: "Push channel step",
+  chat: "Chat channel step",
+} as const;
+
 export type StepTag = (typeof STEP_TAGS)[number];
+
 type StepScaffoldFunc = (refSuffix: number) => StepScaffoldFuncRet;
 
-const stepScaffoldFuncs: Record<StepTag, StepScaffoldFunc> = {
+type StepScaffoldChannelFunc = (
+  refSuffix: number,
+  channels: Channel[],
+) => StepScaffoldFuncRet;
+
+const stepScaffoldFuncs: Record<
+  StepTag,
+  StepScaffoldFunc | StepScaffoldChannelFunc
+> = {
   // Function steps
   delay: scaffoldDelayStep,
   batch: scaffoldBatchStep,
@@ -200,7 +247,7 @@ const stepScaffoldFuncs: Record<StepTag, StepScaffoldFunc> = {
 
   // Channel steps
   email: scaffoldEmailChannelStep,
-  "in-app": scaffoldInAppFeedChannelStep,
+  "in-app-feed": scaffoldInAppFeedChannelStep,
   sms: scaffoldSmsChannelStep,
   push: scaffoldPushChannelStep,
   chat: scaffoldChatChannelStep,
@@ -212,19 +259,43 @@ const stepScaffoldFuncs: Record<StepTag, StepScaffoldFunc> = {
  */
 type ParseStepsInputResult = [StepTag[], undefined] | [undefined, string];
 
-export const parseStepsInput = (input: string): ParseStepsInputResult => {
+export const parseStepsInput = (
+  input: string,
+  availableStepTypes: StepTag[],
+): ParseStepsInputResult => {
   const tags = input.split(",").filter((x) => x);
 
-  const invalidTags = tags.filter((tag) => !get(stepScaffoldFuncs, tag));
+  const invalidTags = tags.filter(
+    (tag) => !availableStepTypes.includes(tag as StepTag),
+  );
+
   if (invalidTags.length > 0) {
-    return [
-      undefined,
-      "must be a comma-separated string of the following values: " +
-        STEP_TAGS.join(", "),
-    ];
+    return [undefined, `Invalid step type: ${invalidTags.join(", ")}`];
   }
 
   return [tags as StepTag[], undefined];
+};
+
+export const getAvailableStepTypes = (
+  channelTypes: Channel["type"][],
+): StepTag[] => {
+  // Return a list of step
+  return STEP_TAGS.filter((stepTag) => {
+    switch (stepTag) {
+      case "email":
+        return channelTypes.includes("email");
+      case "in-app-feed":
+        return channelTypes.includes("in_app_feed");
+      case "sms":
+        return channelTypes.includes("sms");
+      case "push":
+        return channelTypes.includes("push");
+      case "chat":
+        return channelTypes.includes("chat");
+      default:
+        return true;
+    }
+  });
 };
 
 /*
@@ -238,6 +309,7 @@ type NewWorkflowAttrs = {
 
 const scaffoldWorkflowDirBundle = (
   attrs: NewWorkflowAttrs,
+  channelsByType: Record<Channel["type"], Channel[]>,
 ): WorkflowDirBundle => {
   // A map of 1-based counters to track the number of each step tag seen, used
   // for formatting step refs.
@@ -247,7 +319,24 @@ const scaffoldWorkflowDirBundle = (
   const [scaffoldedSteps = [], bundleFragments = []] = zip(
     ...(attrs.steps || []).map((tag) => {
       const stepCount = ++stepCountByTag[tag];
-      return stepScaffoldFuncs[tag](stepCount);
+
+      switch (tag) {
+        case "email":
+        case "sms":
+        case "push":
+        case "chat":
+          return stepScaffoldFuncs[tag](
+            stepCount,
+            get(channelsByType, tag, []),
+          );
+        case "in-app-feed":
+          return stepScaffoldFuncs[tag](
+            stepCount,
+            get(channelsByType, "in_app_feed", []),
+          );
+        default:
+          return (stepScaffoldFuncs[tag] as StepScaffoldFunc)(stepCount);
+      }
     }),
   );
 
@@ -260,10 +349,116 @@ const scaffoldWorkflowDirBundle = (
 export const generateWorkflowDir = async (
   workflowDirCtx: WorkflowDirContext,
   attrs: NewWorkflowAttrs,
+  channelsByType: Record<Channel["type"], Channel[]>,
 ): Promise<void> => {
-  const bundle = scaffoldWorkflowDirBundle(attrs);
+  const bundle = scaffoldWorkflowDirBundle(attrs, channelsByType);
 
   return writeWorkflowDirFromBundle(workflowDirCtx, bundle);
+};
+
+function swapChannelReferences(
+  step: ChannelStepData,
+  channelsByType: Record<Channel["type"], Channel[]>,
+): WorkflowStepData {
+  // Temporary until we start shipping the `channel_type` field on channel steps
+  // so that we can then branch by that value.
+  switch (step.channel_key) {
+    case "postmark":
+    case "sendgrid":
+    case "resend":
+    case "email":
+    case "knock-email":
+      return { ...step, channel_key: channelsByType.email[0]?.key };
+    case "in-app-feed":
+    case "knock-in-app-feed":
+    case "knock-feed":
+      return { ...step, channel_key: channelsByType.in_app_feed[0]?.key };
+    case "sms":
+    case "knock-sms":
+    case "twilio":
+      return { ...step, channel_key: channelsByType.sms[0]?.key };
+    case "push":
+    case "apns":
+    case "fcm":
+      return { ...step, channel_key: channelsByType.push[0]?.key };
+    case "chat":
+      return { ...step, channel_key: channelsByType.chat[0]?.key };
+    default:
+      throw new Error(`Unknown channel type: ${step.channel_key}`);
+  }
+}
+
+function walkWorkflowSteps(
+  steps: WorkflowStepData[],
+  channelsByType: Record<Channel["type"], Channel[]>,
+): WorkflowStepData[] {
+  return steps.map((step) => {
+    switch (step.type) {
+      case StepType.Channel:
+        return swapChannelReferences(step, channelsByType);
+      case StepType.Branch:
+        return {
+          ...step,
+          branches: (step.branches ?? []).map((branch) => {
+            return {
+              ...branch,
+              steps: walkWorkflowSteps(branch.steps ?? [], channelsByType),
+            };
+          }),
+        };
+      default:
+        return step;
+    }
+  });
+}
+
+export const generateWorkflowFromTemplate = async (
+  workflowDirCtx: WorkflowDirContext,
+  templateString: string,
+  attrs: NewWorkflowAttrs,
+  channelsByType: Record<Channel["type"], Channel[]>,
+): Promise<void> => {
+  let tempDir: string | undefined;
+  try {
+    // Download the template directory into a temp directory
+    tempDir = await Templates.downloadTemplate(templateString);
+
+    // Create a workflow directory context for the temp directory
+    const tempWorkflowDirCtx: WorkflowDirContext = {
+      type: "workflow",
+      key: "temp",
+      abspath: tempDir,
+      exists: true,
+    };
+
+    // Read the workflow.json from the temp directory we downloaded
+    const [workflow, errors] = await readWorkflowDir(tempWorkflowDirCtx, {
+      withExtractedFiles: true,
+    });
+
+    if (errors.length > 0 || !workflow) {
+      throw new Error(`Invalid workflow template: ${errors.join(", ")}`);
+    }
+
+    // Modify the workflow data with the new attributes
+    workflow.name = attrs.name;
+
+    // Parse the workflow steps, and replace any channel steps with the correct `channel_key`
+    workflow.steps = walkWorkflowSteps(
+      (workflow.steps ?? []) as WorkflowStepData[],
+      channelsByType,
+    );
+
+    // Finally, we write the workflow into the target workflow directory
+    writeWorkflowDirFromData(
+      workflowDirCtx,
+      workflow as WorkflowData<WithAnnotation>,
+    );
+
+    return;
+  } finally {
+    await Templates.cleanupTempDir(tempDir);
+  }
 };
 
 // Exported for tests.
