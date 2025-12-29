@@ -1,6 +1,6 @@
 {
   "name": "@knocklabs/cli",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "Knock CLI",
   "author": "@knocklabs",
   "bin": {
