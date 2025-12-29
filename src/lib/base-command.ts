@@ -90,7 +90,7 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
       this.ensureAuthenticated();
     }
 
-    // 6. If the session context is an OAuth session, refresh the access token.
+    // 6. If the session context is an OAuth session, refresh the access token if needed.
     if (this.sessionContext.type === "oauth") {
       await this.refreshAccessTokenForSession();
     }
@@ -152,8 +152,27 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     }
   }
 
+  private isTokenExpired(): boolean {
+    const session = this.sessionContext.session;
+    if (!session?.expiresAt) {
+      // If no expiry is set, assume it's expired to be safe
+      return true;
+    }
+
+    // Add a 60-second buffer to account for clock skew and network latency
+    const bufferMs = 60 * 1000;
+    return new Date(session.expiresAt).getTime() - bufferMs < Date.now();
+  }
+
   private async refreshAccessTokenForSession(): Promise<void> {
-    // Maybe refresh the access token?
+    // Only refresh if the token is expired or about to expire
+    if (!this.isTokenExpired()) {
+      this.debug("Access token is still valid, skipping refresh.");
+      return;
+    }
+
+    this.debug("Access token is expired, attempting to refresh.");
+
     try {
       const refreshedSession = await auth.refreshAccessToken({
         authUrl: this.sessionContext.authOrigin,
@@ -162,6 +181,7 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
       });
 
       this.debug("Successfully refreshed access token.");
+
       // Update the user config to use the new session.
       await this.configStore.set({ userSession: refreshedSession });
       // Update the session context to use the new session.
@@ -169,6 +189,11 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     } catch {
       this.debug("Failed to refresh access token, clearing session.");
       await this.configStore.set({ userSession: undefined });
+
+      // Re-throw to prevent the command from continuing with an invalid session
+      this.error(
+        "Your session has expired and could not be refreshed. Please run `knock login` to re-authenticate.",
+      );
     }
   }
 

@@ -13,6 +13,8 @@ const userSessionSchema = z.object({
   accessToken: z.string(),
   clientId: z.string(),
   refreshToken: z.string(),
+  expiresAt: z.coerce.date().optional(),
+  idToken: z.string().optional(),
 });
 
 const userConfigSchema = z.object({
@@ -38,7 +40,7 @@ class UserConfigStore {
     const readConfig = await this.maybeReadJsonConfig();
     const validConfig = userConfigSchema.parse(readConfig || {});
     this.userConfig = validConfig || {};
-    return this.userConfig;
+    return this.get();
   }
 
   public get(): UserConfig {
@@ -47,8 +49,10 @@ class UserConfigStore {
 
   public async set(updatedConfig: UserConfig): Promise<UserConfig> {
     this.userConfig = { ...this.userConfig, ...updatedConfig };
+    // Write and reload
     await this.maybeWriteJsonConfig();
-    return this.userConfig;
+    await this.load();
+    return this.get();
   }
 
   private configPath(): string {
