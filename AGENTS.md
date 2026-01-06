@@ -119,7 +119,7 @@ yarn check
 1. **`src/lib/base-command.ts`** - Base class all commands extend
 2. **`src/lib/resources.ts`** - Resource type definitions
 3. **`src/lib/api-v1.ts`** - Knock API client wrapper
-4. **`src/lib/marshal/index.isomorphic.ts`** - Central marshaling logic
+4. **`src/lib/marshal/index.isomorphic.ts`** - Marshaling helpers that are runtime agnostic, and can be used in either a node.js or browser environment
 5. **`src/commands/knock.ts`** - Main entry point command
 
 ## Common Workflows
