@@ -1,0 +1,6 @@
+{
+  "snapshot": "snapshot-20260106-64060867-a916-4cbc-b2b5-12be033e76af",
+  "install": "yarn install",
+  "start": "yarn build",
+  "terminals": []
+}
