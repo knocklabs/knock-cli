@@ -1,9 +1,9 @@
 import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
-import enquirer from "enquirer";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
+import BranchCreate from "@/commands/branch/create";
 
 const TEST_SLUG = "test-branch";
 
@@ -96,8 +96,8 @@ describe("commands/branch/create", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
         .stub(KnockMgmt.prototype, "post", (stub) => stub.resolves(branchData))
-        .stub(enquirer.prototype, "prompt", (stub) =>
-          stub.resolves({ slug: TEST_SLUG }),
+        .stub(BranchCreate.prototype, "promptForBranchSlug", (stub) =>
+          stub.resolves(TEST_SLUG),
         )
         .stdout()
         .command(["branch create"])
@@ -120,8 +120,8 @@ describe("commands/branch/create", () => {
         .stub(KnockMgmt.prototype, "post", (stub) =>
           stub.resolves(factory.branch({ slug: expectedSlug })),
         )
-        .stub(enquirer.prototype, "prompt", (stub) =>
-          stub.resolves({ slug: "Feature My Awesome   Feature" }),
+        .stub(BranchCreate.prototype, "promptForBranchSlug", (stub) =>
+          stub.resolves(expectedSlug),
         )
         .stdout()
         .command(["branch create"])
@@ -136,8 +136,8 @@ describe("commands/branch/create", () => {
     describe("when user cancels the prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(enquirer.prototype, "prompt", (stub) =>
-          stub.rejects(new Error("User cancelled")),
+        .stub(BranchCreate.prototype, "promptForBranchSlug", (stub) =>
+          stub.resolves(),
         )
         .command(["branch create"])
         .catch(/Invalid slug provided/)
