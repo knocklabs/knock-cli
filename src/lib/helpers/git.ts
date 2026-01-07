@@ -26,3 +26,21 @@ export const isFileIgnoredByGit = async (
     return false;
   }
 };
+
+/**
+ * Gets the name of the current Git branch.
+ *
+ * @returns the current Git branch name, or `undefined` if not in a Git repository
+ */
+export const getCurrentGitBranch = (): string | undefined => {
+  try {
+    const branch = execSync("git rev-parse --abbrev-ref HEAD", {
+      stdio: "pipe",
+      encoding: "utf-8",
+    }).trim();
+
+    return branch;
+  } catch {
+    return undefined;
+  }
+};

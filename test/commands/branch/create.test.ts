@@ -1,5 +1,6 @@
 import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
+import enquirer from "enquirer";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
@@ -91,11 +92,57 @@ describe("commands/branch/create", () => {
   });
 
   describe("given no branch slug argument", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["branch create"])
-      .exit(2)
-      .it("exits with status 2");
+    describe("when user provides slug via prompt", () => {
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.prototype, "post", (stub) => stub.resolves(branchData))
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ slug: TEST_SLUG }),
+        )
+        .stdout()
+        .command(["branch create"])
+        .it("creates branch with prompted slug", (ctx) => {
+          sinon.assert.calledWith(
+            KnockMgmt.prototype.post as any,
+            `/v1/branches/${TEST_SLUG}`,
+          );
+          expect(ctx.stdout).to.contain(
+            `‣ Successfully created branch \`${TEST_SLUG}\``,
+          );
+        });
+    });
+
+    describe("when user provides slug with mixed casing via prompt", () => {
+      const expectedSlug = "feature-my-awesome-feature";
+
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.prototype, "post", (stub) =>
+          stub.resolves(factory.branch({ slug: expectedSlug })),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ slug: "Feature My Awesome   Feature" }),
+        )
+        .stdout()
+        .command(["branch create"])
+        .it("slugifies the prompted input", () => {
+          sinon.assert.calledWith(
+            KnockMgmt.prototype.post as any,
+            `/v1/branches/${expectedSlug}`,
+          );
+        });
+    });
+
+    describe("when user provides invalid slug via prompt", () => {
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ slug: " " }),
+        )
+        .command(["branch create"])
+        .catch(/Invalid slug provided/)
+        .it("throws an error");
+    });
   });
 
   describe("given API error response", () => {
