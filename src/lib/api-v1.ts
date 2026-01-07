@@ -1,4 +1,5 @@
 import KnockMgmt from "@knocklabs/mgmt";
+import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { Environment } from "@knocklabs/mgmt/resources/environments";
@@ -730,13 +731,4 @@ export type ActivateGuideResp = {
   errors?: InputError[];
 };
 
-export type ListBranchResp = PaginatedResp<BranchData>;
-
-// TODO Remove this type once @knocklabs/mgmt includes branch operations
-export type BranchData = {
-  created_at: string;
-  deleted_at: string | null;
-  last_commit_at: string | null;
-  slug: string;
-  updated_at: string;
-};
+export type ListBranchResp = PaginatedResp<Branch>;
