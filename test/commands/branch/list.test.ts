@@ -21,10 +21,9 @@ describe("commands/branch/list", () => {
       .stdout()
       .command(["branch list"])
       .it("calls knockMgmt.branches.list with correct parameters", () => {
-        sinon.assert.calledWith(
-          KnockMgmt.Branches.prototype.list as any,
-          { environment: KnockEnv.Development },
-        );
+        sinon.assert.calledWith(KnockMgmt.Branches.prototype.list as any, {
+          environment: KnockEnv.Development,
+        });
       });
   });
 
@@ -139,10 +138,13 @@ describe("commands/branch/list", () => {
         )
         .stdout()
         .command(["branch list"])
-        .it("calls knockMgmt.branches.list once for the initial page only", () => {
-          const branchesListStub = KnockMgmt.Branches.prototype.list as any;
-          sinon.assert.calledOnce(branchesListStub);
-        });
+        .it(
+          "calls knockMgmt.branches.list once for the initial page only",
+          () => {
+            const branchesListStub = KnockMgmt.Branches.prototype.list as any;
+            sinon.assert.calledOnce(branchesListStub);
+          },
+        );
     });
   });
 
