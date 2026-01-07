@@ -1,5 +1,8 @@
+import * as childProcess from "node:child_process";
+
 import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
+import enquirer from "enquirer";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
@@ -100,11 +103,71 @@ describe("commands/branch/create", () => {
   });
 
   describe("given no branch slug argument", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["branch create"])
-      .exit(2)
-      .it("exits with status 2");
+    describe("when user provides slug via prompt", () => {
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
+          stub.resolves(branchData),
+        )
+        .stub(childProcess, "execSync", (stub) =>
+          stub.throws(new Error("Not a git repository")),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ slug: TEST_SLUG }),
+        )
+        .stdout()
+        .command(["branch create"])
+        .it("creates branch with prompted slug", (ctx) => {
+          sinon.assert.calledWith(
+            KnockMgmt.Branches.prototype.create as any,
+            TEST_SLUG,
+            { environment: KnockEnv.Development },
+          );
+          expect(ctx.stdout).to.contain(
+            `‣ Successfully created branch \`${TEST_SLUG}\``,
+          );
+        });
+    });
+
+    describe("when user provides non-slug input via prompt", () => {
+      const expectedSlug = "feature-my-awesome-feature";
+      const userInput = "Feature My Awesome Feature";
+
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
+          stub.resolves(factory.branch({ slug: expectedSlug })),
+        )
+        .stub(childProcess, "execSync", (stub) =>
+          stub.throws(new Error("Not a git repository")),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ slug: userInput }),
+        )
+        .stdout()
+        .command(["branch create"])
+        .it("slugifies the prompted input", () => {
+          sinon.assert.calledWith(
+            KnockMgmt.Branches.prototype.create as any,
+            expectedSlug,
+            { environment: KnockEnv.Development },
+          );
+        });
+    });
+
+    describe("when user cancels the prompt", () => {
+      test
+        .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+        .stub(childProcess, "execSync", (stub) =>
+          stub.throws(new Error("Not a git repository")),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.rejects(new Error("User cancelled")),
+        )
+        .command(["branch create"])
+        .catch(/Invalid slug provided/)
+        .it("throws an error");
+    });
   });
 
   describe("given API error response", () => {
