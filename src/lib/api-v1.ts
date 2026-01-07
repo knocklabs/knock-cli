@@ -733,7 +733,7 @@ export type ActivateGuideResp = {
 export type ListBranchResp = PaginatedResp<BranchData>;
 
 // TODO Remove this type once @knocklabs/mgmt includes branch operations
-export type BranchData = {
+type BranchData = {
   created_at: string;
   deleted_at?: string | null;
   last_commit_at?: string | null;

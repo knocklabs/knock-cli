@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
 
+import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
 import { Environment } from "@knocklabs/mgmt/resources/environments";
 import { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
-import { type BranchData, type WhoamiResp } from "@/lib/api-v1";
+import { type WhoamiResp } from "@/lib/api-v1";
 import { AuthenticatedSession } from "@/lib/auth";
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo, PaginatedResp } from "@/lib/helpers/page";
@@ -290,7 +291,7 @@ export const guide = (attrs: Partial<GuideData> = {}): GuideData => {
   };
 };
 
-export const branch = (attrs: Partial<BranchData> = {}): BranchData => {
+export const branch = (attrs: Partial<Branch> = {}): Branch => {
   return {
     slug: "test-branch",
     created_at: "2025-09-15T17:10:20.755005Z",

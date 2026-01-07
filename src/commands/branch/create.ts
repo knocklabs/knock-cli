@@ -1,4 +1,5 @@
-import * as ApiV1 from "@/lib/api-v1";
+import type { Branch } from "@knocklabs/mgmt/resources/branches";
+
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
 import { KnockEnv } from "@/lib/helpers/const";
@@ -16,7 +17,7 @@ export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
     }),
   };
 
-  async run(): Promise<ApiV1.BranchData | void> {
+  async run(): Promise<Branch | void> {
     const { args, flags } = this.props;
 
     const resp = await this.request(args.slug);
@@ -26,15 +27,15 @@ export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
     this.render(resp);
   }
 
-  async request(slug: string): Promise<ApiV1.BranchData> {
+  async request(slug: string): Promise<Branch> {
     return withSpinnerV2(() =>
       this.apiV1.mgmtClient.branches.create(slug, {
         environment: KnockEnv.Development,
       }),
-    ) as any as Promise<ApiV1.BranchData>;
+    );
   }
 
-  async render(data: ApiV1.BranchData): Promise<void> {
+  async render(data: Branch): Promise<void> {
     this.log(`‣ Successfully created branch \`${data.slug}\``);
     this.log(`  Created at: ${data.created_at}`);
   }
