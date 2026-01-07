@@ -133,11 +133,11 @@ describe("commands/branch/create", () => {
         });
     });
 
-    describe("when user provides invalid slug via prompt", () => {
+    describe("when user cancels the prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
         .stub(enquirer.prototype, "prompt", (stub) =>
-          stub.resolves({ slug: " " }),
+          stub.rejects(new Error("User cancelled")),
         )
         .command(["branch create"])
         .catch(/Invalid slug provided/)
