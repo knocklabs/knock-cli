@@ -43,7 +43,7 @@ export default class BranchList extends BaseCommand<typeof BranchList> {
         environment: KnockEnv.Development,
         ...queryParams,
       }),
-    ) as any as Promise<ApiV1.ListBranchResp>;
+    );
   }
 
   async render(data: ApiV1.ListBranchResp): Promise<void> {
