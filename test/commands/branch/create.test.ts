@@ -4,6 +4,7 @@ import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import BranchCreate from "@/commands/branch/create";
+import { KnockEnv } from "@/lib/helpers/const";
 
 const TEST_SLUG = "test-branch";
 
@@ -13,19 +14,24 @@ describe("commands/branch/create", () => {
   describe("given a valid branch slug", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "post", (stub) => stub.resolves(branchData))
+      .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
+        stub.resolves(branchData),
+      )
       .stdout()
       .command(["branch create", TEST_SLUG])
-      .it("calls knockMgmt.post with correct parameters", () => {
+      .it("calls knockMgmt.branches.create with correct parameters", () => {
         sinon.assert.calledWith(
-          KnockMgmt.prototype.post as any,
-          `/v1/branches/${TEST_SLUG}`,
+          KnockMgmt.Branches.prototype.create as any,
+          TEST_SLUG,
+          { environment: KnockEnv.Development },
         );
       });
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "post", (stub) => stub.resolves(branchData))
+      .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
+        stub.resolves(branchData),
+      )
       .stdout()
       .command(["branch create", TEST_SLUG])
       .it("displays success message with branch details", (ctx) => {
@@ -42,14 +48,15 @@ describe("commands/branch/create", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stdout()
-      .stub(KnockMgmt.prototype, "post", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
         stub.resolves(factory.branch({ slug: expectedSlug })),
       )
       .command(["branch create", " Mixed Case   With Whitespace "])
       .it("creates a branch with the correct slug", () => {
         sinon.assert.calledWith(
-          KnockMgmt.prototype.post as any,
-          `/v1/branches/${expectedSlug}`,
+          KnockMgmt.Branches.prototype.create as any,
+          expectedSlug,
+          { environment: KnockEnv.Development },
         );
       });
   });
@@ -68,7 +75,9 @@ describe("commands/branch/create", () => {
   describe("given --json flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "post", (stub) => stub.resolves(branchData))
+      .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
+        stub.resolves(branchData),
+      )
       .stdout()
       .command(["branch create", TEST_SLUG, "--json"])
       .it("returns raw JSON response", (ctx) => {
@@ -95,7 +104,9 @@ describe("commands/branch/create", () => {
     describe("when user provides slug via prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "post", (stub) => stub.resolves(branchData))
+        .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
+          stub.resolves(branchData),
+        )
         .stub(BranchCreate.prototype, "promptForBranchSlug", (stub) =>
           stub.resolves(TEST_SLUG),
         )
@@ -103,8 +114,9 @@ describe("commands/branch/create", () => {
         .command(["branch create"])
         .it("creates branch with prompted slug", (ctx) => {
           sinon.assert.calledWith(
-            KnockMgmt.prototype.post as any,
-            `/v1/branches/${TEST_SLUG}`,
+            KnockMgmt.Branches.prototype.create as any,
+            TEST_SLUG,
+            { environment: KnockEnv.Development },
           );
           expect(ctx.stdout).to.contain(
             `‣ Successfully created branch \`${TEST_SLUG}\``,
@@ -117,7 +129,7 @@ describe("commands/branch/create", () => {
 
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "post", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
           stub.resolves(factory.branch({ slug: expectedSlug })),
         )
         .stub(BranchCreate.prototype, "promptForBranchSlug", (stub) =>
@@ -127,8 +139,9 @@ describe("commands/branch/create", () => {
         .command(["branch create"])
         .it("slugifies the prompted input", () => {
           sinon.assert.calledWith(
-            KnockMgmt.prototype.post as any,
-            `/v1/branches/${expectedSlug}`,
+            KnockMgmt.Branches.prototype.create as any,
+            expectedSlug,
+            { environment: KnockEnv.Development },
           );
         });
     });
@@ -148,7 +161,7 @@ describe("commands/branch/create", () => {
   describe("given API error response", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "post", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
         stub.rejects(
           new KnockMgmt.APIError(
             422,

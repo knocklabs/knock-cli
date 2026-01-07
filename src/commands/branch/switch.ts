@@ -1,10 +1,10 @@
 import * as path from "node:path";
 
+import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Flags } from "@oclif/core";
 import findUp from "find-up";
 import * as fs from "fs-extra";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
 import {
@@ -13,6 +13,7 @@ import {
   findProjectRoot,
   writeSlugToBranchFile,
 } from "@/lib/helpers/branch";
+import { KnockEnv } from "@/lib/helpers/const";
 import { ApiError } from "@/lib/helpers/error";
 import { isFileIgnoredByGit } from "@/lib/helpers/git";
 import { withSpinnerV2 } from "@/lib/helpers/request";
@@ -107,7 +108,7 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
     this.log(`‣ Successfully switched to branch \`${branch.slug}\``);
   }
 
-  private async resolveBranch(slug: string): Promise<ApiV1.BranchData> {
+  private async resolveBranch(slug: string): Promise<Branch> {
     const { flags } = this.props;
 
     try {
@@ -127,16 +128,22 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
     }
   }
 
-  private async fetchBranch(slug: string): Promise<ApiV1.BranchData> {
-    return withSpinnerV2<ApiV1.BranchData>(
-      () => this.apiV1.mgmtClient.get(`/v1/branches/${slug}`),
+  private async fetchBranch(slug: string): Promise<Branch> {
+    return withSpinnerV2(
+      () =>
+        this.apiV1.mgmtClient.branches.retrieve(slug, {
+          environment: KnockEnv.Development,
+        }),
       { action: "‣ Fetching branch" },
     );
   }
 
-  private async createBranch(slug: string): Promise<ApiV1.BranchData> {
-    return withSpinnerV2<ApiV1.BranchData>(
-      () => this.apiV1.mgmtClient.post(`/v1/branches/${slug}`),
+  private async createBranch(slug: string): Promise<Branch> {
+    return withSpinnerV2(
+      () =>
+        this.apiV1.mgmtClient.branches.create(slug, {
+          environment: KnockEnv.Development,
+        }),
       { action: "‣ Creating branch" },
     );
   }

@@ -4,6 +4,7 @@ import enquirer from "enquirer";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
+import { KnockEnv } from "@/lib/helpers/const";
 
 describe("commands/branch/list", () => {
   const emptyBranchesListResp = {
@@ -14,24 +15,22 @@ describe("commands/branch/list", () => {
   describe("given no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "list", (stub) =>
         stub.resolves(emptyBranchesListResp),
       )
       .stdout()
       .command(["branch list"])
-      .it("calls knockMgmt.get with correct parameters", () => {
-        sinon.assert.calledWith(
-          KnockMgmt.prototype.get as any,
-          "/v1/branches",
-          { query: {} },
-        );
+      .it("calls knockMgmt.branches.list with correct parameters", () => {
+        sinon.assert.calledWith(KnockMgmt.Branches.prototype.list as any, {
+          environment: KnockEnv.Development,
+        });
       });
   });
 
   describe("given pagination flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "list", (stub) =>
         stub.resolves(emptyBranchesListResp),
       )
       .stdout()
@@ -44,25 +43,20 @@ describe("commands/branch/list", () => {
         "--before",
         "abc",
       ])
-      .it("calls knockMgmt.get with pagination parameters", () => {
-        sinon.assert.calledWith(
-          KnockMgmt.prototype.get as any,
-          "/v1/branches",
-          {
-            query: {
-              limit: 10,
-              after: "xyz",
-              before: "abc",
-            },
-          },
-        );
+      .it("calls knockMgmt.branches.list with pagination parameters", () => {
+        sinon.assert.calledWith(KnockMgmt.Branches.prototype.list as any, {
+          environment: KnockEnv.Development,
+          limit: 10,
+          after: "xyz",
+          before: "abc",
+        });
       });
   });
 
   describe("given a list of branches in response", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "list", (stub) =>
         stub.resolves({
           page_info: factory.pageInfo(),
           entries: [
@@ -100,7 +94,7 @@ describe("commands/branch/list", () => {
     describe("plus a next page action from the prompt input", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "get", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "list", (stub) =>
           stub.resolves(paginatedBranchesResp),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
@@ -112,27 +106,31 @@ describe("commands/branch/list", () => {
         )
         .stdout()
         .command(["branch list"])
-        .it("calls knockMgmt.get for the second time with page params", () => {
-          const knockMgmtGetStub = KnockMgmt.prototype.get as any;
+        .it(
+          "calls knockMgmt.branches.list for the second time with page params",
+          () => {
+            const branchesListStub = KnockMgmt.Branches.prototype.list as any;
 
-          sinon.assert.calledTwice(knockMgmtGetStub);
+            sinon.assert.calledTwice(branchesListStub);
 
-          // First call without page params
-          sinon.assert.calledWith(knockMgmtGetStub.firstCall, "/v1/branches", {
-            query: {},
-          });
+            // First call without page params
+            sinon.assert.calledWith(branchesListStub.firstCall, {
+              environment: KnockEnv.Development,
+            });
 
-          // Second call with page params to fetch the next page
-          sinon.assert.calledWith(knockMgmtGetStub.secondCall, "/v1/branches", {
-            query: { after: "xyz" },
-          });
-        });
+            // Second call with page params to fetch the next page
+            sinon.assert.calledWith(branchesListStub.secondCall, {
+              environment: KnockEnv.Development,
+              after: "xyz",
+            });
+          },
+        );
     });
 
     describe("plus a previous page action input from the prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "get", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "list", (stub) =>
           stub.resolves(paginatedBranchesResp),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
@@ -140,17 +138,20 @@ describe("commands/branch/list", () => {
         )
         .stdout()
         .command(["branch list"])
-        .it("calls knockMgmt.get once for the initial page only", () => {
-          const knockMgmtGetStub = KnockMgmt.prototype.get as any;
-          sinon.assert.calledOnce(knockMgmtGetStub);
-        });
+        .it(
+          "calls knockMgmt.branches.list once for the initial page only",
+          () => {
+            const branchesListStub = KnockMgmt.Branches.prototype.list as any;
+            sinon.assert.calledOnce(branchesListStub);
+          },
+        );
     });
   });
 
   describe("given --json flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "list", (stub) =>
         stub.resolves({
           page_info: factory.pageInfo(),
           entries: [factory.branch({ slug: "test-branch" })],

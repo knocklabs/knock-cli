@@ -1,8 +1,9 @@
+import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { prompt } from "enquirer";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
+import { KnockEnv } from "@/lib/helpers/const";
 import { getCurrentGitBranch } from "@/lib/helpers/git";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 import { slugify } from "@/lib/helpers/string";
@@ -19,7 +20,7 @@ export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
     }),
   };
 
-  async run(): Promise<ApiV1.BranchData | void> {
+  async run(): Promise<Branch | void> {
     const { args, flags } = this.props;
 
     // If slug is provided, use it directly
@@ -67,13 +68,15 @@ export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
     }
   }
 
-  async request(slug: string): Promise<ApiV1.BranchData> {
-    return withSpinnerV2<ApiV1.BranchData>(() =>
-      this.apiV1.mgmtClient.post(`/v1/branches/${slug}`),
+  async request(slug: string): Promise<Branch> {
+    return withSpinnerV2(() =>
+      this.apiV1.mgmtClient.branches.create(slug, {
+        environment: KnockEnv.Development,
+      }),
     );
   }
 
-  async render(data: ApiV1.BranchData): Promise<void> {
+  async render(data: Branch): Promise<void> {
     this.log(`‣ Successfully created branch \`${data.slug}\``);
     this.log(`  Created at: ${data.created_at}`);
   }

@@ -7,9 +7,9 @@ import { AnyObj } from "@/lib/helpers/object.isomorphic";
 export const MAX_PAGINATION_LIMIT = 100;
 
 export type PageInfo = {
-  after: string | null;
-  before: string | null;
-  page_size: number;
+  after?: string | null;
+  before?: string | null;
+  page_size?: number;
 };
 
 export type PaginatedResp<T = any> = {
