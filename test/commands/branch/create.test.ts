@@ -1,9 +1,11 @@
+import * as childProcess from "node:child_process";
+
 import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
+import enquirer from "enquirer";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
-import BranchCreate from "@/commands/branch/create";
 import { KnockEnv } from "@/lib/helpers/const";
 
 const TEST_SLUG = "test-branch";
@@ -107,8 +109,11 @@ describe("commands/branch/create", () => {
         .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
           stub.resolves(branchData),
         )
-        .stub(BranchCreate.prototype, "promptForBranchSlug", (stub) =>
-          stub.resolves(TEST_SLUG),
+        .stub(childProcess, "execSync", (stub) =>
+          stub.throws(new Error("Not a git repository")),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ slug: TEST_SLUG }),
         )
         .stdout()
         .command(["branch create"])
@@ -124,16 +129,20 @@ describe("commands/branch/create", () => {
         });
     });
 
-    describe("when user provides slug with mixed casing via prompt", () => {
+    describe("when user provides non-slug input via prompt", () => {
       const expectedSlug = "feature-my-awesome-feature";
+      const userInput = "Feature My Awesome Feature";
 
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
         .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
           stub.resolves(factory.branch({ slug: expectedSlug })),
         )
-        .stub(BranchCreate.prototype, "promptForBranchSlug", (stub) =>
-          stub.resolves(expectedSlug),
+        .stub(childProcess, "execSync", (stub) =>
+          stub.throws(new Error("Not a git repository")),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ slug: userInput }),
         )
         .stdout()
         .command(["branch create"])
@@ -149,8 +158,11 @@ describe("commands/branch/create", () => {
     describe("when user cancels the prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(BranchCreate.prototype, "promptForBranchSlug", (stub) =>
-          stub.resolves(),
+        .stub(childProcess, "execSync", (stub) =>
+          stub.throws(new Error("Not a git repository")),
+        )
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.rejects(new Error("User cancelled")),
         )
         .command(["branch create"])
         .catch(/Invalid slug provided/)
