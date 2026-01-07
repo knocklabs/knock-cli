@@ -53,23 +53,20 @@ export default class BranchList extends BaseCommand<typeof BranchList> {
       `‣ Showing ${entries.length} branches off of the development environment\n`,
     );
 
-    ux.table(entries, {
-      slug: {
-        header: "Slug",
-      },
-      created_at: {
-        header: "Created at",
-        get: (entry) => formatDate(entry.created_at),
-      },
-      updated_at: {
-        header: "Updated at",
-        get: (entry) => formatDate(entry.updated_at),
-      },
-      last_commit_at: {
-        header: "Last commit at",
-        get: (entry) =>
-          entry.last_commit_at ? formatDate(entry.last_commit_at) : "Never",
-      },
+    const formattedBranches = entries.map((entry) => ({
+      slug: entry.slug,
+      created_at: formatDate(entry.created_at),
+      updated_at: formatDate(entry.updated_at),
+      last_commit_at: entry.last_commit_at
+        ? formatDate(entry.last_commit_at)
+        : "Never",
+    }));
+
+    ux.table(formattedBranches, {
+      slug: { header: "Slug" },
+      created_at: { header: "Created at" },
+      updated_at: { header: "Updated at" },
+      last_commit_at: { header: "Last commit at" },
     });
 
     return this.prompt(data);
