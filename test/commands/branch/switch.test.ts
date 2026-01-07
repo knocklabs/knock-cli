@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import { BRANCH_FILE_NAME } from "@/lib/helpers/branch";
-import { sandboxDir } from "@/lib/helpers/const";
+import { KnockEnv, sandboxDir } from "@/lib/helpers/const";
 
 const currCwd = process.cwd();
 const branchFilePath = path.resolve(sandboxDir, BRANCH_FILE_NAME);
@@ -32,7 +32,7 @@ describe("commands/branch/switch", () => {
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
         stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
       )
       .stdout()
@@ -41,8 +41,9 @@ describe("commands/branch/switch", () => {
         "fetches branch, updates .knock_current_branch file, and displays success message",
         (ctx) => {
           sinon.assert.calledWith(
-            KnockMgmt.prototype.get as any,
-            "/v1/branches/my-feature-branch-123",
+            KnockMgmt.Branches.prototype.retrieve as any,
+            "my-feature-branch-123",
+            { environment: KnockEnv.Development },
           );
 
           expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
@@ -63,14 +64,15 @@ describe("commands/branch/switch", () => {
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
         stub.resolves(factory.branch()),
       )
       .command(["branch switch", " Mixed Case   With Whitespace "])
       .it("slugifies input before fetching branch", () => {
         sinon.assert.calledWith(
-          KnockMgmt.prototype.get as any,
-          "/v1/branches/mixed-case-with-whitespace",
+          KnockMgmt.Branches.prototype.retrieve as any,
+          "mixed-case-with-whitespace",
+          { environment: KnockEnv.Development },
         );
       });
   });
@@ -101,7 +103,7 @@ describe("commands/branch/switch", () => {
     describe("and the --create flag is not provided", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "get", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
           stub.rejects(
             new KnockMgmt.APIError(
               404,
@@ -127,7 +129,7 @@ describe("commands/branch/switch", () => {
     describe("and the --create flag is provided", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "get", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
           stub.rejects(
             new KnockMgmt.APIError(
               404,
@@ -143,20 +145,22 @@ describe("commands/branch/switch", () => {
             ),
           ),
         )
-        .stub(KnockMgmt.prototype, "post", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "create", (stub) =>
           stub.resolves(factory.branch({ slug: "nonexistent-branch" })),
         )
         .stdout()
         .command(["branch switch", "nonexistent-branch", "--create"])
         .it("automatically creates a new branch", (ctx) => {
           sinon.assert.calledWith(
-            KnockMgmt.prototype.get as any,
-            "/v1/branches/nonexistent-branch",
+            KnockMgmt.Branches.prototype.retrieve as any,
+            "nonexistent-branch",
+            { environment: KnockEnv.Development },
           );
 
           sinon.assert.calledWith(
-            KnockMgmt.prototype.post as any,
-            "/v1/branches/nonexistent-branch",
+            KnockMgmt.Branches.prototype.create as any,
+            "nonexistent-branch",
+            { environment: KnockEnv.Development },
           );
 
           expect(fs.readFileSync(branchFilePath, "utf-8")).to.equal(
@@ -174,7 +178,7 @@ describe("commands/branch/switch", () => {
     describe("and no ancestor directory contains a .gitignore file", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "get", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
           stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
@@ -192,8 +196,9 @@ describe("commands/branch/switch", () => {
             });
 
             sinon.assert.calledWith(
-              KnockMgmt.prototype.get as any,
-              "/v1/branches/my-feature-branch-123",
+              KnockMgmt.Branches.prototype.retrieve as any,
+              "my-feature-branch-123",
+              { environment: KnockEnv.Development },
             );
 
             // branch file should be created
@@ -220,7 +225,7 @@ describe("commands/branch/switch", () => {
 
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "get", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
           stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
@@ -242,8 +247,9 @@ describe("commands/branch/switch", () => {
             });
 
             sinon.assert.calledWith(
-              KnockMgmt.prototype.get as any,
-              "/v1/branches/my-feature-branch-123",
+              KnockMgmt.Branches.prototype.retrieve as any,
+              "my-feature-branch-123",
+              { environment: KnockEnv.Development },
             );
 
             // branch file should be created
@@ -285,7 +291,7 @@ describe("commands/branch/switch", () => {
 
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "get", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
           stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
@@ -303,8 +309,9 @@ describe("commands/branch/switch", () => {
             });
 
             sinon.assert.calledWith(
-              KnockMgmt.prototype.get as any,
-              "/v1/branches/my-feature-branch-123",
+              KnockMgmt.Branches.prototype.retrieve as any,
+              "my-feature-branch-123",
+              { environment: KnockEnv.Development },
             );
 
             // branch file should be created
@@ -334,7 +341,7 @@ describe("commands/branch/switch", () => {
 
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockMgmt.prototype, "get", (stub) =>
+        .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
           stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
@@ -356,8 +363,9 @@ describe("commands/branch/switch", () => {
             });
 
             sinon.assert.calledWith(
-              KnockMgmt.prototype.get as any,
-              "/v1/branches/my-feature-branch-123",
+              KnockMgmt.Branches.prototype.retrieve as any,
+              "my-feature-branch-123",
+              { environment: KnockEnv.Development },
             );
 
             // branch file should be created
@@ -388,7 +396,7 @@ describe("commands/branch/switch", () => {
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockMgmt.prototype, "get", (stub) =>
+      .stub(KnockMgmt.Branches.prototype, "retrieve", (stub) =>
         stub.resolves(factory.branch({ slug: "my-feature-branch-123" })),
       )
       .stub(enquirer.prototype, "prompt", (stub) => stub.resolves())
@@ -404,7 +412,7 @@ describe("commands/branch/switch", () => {
             message: `Create \`${BRANCH_FILE_NAME}\` at ${sandboxDir}?`,
           });
 
-          sinon.assert.notCalled(KnockMgmt.prototype.get as any);
+          sinon.assert.notCalled(KnockMgmt.Branches.prototype.retrieve as any);
 
           // branch file should NOT be created
           expect(fs.existsSync(branchFilePath)).to.equal(false);

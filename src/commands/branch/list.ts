@@ -2,6 +2,7 @@ import { ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { KnockEnv } from "@/lib/helpers/const";
 import { formatDate } from "@/lib/helpers/date";
 import {
   maybePromptPageAction,
@@ -37,9 +38,12 @@ export default class BranchList extends BaseCommand<typeof BranchList> {
       ...pageParams,
     });
 
-    return withSpinnerV2<ApiV1.ListBranchResp>(() =>
-      this.apiV1.mgmtClient.get("/v1/branches", { query: queryParams }),
-    );
+    return withSpinnerV2(() =>
+      this.apiV1.mgmtClient.branches.list({
+        environment: KnockEnv.Development,
+        ...queryParams,
+      }),
+    ) as any as Promise<ApiV1.ListBranchResp>;
   }
 
   async render(data: ApiV1.ListBranchResp): Promise<void> {

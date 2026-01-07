@@ -13,6 +13,7 @@ import {
   findProjectRoot,
   writeSlugToBranchFile,
 } from "@/lib/helpers/branch";
+import { KnockEnv } from "@/lib/helpers/const";
 import { ApiError } from "@/lib/helpers/error";
 import { isFileIgnoredByGit } from "@/lib/helpers/git";
 import { withSpinnerV2 } from "@/lib/helpers/request";
@@ -128,16 +129,22 @@ export default class BranchSwitch extends BaseCommand<typeof BranchSwitch> {
   }
 
   private async fetchBranch(slug: string): Promise<ApiV1.BranchData> {
-    return withSpinnerV2<ApiV1.BranchData>(
-      () => this.apiV1.mgmtClient.get(`/v1/branches/${slug}`),
+    return withSpinnerV2(
+      () =>
+        this.apiV1.mgmtClient.branches.retrieve(slug, {
+          environment: KnockEnv.Development,
+        }),
       { action: "‣ Fetching branch" },
-    );
+    ) as any as Promise<ApiV1.BranchData>;
   }
 
   private async createBranch(slug: string): Promise<ApiV1.BranchData> {
-    return withSpinnerV2<ApiV1.BranchData>(
-      () => this.apiV1.mgmtClient.post(`/v1/branches/${slug}`),
+    return withSpinnerV2(
+      () =>
+        this.apiV1.mgmtClient.branches.create(slug, {
+          environment: KnockEnv.Development,
+        }),
       { action: "‣ Creating branch" },
-    );
+    ) as any as Promise<ApiV1.BranchData>;
   }
 }

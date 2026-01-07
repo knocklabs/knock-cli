@@ -1,6 +1,7 @@
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { CustomArgs } from "@/lib/helpers/arg";
+import { KnockEnv } from "@/lib/helpers/const";
 import { withSpinnerV2 } from "@/lib/helpers/request";
 
 export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
@@ -26,9 +27,11 @@ export default class BranchCreate extends BaseCommand<typeof BranchCreate> {
   }
 
   async request(slug: string): Promise<ApiV1.BranchData> {
-    return withSpinnerV2<ApiV1.BranchData>(() =>
-      this.apiV1.mgmtClient.post(`/v1/branches/${slug}`),
-    );
+    return withSpinnerV2(() =>
+      this.apiV1.mgmtClient.branches.create(slug, {
+        environment: KnockEnv.Development,
+      }),
+    ) as any as Promise<ApiV1.BranchData>;
   }
 
   async render(data: ApiV1.BranchData): Promise<void> {
