@@ -22,9 +22,11 @@
     "@oclif/plugin-help": "^6",
     "@prantlf/jsonlint": "^14.1.0",
     "axios": "^1.13.2",
+    "chokidar": "^5.0.0",
     "date-fns": "^2.30.0",
     "degit": "^2.8.4",
     "enquirer": "^2.4.1",
+    "express": "^5.2.1",
     "find-up": "^5.0.0",
     "fs-extra": "^11.3.3",
     "liquidjs": "^10.24.0",
@@ -32,6 +34,7 @@
     "lodash": "^4.17.21",
     "open": "8.4.2",
     "quicktype-core": "^23.2.6",
+    "ws": "^8.19.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {
@@ -41,9 +44,11 @@
     "@swc/helpers": "^0.5.18",
     "@types/chai": "^4",
     "@types/degit": "^2.8.6",
+    "@types/express": "^5.0.6",
     "@types/fs-extra": "^11.0.4",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.19.28",
+    "@types/ws": "^8.18.1",
     "chai": "^4",
     "eslint": "^7.32.0",
     "eslint-config-oclif": "^4",
@@ -101,7 +106,8 @@
     }
   },
   "scripts": {
-    "build": "shx rm -rf dist && swc src -d dist --strip-leading-paths",
+    "build": "shx rm -rf dist && swc src -d dist --strip-leading-paths --ignore '**/preview-server/client/**' && yarn build:preview-client",
+    "build:preview-client": "cd src/lib/preview-server/client && yarn install --frozen-lockfile && yarn build",
     "lint": "eslint . --ext .ts --config .eslintrc.json",
     "lint.fix": "yarn run lint --fix",
     "format": "prettier \"src/**/*.+(ts|js)\" \"test/**/*.+(ts|js)\"",
