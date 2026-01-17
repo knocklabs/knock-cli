@@ -18,6 +18,9 @@
   "include": [
     "src/**/*"
   ],
+  "exclude": [
+    "src/lib/preview-server/client/**"
+  ],
   "ts-node": {
     "swc": true,
     "require": ["tsconfig-paths/register"]

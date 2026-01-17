@@ -7,6 +7,9 @@
   "plugins": [
     "simple-import-sort"
   ],
+  "ignorePatterns": [
+    "src/lib/preview-server/client/**"
+  ],
   "rules": {
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",

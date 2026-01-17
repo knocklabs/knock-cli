@@ -6,6 +6,13 @@ export type DirContext = {
 };
 
 /*
+ * Check if a given file path exists.
+ */
+export const pathExists = async (abspath: string): Promise<boolean> => {
+  return fs.pathExists(abspath);
+};
+
+/*
  * Check if a given file path is a directory.
  */
 export const isDirectory = async (abspath: string): Promise<boolean> => {
