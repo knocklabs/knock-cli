@@ -32,7 +32,7 @@
     "lodash": "^4.17.23",
     "open": "8.4.2",
     "quicktype-core": "^23.2.6",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@oclif/test": "^3",
