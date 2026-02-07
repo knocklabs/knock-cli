@@ -1182,10 +1182,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@knocklabs/mgmt@^0.16.1":
-  version "0.16.1"
-  resolved "https://registry.yarnpkg.com/@knocklabs/mgmt/-/mgmt-0.16.1.tgz#101e7efb4726590058d5dfcd972354b0026dad00"
-  integrity sha512-7Ua1dX4GTcD3zm3mhww8DIRQc96/blrc1bAVQNbee0v1gNr4IJpyvNSqaCFvBA/rbap9DIl8HvchVoV1IlHHig==
+"@knocklabs/mgmt@^0.17.1":
+  version "0.17.1"
+  resolved "https://registry.yarnpkg.com/@knocklabs/mgmt/-/mgmt-0.17.1.tgz#110d3160764cfbc239aeab3c655747a478cf373c"
+  integrity sha512-hruJOnH4emv6h6fEzJ2kU6xacMsAPkIxUXJkSKPFmFnsWqukAmgayfhCpEEKHIVJApvL9S604vicJUDLJ3W0pQ==
 
 "@napi-rs/nice-android-arm-eabi@1.0.1":
   version "1.0.1"
