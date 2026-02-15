@@ -17,7 +17,7 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@knocklabs/mgmt": "^0.16.1",
+    "@knocklabs/mgmt": "^0.17.1",
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
     "@prantlf/jsonlint": "^14.1.0",
