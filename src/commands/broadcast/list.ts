@@ -24,9 +24,6 @@ export default class BroadcastList extends BaseCommand<typeof BroadcastList> {
       summary: "The environment to use.",
     }),
     branch: CustomFlags.branch,
-    "hide-uncommitted-changes": Flags.boolean({
-      summary: "Hide any uncommitted changes.",
-    }),
     ...pageFlags,
   };
 
@@ -53,16 +50,8 @@ export default class BroadcastList extends BaseCommand<typeof BroadcastList> {
 
   async render(data: ApiV1.ListBroadcastResp): Promise<void> {
     const { entries } = data;
-    const { environment: env, "hide-uncommitted-changes": commitedOnly } =
-      this.props.flags;
-
-    const qualifier =
-      env === "development" && !commitedOnly ? "(including uncommitted)" : "";
-
     const scope = formatCommandScope(this.props.flags);
-    this.log(
-      `‣ Showing ${entries.length} broadcasts in ${scope} ${qualifier}\n`,
-    );
+    this.log(`‣ Showing ${entries.length} broadcasts in ${scope}\n`);
 
     ux.table(entries, {
       key: {

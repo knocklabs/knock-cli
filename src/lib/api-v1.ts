@@ -510,7 +510,6 @@ export default class ApiV1 {
       environment: flags.environment,
       branch: flags.branch,
       annotate: flags.annotate,
-      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
       ...toPageParams(flags),
     });
 
@@ -525,7 +524,6 @@ export default class ApiV1 {
       environment: flags.environment,
       branch: flags.branch,
       annotate: flags.annotate,
-      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
 
     return this.get(`/broadcasts/${args.broadcastKey}`, { params });
