@@ -72,6 +72,7 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
 
   render(broadcast: ApiV1.GetBroadcastResp, whoami: ApiV1.WhoamiResp): void {
     const { broadcastKey } = this.props.args;
+    const { environment, branch } = this.props.flags;
     const scope = formatCommandScope(this.props.flags);
     this.log(`‣ Showing broadcast \`${broadcastKey}\` in ${scope}\n`);
 
@@ -180,7 +181,7 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
     const url = viewBroadcastUrl(
       this.sessionContext.dashboardOrigin,
       whoami.account_slug,
-      branch ?? env,
+      branch ?? environment,
       broadcast.key,
     );
 
