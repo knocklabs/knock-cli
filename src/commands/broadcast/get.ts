@@ -23,9 +23,6 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
       summary: "The environment to use.",
     }),
     branch: CustomFlags.branch,
-    "hide-uncommitted-changes": Flags.boolean({
-      summary: "Hide any uncommitted changes.",
-    }),
   };
 
   static args = {
@@ -75,19 +72,8 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
 
   render(broadcast: ApiV1.GetBroadcastResp, whoami: ApiV1.WhoamiResp): void {
     const { broadcastKey } = this.props.args;
-    const {
-      environment: env,
-      branch,
-      "hide-uncommitted-changes": commitedOnly,
-    } = this.props.flags;
-
-    const qualifier =
-      env === "development" && !commitedOnly ? "(including uncommitted)" : "";
-
     const scope = formatCommandScope(this.props.flags);
-    this.log(
-      `‣ Showing broadcast \`${broadcastKey}\` in ${scope} ${qualifier}\n`,
-    );
+    this.log(`‣ Showing broadcast \`${broadcastKey}\` in ${scope}\n`);
 
     const rows = [
       {

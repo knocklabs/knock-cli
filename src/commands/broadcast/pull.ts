@@ -41,9 +41,6 @@ export default class BroadcastPull extends BaseCommand<typeof BroadcastPull> {
       summary: "The target directory path to pull all broadcasts into.",
       dependsOn: ["all"],
     }),
-    "hide-uncommitted-changes": Flags.boolean({
-      summary: "Hide any uncommitted changes.",
-    }),
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
