@@ -6,6 +6,7 @@
 import * as path from "node:path";
 
 import * as Audience from "@/lib/marshal/audience";
+import * as Broadcast from "@/lib/marshal/broadcast";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Goal from "@/lib/marshal/goal";
 import * as Guide from "@/lib/marshal/guide";
@@ -40,6 +41,8 @@ const evaluateRecursively = async (
       ctx.resourceDir = buildResourceDirContext("workflow", currDir);
     } else if (await Guide.isGuideDir(currDir)) {
       ctx.resourceDir = buildResourceDirContext("guide", currDir);
+    } else if (await Broadcast.isBroadcastDir(currDir)) {
+      ctx.resourceDir = buildResourceDirContext("broadcast", currDir);
     } else if (await Goal.isGoalDir(currDir)) {
       ctx.resourceDir = buildResourceDirContext("goal", currDir);
     } else if (await EmailLayout.isEmailLayoutDir(currDir)) {

@@ -8,7 +8,10 @@ type CommitResourceType = Extract<
 >;
 
 // TODO Remove this once hidden option is removed from message types / guides
-export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
+export type NonHiddenResourceType = Exclude<
+  ResourceType,
+  "reusable_step" | "broadcast"
+>;
 
 /**
  * Resource types that support empty commits via --allow-empty.

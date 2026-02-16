@@ -4,6 +4,7 @@ import { AnyObj, omitDeep, split } from "@/lib/helpers/object.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { AudienceData } from "../audience";
+import type { BroadcastData } from "../broadcast/types";
 import { EmailLayoutData } from "../email-layout";
 import { GoalData } from "../goal";
 import { GuideData } from "../guide";
@@ -20,6 +21,7 @@ import { WorkflowData } from "../workflow";
  */
 type ResourceData<A extends WithAnnotation> =
   | AudienceData<A>
+  | BroadcastData<A>
   | EmailLayoutData<A>
   | PartialData<A>
   | WorkflowData<A>

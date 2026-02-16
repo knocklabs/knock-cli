@@ -1,0 +1,13 @@
+{
+  "key": "my-new-broadcast",
+  "name": "",
+  "description": "",
+  "categories": [],
+  "target_audience_key": "",
+  "status": "draft",
+  "settings": {
+    "is_commercial": false,
+    "override_preferences": false
+  },
+  "steps": []
+}
