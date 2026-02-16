@@ -7,6 +7,7 @@ import { ParsedJson, parseJson } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
 import { VISUAL_BLOCKS_JSON } from "@/lib/marshal/workflow";
 import {
+  BroadcastDirContext,
   EmailLayoutDirContext,
   GuideDirContext,
   MessageTypeDirContext,
@@ -31,6 +32,7 @@ const DECODABLE_JSON_FILES = new Set([VISUAL_BLOCKS_JSON]);
 export const readExtractedFileSync = (
   relpath: string,
   dirCtx:
+    | BroadcastDirContext
     | WorkflowDirContext
     | EmailLayoutDirContext
     | PartialDirContext

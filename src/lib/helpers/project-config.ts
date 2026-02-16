@@ -123,6 +123,7 @@ export const ResourceDirectoriesByType: Record<
   email_layout: "layouts",
   message_type: "message-types",
   translation: "translations",
+  broadcast: "broadcasts",
 } as const;
 
 type ValidResourceType = Exclude<ResourceType, "reusable_step">;

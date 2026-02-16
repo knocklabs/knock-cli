@@ -10,6 +10,7 @@ import { type WhoamiResp } from "@/lib/api-v1";
 import { AuthenticatedSession } from "@/lib/auth";
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo, PaginatedResp } from "@/lib/helpers/page";
+import type { BroadcastData } from "@/lib/marshal/broadcast";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
@@ -96,6 +97,26 @@ export const whoami = (attrs: Partial<WhoamiResp> = {}): WhoamiResp => {
     account_features: {
       translations_allowed: true,
     },
+    ...attrs,
+  };
+};
+
+export const broadcast = (
+  attrs: Partial<BroadcastData> = {},
+): BroadcastData => {
+  return {
+    key: "welcome-broadcast",
+    name: "Welcome Broadcast",
+    valid: true,
+    status: "draft",
+    description: "",
+    categories: [],
+    target_audience_key: "",
+    steps: [],
+    created_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    environment: "development",
+    sha: "<SOME_SHA>",
     ...attrs,
   };
 };

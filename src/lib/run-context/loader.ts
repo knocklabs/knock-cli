@@ -5,6 +5,7 @@
  */
 import * as path from "node:path";
 
+import * as Broadcast from "@/lib/marshal/broadcast";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
@@ -37,6 +38,11 @@ const evaluateRecursively = async (
     const isGuideDir = await Guide.isGuideDir(currDir);
     if (isGuideDir) {
       ctx.resourceDir = buildResourceDirContext("guide", currDir);
+    }
+
+    const isBroadcastDir = await Broadcast.isBroadcastDir(currDir);
+    if (isBroadcastDir) {
+      ctx.resourceDir = buildResourceDirContext("broadcast", currDir);
     }
 
     const isEmailLayoutDir = await EmailLayout.isEmailLayoutDir(currDir);
