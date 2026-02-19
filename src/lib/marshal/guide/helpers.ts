@@ -12,6 +12,7 @@ import {
 } from "quicktype-core";
 
 import { DirContext } from "@/lib/helpers/fs";
+import { isPathArg, resolvePathArg } from "@/lib/helpers/path";
 import {
   ProjectConfig,
   resolveResourceDir,
@@ -146,6 +147,17 @@ export const ensureValidCommandTarget = async (
 
   // Guide key arg is given, which means no --all flag.
   if (args.guideKey) {
+    if (isPathArg(args.guideKey)) {
+      const { key, abspath } = resolvePathArg(args.guideKey);
+      const guideDirCtx: GuideDirContext = {
+        type: "guide",
+        key,
+        abspath,
+        exists: await isGuideDir(abspath),
+      };
+      return { type: "guideDir", context: guideDirCtx };
+    }
+
     if (resourceDirCtx && resourceDirCtx.key !== args.guideKey) {
       return ux.error(
         `Cannot run ${commandId} \`${args.guideKey}\` inside another guide directory:\n${resourceDirCtx.key}`,

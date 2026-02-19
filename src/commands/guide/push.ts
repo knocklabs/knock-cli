@@ -87,7 +87,10 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
     spinner.start(`‣ Pushing`);
 
     for (const guide of guides) {
-      const props = merge(this.props, { flags: { annotate: true } });
+      const props = merge(this.props, {
+        args: { guideKey: guide.key },
+        flags: { annotate: true },
+      });
 
       // eslint-disable-next-line no-await-in-loop
       const resp = await this.apiV1.upsertGuide<WithAnnotation>(props, {

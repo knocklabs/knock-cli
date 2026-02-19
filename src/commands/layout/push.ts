@@ -96,7 +96,10 @@ export default class EmailLayoutPush extends BaseCommand<
     spinner.start(`‣ Pushing`);
 
     for (const layout of layouts) {
-      const props = merge(this.props, { flags: { annotate: true } });
+      const props = merge(this.props, {
+        args: { emailLayoutKey: layout.key },
+        flags: { annotate: true },
+      });
 
       // eslint-disable-next-line no-await-in-loop
       const resp = await this.apiV1.upsertEmailLayout<WithAnnotation>(props, {

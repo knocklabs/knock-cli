@@ -94,7 +94,10 @@ export default class MessageTypePush extends BaseCommand<
     spinner.start(`‣ Pushing`);
 
     for (const messageType of messageTypes) {
-      const props = merge(this.props, { flags: { annotate: true } });
+      const props = merge(this.props, {
+        args: { messageTypeKey: messageType.key },
+        flags: { annotate: true },
+      });
 
       // eslint-disable-next-line no-await-in-loop
       const resp = await this.apiV1.upsertMessageType<WithAnnotation>(props, {

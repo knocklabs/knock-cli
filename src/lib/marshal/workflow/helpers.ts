@@ -12,6 +12,7 @@ import {
 } from "quicktype-core";
 
 import { DirContext } from "@/lib/helpers/fs";
+import { isPathArg, resolvePathArg } from "@/lib/helpers/path";
 import {
   ProjectConfig,
   resolveResourceDir,
@@ -273,6 +274,17 @@ export const ensureValidCommandTarget = async (
 
   // Workflow key arg is given, which means no --all flag.
   if (args.workflowKey) {
+    if (isPathArg(args.workflowKey)) {
+      const { key, abspath } = resolvePathArg(args.workflowKey);
+      const workflowDirCtx: WorkflowDirContext = {
+        type: "workflow",
+        key,
+        abspath,
+        exists: await isWorkflowDir(abspath),
+      };
+      return { type: "workflowDir", context: workflowDirCtx };
+    }
+
     if (resourceDirCtx && resourceDirCtx.key !== args.workflowKey) {
       return ux.error(
         `Cannot run ${commandId} \`${args.workflowKey}\` inside another workflow directory:\n${resourceDirCtx.key}`,

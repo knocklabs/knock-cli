@@ -186,6 +186,46 @@ describe("commands/translation/push", () => {
       .it("exits with status 2");
   });
 
+  describe("given a path argument", () => {
+    beforeEach(() => {
+      const customTranslationsPath = path.resolve(
+        sandboxDir,
+        "custom-translations",
+        "en",
+      );
+      const abspath = path.resolve(customTranslationsPath, "admin.en.json");
+      fs.outputJsonSync(abspath, JSON.parse('{"welcome":"hello!"}'));
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["translation push", "./custom-translations/en/admin.en.json"])
+      .it("pushes translation using relative path to file", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertTranslation as any,
+          sinon.match(({ flags }) => flags["service-token"] === "valid-token"),
+          sinon.match({
+            content: '{"welcome":"hello!"}',
+            locale_code: "en",
+            namespace: "admin",
+            format: "json",
+          }),
+        );
+      });
+
+    setupWithStub()
+      .stdout()
+      .command([
+        "translation push",
+        "./custom-translations/en/admin.en.json",
+        "--all",
+      ])
+      .exit(2)
+      .it("exits with status 2 when path and --all are both provided");
+  });
+
   describe("given --all and a nonexistent translations index directory", () => {
     beforeEach(() => {
       process.chdir(sandboxDir);

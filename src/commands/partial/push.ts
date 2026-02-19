@@ -93,7 +93,10 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
     spinner.start(`‣ Pushing`);
 
     for (const partial of partials) {
-      const props = merge(this.props, { flags: { annotate: true } });
+      const props = merge(this.props, {
+        args: { partialKey: partial.key },
+        flags: { annotate: true },
+      });
 
       // eslint-disable-next-line no-await-in-loop
       const resp = await this.apiV1.upsertPartial<WithAnnotation>(props, {
