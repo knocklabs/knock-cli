@@ -90,7 +90,6 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
 
     for (const workflow of workflows) {
       const props = merge(this.props, {
-        args: { workflowKey: workflow.key },
         flags: { annotate: true },
       });
 

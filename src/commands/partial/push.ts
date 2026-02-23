@@ -94,7 +94,6 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
 
     for (const partial of partials) {
       const props = merge(this.props, {
-        args: { partialKey: partial.key },
         flags: { annotate: true },
       });
 

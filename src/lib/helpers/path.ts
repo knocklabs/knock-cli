@@ -2,13 +2,13 @@ import * as path from "node:path";
 
 /**
  * Returns true if the argument looks like a filesystem path rather than a
- * resource key. Paths contain `/` or `\` or start with `.`.
+ * resource key. Paths contain the OS path separator.
  *
  * @param arg - The command argument to check
  * @returns True if the argument appears to be a path
  */
 export const isPathArg = (arg: string): boolean =>
-  arg.includes("/") || arg.includes("\\") || arg.startsWith(".");
+  arg.includes(path.sep) || arg.includes("/");
 
 /**
  * Resolves a path argument to an absolute path and extracts the resource key

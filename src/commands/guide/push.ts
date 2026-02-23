@@ -88,7 +88,6 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
 
     for (const guide of guides) {
       const props = merge(this.props, {
-        args: { guideKey: guide.key },
         flags: { annotate: true },
       });
 

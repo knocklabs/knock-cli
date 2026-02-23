@@ -95,7 +95,6 @@ export default class MessageTypePush extends BaseCommand<
 
     for (const messageType of messageTypes) {
       const props = merge(this.props, {
-        args: { messageTypeKey: messageType.key },
         flags: { annotate: true },
       });
 

@@ -97,7 +97,6 @@ export default class EmailLayoutPush extends BaseCommand<
 
     for (const layout of layouts) {
       const props = merge(this.props, {
-        args: { emailLayoutKey: layout.key },
         flags: { annotate: true },
       });
 
