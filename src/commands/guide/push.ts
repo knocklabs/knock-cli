@@ -89,6 +89,7 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
     for (const guide of guides) {
       const props = merge(this.props, {
         flags: { annotate: true },
+        args: { guideKey: guide.key },
       });
 
       // eslint-disable-next-line no-await-in-loop

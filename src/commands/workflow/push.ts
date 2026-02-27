@@ -91,6 +91,7 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
     for (const workflow of workflows) {
       const props = merge(this.props, {
         flags: { annotate: true },
+        args: { workflowKey: workflow.key },
       });
 
       // eslint-disable-next-line no-await-in-loop

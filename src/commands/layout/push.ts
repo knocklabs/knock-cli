@@ -98,6 +98,7 @@ export default class EmailLayoutPush extends BaseCommand<
     for (const layout of layouts) {
       const props = merge(this.props, {
         flags: { annotate: true },
+        args: { emailLayoutKey: layout.key },
       });
 
       // eslint-disable-next-line no-await-in-loop

@@ -96,6 +96,7 @@ export default class MessageTypePush extends BaseCommand<
     for (const messageType of messageTypes) {
       const props = merge(this.props, {
         flags: { annotate: true },
+        args: { messageTypeKey: messageType.key },
       });
 
       // eslint-disable-next-line no-await-in-loop

@@ -95,6 +95,7 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
     for (const partial of partials) {
       const props = merge(this.props, {
         flags: { annotate: true },
+        args: { partialKey: partial.key },
       });
 
       // eslint-disable-next-line no-await-in-loop
