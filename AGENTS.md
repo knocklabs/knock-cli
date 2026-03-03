@@ -151,3 +151,10 @@ The CLI primarily interacts with Knock's Management API via the `@knocklabs/mgmt
 - Error messages should be user-friendly and actionable
 - Tests are required for new commands and features
 
+## Cursor Cloud specific instructions
+
+- **Node.js version**: The `.tool-versions` file pins Node 20.9.0, but current devDependencies (notably `@swc/cli@^0.8.0`) require Node >= 20.19.0. Use the latest Node 20.x LTS (`nvm install 20 && nvm use 20`).
+- **Development entry point**: Use `./bin/dev.js` (not `./bin/run.js`) to run the CLI during development. `bin/dev.js` uses `ts-node` with `tsconfig-paths/register`, which correctly resolves `@/*` path aliases. The production `bin/run.js` requires a `yarn build` that compiles via SWC, but SWC does not fully resolve `@/*` path aliases at runtime — so `bin/dev.js` is the correct way to invoke commands locally.
+- **No external services needed**: All tests use `nock` for HTTP mocking. No databases, Docker, or live API connections are required.
+- **Standard commands**: See the "Build & Development" section above for `yarn install`, `yarn build`, `yarn test`, `yarn lint`, `yarn type.check`, and `yarn check`.
+
