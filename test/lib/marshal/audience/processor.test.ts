@@ -70,32 +70,34 @@ describe("lib/marshal/audience/processor", () => {
   });
 
   describe("buildAudienceDirBundle", () => {
-    it("given a fetched audience that has not been pulled before", () => {
-      const result = buildAudienceDirBundle(remoteAudience);
+    describe("given a fetched audience that has not been pulled before", () => {
+      it("returns a dir bundle based on remote data and default extract settings", () => {
+        const result = buildAudienceDirBundle(remoteAudience);
 
-      expect(result).to.eql({
-        "dynamic_audience_conditions.json": [
-          {
-            conditions: [
-              {
-                variable: "plan",
-                operator: "equal_to",
-                argument: "paid",
-              },
-            ],
+        expect(result).to.eql({
+          "dynamic_audience_conditions.json": [
+            {
+              conditions: [
+                {
+                  variable: "plan",
+                  operator: "equal_to",
+                  argument: "paid",
+                },
+              ],
+            },
+          ],
+          "audience.json": {
+            name: "Paid Users",
+            description: "Users on a paid plan",
+            "dynamic_audience_conditions@": "dynamic_audience_conditions.json",
+            __readonly: {
+              key: "paid-users",
+              type: AudienceType.Dynamic,
+              environment: "development",
+              created_at: "2024-06-20T18:32:18.398053Z",
+            },
           },
-        ],
-        "audience.json": {
-          name: "Paid Users",
-          description: "Users on a paid plan",
-          "dynamic_audience_conditions@": "dynamic_audience_conditions.json",
-          __readonly: {
-            key: "paid-users",
-            type: AudienceType.Dynamic,
-            environment: "development",
-            created_at: "2024-06-20T18:32:18.398053Z",
-          },
-        },
+        });
       });
     });
 
