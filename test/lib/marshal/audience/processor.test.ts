@@ -70,7 +70,7 @@ describe("lib/marshal/audience/processor", () => {
   });
 
   describe("buildAudienceDirBundle", () => {
-    describe("given a fetched audience that has not been pulled before", () => {
+    it("given a fetched audience that has not been pulled before", () => {
       const result = buildAudienceDirBundle(remoteAudience);
 
       expect(result).to.eql({
