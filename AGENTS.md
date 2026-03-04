@@ -151,3 +151,11 @@ The CLI primarily interacts with Knock's Management API via the `@knocklabs/mgmt
 - Error messages should be user-friendly and actionable
 - Tests are required for new commands and features
 
+## Cursor Cloud specific instructions
+
+- **No external services required.** This is a pure client-side CLI; all HTTP interactions are mocked with `nock` in tests. No databases, Docker, or background processes are needed.
+- **Standard dev commands** are documented in the "Build & Development" section above (`yarn build`, `yarn test`, `yarn lint`, `yarn type.check`, `yarn check`).
+- **Path aliases (`@/`):** The codebase uses TypeScript path aliases (`@/*` -> `src/*`). Tests resolve these at runtime via `ts-node` with `tsconfig-paths/register`. The compiled `dist/` output does **not** resolve these aliases (SWC limitation), so running `./bin/run.js` will show MODULE_NOT_FOUND warnings for individual commands. This is expected and does not affect development or testing.
+- **Running the CLI in development:** Tests are the primary way to exercise CLI commands during development. All 707+ tests use `@oclif/test` which loads source directly via `ts-node`. For quick manual testing of the built CLI, use `./bin/run.js --version` (version output works despite path alias warnings).
+- **Yarn 1 (Classic)** is the package manager. Always use `yarn` commands (not `npm` or `pnpm`).
+
