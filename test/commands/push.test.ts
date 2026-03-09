@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
+import AudienceValidate from "@/commands/audience/validate";
 import GuideValidate from "@/commands/guide/validate";
 import EmailLayoutValidate from "@/commands/layout/validate";
 import MessageTypeValidate from "@/commands/message-type/validate";
@@ -790,6 +791,8 @@ describe("commands/push", () => {
         let upsertWorkflowStub: sinon.SinonStub;
 
         beforeEach(() => {
+          sinon.stub(AudienceValidate, "validateAll").resolves([]);
+
           layoutValidateAllStub = sinon
             .stub(EmailLayoutValidate, "validateAll")
             .resolves([]);
@@ -925,6 +928,8 @@ describe("commands/push", () => {
             .stub(KnockApiV1.prototype, "whoami")
             .resolves(factory.resp({ data: factory.whoami() }));
 
+          sinon.stub(AudienceValidate, "validateAll").resolves([]);
+
           layoutValidateAllStub = sinon
             .stub(EmailLayoutValidate, "validateAll")
             .resolves([]);
@@ -1029,6 +1034,7 @@ describe("commands/push", () => {
         let upsertGuideStub: sinon.SinonStub;
 
         beforeEach(() => {
+          sinon.stub(AudienceValidate, "validateAll").resolves([]);
           sinon.stub(EmailLayoutValidate, "validateAll").resolves([]);
           sinon.stub(PartialValidate, "validateAll").resolves([]);
           sinon.stub(TranslationValidate, "validateAll").resolves([]);

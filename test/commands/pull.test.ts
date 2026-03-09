@@ -9,6 +9,7 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
+import { AudienceData } from "@/lib/marshal/audience";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
@@ -25,12 +26,23 @@ const setupWithListStubs = (
   manyWorkflowAttrs: Partial<WorkflowData>[],
   manyMessageTypeAttrs: Partial<MessageTypeData>[],
   manyGuideAttrs: Partial<GuideData>[],
+  manyAudienceAttrs: Partial<AudienceData>[] = [],
   // eslint-disable-next-line max-params
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(KnockApiV1.prototype, "whoami", (stub) =>
       stub.resolves(factory.resp({ data: factory.whoami() })),
+    )
+    .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            entries: manyAudienceAttrs.map((attrs) => factory.audience(attrs)),
+            page_info: factory.pageInfo(),
+          },
+        }),
+      ),
     )
     .stub(KnockApiV1.prototype, "listEmailLayouts", (stub) =>
       stub.resolves(
