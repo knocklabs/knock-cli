@@ -91,6 +91,11 @@ export default class AudiencePull extends BaseCommand<typeof AudiencePull> {
       },
     );
 
+    if (!isSuccessResp(resp)) {
+      const message = formatErrorRespMessage(resp);
+      this.error(new ApiError(message));
+    }
+
     await Audience.writeAudienceDirFromData(dirContext, resp.data, {
       withSchema: true,
     });
