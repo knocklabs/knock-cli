@@ -14,21 +14,6 @@ type NewAudienceAttrs = {
 };
 
 /*
- * Returns the default scaffolded segments for a dynamic audience.
- */
-const defaultSegmentsForDynamic = () => [
-  {
-    conditions: [
-      {
-        property: "recipient.plan",
-        operator: "equal_to",
-        argument: "premium",
-      },
-    ],
-  },
-];
-
-/*
  * Scaffolds a new audience directory bundle with default content.
  */
 const scaffoldAudienceDirBundle = (
@@ -41,11 +26,6 @@ const scaffoldAudienceDirBundle = (
 
   if (attrs.description) {
     audienceJson.description = attrs.description;
-  }
-
-  // For dynamic audiences, include example segments
-  if (attrs.type === AudienceType.Dynamic) {
-    audienceJson.segments = defaultSegmentsForDynamic();
   }
 
   return {

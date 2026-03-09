@@ -90,8 +90,6 @@ describe("commands/audience/new", () => {
         expect(audienceJson.name).to.equal("Beta Testers");
         expect(audienceJson.type).to.equal("dynamic");
         expect(audienceJson.description).to.equal("Users in beta program");
-        // Dynamic audiences should have segments scaffolded
-        expect(audienceJson.segments).to.be.an("array");
       });
   });
 
