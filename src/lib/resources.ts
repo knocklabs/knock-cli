@@ -1,7 +1,10 @@
 import type { ResourceType } from "./run-context";
 
 // TODO Remove this once hidden option is removed from message types / guides
-export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
+export type NonHiddenResourceType = Exclude<
+  ResourceType,
+  "reusable_step" | "broadcast"
+>;
 
 /**
  * An ordered array of all resource types.

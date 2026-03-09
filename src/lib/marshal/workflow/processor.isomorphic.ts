@@ -196,7 +196,7 @@ const compileExtractionSettings = (
   );
 };
 
-const keyLocalWorkflowStepsByRef = (
+export const keyLocalStepsByRef = (
   steps: unknown,
   result: AnyObj = {},
 ): AnyObj => {
@@ -212,7 +212,7 @@ const keyLocalWorkflowStepsByRef = (
       for (const branch of step.branches) {
         if (!isPlainObject(branch)) continue;
 
-        result = keyLocalWorkflowStepsByRef(branch.steps as AnyObj[], result);
+        result = keyLocalStepsByRef(branch.steps as AnyObj[], result);
       }
     }
   }
@@ -220,7 +220,7 @@ const keyLocalWorkflowStepsByRef = (
   return result;
 };
 
-const recursivelyBuildWorkflowDirBundle = (
+export const recursivelyBuildStepsDirBundle = (
   bundle: WorkflowDirBundle,
   steps: WorkflowStepData<WithAnnotation>[],
   localWorkflowStepsByRef: AnyObj,
@@ -303,7 +303,7 @@ const recursivelyBuildWorkflowDirBundle = (
     // Lastly, recurse thru any branches that exist in the workflow tree
     if (step.type === StepType.Branch) {
       for (const branch of step.branches) {
-        recursivelyBuildWorkflowDirBundle(
+        recursivelyBuildStepsDirBundle(
           bundle,
           branch.steps,
           localWorkflowStepsByRef,
@@ -346,13 +346,11 @@ export const buildWorkflowDirBundle = (
   const bundle: WorkflowDirBundle = {};
   localWorkflow = localWorkflow || {};
   const mutWorkflow = cloneDeep(remoteWorkflow);
-  const localWorkflowStepsByRef = keyLocalWorkflowStepsByRef(
-    localWorkflow.steps,
-  );
+  const localWorkflowStepsByRef = keyLocalStepsByRef(localWorkflow.steps);
 
   // Recursively traverse the workflow step tree, mutating it and the bundle
   // along the way
-  recursivelyBuildWorkflowDirBundle(
+  recursivelyBuildStepsDirBundle(
     bundle,
     mutWorkflow.steps,
     localWorkflowStepsByRef,
