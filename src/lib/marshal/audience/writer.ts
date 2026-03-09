@@ -169,7 +169,6 @@ export const writeAudiencesIndexDir = async (
 
     await Promise.all(writeAudienceDirPromises);
   } catch (error) {
-    console.log(error);
     // In case of any error, wipe the index directory that is likely in a bad
     // state then restore the backup if one existed before.
     if (indexDirCtx.exists) {
