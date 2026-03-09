@@ -1,11 +1,7 @@
 import type { ResourceType } from "./run-context";
 
 // TODO Remove this once hidden option is removed from message types / guides
-// Note: "audience" is excluded until audience pull/push commands are implemented
-export type NonHiddenResourceType = Exclude<
-  ResourceType,
-  "reusable_step" | "audience"
->;
+export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
 
 /**
  * An ordered array of all resource types.
@@ -15,6 +11,8 @@ export type NonHiddenResourceType = Exclude<
  * first or else the validation and upsert of the layout will fail.
  */
 export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
+  // Audiences can be referenced by workflows, so push them early
+  "audience",
   // Partials first, as email layouts and workflows may reference them
   "partial",
   // Email layouts next, as workflows with email channel steps may reference them
@@ -31,6 +29,7 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
  * all resources to/from an environment.
  */
 export const RESOURCE_SUBDIRS: Record<NonHiddenResourceType, string> = {
+  audience: "audiences",
   email_layout: "layouts",
   partial: "partials",
   translation: "translations",

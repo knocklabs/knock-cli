@@ -113,11 +113,11 @@ export const findAndReadProjectConfig = async (): Promise<
  * Resource subdirectory names as they appear in the knock directory.
  */
 
-// Note: "audience" is excluded until audience pull/push commands are implemented
 export const ResourceDirectoriesByType: Record<
-  Exclude<ResourceType, "reusable_step" | "audience">,
+  Exclude<ResourceType, "reusable_step">,
   string
 > = {
+  audience: "audiences",
   workflow: "workflows",
   guide: "guides",
   partial: "partials",
@@ -126,7 +126,7 @@ export const ResourceDirectoriesByType: Record<
   translation: "translations",
 } as const;
 
-type ValidResourceType = Exclude<ResourceType, "reusable_step" | "audience">;
+type ValidResourceType = Exclude<ResourceType, "reusable_step">;
 
 /**
  * Resolves the full path to a resource directory within the knock directory.
