@@ -10,6 +10,7 @@ import { type WhoamiResp } from "@/lib/api-v1";
 import { AuthenticatedSession } from "@/lib/auth";
 import { BFlags, Props } from "@/lib/base-command";
 import { PageInfo, PaginatedResp } from "@/lib/helpers/page";
+import { AudienceData, AudienceType } from "@/lib/marshal/audience";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
@@ -222,6 +223,31 @@ export const partial = (attrs: Partial<PartialData> = {}): PartialData => {
     content: "<div>{{heading}}<button>{{cta}}</button></div>",
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",
+    ...attrs,
+  };
+};
+
+export const audience = (attrs: Partial<AudienceData> = {}): AudienceData => {
+  return {
+    key: "vip-users",
+    name: "VIP Users",
+    type: AudienceType.Dynamic,
+    description: "Premium subscription users",
+    segments: [
+      {
+        conditions: [
+          {
+            property: "recipient.plan",
+            operator: "equal_to",
+            argument: "premium",
+          },
+        ],
+      },
+    ],
+    environment: "development",
+    created_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    sha: "<SOME_SHA>",
     ...attrs,
   };
 };
