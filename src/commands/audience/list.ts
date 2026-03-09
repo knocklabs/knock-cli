@@ -37,7 +37,7 @@ export default class AudienceList extends BaseCommand<typeof AudienceList> {
     const { flags } = this.props;
     if (flags.json) return resp.data;
 
-    this.render(resp.data);
+    return this.render(resp.data);
   }
 
   async request(

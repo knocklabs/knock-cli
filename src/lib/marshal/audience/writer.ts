@@ -118,10 +118,10 @@ const pruneAudiencesIndexDir = async (
   });
 
   const promises = dirents.map(async (dirent) => {
-    const direntName = dirent.name.toLowerCase();
-    const direntPath = path.resolve(indexDirCtx.abspath, direntName);
+    const direntPath = path.resolve(indexDirCtx.abspath, dirent.name);
+    const direntKey = dirent.name.toLowerCase();
 
-    if ((await isAudienceDir(direntPath)) && audiencesByKey[direntName]) {
+    if ((await isAudienceDir(direntPath)) && audiencesByKey[direntKey]) {
       return;
     }
 
