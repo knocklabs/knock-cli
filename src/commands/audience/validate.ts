@@ -89,9 +89,6 @@ export default class AudienceValidate extends BaseCommand<
     props: Props<typeof AudienceValidate | typeof AudiencePush>,
     audiences: Audience.AudienceDirData[],
   ): Promise<SourceError[]> {
-    // TODO: Throw an error if a non validation error (e.g. authentication error)
-    // instead of printing out same error messages repeatedly.
-
     const errorPromises = audiences.map(async (audience) => {
       const resp = await api.validateAudience(props, {
         ...audience.content,
