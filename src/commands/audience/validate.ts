@@ -21,9 +21,8 @@ export default class AudienceValidate extends BaseCommand<
   static flags = {
     environment: Flags.string({
       summary:
-        "Validating an audience is only done in the development environment",
+        "The environment to validate the audience against. Defaults to development.",
       default: KnockEnv.Development,
-      options: [KnockEnv.Development],
     }),
     branch: CustomFlags.branch,
     all: Flags.boolean({

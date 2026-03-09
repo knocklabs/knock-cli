@@ -21,9 +21,8 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
   static flags = {
     environment: Flags.string({
       summary:
-        "Pushing an audience is only allowed in the development environment",
+        "The environment to push the audience to. Defaults to development.",
       default: KnockEnv.Development,
-      options: [KnockEnv.Development],
     }),
     branch: CustomFlags.branch,
     all: Flags.boolean({
