@@ -1,5 +1,6 @@
 import path from "node:path";
 
+import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { formatErrors, SourceError } from "@/lib/helpers/error";
@@ -92,7 +93,7 @@ export const readAllForCommandTarget = async (
         ? "an audience directory at"
         : "audience directories in";
 
-    throw new Error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
+    return ux.error(`Cannot locate ${subject} \`${targetCtx.abspath}\``);
   }
 
   switch (targetType) {
