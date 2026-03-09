@@ -17,6 +17,7 @@ export type T = RunContext;
  */
 
 export type ResourceType =
+  | "audience"
   | "workflow"
   | "email_layout"
   | "translation"
@@ -28,6 +29,10 @@ export type ResourceType =
 type ResourceDirContextBase = DirContext & {
   type: ResourceType;
   key: string;
+};
+
+export type AudienceDirContext = ResourceDirContextBase & {
+  type: "audience";
 };
 
 export type WorkflowDirContext = ResourceDirContextBase & {
@@ -59,6 +64,7 @@ export type ReusableStepDirContext = ResourceDirContextBase & {
 };
 
 export type ResourceDirContext =
+  | AudienceDirContext
   | WorkflowDirContext
   | EmailLayoutDirContext
   | TranslationDirContext

@@ -117,6 +117,7 @@ export const ResourceDirectoriesByType: Record<
   Exclude<ResourceType, "reusable_step">,
   string
 > = {
+  audience: "audiences",
   workflow: "workflows",
   guide: "guides",
   partial: "partials",

@@ -5,6 +5,7 @@
  */
 import * as path from "node:path";
 
+import * as Audience from "@/lib/marshal/audience";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
@@ -29,6 +30,11 @@ const evaluateRecursively = async (
 ): Promise<RunContext> => {
   // Check if we are inside a resource directory and if so update the context.
   if (!ctx.resourceDir) {
+    const isAudienceDir = await Audience.isAudienceDir(currDir);
+    if (isAudienceDir) {
+      ctx.resourceDir = buildResourceDirContext("audience", currDir);
+    }
+
     const isWorkflowDir = await Workflow.isWorkflowDir(currDir);
     if (isWorkflowDir) {
       ctx.resourceDir = buildResourceDirContext("workflow", currDir);

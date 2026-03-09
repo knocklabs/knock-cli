@@ -47,3 +47,11 @@ export const viewPartialUrl = (
   partialKey: string,
 ): string =>
   `${dashboardUrl}/${accountSlug}/${envOrBranchSlug.toLowerCase()}/partials/${partialKey}`;
+
+export const viewAudienceUrl = (
+  dashboardUrl: string,
+  accountSlug: string,
+  envOrBranchSlug: string,
+  audienceKey: string,
+): string =>
+  `${dashboardUrl}/${accountSlug}/${envOrBranchSlug.toLowerCase()}/audiences/${audienceKey}`;

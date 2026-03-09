@@ -13,6 +13,7 @@ import {
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
+import AudiencePull from "./audience/pull";
 import GuidePull from "./guide/pull";
 import EmailLayoutPull from "./layout/pull";
 import MessageTypePull from "./message-type/pull";
@@ -98,6 +99,9 @@ const runResourcePullCommand = async (
   );
 
   switch (resourceType) {
+    case "audience":
+      return AudiencePull.run([...args, "--audiences-dir", subdirPath]);
+
     case "email_layout":
       return EmailLayoutPull.run([...args, "--layouts-dir", subdirPath]);
 

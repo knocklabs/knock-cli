@@ -14,6 +14,7 @@ import {
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
+import AudiencePush from "./audience/push";
 import GuidePush from "./guide/push";
 import EmailLayoutPush from "./layout/push";
 import MessageTypePush from "./message-type/push";
@@ -104,6 +105,9 @@ const runResourcePushCommand = async (
   }
 
   switch (resourceType) {
+    case "audience":
+      return AudiencePush.run([...args, "--audiences-dir", subdirPath]);
+
     case "email_layout":
       return EmailLayoutPush.run([...args, "--layouts-dir", subdirPath]);
 
