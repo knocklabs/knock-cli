@@ -164,8 +164,13 @@ export default class AudienceNew extends BaseCommand<typeof AudienceNew> {
     if (flags.push) {
       spinner.start("‣ Pushing audience to Knock");
 
+      const pushArgs = [key, "--environment", flags.environment];
+      if (flags.branch) {
+        pushArgs.push("--branch", flags.branch);
+      }
+
       try {
-        await AudiencePush.run([key]);
+        await AudiencePush.run(pushArgs);
       } catch (error) {
         this.error(`Failed to push audience to Knock: ${error}`);
       } finally {
