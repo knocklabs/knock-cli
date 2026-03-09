@@ -11,6 +11,7 @@ import { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
+import * as Audience from "@/lib/marshal/audience";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
@@ -550,6 +551,79 @@ export default class ApiV1 {
     return this.put(`/guides/${args.guideKey}/activate`, {}, { params });
   }
 
+  // By resources: Audiences
+
+  async listAudiences<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListAudienceResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      annotate: flags.annotate,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/audiences", { params });
+  }
+
+  async getAudience<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetAudienceResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/audiences/${args.audienceKey}`, { params });
+  }
+
+  async upsertAudience<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    audience: Audience.AudienceInput,
+  ): Promise<AxiosResponse<UpsertAudienceResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+    });
+    const data = { audience };
+
+    return this.put(`/audiences/${audience.key}`, data, { params });
+  }
+
+  async validateAudience(
+    { flags }: Props,
+    audience: Audience.AudienceInput,
+  ): Promise<AxiosResponse<ValidateAudienceResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const data = { audience };
+
+    return this.put(`/audiences/${audience.key}/validate`, data, {
+      params,
+    });
+  }
+
+  async archiveAudience({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ArchiveAudienceResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+
+    return this.put(`/audiences/${args.audienceKey}/archive`, {}, { params });
+  }
+
   async listAllChannels(): Promise<Channel[]> {
     const channels: Channel[] = [];
     for await (const channel of this.mgmtClient.channels.list()) {
@@ -732,3 +806,24 @@ export type ActivateGuideResp = {
 };
 
 export type ListBranchResp = PaginatedResp<Branch>;
+
+export type ListAudienceResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Audience.AudienceData<A>>;
+
+export type GetAudienceResp<A extends MaybeWithAnnotation = unknown> =
+  Audience.AudienceData<A>;
+
+export type UpsertAudienceResp<A extends MaybeWithAnnotation = unknown> = {
+  audience?: Audience.AudienceData<A>;
+  errors?: InputError[];
+};
+
+export type ValidateAudienceResp = {
+  audience?: Audience.AudienceData;
+  errors?: InputError[];
+};
+
+export type ArchiveAudienceResp = {
+  audience?: Audience.AudienceData;
+  errors?: InputError[];
+};
