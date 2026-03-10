@@ -23,10 +23,7 @@ export const buildAudienceDirBundle = (
   _localAudience?: AnyObj,
   $schema?: string,
 ): AudienceDirBundle => {
-  const bundle: AudienceDirBundle = {};
-
   return {
-    ...bundle,
     [AUDIENCE_JSON]: prepareResourceJson(remoteAudience, $schema),
   };
 };
