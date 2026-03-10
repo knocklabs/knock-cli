@@ -8,8 +8,8 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import {
   maybePromptPageAction,
-  PageInfo,
   pageFlags,
+  PageInfo,
   paramsForPageAction,
 } from "@/lib/helpers/page";
 import { spinner } from "@/lib/helpers/ux";
@@ -45,7 +45,9 @@ export default class AudienceList extends BaseCommand<typeof AudienceList> {
     return this.render(data);
   }
 
-  async request(pageParams: { after?: string; before?: string } = {}): Promise<ListAudienceData> {
+  async request(
+    pageParams: { after?: string; before?: string } = {},
+  ): Promise<ListAudienceData> {
     const { flags } = this.props;
 
     spinner.start("‣ Loading");

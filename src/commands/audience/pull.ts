@@ -149,7 +149,9 @@ export default class AudiencePull extends BaseCommand<typeof AudiencePull> {
     }
   }
 
-  async listAllAudiences(): Promise<AudienceMarshal.AudienceData<WithAnnotation>[]> {
+  async listAllAudiences(): Promise<
+    AudienceMarshal.AudienceData<WithAnnotation>[]
+  > {
     const { flags } = this.props;
     const audiences: AudienceMarshal.AudienceData<WithAnnotation>[] = [];
 

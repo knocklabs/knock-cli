@@ -97,7 +97,10 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
             annotate: true,
             commit: flags.commit,
             commit_message: flags["commit-message"],
-            audience: audience.content as { name: string; type: "static" | "dynamic" },
+            audience: audience.content as {
+              name: string;
+              type: "static" | "dynamic";
+            },
           },
         );
 

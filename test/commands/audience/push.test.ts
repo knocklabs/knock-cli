@@ -255,7 +255,9 @@ describe("commands/audience/push", () => {
       .command(["audience push", "--all", "--audiences-dir", "audiences"])
       .it("calls apiV1 upsertAudience with expected props twice", () => {
         // Validate all first
-        sinon.assert.calledOnce(AudienceValidate.validateAll as sinon.SinonStub);
+        sinon.assert.calledOnce(
+          AudienceValidate.validateAll as sinon.SinonStub,
+        );
 
         sinon.assert.calledTwice(
           KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,

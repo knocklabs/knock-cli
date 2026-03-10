@@ -95,10 +95,13 @@ export default class AudienceValidate extends BaseCommand<
         await api.mgmtClient.audiences.validate(audience.key, {
           environment: flags.environment,
           branch: flags.branch,
-          audience: audience.content as { name: string; type: "static" | "dynamic" },
+          audience: audience.content as {
+            name: string;
+            type: "static" | "dynamic";
+          },
         });
 
-        return undefined;
+        return;
       } catch (error) {
         return new SourceError(
           (error as Error).message,
