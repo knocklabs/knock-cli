@@ -1,4 +1,15 @@
 import KnockMgmt from "@knocklabs/mgmt";
+import {
+  Audience as SdkAudience,
+  AudienceArchiveResponse,
+  AudienceListParams,
+  AudienceRetrieveParams,
+  AudiencesEntriesCursor,
+  AudienceUpsertParams,
+  AudienceUpsertResponse,
+  AudienceValidateParams,
+  AudienceValidateResponse,
+} from "@knocklabs/mgmt/resources/audiences";
 import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
@@ -11,7 +22,6 @@ import { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
-import * as Audience from "@/lib/marshal/audience";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
@@ -551,77 +561,48 @@ export default class ApiV1 {
     return this.put(`/guides/${args.guideKey}/activate`, {}, { params });
   }
 
-  // By resources: Audiences
+  // By resources: Audiences (using mgmt SDK)
 
-  async listAudiences<A extends MaybeWithAnnotation>({
-    flags,
-  }: Props): Promise<AxiosResponse<ListAudienceResp<A>>> {
-    const params = prune({
-      environment: flags.environment,
-      branch: flags.branch,
-      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
-      annotate: flags.annotate,
-      ...toPageParams(flags),
-    });
-
-    return this.get("/audiences", { params });
+  async listAudiences(
+    params: AudienceListParams,
+  ): Promise<AudiencesEntriesCursor> {
+    return this.mgmtClient.audiences.list(params);
   }
 
-  async getAudience<A extends MaybeWithAnnotation>({
-    args,
-    flags,
-  }: Props): Promise<AxiosResponse<GetAudienceResp<A>>> {
-    const params = prune({
-      environment: flags.environment,
-      branch: flags.branch,
-      annotate: flags.annotate,
-      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
-    });
-
-    return this.get(`/audiences/${args.audienceKey}`, { params });
+  async listAllAudiences(params: AudienceListParams): Promise<SdkAudience[]> {
+    const audiences: SdkAudience[] = [];
+    for await (const audience of this.mgmtClient.audiences.list(params)) {
+      audiences.push(audience);
+    }
+    return audiences;
   }
 
-  async upsertAudience<A extends MaybeWithAnnotation>(
-    { flags }: Props,
-    audience: Audience.AudienceInput,
-  ): Promise<AxiosResponse<UpsertAudienceResp<A>>> {
-    const params = prune({
-      environment: flags.environment,
-      branch: flags.branch,
-      annotate: flags.annotate,
-      commit: flags.commit,
-      commit_message: flags["commit-message"],
-    });
-    const data = { audience };
+  async getAudience(
+    audienceKey: string,
+    params: AudienceRetrieveParams,
+  ): Promise<SdkAudience> {
+    return this.mgmtClient.audiences.retrieve(audienceKey, params);
+  }
 
-    return this.put(`/audiences/${audience.key}`, data, { params });
+  async upsertAudience(
+    audienceKey: string,
+    params: AudienceUpsertParams,
+  ): Promise<AudienceUpsertResponse> {
+    return this.mgmtClient.audiences.upsert(audienceKey, params);
   }
 
   async validateAudience(
-    { flags }: Props,
-    audience: Audience.AudienceInput,
-  ): Promise<AxiosResponse<ValidateAudienceResp>> {
-    const params = prune({
-      environment: flags.environment,
-      branch: flags.branch,
-    });
-    const data = { audience };
-
-    return this.put(`/audiences/${audience.key}/validate`, data, {
-      params,
-    });
+    audienceKey: string,
+    params: AudienceValidateParams,
+  ): Promise<AudienceValidateResponse> {
+    return this.mgmtClient.audiences.validate(audienceKey, params);
   }
 
-  async archiveAudience({
-    args,
-    flags,
-  }: Props): Promise<AxiosResponse<ArchiveAudienceResp>> {
-    const params = prune({
-      environment: flags.environment,
-      branch: flags.branch,
-    });
-
-    return this.put(`/audiences/${args.audienceKey}/archive`, {}, { params });
+  async archiveAudience(
+    audienceKey: string,
+    environment: string,
+  ): Promise<AudienceArchiveResponse> {
+    return this.mgmtClient.audiences.archive(audienceKey, { environment });
   }
 
   async listAllChannels(): Promise<Channel[]> {
@@ -807,23 +788,14 @@ export type ActivateGuideResp = {
 
 export type ListBranchResp = PaginatedResp<Branch>;
 
-export type ListAudienceResp<A extends MaybeWithAnnotation = unknown> =
-  PaginatedResp<Audience.AudienceData<A>>;
-
-export type GetAudienceResp<A extends MaybeWithAnnotation = unknown> =
-  Audience.AudienceData<A>;
-
-export type UpsertAudienceResp<A extends MaybeWithAnnotation = unknown> = {
-  audience?: Audience.AudienceData<A>;
-  errors?: InputError[];
-};
-
-export type ValidateAudienceResp = {
-  audience?: Audience.AudienceData;
-  errors?: InputError[];
-};
-
-export type ArchiveAudienceResp = {
-  audience?: Audience.AudienceData;
-  errors?: InputError[];
+// Re-export SDK audience types
+export type {
+  SdkAudience as Audience,
+  AudienceListParams,
+  AudienceRetrieveParams,
+  AudienceUpsertParams,
+  AudienceUpsertResponse,
+  AudienceValidateParams,
+  AudienceValidateResponse,
+  AudienceArchiveResponse,
 };

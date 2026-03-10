@@ -1,5 +1,4 @@
 import { test } from "@oclif/test";
-import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
@@ -27,28 +26,18 @@ describe("commands/audience/get", () => {
         stub.resolves(factory.resp({ data: whoami })),
       )
       .stub(KnockApiV1.prototype, "getAudience", (stub) =>
-        stub.resolves(
-          factory.resp({
-            data: factory.audience(),
-          }),
-        ),
+        stub.resolves(factory.audience()),
       )
       .stdout()
       .command(["audience get", "foo"])
       .it("calls apiV1 getAudience with correct props", () => {
+        const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          KnockApiV1.prototype.getAudience as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, {
-                audienceKey: "foo",
-              }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-
-                environment: "development",
-              }),
-          ),
+          getStub,
+          "foo",
+          sinon.match({
+            environment: "development",
+          }),
         );
       });
   });
@@ -60,11 +49,7 @@ describe("commands/audience/get", () => {
         stub.resolves(factory.resp({ data: whoami })),
       )
       .stub(KnockApiV1.prototype, "getAudience", (stub) =>
-        stub.resolves(
-          factory.resp({
-            data: factory.audience(),
-          }),
-        ),
+        stub.resolves(factory.audience()),
       )
       .stdout()
       .command([
@@ -75,20 +60,14 @@ describe("commands/audience/get", () => {
         "staging",
       ])
       .it("calls apiV1 getAudience with correct props", () => {
+        const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          KnockApiV1.prototype.getAudience as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, {
-                audienceKey: "foo",
-              }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-
-                "hide-uncommitted-changes": true,
-                environment: "staging",
-              }),
-          ),
+          getStub,
+          "foo",
+          sinon.match({
+            environment: "staging",
+            hide_uncommitted_changes: true,
+          }),
         );
       });
   });
@@ -100,28 +79,19 @@ describe("commands/audience/get", () => {
         stub.resolves(factory.resp({ data: whoami })),
       )
       .stub(KnockApiV1.prototype, "getAudience", (stub) =>
-        stub.resolves(
-          factory.resp({
-            data: factory.audience(),
-          }),
-        ),
+        stub.resolves(factory.audience()),
       )
       .stdout()
       .command(["audience get", "foo", "--branch", "my-feature-branch-123"])
       .it("calls apiV1 getAudience with expected params", () => {
+        const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          KnockApiV1.prototype.getAudience as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, {
-                audienceKey: "foo",
-              }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-                environment: "development",
-                branch: "my-feature-branch-123",
-              }),
-          ),
+          getStub,
+          "foo",
+          sinon.match({
+            environment: "development",
+            branch: "my-feature-branch-123",
+          }),
         );
       });
   });
@@ -133,18 +103,7 @@ describe("commands/audience/get", () => {
         stub.resolves(factory.resp({ data: whoami })),
       )
       .stub(KnockApiV1.prototype, "getAudience", (stub) =>
-        stub.resolves(
-          factory.resp({
-            status: 404,
-            statusText: "Not found",
-            data: {
-              code: "resource_missing",
-              message: "The resource you requested does not exist",
-              status: 404,
-              type: "api_error",
-            },
-          }),
-        ),
+        stub.rejects(new Error("The resource you requested does not exist")),
       )
       .stdout()
       .command(["audience get", "foo"])

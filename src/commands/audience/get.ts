@@ -1,12 +1,11 @@
+import { Audience } from "@knocklabs/mgmt/resources/audiences";
 import { Args, Flags, ux } from "@oclif/core";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
 
 export default class AudienceGet extends BaseCommand<typeof AudienceGet> {
@@ -31,7 +30,7 @@ export default class AudienceGet extends BaseCommand<typeof AudienceGet> {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<ApiV1.GetAudienceResp | void> {
+  async run(): Promise<Audience | void> {
     spinner.start("‣ Loading");
 
     const { audience } = await this.loadAudience();
@@ -45,21 +44,25 @@ export default class AudienceGet extends BaseCommand<typeof AudienceGet> {
   }
 
   private async loadAudience(): Promise<{
-    audience: ApiV1.GetAudienceResp;
+    audience: Audience;
   }> {
-    const audienceResp = await this.apiV1.getAudience(this.props);
+    const { audienceKey } = this.props.args;
+    const { flags } = this.props;
 
-    if (!isSuccessResp(audienceResp)) {
-      const message = formatErrorRespMessage(audienceResp);
-      ux.error(new ApiError(message));
+    try {
+      const audience = await this.apiV1.getAudience(audienceKey, {
+        environment: flags.environment,
+        branch: flags.branch,
+        hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      });
+
+      return { audience };
+    } catch (error) {
+      ux.error(new ApiError((error as Error).message));
     }
-
-    return {
-      audience: audienceResp.data,
-    };
   }
 
-  render(audience: ApiV1.GetAudienceResp): void {
+  render(audience: Audience): void {
     const { audienceKey } = this.props.args;
     const { environment: env, "hide-uncommitted-changes": committedOnly } =
       this.props.flags;

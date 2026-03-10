@@ -6,7 +6,6 @@ import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Audience from "@/lib/marshal/audience";
@@ -89,20 +88,24 @@ export default class AudienceValidate extends BaseCommand<
     props: Props<typeof AudienceValidate | typeof AudiencePush>,
     audiences: Audience.AudienceDirData[],
   ): Promise<SourceError[]> {
+    const { flags } = props;
+
     const errorPromises = audiences.map(async (audience) => {
-      const resp = await api.validateAudience(props, {
-        ...audience.content,
-        key: audience.key,
-      });
+      try {
+        await api.validateAudience(audience.key, {
+          environment: flags.environment,
+          branch: flags.branch,
+          audience: audience.content as { name: string; type: "static" | "dynamic" },
+        });
 
-      if (isSuccessResp(resp)) return;
-
-      const error = new SourceError(
-        formatErrorRespMessage(resp),
-        Audience.audienceJsonPath(audience),
-        "ApiError",
-      );
-      return error;
+        return undefined;
+      } catch (error) {
+        return new SourceError(
+          (error as Error).message,
+          Audience.audienceJsonPath(audience),
+          "ApiError",
+        );
+      }
     });
 
     const errors = (await Promise.all(errorPromises)).filter(

@@ -1,22 +1,14 @@
 import * as path from "node:path";
 
-import { Args, Flags } from "@oclif/core";
+import { Args, Flags, ux } from "@oclif/core";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { merge } from "@/lib/helpers/object.isomorphic";
-import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
-import {
-  formatErrorRespMessage,
-  isSuccessResp,
-  withSpinner,
-} from "@/lib/helpers/request";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
-import * as Audience from "@/lib/marshal/audience";
+import * as AudienceMarshal from "@/lib/marshal/audience";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import {
   AudienceDirContext,
@@ -81,30 +73,34 @@ export default class AudiencePull extends BaseCommand<typeof AudiencePull> {
       if (!input) return;
     }
 
-    const resp = await withSpinner<ApiV1.GetAudienceResp<WithAnnotation>>(
-      () => {
-        const props = merge(this.props, {
-          args: { audienceKey: dirContext.key },
-          flags: { annotate: true },
-        });
-        return this.apiV1.getAudience(props);
-      },
-    );
+    spinner.start("‣ Loading");
 
-    if (!isSuccessResp(resp)) {
-      const message = formatErrorRespMessage(resp);
-      this.error(new ApiError(message));
+    try {
+      const audience = await this.apiV1.getAudience(dirContext.key, {
+        environment: flags.environment,
+        branch: flags.branch,
+        annotate: true,
+        hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      });
+
+      spinner.stop();
+
+      // The SDK doesn't include annotation types, but the API returns them when annotate=true
+      await AudienceMarshal.writeAudienceDirFromData(
+        dirContext,
+        audience as AudienceMarshal.AudienceData<WithAnnotation>,
+        { withSchema: true },
+      );
+
+      const action = dirContext.exists ? "updated" : "created";
+      const scope = formatCommandScope(flags);
+      this.log(
+        `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} using ${scope}`,
+      );
+    } catch (error) {
+      spinner.stop();
+      ux.error(new ApiError((error as Error).message));
     }
-
-    await Audience.writeAudienceDirFromData(dirContext, resp.data, {
-      withSchema: true,
-    });
-
-    const action = dirContext.exists ? "updated" : "created";
-    const scope = formatCommandScope(flags);
-    this.log(
-      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} using ${scope}`,
-    );
   }
 
   // Pull all audiences
@@ -128,44 +124,40 @@ export default class AudiencePull extends BaseCommand<typeof AudiencePull> {
 
     spinner.start(`‣ Loading`);
 
-    const audiences = await this.listAllAudiences();
+    try {
+      const audiences = await this.listAllAudiences();
 
-    await Audience.writeAudiencesIndexDir(targetDirCtx, audiences, {
-      withSchema: true,
-    });
-    spinner.stop();
+      // The SDK doesn't include annotation types, but the API returns them when annotate=true
+      await AudienceMarshal.writeAudiencesIndexDir(
+        targetDirCtx,
+        audiences as AudienceMarshal.AudienceData<WithAnnotation>[],
+        { withSchema: true },
+      );
+      spinner.stop();
 
-    const action = targetDirCtx.exists ? "updated" : "created";
-    const scope = formatCommandScope(flags);
-    this.log(
-      `‣ Successfully ${action} the audiences directory at ${targetDirCtx.abspath} using ${scope}`,
-    );
+      const action = targetDirCtx.exists ? "updated" : "created";
+      const scope = formatCommandScope(flags);
+      this.log(
+        `‣ Successfully ${action} the audiences directory at ${targetDirCtx.abspath} using ${scope}`,
+      );
+    } catch (error) {
+      spinner.stop();
+      ux.error(new ApiError((error as Error).message));
+    }
   }
 
-  async listAllAudiences(
-    pageParams: Partial<PageInfo> = {},
-    audiencesFetchedSoFar: Audience.AudienceData<WithAnnotation>[] = [],
-  ): Promise<Audience.AudienceData<WithAnnotation>[]> {
-    const props = merge(this.props, {
-      flags: {
-        ...pageParams,
-        annotate: true,
-        limit: MAX_PAGINATION_LIMIT,
-      },
+  async listAllAudiences(): Promise<AudienceMarshal.AudienceData<WithAnnotation>[]> {
+    const { flags } = this.props;
+
+    const audiences = await this.apiV1.listAllAudiences({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: true,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
     });
 
-    const resp = await this.apiV1.listAudiences<WithAnnotation>(props);
-    if (!isSuccessResp(resp)) {
-      const message = formatErrorRespMessage(resp);
-      this.error(new ApiError(message));
-    }
-
-    const { entries, page_info: pageInfo } = resp.data;
-    const audiences = [...audiencesFetchedSoFar, ...entries];
-
-    return pageInfo.after
-      ? this.listAllAudiences({ after: pageInfo.after }, audiences)
-      : audiences;
+    // The SDK doesn't include annotation types, but the API returns them when annotate=true
+    return audiences as AudienceMarshal.AudienceData<WithAnnotation>[];
   }
 
   async getAudienceDirContext(): Promise<AudienceDirContext> {
@@ -196,7 +188,7 @@ export default class AudiencePull extends BaseCommand<typeof AudiencePull> {
     // new audience directory in the cwd, or update it if there is one already.
     if (audienceKey) {
       const dirPath = path.resolve(audiencesIndexDirCtx.abspath, audienceKey);
-      const exists = await Audience.isAudienceDir(dirPath);
+      const exists = await AudienceMarshal.isAudienceDir(dirPath);
 
       return {
         type: "audience",

@@ -3,7 +3,6 @@ import { Args, Flags, ux } from "@oclif/core";
 import BaseCommand from "@/lib/base-command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 
 export default class AudienceArchive extends BaseCommand<
@@ -36,7 +35,7 @@ Use this command with caution.
 
   async run(): Promise<void> {
     const { audienceKey } = this.props.args;
-    const { force } = this.props.flags;
+    const { force, environment } = this.props.flags;
 
     // Confirm before archiving since this affects all environments
     if (!force) {
@@ -52,17 +51,17 @@ Use this command with caution.
 
     spinner.start(`‣ Archiving audience \`${audienceKey}\``);
 
-    const resp = await this.apiV1.archiveAudience(this.props);
+    try {
+      await this.apiV1.archiveAudience(audienceKey, environment);
 
-    spinner.stop();
+      spinner.stop();
 
-    if (!isSuccessResp(resp)) {
-      const message = formatErrorRespMessage(resp);
-      ux.error(new ApiError(message));
+      this.log(
+        `‣ Successfully archived audience \`${audienceKey}\` across all environments.`,
+      );
+    } catch (error) {
+      spinner.stop();
+      ux.error(new ApiError((error as Error).message));
     }
-
-    this.log(
-      `‣ Successfully archived audience \`${audienceKey}\` across all environments.`,
-    );
   }
 }

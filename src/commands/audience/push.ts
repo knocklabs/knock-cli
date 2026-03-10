@@ -5,8 +5,6 @@ import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { merge } from "@/lib/helpers/object.isomorphic";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Audience from "@/lib/marshal/audience";
@@ -89,32 +87,34 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
     spinner.start(`‣ Pushing`);
 
     for (const audience of audiences) {
-      const props = merge(this.props, { flags: { annotate: true } });
-
-      // eslint-disable-next-line no-await-in-loop
-      const resp = await this.apiV1.upsertAudience<WithAnnotation>(props, {
-        ...audience.content,
-        key: audience.key,
-      });
-
-      if (isSuccessResp(resp)) {
-        // Update the audience directory with the successfully pushed audience
-        // payload from the server.
+      try {
         // eslint-disable-next-line no-await-in-loop
-        await Audience.writeAudienceDirFromData(audience, resp.data.audience!, {
-          withSchema: true,
+        const resp = await this.apiV1.upsertAudience(audience.key, {
+          environment: flags.environment,
+          branch: flags.branch,
+          annotate: true,
+          commit: flags.commit,
+          commit_message: flags["commit-message"],
+          audience: audience.content as { name: string; type: "static" | "dynamic" },
         });
 
-        continue;
+        // Update the audience directory with the successfully pushed audience
+        // payload from the server.
+        // The SDK doesn't include annotation types, but the API returns them when annotate=true
+        // eslint-disable-next-line no-await-in-loop
+        await Audience.writeAudienceDirFromData(
+          audience,
+          resp.audience as Audience.AudienceData<WithAnnotation>,
+          { withSchema: true },
+        );
+      } catch (error) {
+        const sourceError = new SourceError(
+          (error as Error).message,
+          Audience.audienceJsonPath(audience),
+          "ApiError",
+        );
+        this.error(formatError(sourceError));
       }
-
-      const error = new SourceError(
-        formatErrorRespMessage(resp),
-        Audience.audienceJsonPath(audience),
-        "ApiError",
-      );
-
-      this.error(formatError(error));
     }
 
     spinner.stop();

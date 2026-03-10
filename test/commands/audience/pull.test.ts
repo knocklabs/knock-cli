@@ -3,10 +3,8 @@ import * as path from "node:path";
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
-import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
-import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import {
@@ -42,14 +40,14 @@ const mockAudienceData: AudienceData<WithAnnotation> = {
   },
 };
 
-const setupWithStub = (attrs = {}) =>
+const setupWithStub = (audienceData = mockAudienceData) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(enquirer.prototype, "prompt", (stub) =>
       stub.resolves({ input: true }),
     )
     .stub(KnockApiV1.prototype, "getAudience", (stub) =>
-      stub.resolves(factory.resp(attrs)),
+      stub.resolves(audienceData),
     );
 
 const currCwd = process.cwd();
@@ -69,26 +67,22 @@ describe("commands/audience/pull (a single audience)", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: mockAudienceData })
+    setupWithStub()
       .stdout()
       .command(["audience pull", "vip-users", "--force"])
       .it("calls apiV1 getAudience with expected props", () => {
+        const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          KnockApiV1.prototype.getAudience as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, { audienceKey: "vip-users" }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-                environment: "development",
-                annotate: true,
-                force: true,
-              }),
-          ),
+          getStub,
+          "vip-users",
+          sinon.match({
+            environment: "development",
+            annotate: true,
+          }),
         );
       });
 
-    setupWithStub({ data: mockAudienceData })
+    setupWithStub()
       .stdout()
       .command(["audience pull", "vip-users", "--force"])
       .it("creates the audience directory with audience.json", () => {
@@ -105,7 +99,7 @@ describe("commands/audience/pull (a single audience)", () => {
       });
 
     describe("given a branch flag", () => {
-      setupWithStub({ data: mockAudienceData })
+      setupWithStub()
         .stdout()
         .command([
           "audience pull",
@@ -115,19 +109,15 @@ describe("commands/audience/pull (a single audience)", () => {
           "my-feature-branch-123",
         ])
         .it("calls apiV1 getAudience with expected params", () => {
+          const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
           sinon.assert.calledWith(
-            KnockApiV1.prototype.getAudience as any,
-            sinon.match(
-              ({ args, flags }) =>
-                isEqual(args, { audienceKey: "vip-users" }) &&
-                isEqual(flags, {
-                  "service-token": "valid-token",
-                  environment: "development",
-                  branch: "my-feature-branch-123",
-                  annotate: true,
-                  force: true,
-                }),
-            ),
+            getStub,
+            "vip-users",
+            sinon.match({
+              environment: "development",
+              branch: "my-feature-branch-123",
+              annotate: true,
+            }),
           );
         });
     });
@@ -138,7 +128,7 @@ describe("commands/audience/pull (a single audience)", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: mockAudienceData })
+    setupWithStub()
       .stdout()
       .command(["audience pull", "--force"])
       .exit(2)
@@ -146,7 +136,7 @@ describe("commands/audience/pull (a single audience)", () => {
   });
 
   describe("given both audience key arg and --all flag", () => {
-    setupWithStub({ data: mockAudienceData })
+    setupWithStub()
       .stdout()
       .command(["audience pull", "vip-users", "--all"])
       .exit(2)
@@ -174,15 +164,8 @@ describe("commands/audience/pull (all audiences)", () => {
       .stub(enquirer.prototype, "prompt", (stub) =>
         stub.resolves({ input: true }),
       )
-      .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
-        stub.resolves(
-          factory.resp({
-            data: {
-              page_info: factory.pageInfo(),
-              entries: [mockAudienceData],
-            },
-          }),
-        ),
+      .stub(KnockApiV1.prototype, "listAllAudiences", (stub) =>
+        stub.resolves([mockAudienceData]),
       )
       .stdout()
       .command([
@@ -193,7 +176,8 @@ describe("commands/audience/pull (all audiences)", () => {
         "--force",
       ])
       .it("calls apiV1 listAudiences and creates audience directories", () => {
-        sinon.assert.calledOnce(KnockApiV1.prototype.listAudiences as any);
+        const listStub = KnockApiV1.prototype.listAllAudiences as sinon.SinonStub;
+        sinon.assert.calledOnce(listStub);
 
         const audienceJsonPath = path.resolve(
           sandboxDir,

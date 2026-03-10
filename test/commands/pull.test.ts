@@ -19,6 +19,17 @@ import { WorkflowData } from "@/lib/marshal/workflow";
 
 const currCwd = process.cwd();
 
+// Helper to create async iterator from array
+function createAsyncIterator<T>(items: T[]): AsyncIterable<T> {
+  return {
+    [Symbol.asyncIterator]: async function* () {
+      for (const item of items) {
+        yield item;
+      }
+    },
+  };
+}
+
 const setupWithListStubs = (
   manyLayoutsAttrs: Partial<EmailLayoutData>[],
   manyPartialsAttrs: Partial<PartialData>[],
@@ -34,15 +45,8 @@ const setupWithListStubs = (
     .stub(KnockApiV1.prototype, "whoami", (stub) =>
       stub.resolves(factory.resp({ data: factory.whoami() })),
     )
-    .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
-      stub.resolves(
-        factory.resp({
-          data: {
-            entries: manyAudienceAttrs.map((attrs) => factory.audience(attrs)),
-            page_info: factory.pageInfo(),
-          },
-        }),
-      ),
+    .stub(KnockApiV1.prototype, "listAllAudiences", (stub) =>
+      stub.resolves(manyAudienceAttrs.map((attrs) => factory.audience(attrs))),
     )
     .stub(KnockApiV1.prototype, "listEmailLayouts", (stub) =>
       stub.resolves(

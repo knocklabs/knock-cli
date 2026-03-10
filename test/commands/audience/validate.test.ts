@@ -2,7 +2,6 @@ import * as path from "node:path";
 
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
-import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
@@ -12,11 +11,11 @@ import { AUDIENCE_JSON } from "@/lib/marshal/audience";
 
 const audienceJsonFile = "default/audience.json";
 
-const setupWithStub = (attrs = {}) =>
+const setupWithStub = () =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(KnockApiV1.prototype, "validateAudience", (stub) =>
-      stub.resolves(factory.resp(attrs)),
+      stub.resolves({ audience: factory.audience() }),
     );
 
 const currCwd = process.cwd();
@@ -43,23 +42,17 @@ describe("commands/audience/validate (a single audience)", () => {
       .stdout()
       .command(["audience validate", "default"])
       .it("calls apiV1 validateAudience with expected props", () => {
+        const validateStub = KnockApiV1.prototype.validateAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          KnockApiV1.prototype.validateAudience as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, { audienceKey: "default" }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-                environment: "development",
-              }),
-          ),
-          sinon.match((audience) =>
-            isEqual(audience, {
-              key: "default",
+          validateStub,
+          "default",
+          sinon.match({
+            environment: "development",
+            audience: sinon.match({
               name: "Default",
               type: "static",
             }),
-          ),
+          }),
         );
       });
 
@@ -73,24 +66,18 @@ describe("commands/audience/validate (a single audience)", () => {
           "my-feature-branch-123",
         ])
         .it("calls apiV1 validateAudience with expected params", () => {
+          const validateStub = KnockApiV1.prototype.validateAudience as sinon.SinonStub;
           sinon.assert.calledWith(
-            KnockApiV1.prototype.validateAudience as any,
-            sinon.match(
-              ({ args, flags }) =>
-                isEqual(args, { audienceKey: "default" }) &&
-                isEqual(flags, {
-                  "service-token": "valid-token",
-                  environment: "development",
-                  branch: "my-feature-branch-123",
-                }),
-            ),
-            sinon.match((audience) =>
-              isEqual(audience, {
-                key: "default",
+            validateStub,
+            "default",
+            sinon.match({
+              environment: "development",
+              branch: "my-feature-branch-123",
+              audience: sinon.match({
                 name: "Default",
                 type: "static",
               }),
-            ),
+            }),
           );
         });
     });
@@ -119,16 +106,15 @@ describe("commands/audience/validate (a single audience)", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({
-      status: 422,
-      data: { errors: [{ field: "name", message: "must be a string" }] },
-    })
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "validateAudience", (stub) =>
+        stub.rejects(new Error('"name" must be a string')),
+      )
       .stdout()
       .command(["audience validate", "default"])
       .catch((error) =>
-        expect(error.message).to.match(
-          /JsonDataError.*"name" must be a string/,
-        ),
+        expect(error.message).to.match(/"name" must be a string/),
       )
       .it("throws an error");
   });
@@ -225,8 +211,8 @@ describe("commands/audience/validate (all audiences)", () => {
       .stdout()
       .command(["audience validate", "--all", "--audiences-dir", "audiences"])
       .it("calls apiV1 validateAudience with expected props twice", () => {
-        const stub = KnockApiV1.prototype.validateAudience as any;
-        sinon.assert.calledTwice(stub);
+        const validateStub = KnockApiV1.prototype.validateAudience as sinon.SinonStub;
+        sinon.assert.calledTwice(validateStub);
       });
   });
 });

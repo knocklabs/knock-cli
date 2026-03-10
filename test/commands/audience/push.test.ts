@@ -2,10 +2,8 @@ import * as path from "node:path";
 
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
-import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
-import { factory } from "@/../test/support";
 import AudienceValidate from "@/commands/audience/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
@@ -33,12 +31,12 @@ const mockAudienceData: AudienceData<WithAnnotation> = {
   },
 };
 
-const setupWithStub = (attrs = {}) =>
+const setupWithStub = (audienceData = mockAudienceData) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(AudienceValidate, "validateAll", (stub) => stub.resolves([]))
     .stub(KnockApiV1.prototype, "upsertAudience", (stub) =>
-      stub.resolves(factory.resp(attrs)),
+      stub.resolves({ audience: audienceData }),
     );
 
 const currCwd = process.cwd();
@@ -61,32 +59,26 @@ describe("commands/audience/push", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: { audience: mockAudienceData } })
+    setupWithStub()
       .stdout()
       .command(["audience push", "default"])
       .it("calls apiV1 upsertAudience with expected props", () => {
+        const upsertStub = KnockApiV1.prototype.upsertAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          KnockApiV1.prototype.upsertAudience as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, { audienceKey: "default" }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-                environment: "development",
-                annotate: true,
-              }),
-          ),
-          sinon.match((audience) =>
-            isEqual(audience, {
-              key: "default",
+          upsertStub,
+          "default",
+          sinon.match({
+            environment: "development",
+            annotate: true,
+            audience: sinon.match({
               name: "Default",
               type: "static",
             }),
-          ),
+          }),
         );
       });
 
-    setupWithStub({ data: { audience: mockAudienceData } })
+    setupWithStub()
       .stdout()
       .command([
         "audience push",
@@ -96,31 +88,25 @@ describe("commands/audience/push", () => {
         "this is a commit comment!",
       ])
       .it("calls apiV1 upsertAudience with commit flags, if provided", () => {
+        const upsertStub = KnockApiV1.prototype.upsertAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          KnockApiV1.prototype.upsertAudience as any,
-          sinon.match(
-            ({ args, flags }) =>
-              isEqual(args, { audienceKey: "default" }) &&
-              isEqual(flags, {
-                "service-token": "valid-token",
-                environment: "development",
-                commit: true,
-                "commit-message": "this is a commit comment!",
-                annotate: true,
-              }),
-          ),
-          sinon.match((audience) =>
-            isEqual(audience, {
-              key: "default",
+          upsertStub,
+          "default",
+          sinon.match({
+            environment: "development",
+            commit: true,
+            commit_message: "this is a commit comment!",
+            annotate: true,
+            audience: sinon.match({
               name: "Default",
               type: "static",
             }),
-          ),
+          }),
         );
       });
 
     describe("given a branch flag", () => {
-      setupWithStub({ data: { audience: mockAudienceData } })
+      setupWithStub()
         .stdout()
         .command([
           "audience push",
@@ -129,30 +115,24 @@ describe("commands/audience/push", () => {
           "my-feature-branch-123",
         ])
         .it("calls apiV1 upsertAudience with expected params", () => {
+          const upsertStub = KnockApiV1.prototype.upsertAudience as sinon.SinonStub;
           sinon.assert.calledWith(
-            KnockApiV1.prototype.upsertAudience as any,
-            sinon.match(
-              ({ args, flags }) =>
-                isEqual(args, { audienceKey: "default" }) &&
-                isEqual(flags, {
-                  "service-token": "valid-token",
-                  environment: "development",
-                  branch: "my-feature-branch-123",
-                  annotate: true,
-                }),
-            ),
-            sinon.match((audience) =>
-              isEqual(audience, {
-                key: "default",
+            upsertStub,
+            "default",
+            sinon.match({
+              environment: "development",
+              branch: "my-feature-branch-123",
+              annotate: true,
+              audience: sinon.match({
                 name: "Default",
                 type: "static",
               }),
-            ),
+            }),
           );
         });
     });
 
-    setupWithStub({ data: { audience: mockAudienceData } })
+    setupWithStub()
       .stdout()
       .command(["audience push", "default"])
       .it("writes the upserted audience data into audience.json", () => {
@@ -181,7 +161,7 @@ describe("commands/audience/push", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: { audience: mockAudienceData } })
+    setupWithStub()
       .stdout()
       .command(["audience push", "default"])
       .catch((error) => expect(error.message).to.match(/JsonSyntaxError/))
@@ -193,7 +173,7 @@ describe("commands/audience/push", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: { audience: mockAudienceData } })
+    setupWithStub()
       .stdout()
       .command(["audience push", "does-not-exist"])
       .catch((error) =>
@@ -203,7 +183,7 @@ describe("commands/audience/push", () => {
   });
 
   describe("given no audience key arg or --all flag", () => {
-    setupWithStub({ data: { audience: mockAudienceData } })
+    setupWithStub()
       .stdout()
       .command(["audience push"])
       .exit(2)
@@ -211,7 +191,7 @@ describe("commands/audience/push", () => {
   });
 
   describe("given both audience key arg and --all flag", () => {
-    setupWithStub({ data: { audience: mockAudienceData } })
+    setupWithStub()
       .stdout()
       .command(["audience push", "default", "--all"])
       .exit(2)
@@ -273,16 +253,16 @@ describe("commands/audience/push", () => {
       process.chdir(sandboxDir);
     });
 
-    setupWithStub({ data: { audience: mockAudienceData } })
+    setupWithStub()
       .stdout()
       .command(["audience push", "--all", "--audiences-dir", "audiences"])
       .it("calls apiV1 upsertAudience with expected props twice", () => {
         // Validate all first
-        const stub1 = AudienceValidate.validateAll as any;
-        sinon.assert.calledOnce(stub1);
+        const validateStub = AudienceValidate.validateAll as sinon.SinonStub;
+        sinon.assert.calledOnce(validateStub);
 
-        const stub2 = KnockApiV1.prototype.upsertAudience as any;
-        sinon.assert.calledTwice(stub2);
+        const upsertStub = KnockApiV1.prototype.upsertAudience as sinon.SinonStub;
+        sinon.assert.calledTwice(upsertStub);
       });
   });
 });

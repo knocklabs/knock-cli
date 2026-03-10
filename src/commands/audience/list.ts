@@ -1,18 +1,23 @@
+import { Audience } from "@knocklabs/mgmt/resources/audiences";
 import { Flags, ux } from "@oclif/core";
-import { AxiosResponse } from "axios";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDate } from "@/lib/helpers/date";
+import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { merge } from "@/lib/helpers/object.isomorphic";
 import {
   maybePromptPageAction,
+  PageInfo,
   pageFlags,
   paramsForPageAction,
 } from "@/lib/helpers/page";
-import { withSpinner } from "@/lib/helpers/request";
+import { spinner } from "@/lib/helpers/ux";
+
+type ListAudienceData = {
+  entries: Audience[];
+  page_info: PageInfo;
+};
 
 export default class AudienceList extends BaseCommand<typeof AudienceList> {
   static summary = "Display all audiences for an environment.";
@@ -31,26 +36,43 @@ export default class AudienceList extends BaseCommand<typeof AudienceList> {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<ApiV1.ListAudienceResp | void> {
-    const resp = await this.request();
+  async run(): Promise<ListAudienceData | void> {
+    const data = await this.request();
 
     const { flags } = this.props;
-    if (flags.json) return resp.data;
+    if (flags.json) return data;
 
-    return this.render(resp.data);
+    return this.render(data);
   }
 
-  async request(
-    pageParams = {},
-  ): Promise<AxiosResponse<ApiV1.ListAudienceResp>> {
-    const props = merge(this.props, { flags: { ...pageParams } });
+  async request(pageParams: { after?: string; before?: string } = {}): Promise<ListAudienceData> {
+    const { flags } = this.props;
 
-    return withSpinner<ApiV1.ListAudienceResp>(() =>
-      this.apiV1.listAudiences(props),
-    );
+    spinner.start("‣ Loading");
+
+    try {
+      const page = await this.apiV1.listAudiences({
+        environment: flags.environment,
+        branch: flags.branch,
+        hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+        limit: flags.limit,
+        after: pageParams.after ?? flags.after,
+        before: pageParams.before ?? flags.before,
+      });
+
+      spinner.stop();
+
+      return {
+        entries: page.entries,
+        page_info: page.page_info,
+      };
+    } catch (error) {
+      spinner.stop();
+      throw new ApiError((error as Error).message);
+    }
   }
 
-  async render(data: ApiV1.ListAudienceResp): Promise<void> {
+  async render(data: ListAudienceData): Promise<void> {
     const { entries } = data;
     const { environment: env, "hide-uncommitted-changes": committedOnly } =
       this.props.flags;
@@ -67,7 +89,7 @@ export default class AudienceList extends BaseCommand<typeof AudienceList> {
      * Audiences list table
      */
 
-    ux.table(entries, {
+    ux.table(entries as unknown as Record<string, unknown>[], {
       key: {
         header: "Key",
       },
@@ -82,14 +104,14 @@ export default class AudienceList extends BaseCommand<typeof AudienceList> {
       },
       updated_at: {
         header: "Updated at",
-        get: (entry) => formatDate(entry.updated_at),
+        get: (entry) => formatDate(entry.updated_at as string),
       },
     });
 
     return this.prompt(data);
   }
 
-  async prompt(data: ApiV1.ListAudienceResp): Promise<void> {
+  async prompt(data: ListAudienceData): Promise<void> {
     const { page_info } = data;
 
     const pageAction = await maybePromptPageAction(page_info);
@@ -98,8 +120,8 @@ export default class AudienceList extends BaseCommand<typeof AudienceList> {
     if (pageParams) {
       this.log("\n");
 
-      const resp = await this.request(pageParams);
-      return this.render(resp.data);
+      const nextData = await this.request(pageParams);
+      return this.render(nextData);
     }
   }
 }
