@@ -1,5 +1,3 @@
-import { AnyObj } from "@/lib/helpers/object.isomorphic";
-
 import { MaybeWithAnnotation } from "../shared/types";
 
 export enum AudienceType {
@@ -28,8 +26,4 @@ export type AudienceData<A extends MaybeWithAnnotation = unknown> = A & {
   created_at: string;
   updated_at: string;
   sha: string;
-};
-
-export type AudienceInput = AnyObj & {
-  key: string;
 };

@@ -11,11 +11,7 @@ import { slugify } from "@/lib/helpers/string";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Audience from "@/lib/marshal/audience";
 import { AudienceType } from "@/lib/marshal/audience";
-import {
-  AudienceDirContext,
-  ensureResourceDirForTarget,
-  ResourceTarget,
-} from "@/lib/run-context";
+import { AudienceDirContext } from "@/lib/run-context";
 
 import AudiencePush from "./push";
 
@@ -184,21 +180,7 @@ export default class AudienceNew extends BaseCommand<typeof AudienceNew> {
   async getAudienceDirContext(
     audienceKey?: string,
   ): Promise<AudienceDirContext> {
-    const { resourceDir, cwd: runCwd } = this.runContext;
-
-    // Inside an existing resource dir, use it if valid for the target audience.
-    if (resourceDir) {
-      const target: ResourceTarget = {
-        commandId: BaseCommand.id,
-        type: "audience",
-        key: audienceKey,
-      };
-
-      return ensureResourceDirForTarget(
-        resourceDir,
-        target,
-      ) as AudienceDirContext;
-    }
+    const { cwd: runCwd } = this.runContext;
 
     // Default to knock project config first if present, otherwise cwd.
     const dirCtx = await resolveResourceDir(
