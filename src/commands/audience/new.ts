@@ -17,7 +17,10 @@ import AudiencePush from "./push";
 
 const AUDIENCE_TYPE_CHOICES = [
   { name: AudienceType.Static, message: "Static (manual membership)" },
-  { name: AudienceType.Dynamic, message: "Dynamic (rule-based membership)" },
+  {
+    name: AudienceType.Dynamic,
+    message: "Dynamic (rule-based membership) [Beta - requires access]",
+  },
 ] as const;
 
 export default class AudienceNew extends BaseCommand<typeof AudienceNew> {
@@ -33,7 +36,8 @@ export default class AudienceNew extends BaseCommand<typeof AudienceNew> {
       char: "k",
     }),
     type: Flags.string({
-      summary: "The type of the audience (static, dynamic).",
+      summary:
+        "The type of the audience (static, dynamic). Note: dynamic is in beta and requires access.",
       char: "t",
       options: [AudienceType.Static, AudienceType.Dynamic],
     }),
