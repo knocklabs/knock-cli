@@ -89,14 +89,17 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
     for (const audience of audiences) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        const resp = await this.apiV1.upsertAudience(audience.key, {
-          environment: flags.environment,
-          branch: flags.branch,
-          annotate: true,
-          commit: flags.commit,
-          commit_message: flags["commit-message"],
-          audience: audience.content as { name: string; type: "static" | "dynamic" },
-        });
+        const resp = await this.apiV1.mgmtClient.audiences.upsert(
+          audience.key,
+          {
+            environment: flags.environment,
+            branch: flags.branch,
+            annotate: true,
+            commit: flags.commit,
+            commit_message: flags["commit-message"],
+            audience: audience.content as { name: string; type: "static" | "dynamic" },
+          },
+        );
 
         // Update the audience directory with the successfully pushed audience
         // payload from the server.

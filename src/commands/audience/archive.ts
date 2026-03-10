@@ -52,7 +52,9 @@ Use this command with caution.
     spinner.start(`‣ Archiving audience \`${audienceKey}\``);
 
     try {
-      await this.apiV1.archiveAudience(audienceKey, environment);
+      await this.apiV1.mgmtClient.audiences.archive(audienceKey, {
+        environment,
+      });
 
       spinner.stop();
 

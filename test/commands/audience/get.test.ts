@@ -1,3 +1,4 @@
+import KnockMgmt from "@knocklabs/mgmt";
 import { test } from "@oclif/test";
 import * as sinon from "sinon";
 
@@ -25,15 +26,14 @@ describe("commands/audience/get", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
-      .stub(KnockApiV1.prototype, "getAudience", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "retrieve", (stub) =>
         stub.resolves(factory.audience()),
       )
       .stdout()
       .command(["audience get", "foo"])
       .it("calls apiV1 getAudience with correct props", () => {
-        const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          getStub,
+          KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
           "foo",
           sinon.match({
             environment: "development",
@@ -48,7 +48,7 @@ describe("commands/audience/get", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
-      .stub(KnockApiV1.prototype, "getAudience", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "retrieve", (stub) =>
         stub.resolves(factory.audience()),
       )
       .stdout()
@@ -60,9 +60,8 @@ describe("commands/audience/get", () => {
         "staging",
       ])
       .it("calls apiV1 getAudience with correct props", () => {
-        const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          getStub,
+          KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
           "foo",
           sinon.match({
             environment: "staging",
@@ -78,15 +77,14 @@ describe("commands/audience/get", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
-      .stub(KnockApiV1.prototype, "getAudience", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "retrieve", (stub) =>
         stub.resolves(factory.audience()),
       )
       .stdout()
       .command(["audience get", "foo", "--branch", "my-feature-branch-123"])
       .it("calls apiV1 getAudience with expected params", () => {
-        const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          getStub,
+          KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
           "foo",
           sinon.match({
             environment: "development",
@@ -102,7 +100,7 @@ describe("commands/audience/get", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
-      .stub(KnockApiV1.prototype, "getAudience", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "retrieve", (stub) =>
         stub.rejects(new Error("The resource you requested does not exist")),
       )
       .stdout()

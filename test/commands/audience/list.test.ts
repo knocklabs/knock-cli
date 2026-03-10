@@ -1,9 +1,9 @@
+import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
-import KnockApiV1 from "@/lib/api-v1";
 
 describe("commands/audience/list", () => {
   const emptyAudiencesCursor = {
@@ -14,15 +14,14 @@ describe("commands/audience/list", () => {
   describe("given no flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
         stub.resolves(emptyAudiencesCursor),
       )
       .stdout()
       .command(["audience list"])
       .it("calls apiV1 listAudiences with correct props", () => {
-        const listStub = KnockApiV1.prototype.listAudiences as sinon.SinonStub;
         sinon.assert.calledWith(
-          listStub,
+          KnockMgmt.Audiences.prototype.list as sinon.SinonStub,
           sinon.match({
             environment: "development",
           }),
@@ -33,7 +32,7 @@ describe("commands/audience/list", () => {
   describe("given flags", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
         stub.resolves(emptyAudiencesCursor),
       )
       .stdout()
@@ -48,9 +47,8 @@ describe("commands/audience/list", () => {
         "xyz",
       ])
       .it("calls apiV1 listAudiences with correct props", () => {
-        const listStub = KnockApiV1.prototype.listAudiences as sinon.SinonStub;
         sinon.assert.calledWith(
-          listStub,
+          KnockMgmt.Audiences.prototype.list as sinon.SinonStub,
           sinon.match({
             environment: "staging",
             hide_uncommitted_changes: true,
@@ -64,15 +62,14 @@ describe("commands/audience/list", () => {
   describe("given a branch flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
         stub.resolves(emptyAudiencesCursor),
       )
       .stdout()
       .command(["audience list", "--branch", "my-feature-branch-123"])
       .it("calls apiV1 listAudiences with expected params", () => {
-        const listStub = KnockApiV1.prototype.listAudiences as sinon.SinonStub;
         sinon.assert.calledWith(
-          listStub,
+          KnockMgmt.Audiences.prototype.list as sinon.SinonStub,
           sinon.match({
             environment: "development",
             branch: "my-feature-branch-123",
@@ -84,7 +81,7 @@ describe("commands/audience/list", () => {
   describe("given a list of audiences in response", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
         stub.resolves({
           entries: [
             factory.audience({ key: "audience-1" }),
@@ -119,7 +116,7 @@ describe("commands/audience/list", () => {
     describe("plus a next page action from the prompt input", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
+        .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
           stub.resolves(paginatedAudiencesCursor),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
@@ -134,7 +131,8 @@ describe("commands/audience/list", () => {
         .it(
           "calls apiV1 listAudiences for the second time with page params",
           () => {
-            const listStub = KnockApiV1.prototype.listAudiences as sinon.SinonStub;
+            const listStub = KnockMgmt.Audiences.prototype
+              .list as sinon.SinonStub;
 
             sinon.assert.calledTwice(listStub);
 
@@ -161,7 +159,7 @@ describe("commands/audience/list", () => {
     describe("plus a previous page action input from the prompt", () => {
       test
         .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-        .stub(KnockApiV1.prototype, "listAudiences", (stub) =>
+        .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
           stub.resolves(paginatedAudiencesCursor),
         )
         .stub(enquirer.prototype, "prompt", (stub) =>
@@ -170,8 +168,9 @@ describe("commands/audience/list", () => {
         .stdout()
         .command(["audience list"])
         .it("calls apiV1 listAudiences once for the initial page only", () => {
-          const listStub = KnockApiV1.prototype.listAudiences as sinon.SinonStub;
-          sinon.assert.calledOnce(listStub);
+          sinon.assert.calledOnce(
+            KnockMgmt.Audiences.prototype.list as sinon.SinonStub,
+          );
         });
     });
   });

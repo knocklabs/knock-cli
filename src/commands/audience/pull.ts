@@ -76,12 +76,15 @@ export default class AudiencePull extends BaseCommand<typeof AudiencePull> {
     spinner.start("‣ Loading");
 
     try {
-      const audience = await this.apiV1.getAudience(dirContext.key, {
-        environment: flags.environment,
-        branch: flags.branch,
-        annotate: true,
-        hide_uncommitted_changes: flags["hide-uncommitted-changes"],
-      });
+      const audience = await this.apiV1.mgmtClient.audiences.retrieve(
+        dirContext.key,
+        {
+          environment: flags.environment,
+          branch: flags.branch,
+          annotate: true,
+          hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+        },
+      );
 
       spinner.stop();
 
@@ -148,16 +151,19 @@ export default class AudiencePull extends BaseCommand<typeof AudiencePull> {
 
   async listAllAudiences(): Promise<AudienceMarshal.AudienceData<WithAnnotation>[]> {
     const { flags } = this.props;
+    const audiences: AudienceMarshal.AudienceData<WithAnnotation>[] = [];
 
-    const audiences = await this.apiV1.listAllAudiences({
+    for await (const audience of this.apiV1.mgmtClient.audiences.list({
       environment: flags.environment,
       branch: flags.branch,
       annotate: true,
       hide_uncommitted_changes: flags["hide-uncommitted-changes"],
-    });
+    })) {
+      // The SDK doesn't include annotation types, but the API returns them when annotate=true
+      audiences.push(audience as AudienceMarshal.AudienceData<WithAnnotation>);
+    }
 
-    // The SDK doesn't include annotation types, but the API returns them when annotate=true
-    return audiences as AudienceMarshal.AudienceData<WithAnnotation>[];
+    return audiences;
   }
 
   async getAudienceDirContext(): Promise<AudienceDirContext> {

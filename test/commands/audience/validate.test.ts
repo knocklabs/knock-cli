@@ -1,11 +1,11 @@
 import * as path from "node:path";
 
+import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
-import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { AUDIENCE_JSON } from "@/lib/marshal/audience";
 
@@ -14,7 +14,7 @@ const audienceJsonFile = "default/audience.json";
 const setupWithStub = () =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-    .stub(KnockApiV1.prototype, "validateAudience", (stub) =>
+    .stub(KnockMgmt.Audiences.prototype, "validate", (stub) =>
       stub.resolves({ audience: factory.audience() }),
     );
 
@@ -42,9 +42,8 @@ describe("commands/audience/validate (a single audience)", () => {
       .stdout()
       .command(["audience validate", "default"])
       .it("calls apiV1 validateAudience with expected props", () => {
-        const validateStub = KnockApiV1.prototype.validateAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          validateStub,
+          KnockMgmt.Audiences.prototype.validate as sinon.SinonStub,
           "default",
           sinon.match({
             environment: "development",
@@ -66,9 +65,8 @@ describe("commands/audience/validate (a single audience)", () => {
           "my-feature-branch-123",
         ])
         .it("calls apiV1 validateAudience with expected params", () => {
-          const validateStub = KnockApiV1.prototype.validateAudience as sinon.SinonStub;
           sinon.assert.calledWith(
-            validateStub,
+            KnockMgmt.Audiences.prototype.validate as sinon.SinonStub,
             "default",
             sinon.match({
               environment: "development",
@@ -108,7 +106,7 @@ describe("commands/audience/validate (a single audience)", () => {
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "validateAudience", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "validate", (stub) =>
         stub.rejects(new Error('"name" must be a string')),
       )
       .stdout()
@@ -211,8 +209,9 @@ describe("commands/audience/validate (all audiences)", () => {
       .stdout()
       .command(["audience validate", "--all", "--audiences-dir", "audiences"])
       .it("calls apiV1 validateAudience with expected props twice", () => {
-        const validateStub = KnockApiV1.prototype.validateAudience as sinon.SinonStub;
-        sinon.assert.calledTwice(validateStub);
+        sinon.assert.calledTwice(
+          KnockMgmt.Audiences.prototype.validate as sinon.SinonStub,
+        );
       });
   });
 });

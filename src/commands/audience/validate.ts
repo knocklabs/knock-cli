@@ -92,7 +92,7 @@ export default class AudienceValidate extends BaseCommand<
 
     const errorPromises = audiences.map(async (audience) => {
       try {
-        await api.validateAudience(audience.key, {
+        await api.mgmtClient.audiences.validate(audience.key, {
           environment: flags.environment,
           branch: flags.branch,
           audience: audience.content as { name: string; type: "static" | "dynamic" },

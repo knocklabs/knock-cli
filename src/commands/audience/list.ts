@@ -51,7 +51,7 @@ export default class AudienceList extends BaseCommand<typeof AudienceList> {
     spinner.start("‣ Loading");
 
     try {
-      const page = await this.apiV1.listAudiences({
+      const page = await this.apiV1.mgmtClient.audiences.list({
         environment: flags.environment,
         branch: flags.branch,
         hide_uncommitted_changes: flags["hide-uncommitted-changes"],

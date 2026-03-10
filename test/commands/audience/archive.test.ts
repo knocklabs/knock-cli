@@ -1,8 +1,7 @@
+import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as sinon from "sinon";
-
-import KnockApiV1 from "@/lib/api-v1";
 
 describe("commands/audience/archive", () => {
   describe("given no audience key arg", () => {
@@ -24,7 +23,7 @@ describe("commands/audience/archive", () => {
   describe("given an audience key arg with --force flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "archiveAudience", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "archive", (stub) =>
         stub.resolves({ result: "success" }),
       )
       .stdout()
@@ -36,15 +35,20 @@ describe("commands/audience/archive", () => {
         "--force",
       ])
       .it("calls apiV1 archiveAudience with correct props", () => {
-        const archiveStub = KnockApiV1.prototype.archiveAudience as sinon.SinonStub;
-        sinon.assert.calledWith(archiveStub, "vip-users", "development");
+        sinon.assert.calledWith(
+          KnockMgmt.Audiences.prototype.archive as sinon.SinonStub,
+          "vip-users",
+          sinon.match({
+            environment: "development",
+          }),
+        );
       });
   });
 
   describe("given confirmation prompt is declined", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "archiveAudience", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "archive", (stub) =>
         stub.resolves({ result: "success" }),
       )
       .stub(enquirer.prototype, "prompt", (stub) =>
@@ -59,15 +63,16 @@ describe("commands/audience/archive", () => {
       ])
       .it("does not call archiveAudience when declined", (ctx) => {
         expect(ctx.stdout).to.contain("Archive cancelled");
-        const archiveStub = KnockApiV1.prototype.archiveAudience as sinon.SinonStub;
-        sinon.assert.notCalled(archiveStub);
+        sinon.assert.notCalled(
+          KnockMgmt.Audiences.prototype.archive as sinon.SinonStub,
+        );
       });
   });
 
   describe("given archive fails", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(KnockApiV1.prototype, "archiveAudience", (stub) =>
+      .stub(KnockMgmt.Audiences.prototype, "archive", (stub) =>
         stub.rejects(new Error("The resource you requested does not exist")),
       )
       .stdout()

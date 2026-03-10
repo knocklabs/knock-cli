@@ -1,5 +1,6 @@
 import * as path from "node:path";
 
+import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
@@ -45,8 +46,12 @@ const setupWithListStubs = (
     .stub(KnockApiV1.prototype, "whoami", (stub) =>
       stub.resolves(factory.resp({ data: factory.whoami() })),
     )
-    .stub(KnockApiV1.prototype, "listAllAudiences", (stub) =>
-      stub.resolves(manyAudienceAttrs.map((attrs) => factory.audience(attrs))),
+    .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
+      stub.returns(
+        createAsyncIterator(
+          manyAudienceAttrs.map((attrs) => factory.audience(attrs)),
+        ),
+      ),
     )
     .stub(KnockApiV1.prototype, "listEmailLayouts", (stub) =>
       stub.resolves(

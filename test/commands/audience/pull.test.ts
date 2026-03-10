@@ -1,11 +1,11 @@
 import * as path from "node:path";
 
+import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
 import * as sinon from "sinon";
 
-import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import {
   AUDIENCE_JSON,
@@ -46,7 +46,7 @@ const setupWithStub = (audienceData = mockAudienceData) =>
     .stub(enquirer.prototype, "prompt", (stub) =>
       stub.resolves({ input: true }),
     )
-    .stub(KnockApiV1.prototype, "getAudience", (stub) =>
+    .stub(KnockMgmt.Audiences.prototype, "retrieve", (stub) =>
       stub.resolves(audienceData),
     );
 
@@ -71,9 +71,8 @@ describe("commands/audience/pull (a single audience)", () => {
       .stdout()
       .command(["audience pull", "vip-users", "--force"])
       .it("calls apiV1 getAudience with expected props", () => {
-        const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          getStub,
+          KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
           "vip-users",
           sinon.match({
             environment: "development",
@@ -109,9 +108,8 @@ describe("commands/audience/pull (a single audience)", () => {
           "my-feature-branch-123",
         ])
         .it("calls apiV1 getAudience with expected params", () => {
-          const getStub = KnockApiV1.prototype.getAudience as sinon.SinonStub;
           sinon.assert.calledWith(
-            getStub,
+            KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
             "vip-users",
             sinon.match({
               environment: "development",
@@ -144,6 +142,17 @@ describe("commands/audience/pull (a single audience)", () => {
   });
 });
 
+// Helper to create async iterator from array
+function createAsyncIterator<T>(items: T[]): AsyncIterable<T> {
+  return {
+    [Symbol.asyncIterator]: async function* () {
+      for (const item of items) {
+        yield item;
+      }
+    },
+  };
+}
+
 describe("commands/audience/pull (all audiences)", () => {
   beforeEach(() => {
     fs.removeSync(sandboxDir);
@@ -164,8 +173,8 @@ describe("commands/audience/pull (all audiences)", () => {
       .stub(enquirer.prototype, "prompt", (stub) =>
         stub.resolves({ input: true }),
       )
-      .stub(KnockApiV1.prototype, "listAllAudiences", (stub) =>
-        stub.resolves([mockAudienceData]),
+      .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
+        stub.returns(createAsyncIterator([mockAudienceData])),
       )
       .stdout()
       .command([
@@ -176,8 +185,9 @@ describe("commands/audience/pull (all audiences)", () => {
         "--force",
       ])
       .it("calls apiV1 listAudiences and creates audience directories", () => {
-        const listStub = KnockApiV1.prototype.listAllAudiences as sinon.SinonStub;
-        sinon.assert.calledOnce(listStub);
+        sinon.assert.calledOnce(
+          KnockMgmt.Audiences.prototype.list as sinon.SinonStub,
+        );
 
         const audienceJsonPath = path.resolve(
           sandboxDir,

@@ -50,11 +50,14 @@ export default class AudienceGet extends BaseCommand<typeof AudienceGet> {
     const { flags } = this.props;
 
     try {
-      const audience = await this.apiV1.getAudience(audienceKey, {
-        environment: flags.environment,
-        branch: flags.branch,
-        hide_uncommitted_changes: flags["hide-uncommitted-changes"],
-      });
+      const audience = await this.apiV1.mgmtClient.audiences.retrieve(
+        audienceKey,
+        {
+          environment: flags.environment,
+          branch: flags.branch,
+          hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+        },
+      );
 
       return { audience };
     } catch (error) {

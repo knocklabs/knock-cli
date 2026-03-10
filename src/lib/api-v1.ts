@@ -1,15 +1,4 @@
 import KnockMgmt from "@knocklabs/mgmt";
-import {
-  Audience as SdkAudience,
-  AudienceArchiveResponse,
-  AudienceListParams,
-  AudienceRetrieveParams,
-  AudiencesEntriesCursor,
-  AudienceUpsertParams,
-  AudienceUpsertResponse,
-  AudienceValidateParams,
-  AudienceValidateResponse,
-} from "@knocklabs/mgmt/resources/audiences";
 import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
@@ -561,50 +550,6 @@ export default class ApiV1 {
     return this.put(`/guides/${args.guideKey}/activate`, {}, { params });
   }
 
-  // By resources: Audiences (using mgmt SDK)
-
-  async listAudiences(
-    params: AudienceListParams,
-  ): Promise<AudiencesEntriesCursor> {
-    return this.mgmtClient.audiences.list(params);
-  }
-
-  async listAllAudiences(params: AudienceListParams): Promise<SdkAudience[]> {
-    const audiences: SdkAudience[] = [];
-    for await (const audience of this.mgmtClient.audiences.list(params)) {
-      audiences.push(audience);
-    }
-    return audiences;
-  }
-
-  async getAudience(
-    audienceKey: string,
-    params: AudienceRetrieveParams,
-  ): Promise<SdkAudience> {
-    return this.mgmtClient.audiences.retrieve(audienceKey, params);
-  }
-
-  async upsertAudience(
-    audienceKey: string,
-    params: AudienceUpsertParams,
-  ): Promise<AudienceUpsertResponse> {
-    return this.mgmtClient.audiences.upsert(audienceKey, params);
-  }
-
-  async validateAudience(
-    audienceKey: string,
-    params: AudienceValidateParams,
-  ): Promise<AudienceValidateResponse> {
-    return this.mgmtClient.audiences.validate(audienceKey, params);
-  }
-
-  async archiveAudience(
-    audienceKey: string,
-    environment: string,
-  ): Promise<AudienceArchiveResponse> {
-    return this.mgmtClient.audiences.archive(audienceKey, { environment });
-  }
-
   async listAllChannels(): Promise<Channel[]> {
     const channels: Channel[] = [];
     for await (const channel of this.mgmtClient.channels.list()) {
@@ -787,15 +732,3 @@ export type ActivateGuideResp = {
 };
 
 export type ListBranchResp = PaginatedResp<Branch>;
-
-// Re-export SDK audience types
-export type {
-  SdkAudience as Audience,
-  AudienceListParams,
-  AudienceRetrieveParams,
-  AudienceUpsertParams,
-  AudienceUpsertResponse,
-  AudienceValidateParams,
-  AudienceValidateResponse,
-  AudienceArchiveResponse,
-};

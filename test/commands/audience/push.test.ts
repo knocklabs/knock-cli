@@ -1,11 +1,11 @@
 import * as path from "node:path";
 
+import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
 import * as sinon from "sinon";
 
 import AudienceValidate from "@/commands/audience/validate";
-import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import {
   AUDIENCE_JSON,
@@ -35,7 +35,7 @@ const setupWithStub = (audienceData = mockAudienceData) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(AudienceValidate, "validateAll", (stub) => stub.resolves([]))
-    .stub(KnockApiV1.prototype, "upsertAudience", (stub) =>
+    .stub(KnockMgmt.Audiences.prototype, "upsert", (stub) =>
       stub.resolves({ audience: audienceData }),
     );
 
@@ -63,9 +63,8 @@ describe("commands/audience/push", () => {
       .stdout()
       .command(["audience push", "default"])
       .it("calls apiV1 upsertAudience with expected props", () => {
-        const upsertStub = KnockApiV1.prototype.upsertAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          upsertStub,
+          KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
           "default",
           sinon.match({
             environment: "development",
@@ -88,9 +87,8 @@ describe("commands/audience/push", () => {
         "this is a commit comment!",
       ])
       .it("calls apiV1 upsertAudience with commit flags, if provided", () => {
-        const upsertStub = KnockApiV1.prototype.upsertAudience as sinon.SinonStub;
         sinon.assert.calledWith(
-          upsertStub,
+          KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
           "default",
           sinon.match({
             environment: "development",
@@ -115,9 +113,8 @@ describe("commands/audience/push", () => {
           "my-feature-branch-123",
         ])
         .it("calls apiV1 upsertAudience with expected params", () => {
-          const upsertStub = KnockApiV1.prototype.upsertAudience as sinon.SinonStub;
           sinon.assert.calledWith(
-            upsertStub,
+            KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
             "default",
             sinon.match({
               environment: "development",
@@ -258,11 +255,11 @@ describe("commands/audience/push", () => {
       .command(["audience push", "--all", "--audiences-dir", "audiences"])
       .it("calls apiV1 upsertAudience with expected props twice", () => {
         // Validate all first
-        const validateStub = AudienceValidate.validateAll as sinon.SinonStub;
-        sinon.assert.calledOnce(validateStub);
+        sinon.assert.calledOnce(AudienceValidate.validateAll as sinon.SinonStub);
 
-        const upsertStub = KnockApiV1.prototype.upsertAudience as sinon.SinonStub;
-        sinon.assert.calledTwice(upsertStub);
+        sinon.assert.calledTwice(
+          KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
+        );
       });
   });
 });
