@@ -1,5 +1,6 @@
 import * as path from "node:path";
 
+import KnockMgmt from "@knocklabs/mgmt";
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
@@ -9,6 +10,7 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
+import { AudienceData } from "@/lib/marshal/audience";
 import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
@@ -18,6 +20,17 @@ import { WorkflowData } from "@/lib/marshal/workflow";
 
 const currCwd = process.cwd();
 
+// Helper to create async iterator from array
+function createAsyncIterator<T>(items: T[]): AsyncIterable<T> {
+  return {
+    [Symbol.asyncIterator]: async function* () {
+      for (const item of items) {
+        yield item;
+      }
+    },
+  };
+}
+
 const setupWithListStubs = (
   manyLayoutsAttrs: Partial<EmailLayoutData>[],
   manyPartialsAttrs: Partial<PartialData>[],
@@ -25,12 +38,20 @@ const setupWithListStubs = (
   manyWorkflowAttrs: Partial<WorkflowData>[],
   manyMessageTypeAttrs: Partial<MessageTypeData>[],
   manyGuideAttrs: Partial<GuideData>[],
+  manyAudienceAttrs: Partial<AudienceData>[] = [],
   // eslint-disable-next-line max-params
 ) =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(KnockApiV1.prototype, "whoami", (stub) =>
       stub.resolves(factory.resp({ data: factory.whoami() })),
+    )
+    .stub(KnockMgmt.Audiences.prototype, "list", (stub) =>
+      stub.returns(
+        createAsyncIterator(
+          manyAudienceAttrs.map((attrs) => factory.audience(attrs)),
+        ),
+      ),
     )
     .stub(KnockApiV1.prototype, "listEmailLayouts", (stub) =>
       stub.resolves(

@@ -3,6 +3,7 @@ import { omit } from "lodash";
 import { AnyObj, omitDeep, split } from "@/lib/helpers/object.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
+import { AudienceData } from "../audience";
 import { EmailLayoutData } from "../email-layout";
 import { GuideData } from "../guide";
 import { MessageTypeData } from "../message-type";
@@ -16,6 +17,7 @@ import { WorkflowData } from "../workflow";
  * fields.
  */
 type ResourceData<A extends WithAnnotation> =
+  | AudienceData<A>
   | EmailLayoutData<A>
   | PartialData<A>
   | WorkflowData<A>

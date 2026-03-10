@@ -79,7 +79,7 @@ describe("lib/marshal/layout/reader", () => {
 
     beforeEach(() => {
       fs.removeSync(sandboxDir);
-      fs.ensureDir(emailLayoutDirCtx.abspath);
+      fs.ensureDirSync(emailLayoutDirCtx.abspath);
     });
     after(() => fs.removeSync(sandboxDir));
 
