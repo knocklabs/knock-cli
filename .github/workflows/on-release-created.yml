@@ -3,7 +3,30 @@ on:
   release:
     types: [created]
 jobs:
+  validate-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate version match
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+          if [ "${TAG_VERSION}" != "${PACKAGE_VERSION}" ]; then
+            echo "::error::Version mismatch! Git tag (v${TAG_VERSION}) does not match package.json (${PACKAGE_VERSION})"
+            echo ""
+            echo "To fix:"
+            echo "  1. Delete this release: gh release delete ${GITHUB_REF_NAME}"
+            echo "  2. Delete the tag: git push --delete origin ${GITHUB_REF_NAME}"
+            echo "  3. Run 'yarn version' with the correct version"
+            echo "  4. Push the tag and re-cut the release"
+            exit 1
+          fi
+          echo "Version validated: ${TAG_VERSION}"
+
   publish-brew:
+    needs: [validate-release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
