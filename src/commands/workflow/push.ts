@@ -89,7 +89,10 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
     spinner.start(`‣ Pushing`);
 
     for (const workflow of workflows) {
-      const props = merge(this.props, { flags: { annotate: true } });
+      const props = merge(this.props, {
+        flags: { annotate: true },
+        args: { workflowKey: workflow.key },
+      });
 
       // eslint-disable-next-line no-await-in-loop
       const resp = await this.apiV1.upsertWorkflow<WithAnnotation>(props, {

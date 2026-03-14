@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 import localeData from "locale-codes";
 
 import { DirContext, isDirectory } from "@/lib/helpers/fs";
+import { isPathArg } from "@/lib/helpers/path";
 import {
   ProjectConfig,
   resolveResourceDir,
@@ -194,6 +195,70 @@ export const ensureValidCommandTarget = async (
   }
 
   // From this point on, we have translationRef so parse and validate the format.
+  // When a path is provided, resolve it directly and bypass index directory resolution.
+  // Path and --all are mutually exclusive.
+  if (isPathArg(args.translationRef)) {
+    if (flags.all) {
+      return ux.error(
+        `translationRef arg \`${args.translationRef}\` cannot also be provided when using --all`,
+      );
+    }
+
+    const abspath = path.resolve(args.translationRef);
+    const stat = await fs.stat(abspath).catch(() => null);
+
+    if (!stat) {
+      return ux.error(
+        `Translation path \`${args.translationRef}\` does not exist`,
+      );
+    }
+
+    if (stat.isFile()) {
+      const { name: translationRef } = path.parse(abspath);
+      const parsedRef = parseTranslationRef(translationRef);
+      if (!parsedRef) {
+        return ux.error(
+          `Invalid translation file \`${abspath}\`, filename must match <locale>.<ext> or <namespace>.<locale>.<ext>`,
+        );
+      }
+
+      const ref = formatRef(parsedRef.localeCode, parsedRef.namespace);
+      const exists = await fs.pathExists(abspath);
+
+      return {
+        type: "translationFile",
+        context: {
+          ref,
+          localeCode: parsedRef.localeCode,
+          namespace: parsedRef.namespace,
+          abspath,
+          exists,
+        },
+      };
+    }
+
+    if (stat.isDirectory()) {
+      const localeCode = path.basename(abspath);
+      if (!isValidLocale(localeCode)) {
+        return ux.error(
+          `Invalid translation directory \`${abspath}\`, directory name must be a valid locale code`,
+        );
+      }
+
+      const translationDirCtx: TranslationDirContext = {
+        type: "translation",
+        key: localeCode,
+        abspath,
+        exists: await isDirectory(abspath),
+      };
+      return { type: "translationDir", context: translationDirCtx };
+    }
+
+    return ux.error(
+      `Translation path \`${args.translationRef}\` is not a file or directory`,
+    );
+  }
+
   const parsedRef = parseTranslationRef(args.translationRef);
   if (!parsedRef) {
     return ux.error(

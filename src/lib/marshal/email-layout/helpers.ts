@@ -4,6 +4,7 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
+import { isPathArg, resolvePathArg } from "@/lib/helpers/path";
 import {
   ProjectConfig,
   resolveResourceDir,
@@ -105,6 +106,17 @@ export const ensureValidCommandTarget = async (
 
   // Email layout key arg is given, which means no --all flag.
   if (args.emailLayoutKey) {
+    if (isPathArg(args.emailLayoutKey)) {
+      const { key, abspath } = resolvePathArg(args.emailLayoutKey);
+      const layoutDirCtx: EmailLayoutDirContext = {
+        type: "email_layout",
+        key,
+        abspath,
+        exists: await isEmailLayoutDir(abspath),
+      };
+      return { type: "emailLayoutDir", context: layoutDirCtx };
+    }
+
     if (resourceDirCtx && resourceDirCtx.key !== args.emailLayoutKey) {
       return ux.error(
         `Cannot run ${commandId} \`${args.emailLayoutKey}\` inside another layout directory:\n${resourceDirCtx.key}`,

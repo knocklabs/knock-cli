@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { isPathArg, resolvePathArg } from "@/lib/helpers/path";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
@@ -114,6 +115,18 @@ export default class MessageTypePull extends BaseCommand<
   async getMessageTypeDirContext(): Promise<MessageTypeDirContext> {
     const { messageTypeKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
+
+    // When a path is provided, override resolution and use it directly.
+    if (messageTypeKey && isPathArg(messageTypeKey)) {
+      const { key, abspath } = resolvePathArg(messageTypeKey);
+      const exists = await MessageType.isMessageTypeDir(abspath);
+      return {
+        type: "message_type",
+        key,
+        abspath,
+        exists,
+      };
+    }
 
     const messageTypesIndexDirCtx = await resolveResourceDir(
       this.projectConfig,
