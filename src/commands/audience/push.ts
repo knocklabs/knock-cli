@@ -38,6 +38,7 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: CustomFlags.force,
   };
 
   static args = {
@@ -102,6 +103,7 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
               type: "static" | "dynamic";
             },
           },
+          { query: flags.force ? { force: true } : undefined },
         );
 
         // Update the audience directory with the successfully pushed audience

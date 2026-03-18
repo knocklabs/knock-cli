@@ -41,6 +41,7 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: CustomFlags.force,
   };
 
   static args = {

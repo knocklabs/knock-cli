@@ -38,6 +38,7 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: CustomFlags.force,
   };
 
   static args = {

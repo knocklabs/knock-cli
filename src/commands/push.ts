@@ -45,6 +45,7 @@ export default class Push extends BaseCommand<typeof Push> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: CustomFlags.force,
   };
 
   async run(): Promise<void> {
@@ -75,6 +76,7 @@ export default class Push extends BaseCommand<typeof Push> {
       ...(flags["commit-message"]
         ? ["--commit-message", flags["commit-message"]]
         : []),
+      ...(flags.force ? ["--force"] : []),
     ];
 
     // Note: Because we're pushing the different resource types sequentially,

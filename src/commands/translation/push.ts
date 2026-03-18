@@ -43,6 +43,7 @@ export default class TranslationPush extends BaseCommand<
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: CustomFlags.force,
   };
 
   static args = {

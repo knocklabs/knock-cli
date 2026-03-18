@@ -43,6 +43,7 @@ export default class MessageTypePush extends BaseCommand<
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: CustomFlags.force,
   };
 
   static args = {

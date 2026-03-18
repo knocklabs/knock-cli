@@ -79,6 +79,27 @@ describe("commands/audience/push", () => {
 
     setupWithStub()
       .stdout()
+      .command(["audience push", "default", "--force"])
+      .it("calls apiV1 upsertAudience with force flag, if provided", () => {
+        sinon.assert.calledWith(
+          KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
+          "default",
+          sinon.match({
+            environment: "development",
+            annotate: true,
+            audience: sinon.match({
+              name: "Default",
+              type: "static",
+            }),
+          }),
+          sinon.match({
+            query: { force: true },
+          }),
+        );
+      });
+
+    setupWithStub()
+      .stdout()
       .command([
         "audience push",
         "default",
