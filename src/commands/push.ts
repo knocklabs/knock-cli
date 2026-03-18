@@ -45,10 +45,7 @@ export default class Push extends BaseCommand<typeof Push> {
       char: "m",
       dependsOn: ["commit"],
     }),
-    force: Flags.boolean({
-      summary:
-        "Bypass environment restrictions and overwrite the existing resource in Knock",
-    }),
+    force: CustomFlags.force,
   };
 
   async run(): Promise<void> {

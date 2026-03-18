@@ -118,3 +118,9 @@ export const branch = slug({
   // Using lodash's once avoids unnecessarily reading the branch file multiple times.
   default: once(readSlugFromBranchFile),
 });
+
+export const force = Flags.boolean({
+  summary:
+    "Force pushes the resource or resources to Knock, overwriting whatever is currently stored. " +
+    "If you're using this on a non-development environment, you should also ensure you `commit` the changes.",
+});

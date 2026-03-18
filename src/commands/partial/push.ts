@@ -41,10 +41,7 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
       char: "m",
       dependsOn: ["commit"],
     }),
-    force: Flags.boolean({
-      summary:
-        "Bypass environment restrictions and overwrite the existing resource in Knock",
-    }),
+    force: CustomFlags.force,
   };
 
   static args = {
