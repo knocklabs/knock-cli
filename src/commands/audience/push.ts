@@ -38,6 +38,10 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: Flags.boolean({
+      summary:
+        "Bypass environment restrictions and overwrite the existing resource in Knock",
+    }),
   };
 
   static args = {
@@ -102,6 +106,7 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
               type: "static" | "dynamic";
             },
           },
+          { query: flags.force ? { force: true } : undefined },
         );
 
         // Update the audience directory with the successfully pushed audience

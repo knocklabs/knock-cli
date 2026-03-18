@@ -65,6 +65,28 @@ describe("commands/translation/push", () => {
 
     setupWithStub()
       .stdout()
+      .command(["translation push", "admin.en", "--force"])
+      .it("calls apiV1 upsertTranslation with force flag, if provided", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertTranslation as any,
+          sinon.match(({ flags }) => {
+            return isEqual(flags, {
+              "service-token": "valid-token",
+              environment: "development",
+              force: true,
+            });
+          }),
+          sinon.match({
+            content: '{"welcome":"hello!"}',
+            locale_code: "en",
+            namespace: "admin",
+            format: "json",
+          }),
+        );
+      });
+
+    setupWithStub()
+      .stdout()
       .command([
         "translation push",
         "admin.en",

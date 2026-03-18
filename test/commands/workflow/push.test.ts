@@ -128,6 +128,31 @@ describe("commands/workflow/push", () => {
 
     setupWithStub({ data: { workflow: mockWorkflowData } })
       .stdout()
+      .command(["workflow push", "new-comment", "--force"])
+      .it("calls apiV1 upsertWorkflow with force flag, if provided", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { workflowKey: "new-comment" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                force: true,
+                annotate: true,
+              }),
+          ),
+          sinon.match((workflow) =>
+            isEqual(workflow, {
+              key: "new-comment",
+              name: "New comment",
+            }),
+          ),
+        );
+      });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
       .command(["workflow push", "new-comment"])
       .it("writes the upserted workflow data into workflow.json", () => {
         const abspath = path.resolve(sandboxDir, workflowJsonFile);

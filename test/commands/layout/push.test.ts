@@ -126,6 +126,31 @@ describe("commands/layout/push", () => {
 
     setupWithStub({ data: { email_layout: mockEmailLayoutData } })
       .stdout()
+      .command(["layout push", "default", "--force"])
+      .it("calls apiV1 upsertEmailLayout with force flag, if provided", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertEmailLayout as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { emailLayoutKey: "default" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                force: true,
+                annotate: true,
+              }),
+          ),
+          sinon.match((layout) =>
+            isEqual(layout, {
+              key: "default",
+              name: "Default",
+            }),
+          ),
+        );
+      });
+
+    setupWithStub({ data: { email_layout: mockEmailLayoutData } })
+      .stdout()
       .command([
         "layout push",
         "default",

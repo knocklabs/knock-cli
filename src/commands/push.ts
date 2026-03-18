@@ -45,6 +45,10 @@ export default class Push extends BaseCommand<typeof Push> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: Flags.boolean({
+      summary:
+        "Bypass environment restrictions and overwrite the existing resource in Knock",
+    }),
   };
 
   async run(): Promise<void> {
@@ -75,6 +79,7 @@ export default class Push extends BaseCommand<typeof Push> {
       ...(flags["commit-message"]
         ? ["--commit-message", flags["commit-message"]]
         : []),
+      ...(flags.force ? ["--force"] : []),
     ];
 
     // Note: Because we're pushing the different resource types sequentially,

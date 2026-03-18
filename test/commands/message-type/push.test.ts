@@ -147,6 +147,46 @@ describe("commands/message-type/push", () => {
 
     setupWithStub({ data: { message_type: mockMessageTypeData } })
       .stdout()
+      .command(["message-type push", "banner", "--force"])
+      .it("calls apiV1 upsertMessageType with force flag, if provided", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertMessageType as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { messageTypeKey: "banner" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                force: true,
+                annotate: true,
+              }),
+          ),
+          sinon.match((messageType) =>
+            isEqual(messageType, {
+              key: "banner",
+              name: "Banner",
+              description: "My little banner",
+              variants: [
+                {
+                  key: "default",
+                  name: "Default",
+                  fields: [
+                    {
+                      type: "text",
+                      key: "title",
+                      label: "Title",
+                    },
+                  ],
+                },
+              ],
+              preview: "<div>{{ title }}</div>",
+            }),
+          ),
+        );
+      });
+
+    setupWithStub({ data: { message_type: mockMessageTypeData } })
+      .stdout()
       .command([
         "message-type push",
         "banner",

@@ -132,6 +132,43 @@ describe("commands/guide/push", () => {
 
     setupWithStub({ data: { guide: mockGuideData } })
       .stdout()
+      .command(["guide push", "welcome-guide", "--force"])
+      .it("calls apiV1 upsertGuide with force flag, if provided", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertGuide as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { guideKey: "welcome-guide" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                force: true,
+                annotate: true,
+              }),
+          ),
+          sinon.match((guide) =>
+            isEqual(guide, {
+              key: "welcome-guide",
+              name: "Welcome Guide",
+              description: "A guide to help new users get started",
+              channel_key: "in-app-guide",
+              type: "banner",
+              steps: [
+                {
+                  ref: "step_1",
+                  name: "Welcome Step",
+                  schema_key: "banner",
+                  schema_variant_key: "default",
+                  fields: [],
+                },
+              ],
+            }),
+          ),
+        );
+      });
+
+    setupWithStub({ data: { guide: mockGuideData } })
+      .stdout()
       .command([
         "guide push",
         "welcome-guide",

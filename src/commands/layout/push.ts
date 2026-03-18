@@ -44,6 +44,10 @@ export default class EmailLayoutPush extends BaseCommand<
       char: "m",
       dependsOn: ["commit"],
     }),
+    force: Flags.boolean({
+      summary:
+        "Bypass environment restrictions and overwrite the existing resource in Knock",
+    }),
   };
 
   static args = {

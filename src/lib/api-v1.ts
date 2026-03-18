@@ -115,6 +115,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      force: flags.force,
     });
     const data = { workflow };
 
@@ -253,6 +254,7 @@ export default class ApiV1 {
       commit: flags.commit,
       commit_message: flags["commit-message"],
       namespace: translation.namespace,
+      force: flags.force,
     });
 
     return this.put(
@@ -318,6 +320,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      force: flags.force,
     });
     const data = { email_layout: layout };
 
@@ -379,6 +382,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      force: flags.force,
     });
     const data = { partial };
 
@@ -452,6 +456,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      force: flags.force,
     });
     const data = { message_type: messageType };
 
@@ -529,6 +534,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      force: flags.force,
     });
     const data = { guide };
 
