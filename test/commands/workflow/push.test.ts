@@ -239,6 +239,75 @@ describe("commands/workflow/push", () => {
       .it("exits with status 2");
   });
 
+  describe("given a path argument", () => {
+    const customWorkflowPath = "custom-workflows/new-comment";
+
+    beforeEach(() => {
+      const abspath = path.resolve(
+        sandboxDir,
+        customWorkflowPath,
+        "workflow.json",
+      );
+      fs.outputJsonSync(abspath, { name: "New comment" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", `./${customWorkflowPath}`])
+      .it("pushes workflow using relative path", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { workflowKey: "new-comment" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                annotate: true,
+              }),
+          ),
+          sinon.match((workflow) =>
+            isEqual(workflow, {
+              key: "new-comment",
+              name: "New comment",
+            }),
+          ),
+        );
+      });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", path.resolve(sandboxDir, customWorkflowPath)])
+      .it("pushes workflow using absolute path", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { workflowKey: "new-comment" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                annotate: true,
+              }),
+          ),
+          sinon.match((workflow) =>
+            isEqual(workflow, {
+              key: "new-comment",
+              name: "New comment",
+            }),
+          ),
+        );
+      });
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
+      .command(["workflow push", `./${customWorkflowPath}`, "--all"])
+      .exit(2)
+      .it("exits with status 2 when path and --all are both provided");
+  });
+
   describe("given --all and a nonexistent workflows index directory", () => {
     beforeEach(() => {
       process.chdir(sandboxDir);
@@ -294,7 +363,6 @@ describe("commands/workflow/push", () => {
         const stub2 = KnockApiV1.prototype.upsertWorkflow as any;
         sinon.assert.calledTwice(stub2);
 
-        const expectedArgs = {};
         const expectedFlags = {
           annotate: true,
           "service-token": "valid-token",
@@ -312,7 +380,8 @@ describe("commands/workflow/push", () => {
           stub2.firstCall,
           sinon.match(
             ({ args, flags }) =>
-              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+              isEqual(args, { workflowKey: "bar" }) &&
+              isEqual(flags, expectedFlags),
           ),
           sinon.match((workflow) =>
             isEqual(workflow, { key: "bar", name: "Bar" }),
@@ -324,7 +393,8 @@ describe("commands/workflow/push", () => {
           stub2.secondCall,
           sinon.match(
             ({ args, flags }) =>
-              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+              isEqual(args, { workflowKey: "foo" }) &&
+              isEqual(flags, expectedFlags),
           ),
           sinon.match((workflow) =>
             isEqual(workflow, { key: "foo", name: "Foo" }),

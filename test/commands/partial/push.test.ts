@@ -283,6 +283,44 @@ describe("commands/partial/push", () => {
       .it("exits with status 2");
   });
 
+  describe("given a path argument", () => {
+    const customPartialPath = "custom-partials/default";
+
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, customPartialPath, PARTIAL_JSON);
+      fs.outputJsonSync(abspath, { name: "Default" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { partial: mockPartialData } })
+      .stdout()
+      .command(["partial push", `./${customPartialPath}`])
+      .it("pushes partial using relative path", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertPartial as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { partialKey: "default" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                annotate: true,
+              }),
+          ),
+          sinon.match((partial) =>
+            isEqual(partial, { key: "default", name: "Default" }),
+          ),
+        );
+      });
+
+    setupWithStub({ data: { partial: mockPartialData } })
+      .stdout()
+      .command(["partial push", `./${customPartialPath}`, "--all"])
+      .exit(2)
+      .it("exits with status 2 when path and --all are both provided");
+  });
+
   describe("given --all and a nonexistent partials index directory", () => {
     beforeEach(() => {
       process.chdir(sandboxDir);
@@ -346,7 +384,6 @@ describe("commands/partial/push", () => {
         const stub2 = KnockApiV1.prototype.upsertPartial as any;
         sinon.assert.calledTwice(stub2);
 
-        const expectedArgs = {};
         const expectedFlags = {
           annotate: true,
           "service-token": "valid-token",
@@ -363,7 +400,8 @@ describe("commands/partial/push", () => {
           stub2.firstCall,
           sinon.match(
             ({ args, flags }) =>
-              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+              isEqual(args, { partialKey: "messages" }) &&
+              isEqual(flags, expectedFlags),
           ),
           sinon.match((partial) =>
             isEqual(partial, { key: "messages", name: "Messages" }),
@@ -375,7 +413,8 @@ describe("commands/partial/push", () => {
           stub2.secondCall,
           sinon.match(
             ({ args, flags }) =>
-              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+              isEqual(args, { partialKey: "transactional" }) &&
+              isEqual(flags, expectedFlags),
           ),
           sinon.match((partial) =>
             isEqual(partial, { key: "transactional", name: "Transactional" }),

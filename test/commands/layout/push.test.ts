@@ -273,6 +273,44 @@ describe("commands/layout/push", () => {
       .it("exits with status 2");
   });
 
+  describe("given a path argument", () => {
+    const customLayoutPath = "custom-layouts/default";
+
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, customLayoutPath, LAYOUT_JSON);
+      fs.outputJsonSync(abspath, { name: "Default" });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { email_layout: mockEmailLayoutData } })
+      .stdout()
+      .command(["layout push", `./${customLayoutPath}`])
+      .it("pushes layout using relative path", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertEmailLayout as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { emailLayoutKey: "default" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                annotate: true,
+              }),
+          ),
+          sinon.match((layout) =>
+            isEqual(layout, { key: "default", name: "Default" }),
+          ),
+        );
+      });
+
+    setupWithStub({ data: { email_layout: mockEmailLayoutData } })
+      .stdout()
+      .command(["layout push", `./${customLayoutPath}`, "--all"])
+      .exit(2)
+      .it("exits with status 2 when path and --all are both provided");
+  });
+
   describe("given --all and a nonexistent layouts index directory", () => {
     beforeEach(() => {
       process.chdir(sandboxDir);
@@ -336,7 +374,6 @@ describe("commands/layout/push", () => {
         const stub2 = KnockApiV1.prototype.upsertEmailLayout as any;
         sinon.assert.calledTwice(stub2);
 
-        const expectedArgs = {};
         const expectedFlags = {
           annotate: true,
           "service-token": "valid-token",
@@ -353,7 +390,8 @@ describe("commands/layout/push", () => {
           stub2.firstCall,
           sinon.match(
             ({ args, flags }) =>
-              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+              isEqual(args, { emailLayoutKey: "messages" }) &&
+              isEqual(flags, expectedFlags),
           ),
           sinon.match((layout) =>
             isEqual(layout, { key: "messages", name: "Messages" }),
@@ -365,7 +403,8 @@ describe("commands/layout/push", () => {
           stub2.secondCall,
           sinon.match(
             ({ args, flags }) =>
-              isEqual(args, expectedArgs) && isEqual(flags, expectedFlags),
+              isEqual(args, { emailLayoutKey: "transactional" }) &&
+              isEqual(flags, expectedFlags),
           ),
           sinon.match((layout) =>
             isEqual(layout, { key: "transactional", name: "Transactional" }),

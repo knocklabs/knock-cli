@@ -395,6 +395,62 @@ describe("commands/message-type/push", () => {
       .it("exits with status 2");
   });
 
+  describe("given a path argument", () => {
+    const customMessageTypePath = "custom-message-types/banner";
+
+    beforeEach(() => {
+      const abspath = path.resolve(
+        sandboxDir,
+        customMessageTypePath,
+        MESSAGE_TYPE_JSON,
+      );
+      fs.outputJsonSync(abspath, {
+        name: "Banner",
+        variants: [
+          {
+            key: "default",
+            name: "Default",
+            fields: [
+              {
+                type: "text",
+                key: "title",
+                label: "Title",
+              },
+            ],
+          },
+        ],
+        preview: "<div>{{ title }}</div>",
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { message_type: mockMessageTypeData } })
+      .stdout()
+      .command(["message-type push", `./${customMessageTypePath}`])
+      .it("pushes message type using relative path", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertMessageType as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { messageTypeKey: "banner" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                annotate: true,
+              }),
+          ),
+          sinon.match((mt) => mt.key === "banner" && mt.name === "Banner"),
+        );
+      });
+
+    setupWithStub({ data: { message_type: mockMessageTypeData } })
+      .stdout()
+      .command(["message-type push", `./${customMessageTypePath}`, "--all"])
+      .exit(2)
+      .it("exits with status 2 when path and --all are both provided");
+  });
+
   describe("given --all and multiple message types", () => {
     const indexDirPath = path.resolve(sandboxDir, "message-types");
 
