@@ -43,9 +43,6 @@ const evaluateRecursively = async (
     } else if (await MessageType.isMessageTypeDir(currDir)) {
       ctx.resourceDir = buildResourceDirContext("message_type", currDir);
     } else if (Translation.isTranslationDir(currDir)) {
-      // NOTE: Must keep this check as last in the order of directory-type checks
-      // since the `isTranslationDir` only checks that the directory name is a
-      // valid locale name.
       ctx.resourceDir = buildResourceDirContext("translation", currDir);
     }
   }
