@@ -7,7 +7,7 @@ import { formatErrors, SourceError } from "@/lib/helpers/error";
 import { readJson } from "@/lib/helpers/json";
 
 import {
-  isTranslationDir,
+  isValidLocale,
   lsTranslationDir,
   parseTranslationRef,
   SYSTEM_NAMESPACE,
@@ -158,9 +158,7 @@ export const readAllForCommandTarget = async (
       });
 
       const translationDirPaths = dirents
-        .filter(
-          (dirent) => dirent.isDirectory() && isTranslationDir(dirent.name),
-        )
+        .filter((dirent) => dirent.isDirectory() && isValidLocale(dirent.name))
         .map((dirent) => path.resolve(targetCtx.abspath, dirent.name));
 
       const translationFilePaths = (
