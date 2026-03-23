@@ -37,7 +37,7 @@
   "devDependencies": {
     "@oclif/test": "^3",
     "@swc/cli": "^0.8.0",
-    "@swc/core": "^1.15.11",
+    "@swc/core": "^1.15.18",
     "@swc/helpers": "^0.5.18",
     "@types/chai": "^4",
     "@types/degit": "^2.8.6",
