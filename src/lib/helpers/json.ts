@@ -1,4 +1,4 @@
-import * as jsonlint from "@prantlf/jsonlint";
+import * as jsonlint from "@knocklabs/jsonlint";
 import * as fs from "fs-extra";
 
 import { JsonSyntaxError } from "@/lib/helpers/error";
@@ -23,7 +23,7 @@ export const parseJson = (json: string): ParseJsonResult => {
   try {
     payload = jsonlint.parse(json) as AnyObj;
   } catch (error) {
-    // https://github.com/prantlf/jsonlint#error-handling
+    // https://github.com/knocklabs/repackage/tree/main/packages/jsonlint
     if (!(error instanceof SyntaxError)) throw error;
 
     errors.push(new JsonSyntaxError(error.message));
