@@ -189,6 +189,8 @@ export default class ApiV1 {
       environment: flags.environment,
       branch: flags.branch,
       commit_message: flags["commit-message"],
+      resource_type: flags["resource-type"],
+      resource_id: flags["resource-id"],
     });
 
     return this.put(`/commits`, {}, { params });
