@@ -1,4 +1,4 @@
-import { test } from "@oclif/test";
+import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
@@ -59,6 +59,120 @@ describe("commands/commit/index", () => {
             }),
           ),
         );
+      });
+  });
+
+  describe("given a resource-type flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "commitAllChanges", (stub) =>
+        stub.resolves(factory.resp({ data: "success" })),
+      )
+      .stub(enquirer.prototype, "prompt", (stub) =>
+        stub.onFirstCall().resolves({ input: "y" }),
+      )
+      .stdout()
+      .command([
+        "commit",
+        "-m",
+        "commit workflows only",
+        "--resource-type",
+        "workflow",
+      ])
+      .it("calls apiV1 commitAllChanges with resource-type in props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.commitAllChanges as any,
+          sinon.match(({ flags }) =>
+            isEqual(flags, {
+              "service-token": "valid-token",
+              environment: "development",
+              "commit-message": "commit workflows only",
+              "resource-type": "workflow",
+            }),
+          ),
+        );
+      });
+  });
+
+  describe("given resource-type and resource-id flags", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "commitAllChanges", (stub) =>
+        stub.resolves(factory.resp({ data: "success" })),
+      )
+      .stub(enquirer.prototype, "prompt", (stub) =>
+        stub.onFirstCall().resolves({ input: "y" }),
+      )
+      .stdout()
+      .command([
+        "commit",
+        "-m",
+        "commit specific workflow",
+        "--resource-type",
+        "workflow",
+        "--resource-id",
+        "my-workflow-key",
+      ])
+      .it(
+        "calls apiV1 commitAllChanges with resource-type and resource-id in props",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.commitAllChanges as any,
+            sinon.match(({ flags }) =>
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                "commit-message": "commit specific workflow",
+                "resource-type": "workflow",
+                "resource-id": "my-workflow-key",
+              }),
+            ),
+          );
+        },
+      );
+  });
+
+  describe("given resource-id without resource-type", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
+      .stderr()
+      .command(["commit", "--resource-id", "my-workflow-key", "--force"])
+      .exit(2)
+      .it("exits with status 2");
+  });
+
+  describe("given resource-type flag with force", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "commitAllChanges", (stub) =>
+        stub.resolves(factory.resp({ data: "success" })),
+      )
+      .stdout()
+      .command(["commit", "--resource-type", "workflow", "--force"])
+      .it("displays resource-specific success message", (ctx) => {
+        expect(ctx.stdout).to.contain("workflow");
+      });
+  });
+
+  describe("given resource-type and resource-id flags with force", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "commitAllChanges", (stub) =>
+        stub.resolves(factory.resp({ data: "success" })),
+      )
+      .stdout()
+      .command([
+        "commit",
+        "--resource-type",
+        "email_layout",
+        "--resource-id",
+        "default",
+        "--force",
+      ])
+      .it("displays resource-specific success message", (ctx) => {
+        expect(ctx.stdout).to.contain("email_layout");
+        expect(ctx.stdout).to.contain("default");
       });
   });
 });

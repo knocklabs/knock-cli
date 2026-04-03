@@ -9,7 +9,8 @@ import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 
 export default class Commit extends BaseCommand<typeof Commit> {
-  static summary = "Commit all changes in development environment.";
+  static summary =
+    "Commit all changes in development environment, or only changes for a specific resource type.";
 
   static flags = {
     environment: Flags.string({
@@ -26,16 +27,39 @@ export default class Commit extends BaseCommand<typeof Commit> {
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
+    "resource-type": Flags.string({
+      summary:
+        "Commit only changes for the given resource type. Can be used alone or together with --resource-id.",
+      options: [
+        "email_layout",
+        "guide",
+        "message_type",
+        "partial",
+        "translation",
+        "workflow",
+      ],
+    }),
+    "resource-id": Flags.string({
+      summary:
+        "Commit only changes for the given resource identifier. Must be used together with --resource-type.",
+    }),
   };
 
   async run(): Promise<void> {
     const { flags } = this.props;
 
-    const scope = formatCommandScope(flags);
+    if (flags["resource-id"] && !flags["resource-type"]) {
+      this.error(
+        "The --resource-id flag must be used together with --resource-type.",
+      );
+    }
 
-    // Confirm first as we are about to commit changes to go live in the
-    // development environment, unless forced.
-    const prompt = `Commit all changes in the ${scope}?`;
+    const scope = formatCommandScope(flags);
+    const qualifier = this.formatResourceQualifier(flags);
+
+    const prompt = qualifier
+      ? `Commit ${qualifier} in the ${scope}?`
+      : `Commit all changes in the ${scope}?`;
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
@@ -43,6 +67,24 @@ export default class Commit extends BaseCommand<typeof Commit> {
       this.apiV1.commitAllChanges(this.props),
     );
 
-    this.log(`‣ Successfully committed all changes in ${scope}`);
+    const successMsg = qualifier
+      ? `‣ Successfully committed ${qualifier} in ${scope}`
+      : `‣ Successfully committed all changes in ${scope}`;
+    this.log(successMsg);
+  }
+
+  private formatResourceQualifier(flags: {
+    "resource-type"?: string;
+    "resource-id"?: string;
+  }): string | null {
+    if (flags["resource-type"] && flags["resource-id"]) {
+      return `\`${flags["resource-type"]}\` changes for \`${flags["resource-id"]}\``;
+    }
+
+    if (flags["resource-type"]) {
+      return `all \`${flags["resource-type"]}\` changes`;
+    }
+
+    return null;
   }
 }
