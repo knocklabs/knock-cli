@@ -71,9 +71,7 @@ describe("lib/marshal/message-type/processor", () => {
         key: "banner",
         valid: true,
         owner: "user",
-        environment: "development",
         semver: "0.0.1",
-        created_at: "2023-09-18T18:32:18.398053Z",
       });
     });
 
@@ -114,9 +112,7 @@ describe("lib/marshal/message-type/processor", () => {
             key: "banner",
             valid: true,
             owner: "user",
-            environment: "development",
             semver: "0.0.1",
-            created_at: "2023-09-18T18:32:18.398053Z",
           },
         },
       });
@@ -161,9 +157,7 @@ describe("lib/marshal/message-type/processor", () => {
               key: "banner",
               valid: true,
               owner: "user",
-              environment: "development",
               semver: "0.0.1",
-              created_at: "2023-09-18T18:32:18.398053Z",
             },
           },
         });

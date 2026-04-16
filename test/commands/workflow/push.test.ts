@@ -166,7 +166,6 @@ describe("commands/workflow/push", () => {
             key: "new-comment",
             active: false,
             valid: false,
-            created_at: "2022-12-31T12:00:00.000000Z",
           },
         });
       });

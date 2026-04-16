@@ -39,8 +39,6 @@ describe("lib/marshal/layout/processor", () => {
 
       expect(emailLayoutJson.__readonly).to.eql({
         key: "default",
-        environment: "development",
-        created_at: "2023-09-18T18:32:18.398053Z",
       });
     });
 
@@ -64,8 +62,6 @@ describe("lib/marshal/layout/processor", () => {
           "text_layout@": "text_layout.txt",
           __readonly: {
             key: "default",
-            environment: "development",
-            created_at: "2023-09-18T18:32:18.398053Z",
           },
         },
       });
@@ -95,8 +91,6 @@ describe("lib/marshal/layout/processor", () => {
             "text_layout@": "text_layout.txt",
             __readonly: {
               key: "default",
-              environment: "development",
-              created_at: "2023-09-18T18:32:18.398053Z",
             },
           },
         });

@@ -62,8 +62,6 @@ describe("lib/marshal/guide/processor", () => {
         key: "success-banner",
         active: true,
         valid: true,
-        environment: "development",
-        created_at: "2023-09-18T18:32:18.398053Z",
       });
     });
 
@@ -102,8 +100,6 @@ describe("lib/marshal/guide/processor", () => {
             key: "success-banner",
             valid: true,
             active: true,
-            environment: "development",
-            created_at: "2023-09-18T18:32:18.398053Z",
           },
         },
       });

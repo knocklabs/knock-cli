@@ -39,9 +39,7 @@ describe("lib/marshal/reusable-step/processor", () => {
 
       expect(reusableStepJson.__readonly).to.eql({
         type: StepType.HttpFetch,
-        created_at: "2023-09-18T18:32:18.398053Z",
         key: "fetch-user-data",
-        environment: "development",
       });
     });
 
@@ -69,9 +67,7 @@ describe("lib/marshal/reusable-step/processor", () => {
             },
             __readonly: {
               key: "fetch-user-data",
-              environment: "development",
               type: StepType.HttpFetch,
-              created_at: "2023-09-18T18:32:18.398053Z",
             },
           },
         });
@@ -106,9 +102,7 @@ describe("lib/marshal/reusable-step/processor", () => {
             },
             __readonly: {
               key: "fetch-user-data",
-              environment: "development",
               type: StepType.HttpFetch,
-              created_at: "2023-09-18T18:32:18.398053Z",
             },
           },
         });

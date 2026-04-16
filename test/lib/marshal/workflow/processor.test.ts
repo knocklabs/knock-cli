@@ -185,7 +185,6 @@ describe("lib/marshal/workflow/processor", () => {
         key: "new-comment",
         active: false,
         valid: false,
-        created_at: "2022-12-31T12:00:00.000000Z",
       });
     });
 
@@ -361,7 +360,6 @@ describe("lib/marshal/workflow/processor", () => {
               key: "new-comment",
               active: false,
               valid: false,
-              created_at: "2022-12-31T12:00:00.000000Z",
             },
           },
           [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
@@ -399,7 +397,6 @@ describe("lib/marshal/workflow/processor", () => {
             key: "new-comment",
             active: false,
             valid: false,
-            created_at: "2022-12-31T12:00:00.000000Z",
           },
         };
 
@@ -496,7 +493,6 @@ describe("lib/marshal/workflow/processor", () => {
               key: "new-comment",
               active: false,
               valid: false,
-              created_at: "2022-12-31T12:00:00.000000Z",
             },
           },
           [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
@@ -607,7 +603,6 @@ describe("lib/marshal/workflow/processor", () => {
               key: "new-comment",
               active: false,
               valid: false,
-              created_at: "2022-12-31T12:00:00.000000Z",
             },
           },
           [xpath("email_1/settings/pre_content.txt")]: "{{ foo }}",
