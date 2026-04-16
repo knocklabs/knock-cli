@@ -25,8 +25,13 @@ type ResourceData<A extends WithAnnotation> =
   | GuideData<A>
   | ReusableStepData<A>;
 
-// sha and updated_at fields change too frequently, so we exclude them from resource JSON files
-const REMOVED_READONLY_FIELDS = ["sha", "updated_at"];
+// Volatile fields that change per-branch or over time, excluded to avoid noisy diffs
+const REMOVED_READONLY_FIELDS = [
+  "sha",
+  "updated_at",
+  "environment",
+  "created_at",
+];
 
 export const prepareResourceJson = (
   resource: ResourceData<WithAnnotation>,

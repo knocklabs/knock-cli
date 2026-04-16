@@ -164,8 +164,6 @@ describe("commands/audience/push", () => {
           description: "This is a default audience",
           __readonly: {
             key: "default",
-            environment: "development",
-            created_at: "2023-09-18T18:32:18.398053Z",
           },
         });
       });

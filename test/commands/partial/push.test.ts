@@ -209,8 +209,6 @@ describe("commands/partial/push", () => {
             valid: true,
             type: "html",
             key: "default",
-            environment: "development",
-            created_at: "2023-09-18T18:32:18.398053Z",
           },
         });
       });

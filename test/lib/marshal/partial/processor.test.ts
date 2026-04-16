@@ -53,8 +53,6 @@ describe("lib/marshal/partial/processor", () => {
         key: "default",
         valid: true,
         type: PartialType.Html,
-        environment: "development",
-        created_at: "2023-09-18T18:32:18.398053Z",
       });
     });
 
@@ -79,8 +77,6 @@ describe("lib/marshal/partial/processor", () => {
             key: "default",
             valid: true,
             type: PartialType.Html,
-            environment: "development",
-            created_at: "2023-09-18T18:32:18.398053Z",
           },
         },
       });
@@ -107,8 +103,6 @@ describe("lib/marshal/partial/processor", () => {
               key: "default",
               valid: true,
               type: PartialType.Html,
-              environment: "development",
-              created_at: "2023-09-18T18:32:18.398053Z",
             },
           },
         });

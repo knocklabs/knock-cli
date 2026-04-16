@@ -199,8 +199,6 @@ describe("commands/layout/push", () => {
           "text_layout@": "text_layout.txt",
           __readonly: {
             key: "default",
-            environment: "development",
-            created_at: "2023-09-18T18:32:18.398053Z",
           },
         });
       });
