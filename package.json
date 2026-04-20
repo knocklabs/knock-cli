@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@knocklabs/jsonlint": "^2.0.2",
-    "@knocklabs/mgmt": "0.23.3",
+    "@knocklabs/mgmt": "0.25.0",
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
     "axios": "1.14.0",
