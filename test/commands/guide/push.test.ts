@@ -361,6 +361,56 @@ describe("commands/guide/push", () => {
       .it("exits with status 2");
   });
 
+  describe("given a path argument", () => {
+    const customGuidePath = "custom-guides/welcome-guide";
+
+    beforeEach(() => {
+      const abspath = path.resolve(sandboxDir, customGuidePath, GUIDE_JSON);
+      fs.outputJsonSync(abspath, {
+        name: "Welcome Guide",
+        description: "A guide to help new users get started",
+        channel_key: "in-app-guide",
+        type: "banner",
+        steps: [
+          {
+            ref: "step_1",
+            name: "Welcome Step",
+            schema_key: "banner",
+            schema_variant_key: "default",
+            fields: [],
+          },
+        ],
+      });
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub({ data: { guide: mockGuideData } })
+      .stdout()
+      .command(["guide push", `./${customGuidePath}`])
+      .it("pushes guide using relative path", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertGuide as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, { guideKey: "welcome-guide" }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                annotate: true,
+              }),
+          ),
+          sinon.match((guide) => guide.key === "welcome-guide"),
+        );
+      });
+
+    setupWithStub({ data: { guide: mockGuideData } })
+      .stdout()
+      .command(["guide push", `./${customGuidePath}`, "--all"])
+      .exit(2)
+      .it("exits with status 2 when path and --all are both provided");
+  });
+
   describe("given --all and multiple guides", () => {
     const indexDirPath = path.resolve(sandboxDir, "guides");
 

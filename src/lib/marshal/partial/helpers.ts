@@ -4,6 +4,7 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
+import { isPathArg, resolvePathArg } from "@/lib/helpers/path";
 import {
   ProjectConfig,
   resolveResourceDir,
@@ -103,6 +104,17 @@ export const ensureValidCommandTarget = async (
 
   // Partial key arg is given, which means no --all flag.
   if (args.partialKey) {
+    if (isPathArg(args.partialKey)) {
+      const { key, abspath } = resolvePathArg(args.partialKey);
+      const partialDirCtx: PartialDirContext = {
+        type: "partial",
+        key,
+        abspath,
+        exists: await isPartialDir(abspath),
+      };
+      return { type: "partialDir", context: partialDirCtx };
+    }
+
     if (resourceDirCtx && resourceDirCtx.key !== args.partialKey) {
       return ux.error(
         `Cannot run ${commandId} \`${args.partialKey}\` inside another partial directory:\n${resourceDirCtx.key}`,
