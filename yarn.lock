@@ -1162,17 +1162,17 @@
   resolved "https://registry.yarnpkg.com/@keyv/serialize/-/serialize-1.1.1.tgz#0c01dd3a3483882af7cf3878d4e71d505c81fc4a"
   integrity sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==
 
-"@knocklabs/jsonlint@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@knocklabs/jsonlint/-/jsonlint-2.0.1.tgz#601714aff7d3545b228624d5bff02b3c854e7241"
-  integrity sha512-o9nQyg4I3rmqOU/NBzCeiWzV4lOA+At7Cqn2R5eI4P7lVbcEFi8lII1SWBhUeqCX76sVJATWQmTdbwMdL9Iz0Q==
+"@knocklabs/jsonlint@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@knocklabs/jsonlint/-/jsonlint-2.0.2.tgz#3f10b03bba25825e11939cf31fb7b5f71dc26a5e"
+  integrity sha512-Bby+Ar8jehA/DQ4LFxVcgLJT9YcnwoRy80C5irQvRIS4ypTwgomLyy/sCLUjSdS36CCNUhpIq0EYxnmkPSBLbQ==
   dependencies:
     ajv "8.18.0"
     ajv-draft-04 "1.0.0"
     ajv-formats "^3.0.1"
     ajv-formats-draft2019 "^1.6.1"
     ajv-keywords "^5.1.0"
-    cosmiconfig "9.0.0"
+    cosmiconfig "9.0.1"
     diff "8.0.4"
     picocolors "^1.1.1"
 
@@ -3057,10 +3057,10 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
-cosmiconfig@9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/cosmiconfig/-/cosmiconfig-9.0.0.tgz#34c3fc58287b915f3ae905ab6dc3de258b55ad9d"
-  integrity sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==
+cosmiconfig@9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/cosmiconfig/-/cosmiconfig-9.0.1.tgz#df110631a8547b5d1a98915271986f06e3011379"
+  integrity sha512-hr4ihw+DBqcvrsEDioRO31Z17x71pUYoNe/4h6Z0wB72p7MU7/9gH8Q3s12NFhHPfYBBOV3qyfUxmr/Yn3shnQ==
   dependencies:
     env-paths "^2.2.1"
     import-fresh "^3.3.0"
