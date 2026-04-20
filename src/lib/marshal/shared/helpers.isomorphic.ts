@@ -41,9 +41,15 @@ export const prepareResourceJson = (
   const [readonly, remainder] = split(resource, readonlyFields);
 
   const filteredReadonlyFields = omit(readonly, REMOVED_READONLY_FIELDS);
+  // Also strip volatile fields from the remainder, since some resources (e.g.
+  // audiences) return these fields without annotating them as readonly.
+  const filteredRemainder = omit(remainder, REMOVED_READONLY_FIELDS);
 
   // Move remaining read only fields under the dedicated field "__readonly".
-  const resourceJson = { ...remainder, __readonly: filteredReadonlyFields };
+  const resourceJson = {
+    ...filteredRemainder,
+    __readonly: filteredReadonlyFields,
+  };
 
   // Append the $schema property to the resource JSON if it is provided.
   if ($schema) {
