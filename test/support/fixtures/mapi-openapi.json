@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.0",
+  "info": { "title": "Knock Management API (mAPI)", "version": "1.0" },
+  "paths": {
+    "/v1/whoami": {
+      "get": {
+        "operationId": "getWhoami",
+        "summary": "Verify scope",
+        "tags": ["Accounts"],
+        "parameters": [],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/v1/workflows": {
+      "get": {
+        "operationId": "listWorkflows",
+        "summary": "List workflows",
+        "tags": ["Workflows"],
+        "parameters": [
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/v1/workflows/{workflow_key}/run": {
+      "put": {
+        "operationId": "runWorkflow",
+        "summary": "Run a workflow",
+        "tags": ["Workflows"],
+        "parameters": [
+          {
+            "name": "workflow_key",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recipients": { "type": "array" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/v1/resource/{id}": {
+      "delete": {
+        "operationId": "deleteResource",
+        "summary": "Delete resource",
+        "tags": ["Test"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "204": { "description": "No Content" } }
+      }
+    }
+  }
+}
