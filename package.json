@@ -100,6 +100,9 @@
       },
       "layout": {
         "description": "Manage email layouts."
+      },
+      "mapi": {
+        "description": "Call any Knock Management API endpoint."
       }
     }
   },
