@@ -5,7 +5,11 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 
 import { resolveEndpoint } from "@/lib/mapi/endpoint-resolver";
-import { buildRequest, parseHeaderPair } from "@/lib/mapi/request-builder";
+import {
+  buildRequest,
+  parseHeaderPair,
+  warnOnDuplicateFieldKeys,
+} from "@/lib/mapi/request-builder";
 import type { OpenApiDocument } from "@/lib/mapi/types";
 
 describe("lib/mapi/request-builder", () => {
@@ -88,5 +92,18 @@ describe("lib/mapi/request-builder", () => {
 
     expect(built.data).to.deep.equal({ recipients: ["a"] });
     await fs.remove(tmp);
+  });
+
+  it("warnOnDuplicateFieldKeys warns for repeated keys", () => {
+    const msgs: string[] = [];
+    warnOnDuplicateFieldKeys(
+      [
+        { key: "a", value: "1", raw: false },
+        { key: "a", value: "2", raw: false },
+      ],
+      (m) => msgs.push(m),
+    );
+    expect(msgs.length).to.equal(1);
+    expect(msgs[0]).to.include("a");
   });
 });

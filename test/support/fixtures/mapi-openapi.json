@@ -61,6 +61,22 @@
         "responses": { "200": { "description": "OK" } }
       }
     },
+    "/v1/ambiguous-methods": {
+      "get": {
+        "operationId": "ambiguousGet",
+        "summary": "Get ambiguous",
+        "tags": ["Test"],
+        "parameters": [],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "operationId": "ambiguousPost",
+        "summary": "Post ambiguous",
+        "tags": ["Test"],
+        "parameters": [],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
     "/v1/resource/{id}": {
       "delete": {
         "operationId": "deleteResource",

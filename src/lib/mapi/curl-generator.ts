@@ -14,6 +14,10 @@ function escapeShellSingleQuotes(s: string): string {
   return `'${s.replace(/'/g, `'\\''`)}'`;
 }
 
+function hasAuthorizationHeader(headers: Record<string, string>): boolean {
+  return Object.keys(headers).some((k) => k.toLowerCase() === "authorization");
+}
+
 function buildQueryString(params: Record<string, unknown>): string {
   const parts: string[] = [];
   for (const [k, v] of Object.entries(params)) {
@@ -47,10 +51,12 @@ export function generateCurl(req: CurlRequest): string {
     urlWithQs,
   ];
 
-  parts.push(
-    "-H",
-    escapeShellSingleQuotes("Authorization: Bearer $KNOCK_SERVICE_TOKEN"),
-  );
+  if (!hasAuthorizationHeader(req.headers)) {
+    parts.push(
+      "-H",
+      escapeShellSingleQuotes("Authorization: Bearer $KNOCK_SERVICE_TOKEN"),
+    );
+  }
 
   for (const [name, value] of Object.entries(req.headers)) {
     parts.push("-H", escapeShellSingleQuotes(`${name}: ${value}`));

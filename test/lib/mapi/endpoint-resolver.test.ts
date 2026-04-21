@@ -57,4 +57,12 @@ describe("lib/mapi/endpoint-resolver", () => {
     expect(found.length).to.equal(1);
     expect(found[0]!.operationId).to.equal("getWhoami");
   });
+
+  it("resolveEndpoint does not throw on invalid percent-encoding in path", () => {
+    const r = resolveEndpoint(doc, "/v1/resource/bad%ZZ");
+    expect(r.ok).to.equal(false);
+    if (!r.ok) {
+      expect(r.reason).to.equal("not_found");
+    }
+  });
 });

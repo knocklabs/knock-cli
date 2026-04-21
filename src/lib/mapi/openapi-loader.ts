@@ -1,7 +1,7 @@
 import * as path from "node:path";
 
 import axios from "axios";
-import * as fs from "fs-extra";
+import * as fsExtra from "fs-extra";
 
 import { isTestEnv } from "@/lib/helpers/const";
 import { openApiSpecUrl } from "@/lib/urls";
@@ -50,8 +50,8 @@ async function readFreshCache(
   apiOrigin: string,
 ): Promise<OpenApiDocument | undefined> {
   try {
-    if (!(await fs.pathExists(file))) return undefined;
-    const cached = (await fs.readJSON(file)) as CachedOpenApiDocument;
+    if (!(await fsExtra.pathExists(file))) return undefined;
+    const cached = (await fsExtra.readJSON(file)) as CachedOpenApiDocument;
     const valid =
       cached?.spec && cached?.fetchedAt && cached?.apiOrigin === apiOrigin;
     if (!valid) return undefined;
@@ -68,8 +68,27 @@ async function readStaleCache(
   apiOrigin: string,
 ): Promise<OpenApiDocument | undefined> {
   try {
-    if (!(await fs.pathExists(file))) return undefined;
-    const cached = (await fs.readJSON(file)) as CachedOpenApiDocument;
+    if (!(await fsExtra.pathExists(file))) return undefined;
+    const cached = (await fsExtra.readJSON(file)) as CachedOpenApiDocument;
+    if (cached?.spec && cached?.apiOrigin === apiOrigin) return cached.spec;
+  } catch {
+    /* ignore */
+  }
+
+  return undefined;
+}
+
+/**
+ * Read a previously cached OpenAPI document from disk (for help text). No TTL check.
+ */
+export function readCachedOpenApiForHelp(
+  cacheDir: string,
+  apiOrigin: string,
+): OpenApiDocument | undefined {
+  try {
+    const file = cachePath(cacheDir, apiOrigin);
+    if (!fsExtra.pathExistsSync(file)) return undefined;
+    const cached = fsExtra.readJSONSync(file) as CachedOpenApiDocument;
     if (cached?.spec && cached?.apiOrigin === apiOrigin) return cached.spec;
   } catch {
     /* ignore */
@@ -80,7 +99,8 @@ async function readStaleCache(
 
 /**
  * Load OpenAPI spec from cache and/or network.
- * In test env, skips disk cache read/write and always fetches (stub axios in tests).
+ * In test env, skips reading/writing the on-disk cache; each run fetches the spec over the
+ * network (use nock in tests).
  */
 export async function loadOpenApiDocument(
   opts: LoadOpenApiOptions,
@@ -96,13 +116,13 @@ export async function loadOpenApiDocument(
   try {
     const spec = await fetchSpec(apiOrigin);
     if (!isTestEnv) {
-      await fs.ensureDir(cacheDir);
+      await fsExtra.ensureDir(cacheDir);
       const payload: CachedOpenApiDocument = {
         fetchedAt: new Date().toISOString(),
         apiOrigin,
         spec,
       };
-      await fs.writeJSON(file, payload, { spaces: 0 });
+      await fsExtra.writeJSON(file, payload, { spaces: 0 });
     }
 
     return { spec, fromCache: false };

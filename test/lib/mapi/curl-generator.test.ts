@@ -30,4 +30,18 @@ describe("lib/mapi/curl-generator", () => {
     expect(line).to.include("-d");
     expect(line).to.include("recipients");
   });
+
+  it("does not add bearer placeholder when Authorization header is set", () => {
+    const line = generateCurl({
+      method: "get",
+      url: "/v1/whoami",
+      absoluteUrl: "https://control.knock.app/v1/whoami",
+      params: {},
+      headers: { Authorization: "Bearer custom" },
+    });
+    expect(line).to.include("Bearer custom");
+    expect(line).to.not.include("$KNOCK_SERVICE_TOKEN");
+    const authHeaders = line.match(/Authorization:/g);
+    expect(authHeaders?.length).to.equal(1);
+  });
 });

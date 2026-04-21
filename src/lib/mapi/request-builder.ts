@@ -6,6 +6,21 @@ import type { Endpoint, FieldInput, HttpMethod } from "./types";
 
 export type { FieldInput };
 
+/** Warn once per repeated `key` (CLI order: last value wins). */
+export function warnOnDuplicateFieldKeys(
+  fields: FieldInput[],
+  warn: (message: string) => void,
+): void {
+  const seen = new Set<string>();
+  for (const f of fields) {
+    if (seen.has(f.key)) {
+      warn(`Duplicate field key "${f.key}"; last value wins.`);
+    }
+
+    seen.add(f.key);
+  }
+}
+
 export type BuiltRequest = {
   method: HttpMethod;
   url: string;
@@ -14,7 +29,7 @@ export type BuiltRequest = {
   headers: Record<string, string>;
 };
 
-function parseFieldValue(value: string, raw: boolean): unknown {
+async function parseFieldValue(value: string, raw: boolean): Promise<unknown> {
   if (raw) return value;
   const t = value.trim();
   if (t === "true") return true;
@@ -27,7 +42,7 @@ function parseFieldValue(value: string, raw: boolean): unknown {
 
   if (t.startsWith("@")) {
     const filePath = t.slice(1);
-    const content = fs.readFileSync(filePath, "utf8");
+    const content = await fs.readFile(filePath, "utf8");
     const parsed = tryJsonParse(content.trim());
     return parsed;
   }
@@ -35,13 +50,16 @@ function parseFieldValue(value: string, raw: boolean): unknown {
   return tryJsonParse(t);
 }
 
-function parseFieldArgs(fields: FieldInput[]): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const f of fields) {
-    out[f.key] = parseFieldValue(f.value, f.raw);
-  }
-
-  return out;
+async function parseFieldArgs(
+  fields: FieldInput[],
+): Promise<Record<string, unknown>> {
+  const pairs = await Promise.all(
+    fields.map(
+      async (f) =>
+        [f.key, await parseFieldValue(f.value, f.raw)] as [string, unknown],
+    ),
+  );
+  return Object.fromEntries(pairs);
 }
 
 export function parseHeaderPair(h: string): { name: string; value: string } {
@@ -133,7 +151,7 @@ export async function buildRequest(
     headerMap[name] = value;
   }
 
-  const merged = parseFieldArgs(fields);
+  const merged = await parseFieldArgs(fields);
   const pathValues: Record<string, unknown> = { ...pathParamDefaults };
   for (const p of endpoint.pathParams) {
     if (p.name in merged) {

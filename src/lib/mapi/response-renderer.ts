@@ -2,6 +2,9 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import type { HttpMethod } from "./types";
 
+/** Guard against infinite pagination loops from a stuck cursor. */
+export const MAP_PAGINATION_MAX_PAGES = 1000;
+
 export type RenderOptions = {
   raw: boolean;
   include: boolean;
@@ -101,6 +104,16 @@ export async function requestWithOptionalPagination(
   const allEntries: unknown[] = [];
   let params = { ...req.params };
   let page = 0;
+  let firstPaginatedBody: Record<string, unknown> | undefined;
+
+  const stripPaginationFields = (
+    obj: Record<string, unknown>,
+  ): Record<string, unknown> => {
+    const rest = { ...obj };
+    delete rest.entries;
+    delete rest.page_info;
+    return rest;
+  };
 
   for (;;) {
     const config: AxiosRequestConfig = {
@@ -131,16 +144,33 @@ export async function requestWithOptionalPagination(
       return resp;
     }
 
+    if (page === 0) {
+      firstPaginatedBody = { ...(data as Record<string, unknown>) };
+    }
+
     allEntries.push(...data.entries);
     const after = data.page_info?.after;
     if (!after) {
+      const lastObj = data as Record<string, unknown>;
+      const firstExtras = firstPaginatedBody
+        ? stripPaginationFields(firstPaginatedBody)
+        : {};
+      const lastExtras = stripPaginationFields(lastObj);
       return {
         ...resp,
         data: {
-          ...data,
+          ...lastExtras,
+          ...firstExtras,
           entries: allEntries,
+          page_info: data.page_info ?? {},
         },
       };
+    }
+
+    if (page + 1 >= MAP_PAGINATION_MAX_PAGES) {
+      throw new Error(
+        `--paginate: exceeded maximum of ${MAP_PAGINATION_MAX_PAGES} pages (cursor may be stuck).`,
+      );
     }
 
     params = { ...params, after };

@@ -1,15 +1,23 @@
-import { Args, Flags } from "@oclif/core";
+import { Args, Flags, ux } from "@oclif/core";
 import enquirer from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
 import { generateCurl } from "@/lib/mapi/curl-generator";
-import { resolveEndpoint } from "@/lib/mapi/endpoint-resolver";
+import {
+  formatEndpointsHelpLines,
+  listEndpoints,
+  resolveEndpoint,
+} from "@/lib/mapi/endpoint-resolver";
 import { runInteractiveMapi } from "@/lib/mapi/interactive";
-import { loadOpenApiDocument } from "@/lib/mapi/openapi-loader";
+import {
+  loadOpenApiDocument,
+  readCachedOpenApiForHelp,
+} from "@/lib/mapi/openapi-loader";
 import {
   buildRequest,
   type FieldInput,
   parseHeaderPair,
+  warnOnDuplicateFieldKeys,
 } from "@/lib/mapi/request-builder";
 import {
   renderResponse,
@@ -18,6 +26,16 @@ import {
 import type { HttpMethod } from "@/lib/mapi/types";
 
 const HTTP_METHODS: HttpMethod[] = ["get", "put", "post", "delete", "patch"];
+
+const MAP_DESCRIPTION_BASE = `Execute HTTP requests against the Knock Management API, similar to Vercel's \`vercel api\`.
+
+Discover endpoints with \`knock mapi ls\` (from the live OpenAPI spec). Pass an OpenAPI path (e.g. \`/v1/whoami\`) or an \`operationId\` (e.g. \`getWhoami\`). Run \`knock mapi\` with no arguments for interactive mode.
+
+OpenAPI spec is cached under the CLI cache directory (24h TTL); use \`--refresh\` to fetch the latest.
+
+Only operations with HTTP GET, PUT, POST, DELETE, or PATCH appear in the spec (other methods are omitted).
+
+Power-user flags: \`-F key=@path\` reads a local file; \`-H\` can override headers including \`Authorization\` (you are responsible for auth).`;
 
 function parseHttpMethod(s: string | undefined): HttpMethod | undefined {
   if (!s) return undefined;
@@ -38,18 +56,32 @@ function parseKeyEqualsValue(
   return { key: flag.slice(0, eq), value: flag.slice(eq + 1) };
 }
 
+function fieldInputsFromFlags(flags: {
+  field?: string[];
+  "raw-field"?: string[];
+}): FieldInput[] {
+  const out: FieldInput[] = [];
+  for (const f of flags.field ?? []) {
+    const { key, value } = parseKeyEqualsValue(f, "-F/--field");
+    out.push({ key, value, raw: false });
+  }
+
+  for (const f of flags["raw-field"] ?? []) {
+    const { key, value } = parseKeyEqualsValue(f, "-f/--raw-field");
+    out.push({ key, value, raw: true });
+  }
+
+  return out;
+}
+
 export default class Mapi extends BaseCommand<typeof Mapi> {
   static summary = "Call any Knock Management API (mAPI) endpoint.";
 
-  static description = `Execute HTTP requests against the Knock Management API, similar to Vercel's \`vercel api\`.
-
-Discover endpoints with \`knock mapi ls\` (from the live OpenAPI spec). Pass an OpenAPI path (e.g. \`/v1/whoami\`) or an \`operationId\` (e.g. \`getWhoami\`). Run \`knock mapi\` with no arguments for interactive mode.
-
-OpenAPI spec is cached under the CLI cache directory (24h TTL); use \`--refresh\` to fetch the latest.`;
+  static description = MAP_DESCRIPTION_BASE;
 
   static enableJsonFlag = true;
 
-  static strict = false;
+  static strict = true;
 
   static args = {
     endpoint: Args.string({
@@ -122,6 +154,26 @@ OpenAPI spec is cached under the CLI cache directory (24h TTL); use \`--refresh\
     "knock mapi /v1/whoami --generate curl",
   ];
 
+  public async init(): Promise<void> {
+    await super.init();
+    const wantsHelp = this.argv.some((a) => a === "--help" || a === "-h");
+    if (!wantsHelp) return;
+    try {
+      const spec = readCachedOpenApiForHelp(
+        this.config.cacheDir,
+        this.sessionContext.apiOrigin,
+      );
+      Mapi.description = spec
+        ? `${MAP_DESCRIPTION_BASE}\n\n${formatEndpointsHelpLines(
+            listEndpoints(spec),
+            35,
+          )}`
+        : MAP_DESCRIPTION_BASE;
+    } catch {
+      Mapi.description = MAP_DESCRIPTION_BASE;
+    }
+  }
+
   async run(): Promise<unknown> {
     const { args, flags } = this.props;
     const methodOverride = parseHttpMethod(flags.method);
@@ -163,17 +215,11 @@ OpenAPI spec is cached under the CLI cache directory (24h TTL); use \`--refresh\
 
     const { endpoint, pathParamValues } = resolved;
 
-    const fields: FieldInput[] = [...extraFields];
-
-    for (const f of flags.field ?? []) {
-      const { key, value } = parseKeyEqualsValue(f, "-F/--field");
-      fields.push({ key, value, raw: false });
-    }
-
-    for (const f of flags["raw-field"] ?? []) {
-      const { key, value } = parseKeyEqualsValue(f, "-f/--raw-field");
-      fields.push({ key, value, raw: true });
-    }
+    const fields: FieldInput[] = [
+      ...extraFields,
+      ...fieldInputsFromFlags(flags),
+    ];
+    warnOnDuplicateFieldKeys(fields, (m) => ux.logToStderr(`Warning: ${m}`));
 
     const headerList = flags.header ?? [];
     for (const h of headerList) {
@@ -247,12 +293,21 @@ OpenAPI spec is cached under the CLI cache directory (24h TTL); use \`--refresh\
     );
 
     if (flags.json) {
-      return {
+      const payload = {
         status: resp.status,
         statusText: resp.statusText,
         headers: resp.headers,
         data: resp.data,
       };
+      this.logJson(this.toSuccessJson(payload));
+      if (resp.status >= 400) {
+        // With `enableJsonFlag`, `this.exit()` is handled inside oclif and emits a second JSON
+        // error object; set the exit code without throwing so only the response payload prints.
+        const prev = process.exitCode;
+        process.exitCode = prev !== undefined && prev !== 0 ? prev : 1;
+      }
+
+      return;
     }
 
     renderResponse(resp, renderOpts);

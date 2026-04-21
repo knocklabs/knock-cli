@@ -108,6 +108,7 @@ function collectParameters(
     ...((pathItem.parameters as OpenApiParameterObject[] | undefined) ?? []),
     ...(op.parameters ?? []),
   ];
+  const seen = new Set<string>();
   for (const raw of rawParams) {
     let p = raw as OpenApiParameterObject & { $ref?: string };
     if (p.$ref) {
@@ -121,6 +122,9 @@ function collectParameters(
 
     const spec = normalizeParam(doc, p);
     if (!spec) continue;
+    const dedupeKey = `${spec.in}:${spec.name}`;
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
     if (spec.in === "path") pathParams.push(spec);
     else queryParams.push(spec);
   }
@@ -191,6 +195,14 @@ function pathTemplateSegments(template: string): string[] {
   return template.replace(/\/$/, "").split("/").filter(Boolean);
 }
 
+function decodePathSegment(segment: string): string | undefined {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return undefined;
+  }
+}
+
 function matchPathTemplate(
   template: string,
   concrete: string,
@@ -203,7 +215,9 @@ function matchPathTemplate(
     const ts = element!;
     const cs = cSeg[i]!;
     if (ts.startsWith("{") && ts.endsWith("}")) {
-      params[ts.slice(1, -1)] = decodeURIComponent(cs);
+      const decoded = decodePathSegment(cs);
+      if (decoded === undefined) return undefined;
+      params[ts.slice(1, -1)] = decoded;
     } else if (ts !== cs) {
       return undefined;
     }
@@ -304,4 +318,40 @@ export function resolveEndpoint(
       method ? ` with method ${method.toUpperCase()}` : ""
     }`,
   };
+}
+
+/** Short endpoint listing for help text (from cached OpenAPI). */
+export function formatEndpointsHelpLines(
+  endpoints: Endpoint[],
+  maxLines = 40,
+): string {
+  const byTag = new Map<string, Endpoint[]>();
+  for (const e of endpoints) {
+    const tag = e.tags[0] ?? "Other";
+    if (!byTag.has(tag)) byTag.set(tag, []);
+    byTag.get(tag)!.push(e);
+  }
+
+  const lines: string[] = [
+    "ENDPOINTS (from cached OpenAPI; run `knock mapi ls` for the authoritative list):",
+  ];
+  let count = 0;
+  for (const [tag, eps] of [...byTag.entries()].sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  )) {
+    lines.push(`  [${tag}]`);
+    for (const e of eps.sort((a, b) => a.path.localeCompare(b.path))) {
+      if (count >= maxLines) {
+        lines.push("  … (truncated; run `knock mapi ls` for the full list)");
+        return lines.join("\n");
+      }
+
+      lines.push(
+        `    ${e.method.toUpperCase().padEnd(6)} ${e.path}  ${e.operationId}`,
+      );
+      count++;
+    }
+  }
+
+  return lines.join("\n");
 }

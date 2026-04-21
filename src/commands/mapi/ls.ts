@@ -8,8 +8,9 @@ import type { Endpoint } from "@/lib/mapi/types";
 export default class MapiLs extends BaseCommand<typeof MapiLs> {
   static summary = "List Management API endpoints from the OpenAPI spec.";
 
-  static description =
-    "Fetches (or loads from cache) the live OpenAPI document and lists operations.";
+  static description = `Fetches (or loads from cache) the live OpenAPI document and lists operations.
+
+Use oclif global \`--json\` for machine-readable output (array of operations). Use \`--format json\` for the same JSON on stdout without the global JSON wrapper used by other commands.`;
 
   static aliases = ["list"];
 
