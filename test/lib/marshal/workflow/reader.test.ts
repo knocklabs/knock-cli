@@ -168,6 +168,62 @@ describe("lib/marshal/workflow/reader", () => {
       });
     });
 
+    describe("given valid liquid in a visual blocks json template", () => {
+      it("validates liquid after decoding json string values", async () => {
+        const fileContent = JSON.stringify(
+          [
+            {
+              label: '{{ n | pluralize: "Document", "Documents" }}',
+              type: "button",
+              version: 1,
+            },
+          ],
+          null,
+          2,
+        );
+
+        const filePath = path.resolve(
+          workflowDirCtx.abspath,
+          VISUAL_BLOCKS_JSON,
+        );
+        fs.outputFileSync(filePath, fileContent);
+
+        const [readContent, error] = readExtractedFileSync(
+          VISUAL_BLOCKS_JSON,
+          workflowDirCtx,
+        );
+
+        expect(error).to.equal(undefined);
+        expect(readContent).to.deep.equal([
+          {
+            label: '{{ n | pluralize: "Document", "Documents" }}',
+            type: "button",
+            version: 1,
+          },
+        ]);
+      });
+    });
+
+    describe("given invalid liquid as an array item in a visual blocks json template", () => {
+      it("returns an error", async () => {
+        const fileContent = JSON.stringify(["{{ invalid"]);
+
+        const filePath = path.resolve(
+          workflowDirCtx.abspath,
+          VISUAL_BLOCKS_JSON,
+        );
+        fs.outputFileSync(filePath, fileContent);
+
+        const [readContent, error] = readExtractedFileSync(
+          VISUAL_BLOCKS_JSON,
+          workflowDirCtx,
+        );
+
+        expect(readContent).to.equal(undefined);
+        expect(error).to.be.an.instanceof(JsonDataError);
+      });
+    });
+
     describe("given an invalid liquid json template", () => {
       it("returns the read template content without error", async () => {
         const fileContent = `

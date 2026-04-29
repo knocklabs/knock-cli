@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
-import { WORKFLOW_JSON } from "@/lib/marshal/workflow";
+import { VISUAL_BLOCKS_JSON, WORKFLOW_JSON } from "@/lib/marshal/workflow";
 
 const workflowJsonFile = "new-comment/workflow.json";
 
@@ -58,6 +58,66 @@ describe("commands/workflow/validate (a single workflow)", () => {
             isEqual(workflow, {
               key: "new-comment",
               name: "New comment",
+            }),
+          ),
+        );
+      });
+  });
+
+  describe("given a workflow with double quoted liquid args in visual blocks json", () => {
+    const visualBlocks = [
+      {
+        label: '{{ n | pluralize: "Document", "Documents" }}',
+        type: "button",
+        version: 1,
+      },
+    ];
+
+    beforeEach(() => {
+      const workflowJsonPath = path.resolve(sandboxDir, workflowJsonFile);
+      fs.outputJsonSync(workflowJsonPath, {
+        name: "New comment",
+        steps: [
+          {
+            channel_key: "email-postmark",
+            ref: "email_1",
+            template: {
+              "visual_blocks@": `email_1/${VISUAL_BLOCKS_JSON}`,
+            },
+            type: "channel",
+          },
+        ],
+      });
+      fs.outputJsonSync(
+        path.resolve(sandboxDir, "new-comment", "email_1", VISUAL_BLOCKS_JSON),
+        visualBlocks,
+      );
+
+      process.chdir(sandboxDir);
+    });
+
+    setupWithStub()
+      .stdout()
+      .command(["workflow validate", "new-comment"])
+      .it("passes decoded visual blocks to apiV1 validateWorkflow", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.validateWorkflow as any,
+          sinon.match.any,
+          sinon.match((workflow) =>
+            isEqual(workflow, {
+              key: "new-comment",
+              name: "New comment",
+              steps: [
+                {
+                  channel_key: "email-postmark",
+                  ref: "email_1",
+                  template: {
+                    "visual_blocks@": `email_1/${VISUAL_BLOCKS_JSON}`,
+                    visual_blocks: visualBlocks,
+                  },
+                  type: "channel",
+                },
+              ],
             }),
           ),
         );
