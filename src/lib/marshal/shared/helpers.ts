@@ -38,9 +38,7 @@ const validateLiquidSyntaxDeep = (
       const liquidParseError = validateLiquidSyntaxDeep(item);
       if (liquidParseError) return liquidParseError;
     }
-  }
-
-  if (content && typeof content === "object") {
+  } else if (content && typeof content === "object") {
     for (const value of Object.values(content)) {
       const liquidParseError = validateLiquidSyntaxDeep(value);
       if (liquidParseError) return liquidParseError;
