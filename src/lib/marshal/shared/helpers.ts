@@ -5,7 +5,6 @@ import * as fs from "fs-extra";
 import { formatErrors, JsonDataError } from "@/lib/helpers/error";
 import { ParsedJson, parseJson } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
-import { mapValuesDeep } from "@/lib/helpers/object.isomorphic";
 import { VISUAL_BLOCKS_JSON } from "@/lib/marshal/workflow";
 import {
   EmailLayoutDirContext,
@@ -29,18 +28,26 @@ type ReadExtractedFileResult =
 // decoded and joined into the main JSON file.
 const DECODABLE_JSON_FILES = new Set([VISUAL_BLOCKS_JSON]);
 
-const validateLiquidSyntaxDeep = (content: unknown) => {
-  let liquidParseError: ReturnType<typeof validateLiquidSyntax>;
+const validateLiquidSyntaxDeep = (
+  content: unknown,
+): ReturnType<typeof validateLiquidSyntax> => {
+  if (typeof content === "string") return validateLiquidSyntax(content);
 
-  mapValuesDeep(content, (value) => {
-    if (!liquidParseError && typeof value === "string") {
-      liquidParseError = validateLiquidSyntax(value);
+  if (Array.isArray(content)) {
+    for (const item of content) {
+      const liquidParseError = validateLiquidSyntaxDeep(item);
+      if (liquidParseError) return liquidParseError;
     }
+  }
 
-    return value;
-  });
+  if (content && typeof content === "object") {
+    for (const value of Object.values(content)) {
+      const liquidParseError = validateLiquidSyntaxDeep(value);
+      if (liquidParseError) return liquidParseError;
+    }
+  }
 
-  return liquidParseError;
+  return undefined;
 };
 
 export const readExtractedFileSync = (

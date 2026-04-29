@@ -204,6 +204,26 @@ describe("lib/marshal/workflow/reader", () => {
       });
     });
 
+    describe("given invalid liquid as an array item in a visual blocks json template", () => {
+      it("returns an error", async () => {
+        const fileContent = JSON.stringify(["{{ invalid"]);
+
+        const filePath = path.resolve(
+          workflowDirCtx.abspath,
+          VISUAL_BLOCKS_JSON,
+        );
+        fs.outputFileSync(filePath, fileContent);
+
+        const [readContent, error] = readExtractedFileSync(
+          VISUAL_BLOCKS_JSON,
+          workflowDirCtx,
+        );
+
+        expect(readContent).to.equal(undefined);
+        expect(error).to.be.an.instanceof(JsonDataError);
+      });
+    });
+
     describe("given an invalid liquid json template", () => {
       it("returns the read template content without error", async () => {
         const fileContent = `
