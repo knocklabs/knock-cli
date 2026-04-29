@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 import { formatErrors, JsonDataError } from "@/lib/helpers/error";
 import { ParsedJson, parseJson } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
+import { mapValuesDeep } from "@/lib/helpers/object.isomorphic";
 import { VISUAL_BLOCKS_JSON } from "@/lib/marshal/workflow";
 import {
   EmailLayoutDirContext,
@@ -27,6 +28,20 @@ type ReadExtractedFileResult =
 // The following files are exepected to have valid json content, and should be
 // decoded and joined into the main JSON file.
 const DECODABLE_JSON_FILES = new Set([VISUAL_BLOCKS_JSON]);
+
+const validateLiquidSyntaxDeep = (content: unknown) => {
+  let liquidParseError: ReturnType<typeof validateLiquidSyntax>;
+
+  mapValuesDeep(content, (value) => {
+    if (!liquidParseError && typeof value === "string") {
+      liquidParseError = validateLiquidSyntax(value);
+    }
+
+    return value;
+  });
+
+  return liquidParseError;
+};
 
 export const readExtractedFileSync = (
   relpath: string,
@@ -53,23 +68,12 @@ export const readExtractedFileSync = (
   // Read the file and check for valid liquid syntax given it is supported
   // across all message templates and file extensions.
   const contentStr = fs.readFileSync(abspath, "utf8");
-  const liquidParseError = validateLiquidSyntax(contentStr);
-
-  if (liquidParseError) {
-    const error = new JsonDataError(
-      `points to a file that contains invalid liquid syntax (${relpath})\n\n` +
-        formatErrors([liquidParseError], { indentBy: 2 }),
-      objPathToFieldStr,
-    );
-
-    return [undefined, error];
-  }
-
-  // If the file is expected to contain decodable json, then parse the contentStr
-  // as such.
   const fileName = path.basename(abspath.toLowerCase());
   const decodable = DECODABLE_JSON_FILES.has(fileName);
 
+  // If the file is expected to contain decodable json, parse the contentStr
+  // first so Liquid inside JSON string values is validated after JSON unescapes
+  // string delimiters (e.g. \"Doc\" -> "Doc").
   const [content, jsonParseErrors] = decodable
     ? parseJson(contentStr)
     : [contentStr, []];
@@ -78,6 +82,20 @@ export const readExtractedFileSync = (
     const error = new JsonDataError(
       `points to a file with invalid content (${relpath})\n\n` +
         formatErrors(jsonParseErrors, { indentBy: 2 }),
+      objPathToFieldStr,
+    );
+
+    return [undefined, error];
+  }
+
+  const liquidParseError = decodable
+    ? validateLiquidSyntaxDeep(content)
+    : validateLiquidSyntax(contentStr);
+
+  if (liquidParseError) {
+    const error = new JsonDataError(
+      `points to a file that contains invalid liquid syntax (${relpath})\n\n` +
+        formatErrors([liquidParseError], { indentBy: 2 }),
       objPathToFieldStr,
     );
 
