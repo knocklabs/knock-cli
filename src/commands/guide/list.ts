@@ -13,7 +13,10 @@ import {
   paramsForPageAction,
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
-import { formatStatusWithSchedule } from "@/lib/marshal/guide/helpers";
+import {
+  formatStatusWithSchedule,
+  formatTags,
+} from "@/lib/marshal/guide/helpers";
 
 export default class GuideList extends BaseCommand<typeof GuideList> {
   static summary = "Display all guides for an environment.";
@@ -84,6 +87,10 @@ export default class GuideList extends BaseCommand<typeof GuideList> {
       description: {
         header: "Description",
         get: (entry) => entry.description || "-",
+      },
+      tags: {
+        header: "Tags",
+        get: (entry) => formatTags(entry, { truncateAfter: 3 }),
       },
       updated_at: {
         header: "Updated at",

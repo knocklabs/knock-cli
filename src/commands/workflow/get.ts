@@ -114,6 +114,10 @@ export default class WorkflowGet extends BaseCommand<typeof WorkflowGet> {
         value: Workflow.formatCategories(workflow, { emptyDisplay: "-" }),
       },
       {
+        key: "Tags",
+        value: Workflow.formatTags(workflow, { emptyDisplay: "-" }),
+      },
+      {
         key: "Created at",
         value: formatDateTime(workflow.created_at),
       },

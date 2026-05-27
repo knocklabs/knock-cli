@@ -83,6 +83,10 @@ export default class WorkflowList extends BaseCommand<typeof WorkflowList> {
         header: "Categories",
         get: (entry) => Workflow.formatCategories(entry, { truncateAfter: 3 }),
       },
+      tags: {
+        header: "Tags",
+        get: (entry) => Workflow.formatTags(entry, { truncateAfter: 3 }),
+      },
       steps: {
         header: "Steps",
         get: (entry) => {

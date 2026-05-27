@@ -58,26 +58,38 @@ export const isWorkflowDir = async (dirPath: string): Promise<boolean> =>
   Boolean(await lsWorkflowJson(dirPath));
 
 /*
- * Returns a formatted string of workflow categories.
+ * Returns a formatted string of workflow categories or tags.
  */
-type FormatCategoriesOpts = {
+type FormatListOpts = {
   truncateAfter?: number;
   emptyDisplay?: string;
 };
 
 export const formatCategories = (
   workflow: WorkflowData,
-  opts: FormatCategoriesOpts = {},
+  opts: FormatListOpts = {},
+): string => formatStringList(workflow.categories, opts);
+
+/*
+ * Returns a formatted string of workflow tags.
+ */
+export const formatTags = (
+  workflow: WorkflowData,
+  opts: FormatListOpts = {},
+): string => formatStringList(workflow.tags, opts);
+
+const formatStringList = (
+  items: string[] | undefined,
+  opts: FormatListOpts = {},
 ): string => {
-  const { categories } = workflow;
   const { truncateAfter: limit, emptyDisplay = "" } = opts;
 
-  if (!categories) return emptyDisplay;
+  if (!items) return emptyDisplay;
 
-  const count = categories.length;
-  if (!limit || limit >= count) return categories.join(", ");
+  const count = items.length;
+  if (!limit || limit >= count) return items.join(", ");
 
-  return take(categories, limit).join(", ") + ` (+ ${count - limit} more)`;
+  return take(items, limit).join(", ") + ` (+ ${count - limit} more)`;
 };
 
 /*

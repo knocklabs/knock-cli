@@ -13,6 +13,7 @@ import {
   formatActivationRules,
   formatStatusWithSchedule,
   formatStep,
+  formatTags,
 } from "@/lib/marshal/guide/helpers";
 
 export default class GuideGet extends BaseCommand<typeof GuideGet> {
@@ -100,6 +101,10 @@ export default class GuideGet extends BaseCommand<typeof GuideGet> {
       {
         key: "Description",
         value: guide.description || "-",
+      },
+      {
+        key: "Tags",
+        value: formatTags(guide, { emptyDisplay: "-" }),
       },
       {
         key: "Content",
