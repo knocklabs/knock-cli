@@ -2,8 +2,8 @@ import { Flags, ux } from "@oclif/core";
 
 import ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
-import { DirContext } from "@/lib/helpers/fs";
 import * as CustomFlags from "@/lib/helpers/flag";
+import { DirContext } from "@/lib/helpers/fs";
 import {
   resolveConfigDir,
   resolveKnockSubdir,

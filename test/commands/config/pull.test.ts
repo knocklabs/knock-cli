@@ -142,9 +142,9 @@ describe("commands/config/pull", () => {
         expect(
           content.environment_settings.production.settings.endpoint,
         ).to.equal("https://example.com/prod");
-        expect(
-          content.environment_settings.development.created_at,
-        ).to.equal("2024-01-01T00:00:00.000Z");
+        expect(content.environment_settings.development.created_at).to.equal(
+          "2024-01-01T00:00:00.000Z",
+        );
       });
   });
 

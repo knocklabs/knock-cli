@@ -5,11 +5,8 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 
 import { sandboxDir } from "@/lib/helpers/const";
+import { pruneFlatIndexDir, writeFlatIndexDir } from "@/lib/helpers/flat-index";
 import { DirContext } from "@/lib/helpers/fs";
-import {
-  pruneFlatIndexDir,
-  writeFlatIndexDir,
-} from "@/lib/helpers/flat-index";
 import {
   buildDataSourceFileContent,
   DATA_SOURCE_SCHEMA,
