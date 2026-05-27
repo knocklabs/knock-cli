@@ -2,6 +2,10 @@ import KnockMgmt from "@knocklabs/mgmt";
 import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
 import type { Commit } from "@knocklabs/mgmt/resources/commits";
+import {
+  Source,
+  SourcesResponse,
+} from "@knocklabs/mgmt/resources/data-sources";
 import { Environment } from "@knocklabs/mgmt/resources/environments";
 import { MessageTypeListParams } from "@knocklabs/mgmt/resources/message-types";
 import { Config } from "@oclif/core";
@@ -574,6 +578,53 @@ export default class ApiV1 {
     }
 
     return environments;
+  }
+
+  async listAllDataSources(): Promise<SourcesResponse.Entry[]> {
+    const response = await this.mgmtClient.dataSources.listSources();
+    return response.entries;
+  }
+
+  async getDataSource(key: string, environment: string): Promise<Source> {
+    return this.mgmtClient.dataSources.retrieve(key, { environment });
+  }
+
+  async listAccountEnvironmentSlugs(): Promise<string[]> {
+    const environments = await this.listAllEnvironments();
+    return environments.map((environment) => environment.slug);
+  }
+
+  async getDataSourceAllEnvs(key: string): Promise<Source> {
+    const environmentSlugs = await this.listAccountEnvironmentSlugs();
+    let merged: Source | undefined;
+
+    for (const environment of environmentSlugs) {
+      // eslint-disable-next-line no-await-in-loop
+      const dataSource = await this.getDataSource(key, environment);
+
+      if (!merged) {
+        merged = { ...dataSource };
+        continue;
+      }
+
+      merged = {
+        ...merged,
+        name: dataSource.name,
+        description: dataSource.description,
+        custom_image_url: dataSource.custom_image_url,
+        updated_at: dataSource.updated_at,
+        environment_settings: {
+          ...merged.environment_settings,
+          ...dataSource.environment_settings,
+        },
+      };
+    }
+
+    if (!merged) {
+      throw new Error(`Data source \`${key}\` not found`);
+    }
+
+    return merged;
   }
 
   // By methods:

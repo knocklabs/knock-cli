@@ -91,6 +91,33 @@ export const resolveKnockDir = async (
   return { abspath, exists };
 };
 
+export const resolveKnockSubdir = async (
+  knockDirCtx: DirContext,
+  subdir: string,
+): Promise<DirContext> => {
+  const abspath = path.resolve(knockDirCtx.abspath, subdir);
+  const exists = await fs.pathExists(abspath);
+
+  if (exists && !(await isDirectory(abspath))) {
+    throw new Error(`${abspath} is not a directory`);
+  }
+
+  return { abspath, exists };
+};
+
+export const resolveConfigDir = async (
+  knockDirFlag: DirContext | undefined,
+  projectConfig: ProjectConfig | undefined,
+): Promise<DirContext | undefined> => {
+  const knockDirCtx = await resolveKnockDir(knockDirFlag, projectConfig);
+
+  if (!knockDirCtx) {
+    return undefined;
+  }
+
+  return resolveKnockSubdir(knockDirCtx, "config");
+};
+
 /**
  * Finds and reads the knock.json configuration file.
  * Returns undefined if the file is not found.
