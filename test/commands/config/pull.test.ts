@@ -8,12 +8,20 @@ import * as sinon from "sinon";
 
 import { sandboxDir } from "@/lib/helpers/const";
 
-const mockDataSourceEntry = {
-  key: "posthog",
-  name: "PostHog",
-  description: "PostHog source",
-  custom_image_url: null,
-};
+const mockDataSourceEntries = [
+  {
+    key: "posthog",
+    name: "PostHog",
+    description: "PostHog source",
+    custom_image_url: null,
+  },
+  {
+    key: "segment",
+    name: "Segment",
+    description: "Segment source",
+    custom_image_url: null,
+  },
+];
 
 const mockDataSource = {
   key: "posthog",
@@ -92,7 +100,7 @@ describe("commands/config/pull", () => {
         stub.resolves({ input: true }),
       )
       .stub(KnockMgmt.DataSources.prototype, "listSources", (stub) =>
-        stub.resolves({ entries: [mockDataSourceEntry] }),
+        stub.resolves({ entries: mockDataSourceEntries }),
       )
       .stub(KnockMgmt.DataSources.prototype, "retrieve", (stub) =>
         stub.callsFake((_key: string, params: { environment: string }) =>
@@ -122,6 +130,9 @@ describe("commands/config/pull", () => {
       .it("writes data source files under .knock/config/data-sources", () => {
         sinon.assert.calledOnce(
           KnockMgmt.DataSources.prototype.listSources as sinon.SinonStub,
+        );
+        sinon.assert.calledOnce(
+          KnockMgmt.Environments.prototype.list as sinon.SinonStub,
         );
 
         const filePath = path.resolve(

@@ -37,8 +37,11 @@ export const pullDataSources = async (
         });
       }
     } else {
+      const environmentSlugs = await ctx.apiV1.listAccountEnvironmentSlugs();
       const remoteDataSources = await Promise.all(
-        entries.map(({ key }) => ctx.apiV1.getDataSourceAllEnvs(key)),
+        entries.map(({ key }) =>
+          ctx.apiV1.getDataSourceAllEnvs(key, environmentSlugs),
+        ),
       );
 
       await writeDataSourcesIndexDir(ctx.typeDir, remoteDataSources, {

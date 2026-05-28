@@ -594,11 +594,15 @@ export default class ApiV1 {
     return environments.map((environment) => environment.slug);
   }
 
-  async getDataSourceAllEnvs(key: string): Promise<Source> {
-    const environmentSlugs = await this.listAccountEnvironmentSlugs();
+  async getDataSourceAllEnvs(
+    key: string,
+    environmentSlugs?: string[],
+  ): Promise<Source> {
+    const slugs =
+      environmentSlugs ?? (await this.listAccountEnvironmentSlugs());
     let merged: Source | undefined;
 
-    for (const environment of environmentSlugs) {
+    for (const environment of slugs) {
       // eslint-disable-next-line no-await-in-loop
       const dataSource = await this.getDataSource(key, environment);
 

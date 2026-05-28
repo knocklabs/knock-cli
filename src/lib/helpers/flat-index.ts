@@ -4,16 +4,9 @@ import * as fs from "fs-extra";
 import { uniqueId } from "lodash";
 
 import { sandboxDir } from "@/lib/helpers/const";
-import { JsonSyntaxError, SourceError } from "@/lib/helpers/error";
 import { DirContext } from "@/lib/helpers/fs";
 import { DOUBLE_SPACES, readJson } from "@/lib/helpers/json";
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
-
-export type FlatIndexEntry = {
-  key: string;
-  content: AnyObj;
-  filePath: string;
-};
 
 export type FlatIndexWriteOptions<T> = {
   getKey: (item: T) => string;
@@ -125,62 +118,4 @@ export const readFlatIndexFile = async (
 
   const [content] = await readJson(filePath);
   return content;
-};
-
-export const readFlatIndexDir = async (
-  typeDir: DirContext,
-): Promise<[FlatIndexEntry[], SourceError[]]> => {
-  if (!typeDir.exists) {
-    return [[], []];
-  }
-
-  const dirents = await fs.readdir(typeDir.abspath, { withFileTypes: true });
-  const entries: FlatIndexEntry[] = [];
-  const errors: SourceError[] = [];
-
-  await Promise.all(
-    dirents.map(async (dirent) => {
-      if (!dirent.isFile() || !dirent.name.endsWith(".json")) {
-        return;
-      }
-
-      const filePath = path.resolve(typeDir.abspath, dirent.name);
-      const key = dirent.name.replace(/\.json$/, "");
-      const [content, parseErrors] = await readJson(filePath);
-
-      if (parseErrors.length > 0) {
-        errors.push(
-          ...parseErrors.map(
-            (error: JsonSyntaxError) =>
-              new SourceError(error.message, filePath, error.name),
-          ),
-        );
-        return;
-      }
-
-      if (!content) {
-        return;
-      }
-
-      if (content.key && content.key !== key) {
-        errors.push(
-          new SourceError(
-            `File name \`${key}.json\` does not match key \`${content.key}\``,
-            filePath,
-          ),
-        );
-        return;
-      }
-
-      entries.push({
-        key,
-        content: { ...content, key },
-        filePath,
-      });
-    }),
-  );
-
-  entries.sort((a, b) => a.key.localeCompare(b.key));
-
-  return [entries, errors];
 };
