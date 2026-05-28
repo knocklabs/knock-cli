@@ -29,6 +29,7 @@ export type GuideData<A extends MaybeWithAnnotation = unknown> = A & {
   channel_key: string | null;
   type: string | null;
   semver: string | null;
+  tags?: string[];
   active_from?: string | null;
   active_until?: string | null;
   target_audience_key?: string | null;

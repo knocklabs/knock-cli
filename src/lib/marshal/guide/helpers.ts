@@ -2,7 +2,7 @@ import * as path from "node:path";
 
 import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
-import { startCase } from "lodash";
+import { startCase, take } from "lodash";
 import {
   FetchingJSONSchemaStore,
   InputData,
@@ -50,6 +50,29 @@ export const formatActivationRules = (
   return rules
     .map(({ directive, pathname }) => `${directive} ${pathname}`)
     .join(", ");
+};
+
+/*
+ * Returns a formatted string of guide tags.
+ */
+type FormatTagsOpts = {
+  truncateAfter?: number;
+  emptyDisplay?: string;
+};
+
+export const formatTags = (
+  guide: GuideData,
+  opts: FormatTagsOpts = {},
+): string => {
+  const { tags } = guide;
+  const { truncateAfter: limit, emptyDisplay = "" } = opts;
+
+  if (!tags) return emptyDisplay;
+
+  const count = tags.length;
+  if (!limit || limit >= count) return tags.join(", ");
+
+  return take(tags, limit).join(", ") + ` (+ ${count - limit} more)`;
 };
 
 export const guideJsonPath = (guideDirCtx: GuideDirContext): string =>

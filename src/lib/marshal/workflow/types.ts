@@ -140,6 +140,7 @@ export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {
   active: boolean;
   valid: boolean;
   categories?: string[];
+  tags?: string[];
   description?: string;
   steps: WorkflowStepData<A>[];
   trigger_data_json_schema?: Record<string, any>;
