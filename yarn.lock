@@ -2528,10 +2528,10 @@ define-lazy-prop@^2.0.0:
   resolved "https://registry.yarnpkg.com/define-lazy-prop/-/define-lazy-prop-2.0.0.tgz#3f7ae421129bcaaac9bc74905c98a0009ec9ee7f"
   integrity sha512-Ds09qNh8yw3khSjiJjiUInaGX9xlqZDY7JVryGxdxV7NPeuqQfplOpQ66yJFZut3jLa5zOwkXw1g9EI2uKh4Og==
 
-degit@^2.8.4:
-  version "2.8.4"
-  resolved "https://registry.yarnpkg.com/degit/-/degit-2.8.4.tgz#3bb9c5c00f157c44724dd4a50724e4aa75a54d38"
-  integrity sha512-vqYuzmSA5I50J882jd+AbAhQtgK6bdKUJIex1JNfEUPENCgYsxugzKVZlFyMwV4i06MmnV47/Iqi5Io86zf3Ng==
+degit@^2.8.5:
+  version "2.8.5"
+  resolved "https://registry.yarnpkg.com/degit/-/degit-2.8.5.tgz#2efbdc709b4a2b174ef03b0aa30420aaf719d87c"
+  integrity sha512-n5OerpHyPJI7J+NsYsIrb+AZlV63NaY4iMidkOzfqYpS4DBnghS0Ta0Nf6C0sgBn8QRovpBN/dY6tlksrReabA==
 
 delayed-stream@~1.0.0:
   version "1.0.0"
