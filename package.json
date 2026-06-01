@@ -69,6 +69,7 @@
     "bin": "knock",
     "dirname": "knock",
     "commands": "./dist/commands",
+    "helpClass": "./dist/help",
     "additionalHelpFlags": [
       "-h"
     ],
