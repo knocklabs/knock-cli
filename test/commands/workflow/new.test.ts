@@ -181,6 +181,75 @@ describe("commands/workflow/new", () => {
       );
   });
 
+  describe("given a steps flag with the canonical `in_app_feed` value", () => {
+    setupWithStub()
+      .do(() => {
+        const newCwd = path.resolve(sandboxDir, "a");
+        process.chdir(newCwd);
+      })
+      .command([
+        "workflow new",
+        "--key",
+        "my-new-workflow",
+        "--name",
+        "My New Workflow",
+        "--force",
+        "--steps",
+        "in_app_feed",
+      ])
+      .it("scaffolds an in-app feed channel step", () => {
+        const workflowJsonPath = path.resolve(
+          sandboxDir,
+          "a",
+          "my-new-workflow",
+          "workflow.json",
+        );
+
+        expect(fs.pathExistsSync(workflowJsonPath)).to.equal(true);
+
+        const workflow = fs.readJsonSync(workflowJsonPath);
+        expect(workflow.steps).to.have.lengthOf(1);
+        expect(workflow.steps[0].ref).to.equal("in_app_feed_1");
+        expect(workflow.steps[0].type).to.equal("channel");
+      });
+  });
+
+  describe("given a steps flag with the legacy `in-app-feed` value", () => {
+    setupWithStub()
+      .do(() => {
+        const newCwd = path.resolve(sandboxDir, "a");
+        process.chdir(newCwd);
+      })
+      .command([
+        "workflow new",
+        "--key",
+        "my-new-workflow",
+        "--name",
+        "My New Workflow",
+        "--force",
+        "--steps",
+        "in-app-feed",
+      ])
+      .it(
+        "normalizes the value and scaffolds an in-app feed channel step",
+        () => {
+          const workflowJsonPath = path.resolve(
+            sandboxDir,
+            "a",
+            "my-new-workflow",
+            "workflow.json",
+          );
+
+          expect(fs.pathExistsSync(workflowJsonPath)).to.equal(true);
+
+          const workflow = fs.readJsonSync(workflowJsonPath);
+          expect(workflow.steps).to.have.lengthOf(1);
+          expect(workflow.steps[0].ref).to.equal("in_app_feed_1");
+          expect(workflow.steps[0].type).to.equal("channel");
+        },
+      );
+  });
+
   describe("given a valid workflow key and a template flag", () => {
     setupWithStub()
       .command([

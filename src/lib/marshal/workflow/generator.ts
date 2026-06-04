@@ -116,7 +116,7 @@ const scaffoldInAppFeedChannelStep = (
   const scaffoldedStep: WorkflowStepData = {
     ref: stepRef,
     type: StepType.Channel,
-    channel_key: firstChannel ? firstChannel.key : "<IN-APP-FEED CHANNEL KEY>",
+    channel_key: firstChannel ? firstChannel.key : "<IN_APP_FEED CHANNEL KEY>",
     template: {
       action_url: "{{ vars.app_url }}",
       ["markdown_body" + FILEPATH_MARKER]: templateFilePath,
@@ -210,7 +210,7 @@ const STEP_TAGS = [
   "batch",
   "fetch",
   "email",
-  "in-app-feed",
+  "in_app_feed",
   "sms",
   "push",
   "chat",
@@ -221,7 +221,7 @@ export const StepTagChoices = {
   batch: "Batch step",
   fetch: "HTTP Fetch step",
   email: "Email channel step",
-  "in-app-feed": "In-app feed channel step",
+  in_app_feed: "In-app feed channel step",
   sms: "SMS channel step",
   push: "Push channel step",
   chat: "Chat channel step",
@@ -247,11 +247,16 @@ const stepScaffoldFuncs: Record<
 
   // Channel steps
   email: scaffoldEmailChannelStep,
-  "in-app-feed": scaffoldInAppFeedChannelStep,
+  in_app_feed: scaffoldInAppFeedChannelStep,
   sms: scaffoldSmsChannelStep,
   push: scaffoldPushChannelStep,
   chat: scaffoldChatChannelStep,
 };
+
+// Accept "in-app-feed" for backward compatibility, but normalize to the snake
+// case one as the canonical tag.
+const normalizeStepTag = (tag: string): string =>
+  tag === "in-app-feed" ? "in_app_feed" : tag;
 
 /*
  * Takes a comma seperated string of step tags, then parses and returns a list
@@ -263,7 +268,10 @@ export const parseStepsInput = (
   input: string,
   availableStepTypes: StepTag[],
 ): ParseStepsInputResult => {
-  const tags = input.split(",").filter((x) => x);
+  const tags = input
+    .split(",")
+    .filter((x) => x)
+    .map((tag) => normalizeStepTag(tag));
 
   const invalidTags = tags.filter(
     (tag) => !availableStepTypes.includes(tag as StepTag),
@@ -284,7 +292,7 @@ export const getAvailableStepTypes = (
     switch (stepTag) {
       case "email":
         return channelTypes.includes("email");
-      case "in-app-feed":
+      case "in_app_feed":
         return channelTypes.includes("in_app_feed");
       case "sms":
         return channelTypes.includes("sms");
@@ -322,17 +330,13 @@ const scaffoldWorkflowDirBundle = (
 
       switch (tag) {
         case "email":
+        case "in_app_feed":
         case "sms":
         case "push":
         case "chat":
           return stepScaffoldFuncs[tag](
             stepCount,
             get(channelsByType, tag, []),
-          );
-        case "in-app-feed":
-          return stepScaffoldFuncs[tag](
-            stepCount,
-            get(channelsByType, "in_app_feed", []),
           );
         default:
           return (stepScaffoldFuncs[tag] as StepScaffoldFunc)(stepCount);
@@ -369,6 +373,7 @@ function swapChannelReferences(
     case "email":
     case "knock-email":
       return { ...step, channel_key: channelsByType.email[0]?.key };
+    case "in_app_feed":
     case "in-app-feed":
     case "knock-in-app-feed":
     case "knock-feed":

@@ -2,7 +2,11 @@ import { Channel } from "@knocklabs/mgmt/resources/channels";
 import { expect } from "@oclif/test";
 
 import { factory, xpath } from "@/../test/support";
-import { scaffoldWorkflowDirBundle } from "@/lib/marshal/workflow/generator";
+import {
+  parseStepsInput,
+  scaffoldWorkflowDirBundle,
+  StepTag,
+} from "@/lib/marshal/workflow/generator";
 
 const channelsByType: Record<any, Channel[]> = {
   email: [factory.channel({ type: "email", key: "email-channel" })],
@@ -14,7 +18,54 @@ const channelsByType: Record<any, Channel[]> = {
   ],
 };
 
+const availableStepTypes: StepTag[] = [
+  "delay",
+  "batch",
+  "fetch",
+  "email",
+  "in_app_feed",
+  "sms",
+  "push",
+  "chat",
+];
+
 describe("lib/marshal/workflow/generator", () => {
+  describe("parseStepsInput", () => {
+    it("parses a comma separated list of step tags", () => {
+      const [tags, error] = parseStepsInput(
+        "delay,email,sms",
+        availableStepTypes,
+      );
+
+      expect(error).to.equal(undefined);
+      expect(tags).to.eql(["delay", "email", "sms"]);
+    });
+
+    it("accepts the canonical `in_app_feed` step tag", () => {
+      const [tags, error] = parseStepsInput("in_app_feed", availableStepTypes);
+
+      expect(error).to.equal(undefined);
+      expect(tags).to.eql(["in_app_feed"]);
+    });
+
+    it("normalizes the legacy hyphenated `in-app-feed` step tag to `in_app_feed`", () => {
+      const [tags, error] = parseStepsInput(
+        "delay,in-app-feed,sms",
+        availableStepTypes,
+      );
+
+      expect(error).to.equal(undefined);
+      expect(tags).to.eql(["delay", "in_app_feed", "sms"]);
+    });
+
+    it("returns an error for an invalid step tag", () => {
+      const [tags, error] = parseStepsInput("blah", availableStepTypes);
+
+      expect(tags).to.equal(undefined);
+      expect(error).to.equal("Invalid step type: blah");
+    });
+  });
+
   describe("scaffoldWorkflowDirBundle", () => {
     describe("given no steps attrs", () => {
       it("returns a bundle with scaffolded workflow.json", () => {
@@ -102,7 +153,7 @@ describe("lib/marshal/workflow/generator", () => {
               "batch",
               "fetch",
               "chat",
-              "in-app-feed",
+              "in_app_feed",
               "sms",
             ],
           },
