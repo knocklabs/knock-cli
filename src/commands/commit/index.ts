@@ -7,6 +7,7 @@ import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
+import { ALL_RESOURCE_TYPES } from "@/lib/resources";
 
 export default class Commit extends BaseCommand<typeof Commit> {
   static summary =
@@ -30,14 +31,7 @@ export default class Commit extends BaseCommand<typeof Commit> {
     "resource-type": Flags.string({
       summary:
         "Commit only changes for the given resource type. Can be used alone or together with --resource-id.",
-      options: [
-        "email_layout",
-        "guide",
-        "message_type",
-        "partial",
-        "translation",
-        "workflow",
-      ],
+      options: ALL_RESOURCE_TYPES,
     }),
     "resource-id": Flags.string({
       summary:

@@ -14,6 +14,7 @@ import {
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
 import { formatCommitAuthor } from "@/lib/marshal/commit";
+import { ALL_RESOURCE_TYPES } from "@/lib/resources";
 
 export default class CommitList extends BaseCommand<typeof CommitList> {
   static summary = "Display all commits in an environment";
@@ -33,14 +34,7 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       summary:
         "Filter commits by resource type. Can be used alone or together with resource-id. Use multiple --resource-type flags for multiple values.",
       multiple: true,
-      options: [
-        "email_layout",
-        "guide",
-        "message_type",
-        "partial",
-        "translation",
-        "workflow",
-      ],
+      options: ALL_RESOURCE_TYPES,
     }),
     "resource-id": Flags.string({
       summary:
