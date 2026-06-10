@@ -163,6 +163,7 @@ export default class ApiV1 {
       tenant: flags.tenant,
       data: flags.data,
       actor: flags.actor,
+      settings: flags.settings,
     });
     return this.put(`/workflows/${args.workflowKey}/run`, data, { params });
   }
