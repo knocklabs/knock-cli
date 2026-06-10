@@ -312,7 +312,7 @@ describe("commands/workflow/run", () => {
       });
   });
 
-  describe("given a settings flag", () => {
+  describe("given a sandbox-mode flag", () => {
     setupWithStub({ data: { workflow_run_id: "run-123" } })
       .stdout()
       .command([
@@ -320,28 +320,24 @@ describe("commands/workflow/run", () => {
         "workflow-x",
         "--recipients",
         "alice",
-        "--settings",
-        '{"sandbox_mode": true}',
+        "--sandbox-mode",
       ])
-      .it(
-        "calls apiV1 runWorkflow with expected params (settings as JSON)",
-        () => {
-          sinon.assert.calledWith(
-            KnockApiV1.prototype.runWorkflow as any,
-            sinon.match(
-              ({ args, flags }) =>
-                isEqual(args, {
-                  workflowKey: "workflow-x",
-                }) &&
-                isEqual(flags, {
-                  "service-token": "valid-token",
-                  environment: "development",
-                  recipients: ["alice"],
-                  settings: { sandbox_mode: true },
-                }),
-            ),
-          );
-        },
-      );
+      .it("calls apiV1 runWorkflow with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.runWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                workflowKey: "workflow-x",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                recipients: ["alice"],
+                "sandbox-mode": true,
+              }),
+          ),
+        );
+      });
   });
 });
