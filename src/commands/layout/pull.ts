@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { isPathArg, resolvePathArg } from "@/lib/helpers/path";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
@@ -171,6 +172,18 @@ export default class EmailLayoutPull extends BaseCommand<
   async getEmailLayoutDirContext(): Promise<EmailLayoutDirContext> {
     const { emailLayoutKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
+
+    // When a path is provided, override resolution and use it directly.
+    if (emailLayoutKey && isPathArg(emailLayoutKey)) {
+      const { key, abspath } = resolvePathArg(emailLayoutKey);
+      const exists = await EmailLayout.isEmailLayoutDir(abspath);
+      return {
+        type: "email_layout",
+        key,
+        abspath,
+        exists,
+      };
+    }
 
     // Inside an existing resource dir, use it if valid for the target email layout.
     if (resourceDir) {

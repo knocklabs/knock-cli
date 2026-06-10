@@ -238,7 +238,7 @@ describe("commands/push", () => {
               upsertLayoutStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { emailLayoutKey: "messages" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -272,7 +272,7 @@ describe("commands/push", () => {
                 upsertLayoutStub,
                 sinon.match(
                   ({ args, flags }) =>
-                    isEqual(args, {}) &&
+                    isEqual(args, { emailLayoutKey: "messages" }) &&
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
@@ -332,7 +332,7 @@ describe("commands/push", () => {
               upsertPartialStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { partialKey: "messages" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -366,7 +366,7 @@ describe("commands/push", () => {
                 upsertPartialStub,
                 sinon.match(
                   ({ args, flags }) =>
-                    isEqual(args, {}) &&
+                    isEqual(args, { partialKey: "messages" }) &&
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
@@ -530,7 +530,7 @@ describe("commands/push", () => {
               upsertWorkflowStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { workflowKey: "foo" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -564,7 +564,7 @@ describe("commands/push", () => {
                 upsertWorkflowStub,
                 sinon.match(
                   ({ args, flags }) =>
-                    isEqual(args, {}) &&
+                    isEqual(args, { workflowKey: "foo" }) &&
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
@@ -629,7 +629,7 @@ describe("commands/push", () => {
               upsertMessageTypeStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { messageTypeKey: "default" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -663,7 +663,7 @@ describe("commands/push", () => {
                 upsertMessageTypeStub,
                 sinon.match(
                   ({ args, flags }) =>
-                    isEqual(args, {}) &&
+                    isEqual(args, { messageTypeKey: "default" }) &&
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
@@ -723,7 +723,7 @@ describe("commands/push", () => {
               upsertGuideStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { guideKey: "default" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -755,7 +755,7 @@ describe("commands/push", () => {
               upsertGuideStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { guideKey: "default" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -865,7 +865,7 @@ describe("commands/push", () => {
                 upsertPartialStub,
                 sinon.match(
                   ({ args, flags }) =>
-                    isEqual(args, {}) &&
+                    isEqual(args, { partialKey: "messages" }) &&
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
@@ -886,7 +886,7 @@ describe("commands/push", () => {
                 upsertWorkflowStub,
                 sinon.match(
                   ({ args, flags }) =>
-                    isEqual(args, {}) &&
+                    isEqual(args, { workflowKey: "foo" }) &&
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
@@ -1136,7 +1136,7 @@ describe("commands/push", () => {
               upsertLayoutStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { emailLayoutKey: "messages" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -1158,7 +1158,7 @@ describe("commands/push", () => {
               upsertPartialStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { partialKey: "messages" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -1206,7 +1206,7 @@ describe("commands/push", () => {
               upsertWorkflowStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { workflowKey: "foo" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -1228,7 +1228,7 @@ describe("commands/push", () => {
               upsertMessageTypeStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { messageTypeKey: "default" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
@@ -1250,7 +1250,7 @@ describe("commands/push", () => {
               upsertGuideStub,
               sinon.match(
                 ({ args, flags }) =>
-                  isEqual(args, {}) &&
+                  isEqual(args, { guideKey: "default" }) &&
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",

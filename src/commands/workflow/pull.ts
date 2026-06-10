@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
+import { isPathArg, resolvePathArg } from "@/lib/helpers/path";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
   formatErrorRespMessage,
@@ -112,6 +113,18 @@ export default class WorkflowPull extends BaseCommand<typeof WorkflowPull> {
   async getWorkflowDirContext(): Promise<WorkflowDirContext> {
     const { workflowKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
+
+    // When a path is provided, override resolution and use it directly.
+    if (workflowKey && isPathArg(workflowKey)) {
+      const { key, abspath } = resolvePathArg(workflowKey);
+      const exists = await Workflow.isWorkflowDir(abspath);
+      return {
+        type: "workflow",
+        key,
+        abspath,
+        exists,
+      };
+    }
 
     // Inside an existing resource dir, use it if valid for the target workflow.
     if (resourceDir) {
