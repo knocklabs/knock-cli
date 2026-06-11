@@ -158,11 +158,15 @@ export default class ApiV1 {
       environment: flags.environment,
       branch: flags.branch,
     });
+    const settings = prune({
+      sandbox_mode: flags["sandbox-mode"],
+    });
     const data = prune({
       recipients: flags.recipients,
       tenant: flags.tenant,
       data: flags.data,
       actor: flags.actor,
+      ...(Object.keys(settings).length > 0 ? { settings } : {}),
     });
     return this.put(`/workflows/${args.workflowKey}/run`, data, { params });
   }

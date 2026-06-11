@@ -33,6 +33,10 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
     data: jsonStr({
       summary: "A JSON string of the data for this workflow",
     }),
+    "sandbox-mode": Flags.boolean({
+      summary:
+        "When enabled, channels in this workflow generate messages but don't send them to the downstream provider.",
+    }),
   };
 
   static args = {
