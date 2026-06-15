@@ -340,4 +340,33 @@ describe("commands/workflow/run", () => {
         );
       });
   });
+
+  describe("given skip-delay flag", () => {
+    setupWithStub({ data: { workflow_run_id: "run-123" } })
+      .stdout()
+      .command([
+        "workflow run",
+        "workflow-x",
+        "--recipients",
+        "alice",
+        "--skip-delay",
+      ])
+      .it("calls apiV1 runWorkflow with expected props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.runWorkflow as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {
+                workflowKey: "workflow-x",
+              }) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "development",
+                recipients: ["alice"],
+                "skip-delay": true,
+              }),
+          ),
+        );
+      });
+  });
 });
