@@ -5,6 +5,7 @@ import { browser } from "./helpers/browser";
 import { authErrorUrl, authSuccessUrl } from "./urls";
 
 const DEFAULT_TIMEOUT = 5000;
+const LOGIN_TIMEOUT = 5 * 60 * 1000;
 
 export type AuthenticatedSession = {
   accessToken: string;
@@ -207,9 +208,9 @@ export async function waitForAccessToken(
 
   const timeout = setTimeout(() => {
     cleanupAndReject(
-      `authentication timed out after ${DEFAULT_TIMEOUT / 1000} seconds`,
+      `authentication timed out after ${LOGIN_TIMEOUT / 1000} seconds`,
     );
-  }, 60_000);
+  }, LOGIN_TIMEOUT);
 
   function cleanupAndReject(message: string) {
     cleanup();
