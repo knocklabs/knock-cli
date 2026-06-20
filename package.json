@@ -26,7 +26,7 @@
     "@oclif/plugin-help": "^6",
     "axios": "1.17.0",
     "date-fns": "^2.30.0",
-    "degit": "^2.8.5",
+    "degit": "^2.8.6",
     "enquirer": "^2.4.1",
     "find-up": "^5.0.0",
     "fs-extra": "^11.3.5",
