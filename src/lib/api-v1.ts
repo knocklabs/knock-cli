@@ -16,6 +16,7 @@ import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
+import * as Source from "@/lib/marshal/source";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
@@ -516,6 +517,18 @@ export default class ApiV1 {
     return this.get(`/guides/${args.guideKey}`, { params });
   }
 
+  async listSources<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListSourceResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/sources", { params });
+  }
+
   async validateGuide(
     { flags }: Props,
     guide: Guide.GuideInput,
@@ -743,5 +756,8 @@ export type ActivateGuideResp = {
   guide?: Guide.GuideData;
   errors?: InputError[];
 };
+
+export type ListSourceResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Source.SourceData<A>>;
 
 export type ListBranchResp = PaginatedResp<Branch>;

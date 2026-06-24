@@ -16,6 +16,7 @@ import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData, PartialType } from "@/lib/marshal/partial";
 import { ReusableStepData } from "@/lib/marshal/reusable-step";
+import { SourceData } from "@/lib/marshal/source";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
@@ -313,6 +314,29 @@ export const guide = (attrs: Partial<GuideData> = {}): GuideData => {
     created_at: "2022-12-31T12:00:00.000000Z",
     environment: "development",
     sha: "<SOME_SHA>",
+    ...attrs,
+  };
+};
+
+export const source = (attrs: Partial<SourceData> = {}): SourceData => {
+  return {
+    key: "my-source",
+    name: "My Source",
+    description: "A source for receiving events",
+    custom_image_url: null,
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    created_at: "2022-12-31T12:00:00.000000Z",
+    environment_settings: {
+      development: {
+        updated_at: "2022-12-31T12:00:00.000000Z",
+        settings: {
+          endpoint: "https://api.knock.app/integrations/receive/abc123",
+          enforce_verification: false,
+          preprocess_script: null,
+        },
+        mappings: [],
+      },
+    },
     ...attrs,
   };
 };
