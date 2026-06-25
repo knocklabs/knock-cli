@@ -18,7 +18,6 @@ export default class SourceList extends BaseCommand<typeof SourceList> {
 
   static flags = {
     environment: Flags.string({
-      default: "development",
       summary: "The environment to use.",
     }),
     ...pageFlags,
@@ -46,8 +45,11 @@ export default class SourceList extends BaseCommand<typeof SourceList> {
   async render(data: ApiV1.ListSourceResp): Promise<void> {
     const { entries } = data;
 
-    const scope = formatCommandScope(this.props.flags);
-    this.log(`‣ Showing ${entries.length} sources in ${scope}\n`);
+    const { environment } = this.props.flags;
+    const scope = environment
+      ? ` in ${formatCommandScope({ environment })}`
+      : "";
+    this.log(`‣ Showing ${entries.length} sources${scope}\n`);
 
     /*
      * Sources list table
