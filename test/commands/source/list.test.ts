@@ -30,7 +30,6 @@ describe("commands/source/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
         );
@@ -90,7 +89,7 @@ describe("commands/source/list", () => {
       .stdout()
       .command(["source list"])
       .it("displays the list of sources", (ctx) => {
-        expect(ctx.stdout).to.contain("Showing 3 sources in");
+        expect(ctx.stdout).to.contain("Showing 3 sources");
         expect(ctx.stdout).to.contain("source-1");
         expect(ctx.stdout).to.contain("source-2");
         expect(ctx.stdout).to.contain("source-3");
@@ -143,7 +142,6 @@ describe("commands/source/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    environment: "development",
                   }),
               ),
             );
@@ -156,7 +154,6 @@ describe("commands/source/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    environment: "development",
                     after: "xyz",
                   }),
               ),
