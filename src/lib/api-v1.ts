@@ -15,6 +15,7 @@ import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
+import * as Schema from "@/lib/marshal/schema";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
@@ -562,6 +563,51 @@ export default class ApiV1 {
     return this.put(`/guides/${args.guideKey}/activate`, {}, { params });
   }
 
+  // By resources: Schemas
+
+  async listSchemas(
+    { flags }: Props,
+    filters: { itemType?: Schema.SchemaItemType } = {},
+  ): Promise<AxiosResponse<ListSchemaResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      item_type: filters.itemType,
+    });
+
+    return this.get("/schemas", { params });
+  }
+
+  async getSchema(
+    { flags }: Props,
+    itemType: Schema.SchemaItemType,
+    collection?: string,
+  ): Promise<AxiosResponse<GetSchemaResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      item_id: collection,
+    });
+
+    return this.get(`/schemas/${itemType}`, { params });
+  }
+
+  async upsertSchema(
+    { flags }: Props,
+    itemType: Schema.SchemaItemType,
+    schema: Schema.SchemaData,
+    collection?: string,
+  ): Promise<AxiosResponse<UpsertSchemaResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      item_id: collection,
+    });
+    const data = { schema };
+
+    return this.put(`/schemas/${itemType}`, data, { params });
+  }
+
   async listAllChannels(): Promise<Channel[]> {
     const channels: Channel[] = [];
     for await (const channel of this.mgmtClient.channels.list()) {
@@ -740,6 +786,18 @@ export type UpsertGuideResp<A extends MaybeWithAnnotation = unknown> = {
 
 export type ActivateGuideResp = {
   guide?: Guide.GuideData;
+  errors?: InputError[];
+};
+
+export type ListSchemaResp = PaginatedResp<Schema.SchemaData>;
+
+export type GetSchemaResp = {
+  schema?: Schema.SchemaData;
+  errors?: InputError[];
+};
+
+export type UpsertSchemaResp = {
+  schema?: Schema.SchemaData;
   errors?: InputError[];
 };
 
