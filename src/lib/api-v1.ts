@@ -160,6 +160,7 @@ export default class ApiV1 {
     });
     const settings = prune({
       sandbox_mode: flags["sandbox-mode"],
+      skip_delay: flags["skip-delay"],
     });
     const data = prune({
       recipients: flags.recipients,

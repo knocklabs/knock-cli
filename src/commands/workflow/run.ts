@@ -37,6 +37,9 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
       summary:
         "When enabled, channels in this workflow generate messages but don't send them to the downstream provider.",
     }),
+    "skip-delay": Flags.boolean({
+      summary: "When enabled, delay steps in this workflow will be skipped",
+    }),
   };
 
   static args = {
