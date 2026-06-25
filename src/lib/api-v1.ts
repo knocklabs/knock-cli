@@ -528,6 +528,18 @@ export default class ApiV1 {
     return this.get("/sources", { params });
   }
 
+  async getSource<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetSourceResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+    });
+
+    return this.get(`/sources/${args.sourceKey}`, { params });
+  }
+
   async validateGuide(
     { flags }: Props,
     guide: Guide.GuideInput,
@@ -758,5 +770,8 @@ export type ActivateGuideResp = {
 
 export type ListSourceResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<Source.SourceData<A>>;
+
+export type GetSourceResp<A extends MaybeWithAnnotation = unknown> =
+  Source.SourceData<A>;
 
 export type ListBranchResp = PaginatedResp<Branch>;
