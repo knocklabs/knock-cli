@@ -540,6 +540,23 @@ export default class ApiV1 {
     return this.get(`/sources/${args.sourceKey}`, { params });
   }
 
+  async listSourceLogs({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ListSourceLogsResp>> {
+    const params = prune({
+      environment: flags.environment,
+      date: flags.date,
+      starting_at: flags["starting-at"],
+      ending_at: flags["ending-at"],
+      event: flags.event,
+      id: flags.id,
+      ...toPageParams(flags),
+    });
+
+    return this.get(`/sources/${args.sourceKey}/logs`, { params });
+  }
+
   async validateGuide(
     { flags }: Props,
     guide: Guide.GuideInput,
@@ -773,5 +790,7 @@ export type ListSourceResp<A extends MaybeWithAnnotation = unknown> =
 
 export type GetSourceResp<A extends MaybeWithAnnotation = unknown> =
   Source.SourceData<A>;
+
+export type ListSourceLogsResp = PaginatedResp<Source.SourceLog>;
 
 export type ListBranchResp = PaginatedResp<Branch>;

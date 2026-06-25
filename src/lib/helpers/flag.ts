@@ -1,6 +1,7 @@
 import * as path from "node:path";
 
 import { Flags } from "@oclif/core";
+import { isValid, parseISO } from "date-fns";
 import * as fs from "fs-extra";
 import { once } from "lodash";
 
@@ -21,6 +22,20 @@ import { slugify } from "./string";
 export const booleanStr = Flags.custom<boolean>({
   options: ["true", "false"],
   parse: async (input: string) => input === "true",
+});
+
+/*
+ * Takes a flag input that's supposed to be an ISO-8601 date-time string,
+ * validates it, then passes it through unchanged.
+ */
+export const dateTime = Flags.custom<string>({
+  parse: async (input: string) => {
+    if (!isValid(parseISO(input))) {
+      throw new Error(`${input} is not a valid ISO-8601 date-time.`);
+    }
+
+    return input;
+  },
 });
 
 /*

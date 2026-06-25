@@ -16,7 +16,7 @@ import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData, PartialType } from "@/lib/marshal/partial";
 import { ReusableStepData } from "@/lib/marshal/reusable-step";
-import { SourceData } from "@/lib/marshal/source";
+import { SourceData, SourceLog } from "@/lib/marshal/source";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
   ChannelStepData,
@@ -337,6 +337,19 @@ export const source = (attrs: Partial<SourceData> = {}): SourceData => {
         mappings: [],
       },
     },
+    ...attrs,
+  };
+};
+
+export const sourceLog = (attrs: Partial<SourceLog> = {}): SourceLog => {
+  return {
+    id: "log_123",
+    event: "invoice created",
+    data: { invoice_id: "inv_123" },
+    inserted_at: "2024-01-15T12:00:00.000000Z",
+    source: null,
+    preprocess_output: null,
+    verification_status: "verified",
     ...attrs,
   };
 };

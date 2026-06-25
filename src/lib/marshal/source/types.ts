@@ -53,3 +53,29 @@ export type SourceData<A extends MaybeWithAnnotation = unknown> = A & {
   updated_at: string;
   environment_settings?: Record<string, SourceEnvironmentSettings>;
 };
+
+export type SourceLogAction = {
+  id: string;
+  inserted_at: string | null;
+  action_type?: string;
+  action_parameters?: AnyObj | null;
+  action_payload?: unknown | null;
+  action_result?: unknown | null;
+  action_status?: string | null;
+};
+
+/*
+ * A single source log (a received source event). `actions` is only present
+ * when the request includes `actions`. Several fields are loosely typed
+ * passthrough values from the upstream source and may be objects or scalars.
+ */
+export type SourceLog = {
+  id: string;
+  event: string;
+  data?: unknown | null;
+  inserted_at: string | null;
+  source?: string | null;
+  preprocess_output?: unknown | null;
+  verification_status?: string | null;
+  actions?: SourceLogAction[];
+};
