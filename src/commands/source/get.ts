@@ -20,7 +20,6 @@ export default class SourceGet extends BaseCommand<typeof SourceGet> {
 
   static flags = {
     environment: Flags.string({
-      default: "development",
       summary: "The environment to use.",
     }),
   };
@@ -64,8 +63,11 @@ export default class SourceGet extends BaseCommand<typeof SourceGet> {
   render(source: ApiV1.GetSourceResp): void {
     const { sourceKey } = this.props.args;
 
-    const scope = formatCommandScope(this.props.flags);
-    this.log(`‣ Showing source \`${sourceKey}\` in ${scope}\n`);
+    const { environment } = this.props.flags;
+    const scope = environment
+      ? ` in ${formatCommandScope({ environment })}`
+      : "";
+    this.log(`‣ Showing source \`${sourceKey}\`${scope}\n`);
 
     /*
      * Source table
@@ -128,8 +130,6 @@ export default class SourceGet extends BaseCommand<typeof SourceGet> {
   ): void {
     const { settings, mappings } = envSettings;
 
-    this.log(`Environment: \`${slug}\`\n`);
-
     const settingsRows = [
       ...SOURCE_SETTINGS_DISPLAY.map(({ key, label }) => ({
         key: label,
@@ -143,7 +143,7 @@ export default class SourceGet extends BaseCommand<typeof SourceGet> {
 
     ux.table(settingsRows, {
       key: {
-        header: "Settings",
+        header: `Settings (${slug})`,
         minWidth: 24,
       },
       value: {

@@ -36,7 +36,6 @@ describe("commands/source/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
         );
@@ -87,7 +86,7 @@ describe("commands/source/get", () => {
       .it("displays the source and its environment settings", (ctx) => {
         expect(ctx.stdout).to.contain("Showing source `my-source`");
         expect(ctx.stdout).to.contain("my-source");
-        expect(ctx.stdout).to.contain("Environment: `development`");
+        expect(ctx.stdout).to.contain("Settings (development)");
         expect(ctx.stdout).to.contain("Endpoint");
         expect(ctx.stdout).to.contain(
           "https://api.knock.app/integrations/receive/abc123",
