@@ -567,12 +567,13 @@ export default class ApiV1 {
 
   async listSchemas(
     { flags }: Props,
-    filters: { itemType?: Schema.SchemaItemType } = {},
+    filters: { itemType?: Schema.SchemaItemType; after?: string } = {},
   ): Promise<AxiosResponse<ListSchemaResp>> {
     const params = prune({
       environment: flags.environment,
       branch: flags.branch,
       item_type: filters.itemType,
+      after: filters.after,
     });
 
     return this.get("/schemas", { params });

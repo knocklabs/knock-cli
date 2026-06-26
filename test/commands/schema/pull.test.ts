@@ -116,6 +116,42 @@ describe("commands/schema/pull", () => {
       ).to.be.true;
     });
 
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.resolves({ input: true }),
+    )
+    .stub(KnockApiV1.prototype, "listSchemas", (stub) =>
+      stub
+        .onFirstCall()
+        .resolves(
+          factory.resp({
+            data: factory.paginatedResp([userSchema], { after: "cursor" }),
+          }),
+        )
+        .onSecondCall()
+        .resolves(
+          factory.resp({
+            data: factory.paginatedResp([objectSchema], { after: null }),
+          }),
+        ),
+    )
+    .stdout()
+    .command(["schema pull", "--all", "--force"])
+    .it("pulls all schemas across paginated pages", () => {
+      sinon.assert.calledTwice(
+        KnockApiV1.prototype.listSchemas as sinon.SinonStub,
+      );
+
+      expect(fs.existsSync(path.resolve(sandboxDir, "schemas", "user.json"))).to
+        .be.true;
+      expect(
+        fs.existsSync(
+          path.resolve(sandboxDir, "schemas", "objects", "accounts.json"),
+        ),
+      ).to.be.true;
+    });
+
   setupGetSchema()
     .stdout()
     .command(["schema pull", "object"])

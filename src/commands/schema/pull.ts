@@ -108,14 +108,22 @@ export default class SchemaPull extends BaseCommand<typeof SchemaPull> {
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
-    const resp = await withSpinner<ListSchemaResp>(
-      () => this.apiV1.listSchemas(this.props),
-      {
-        action: "‣ Loading",
-      },
-    );
+    // Page through the list endpoint so environments with more schemas than a
+    // single page (many object collections) are pulled completely.
+    const schemas: Schema.SchemaData[] = [];
+    let after: string | undefined;
 
-    const schemas = resp.data.entries ?? [];
+    do {
+      // eslint-disable-next-line no-await-in-loop
+      const resp = await withSpinner<ListSchemaResp>(
+        () => this.apiV1.listSchemas(this.props, { after }),
+        { action: "‣ Loading" },
+      );
+
+      schemas.push(...(resp.data.entries ?? []));
+      after = resp.data.page_info?.after ?? undefined;
+    } while (after);
+
     await Schema.writeSchemasIndexDir(schemasDirCtx.abspath, schemas);
 
     const action = schemasDirCtx.exists ? "updated" : "created";
