@@ -18,14 +18,6 @@ export type SchemaData = {
   properties: SchemaProperty[];
 };
 
-export type SchemaFileData = SchemaData & {
-  $schema?: string;
-  __readonly?: {
-    item_type?: SchemaItemType;
-    item_id?: string | null;
-  };
-};
-
 export type SchemaFileContext = {
   itemType: SchemaItemType;
   collection?: string;
