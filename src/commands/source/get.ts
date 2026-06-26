@@ -12,7 +12,6 @@ import {
   formatMappingStatus,
   formatPreprocessScript,
   formatSettingValue,
-  SOURCE_SETTINGS_DISPLAY,
 } from "@/lib/marshal/source/helpers";
 
 export default class SourceGet extends BaseCommand<typeof SourceGet> {
@@ -130,11 +129,28 @@ export default class SourceGet extends BaseCommand<typeof SourceGet> {
   ): void {
     const { settings, mappings } = envSettings;
 
+    /*
+     * A curated subset of the open-ended `settings` object, in display order;
+     * the full object is always available via `--json`.
+     */
     const settingsRows = [
-      ...SOURCE_SETTINGS_DISPLAY.map(({ key, label }) => ({
-        key: label,
-        value: formatSettingValue(settings[key]),
-      })),
+      { key: "Endpoint", value: formatSettingValue(settings.endpoint) },
+      {
+        key: "Event type path",
+        value: formatSettingValue(settings.event_type_path),
+      },
+      {
+        key: "Timestamp path",
+        value: formatSettingValue(settings.timestamp_path),
+      },
+      {
+        key: "Idempotency key path",
+        value: formatSettingValue(settings.idempotency_key_path),
+      },
+      {
+        key: "Enforce verification",
+        value: formatSettingValue(settings.enforce_verification),
+      },
       {
         key: "Preprocess script",
         value: formatPreprocessScript(settings),
