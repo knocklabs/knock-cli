@@ -93,6 +93,9 @@
       "partial": {
         "description": "Manage template partials."
       },
+      "schema": {
+        "description": "Manage item schemas."
+      },
       "workflow": {
         "description": "Manage notification workflows."
       },
