@@ -45,6 +45,7 @@ export default class Push extends BaseCommand<typeof Push> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    "allow-empty": CustomFlags.allowEmptyOnPush,
     force: CustomFlags.force,
   };
 
@@ -76,6 +77,7 @@ export default class Push extends BaseCommand<typeof Push> {
       ...(flags["commit-message"]
         ? ["--commit-message", flags["commit-message"]]
         : []),
+      ...(flags["allow-empty"] ? ["--allow-empty"] : []),
       ...(flags.force ? ["--force"] : []),
     ];
 

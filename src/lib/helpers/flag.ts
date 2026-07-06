@@ -124,3 +124,15 @@ export const force = Flags.boolean({
     "Force pushes the resource or resources to Knock, overwriting whatever is currently stored. " +
     "If you're using this on a non-development environment, you should also ensure you `commit` the changes.",
 });
+
+export const allowEmpty = Flags.boolean({
+  summary:
+    "Create an empty commit for an already-published resource (analogous to git commit --allow-empty). " +
+    "Requires --resource-type and --resource-id.",
+});
+
+export const allowEmptyOnPush = Flags.boolean({
+  summary:
+    "Create an empty commit for an already-published resource (analogous to git commit --allow-empty).",
+  dependsOn: ["commit"],
+});

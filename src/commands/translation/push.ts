@@ -43,6 +43,7 @@ export default class TranslationPush extends BaseCommand<
       char: "m",
       dependsOn: ["commit"],
     }),
+    "allow-empty": CustomFlags.allowEmptyOnPush,
     force: CustomFlags.force,
   };
 

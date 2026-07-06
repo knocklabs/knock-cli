@@ -175,4 +175,104 @@ describe("commands/commit/index", () => {
         expect(ctx.stdout).to.contain("default");
       });
   });
+
+  describe("given allow-empty flag", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "commitAllChanges", (stub) =>
+        stub.resolves(factory.resp({ data: "success" })),
+      )
+      .stdout()
+      .command([
+        "commit",
+        "--resource-type",
+        "workflow",
+        "--resource-id",
+        "my-workflow-key",
+        "--allow-empty",
+        "-m",
+        "Empty touch",
+        "--force",
+      ])
+      .it("calls apiV1 commitAllChanges with allow-empty in props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.commitAllChanges as any,
+          sinon.match(({ flags }) =>
+            isEqual(flags, {
+              "service-token": "valid-token",
+              environment: "development",
+              "commit-message": "Empty touch",
+              "resource-type": "workflow",
+              "resource-id": "my-workflow-key",
+              "allow-empty": true,
+              force: true,
+            }),
+          ),
+        );
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
+      .stderr()
+      .command(["commit", "--allow-empty", "--force"])
+      .exit(2)
+      .it(
+        "exits when allow-empty is used without resource-type and resource-id",
+      );
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
+      .stderr()
+      .command([
+        "commit",
+        "--allow-empty",
+        "--resource-type",
+        "workflow",
+        "--force",
+      ])
+      .exit(2)
+      .it("exits when allow-empty is used without resource-id");
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
+      .stderr()
+      .command([
+        "commit",
+        "--allow-empty",
+        "--resource-type",
+        "audience",
+        "--resource-id",
+        "my-audience",
+        "--force",
+      ])
+      .exit(2)
+      .it("exits when allow-empty is used with audience resource type");
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "commitAllChanges", (stub) =>
+        stub.resolves(factory.resp({ data: "success" })),
+      )
+      .stdout()
+      .command([
+        "commit",
+        "--resource-type",
+        "translation",
+        "--resource-id",
+        "es/courses~tenant",
+        "--allow-empty",
+        "--force",
+      ])
+      .it("passes translation resource-id through to commitAllChanges", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.commitAllChanges as any,
+          sinon.match(({ flags }) =>
+            isEqual(flags["resource-id"], "es/courses~tenant"),
+          ),
+        );
+      });
+  });
 });

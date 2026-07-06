@@ -128,6 +128,44 @@ describe("commands/workflow/push", () => {
 
     setupWithStub({ data: { workflow: mockWorkflowData } })
       .stdout()
+      .command([
+        "workflow push",
+        "new-comment",
+        "--commit",
+        "--allow-empty",
+        "-m",
+        "Empty touch",
+      ])
+      .it(
+        "calls apiV1 upsertWorkflow with allow-empty flag, if provided",
+        () => {
+          sinon.assert.calledWith(
+            KnockApiV1.prototype.upsertWorkflow as any,
+            sinon.match(
+              ({ args, flags }) =>
+                isEqual(args, { workflowKey: "new-comment" }) &&
+                isEqual(flags, {
+                  "service-token": "valid-token",
+
+                  environment: "development",
+                  commit: true,
+                  "commit-message": "Empty touch",
+                  "allow-empty": true,
+                  annotate: true,
+                }),
+            ),
+            sinon.match((workflow) =>
+              isEqual(workflow, {
+                key: "new-comment",
+                name: "New comment",
+              }),
+            ),
+          );
+        },
+      );
+
+    setupWithStub({ data: { workflow: mockWorkflowData } })
+      .stdout()
       .command(["workflow push", "new-comment", "--force"])
       .it("calls apiV1 upsertWorkflow with force flag, if provided", () => {
         sinon.assert.calledWith(

@@ -10,6 +10,22 @@ export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
  * example, if an email layout references a partial, that partial must be pushed
  * first or else the validation and upsert of the layout will fail.
  */
+/**
+ * Resource types that support empty commits via --allow-empty.
+ * Excludes audience until @knocklabs/mgmt ships allow_empty on upsert params.
+ */
+export const ALLOW_EMPTY_RESOURCE_TYPES = [
+  "partial",
+  "email_layout",
+  "workflow",
+  "message_type",
+  "guide",
+  "translation",
+] as const satisfies readonly NonHiddenResourceType[];
+
+export type AllowEmptyResourceType =
+  (typeof ALLOW_EMPTY_RESOURCE_TYPES)[number];
+
 export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   // Audiences can be referenced by workflows, so push them early
   "audience",

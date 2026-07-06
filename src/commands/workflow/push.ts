@@ -40,6 +40,7 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    "allow-empty": CustomFlags.allowEmptyOnPush,
     force: CustomFlags.force,
   };
 

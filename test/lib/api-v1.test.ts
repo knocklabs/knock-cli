@@ -119,6 +119,47 @@ describe("lib/api-v1", () => {
 
       stub.restore();
     });
+
+    it("makes a PUT request to /v1/workflows/:workflowKey with allow_empty param", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          data: factory.workflow(),
+        }),
+      );
+
+      const args = { workflowKey: "foo" };
+      const flags = {
+        environment: "development",
+        annotate: true,
+        commit: true,
+        "commit-message": "Empty touch",
+        "allow-empty": true,
+        ...factory.gFlags(),
+      };
+      const workflow = {
+        key: "foo",
+        name: "New campaign",
+      };
+      await apiV1.upsertWorkflow(factory.props({ args, flags }), workflow);
+
+      const params = {
+        environment: "development",
+        annotate: true,
+        commit: true,
+        commit_message: "Empty touch",
+        allow_empty: true,
+      };
+      sinon.assert.calledWith(
+        stub,
+        "/v1/workflows/foo",
+        { workflow },
+        { params },
+      );
+
+      stub.restore();
+    });
   });
 
   describe("validateWorkflow", () => {
@@ -249,6 +290,38 @@ describe("lib/api-v1", () => {
       const params = {
         environment: "development",
         commit_message: "latest changes",
+      };
+      sinon.assert.calledWith(stub, "/v1/commits", {}, { params });
+
+      stub.restore();
+    });
+
+    it("makes a PUT request to /v1/commits with allow_empty param", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          data: { result: "success" },
+        }),
+      );
+
+      const args = {};
+      const flags = {
+        environment: "development",
+        "commit-message": "Empty touch",
+        "resource-type": "workflow",
+        "resource-id": "my-workflow",
+        "allow-empty": true,
+        ...factory.gFlags(),
+      };
+      await apiV1.commitAllChanges(factory.props({ args, flags }));
+
+      const params = {
+        environment: "development",
+        commit_message: "Empty touch",
+        allow_empty: true,
+        resource_type: "workflow",
+        resource_id: "my-workflow",
       };
       sinon.assert.calledWith(stub, "/v1/commits", {}, { params });
 
