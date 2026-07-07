@@ -1,7 +1,9 @@
 import path from "node:path";
 
 import * as fs from "fs-extra";
+import { uniqueId } from "lodash";
 
+import { sandboxDir } from "@/lib/helpers/const";
 import { DOUBLE_SPACES } from "@/lib/helpers/json";
 
 import {
@@ -77,15 +79,37 @@ export const writeSchemasIndexDir = async (
   schemasDirPath: string,
   schemas: SchemaData[],
 ): Promise<void> => {
-  if (await fs.pathExists(schemasDirPath)) {
-    await pruneSchemasIndexDir(schemasDirPath, schemas);
-  }
+  const dirExists = await fs.pathExists(schemasDirPath);
+  const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
 
-  for (const schema of schemas) {
-    const { itemType, collection } = schemaTargetFromData(schema);
-    // eslint-disable-next-line no-await-in-loop
-    const ctx = await schemaFileContext(schemasDirPath, itemType, collection);
-    // eslint-disable-next-line no-await-in-loop
-    await writeSchemaFileFromData(ctx, schema);
+  try {
+    // If the schemas directory already exists, back it up in the temp sandbox
+    // before pruning stale files, so a failed write can restore it.
+    if (dirExists) {
+      await fs.copy(schemasDirPath, backupDirPath);
+      await pruneSchemasIndexDir(schemasDirPath, schemas);
+    }
+
+    for (const schema of schemas) {
+      const { itemType, collection } = schemaTargetFromData(schema);
+      // eslint-disable-next-line no-await-in-loop
+      const ctx = await schemaFileContext(schemasDirPath, itemType, collection);
+      // eslint-disable-next-line no-await-in-loop
+      await writeSchemaFileFromData(ctx, schema);
+    }
+  } catch (error) {
+    // In case of any error, wipe the schemas directory that is likely in a bad
+    // state then restore the backup if one existed before.
+    if (dirExists) {
+      await fs.emptyDir(schemasDirPath);
+      await fs.copy(backupDirPath, schemasDirPath);
+    } else {
+      await fs.remove(schemasDirPath);
+    }
+
+    throw error;
+  } finally {
+    // Always clean up the backup directory in the temp sandbox.
+    await fs.remove(backupDirPath);
   }
 };
