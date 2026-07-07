@@ -81,12 +81,14 @@ export const writeSchemasIndexDir = async (
 ): Promise<void> => {
   const dirExists = await fs.pathExists(schemasDirPath);
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     // If the schemas directory already exists, back it up in the temp sandbox
     // before pruning stale files, so a failed write can restore it.
     if (dirExists) {
       await fs.copy(schemasDirPath, backupDirPath);
+      backedUp = true;
       await pruneSchemasIndexDir(schemasDirPath, schemas);
     }
 
@@ -99,11 +101,13 @@ export const writeSchemasIndexDir = async (
     }
   } catch (error) {
     // In case of any error, wipe the schemas directory that is likely in a bad
-    // state then restore the backup if one existed before.
-    if (dirExists) {
+    // state then restore the backup, but only when the backup completed. If
+    // the backup copy itself failed, nothing has touched the original tree, so
+    // leave it alone.
+    if (dirExists && backedUp) {
       await fs.emptyDir(schemasDirPath);
       await fs.copy(backupDirPath, schemasDirPath);
-    } else {
+    } else if (!dirExists) {
       await fs.remove(schemasDirPath);
     }
 
