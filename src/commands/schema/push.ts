@@ -5,7 +5,7 @@ import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { withSpinner } from "@/lib/helpers/request";
+import { formatErrorRespMessage, withSpinner } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import * as Schema from "@/lib/marshal/schema";
 
@@ -129,9 +129,11 @@ export default class SchemaPush extends BaseCommand<typeof SchemaPush> {
         { action: "‣ Pushing" },
       );
 
-      if (resp.data.schema) {
-        await Schema.writeSchemaFileFromData(schema, resp.data.schema);
+      if (!resp.data.schema) {
+        throw new Error(formatErrorRespMessage(resp));
       }
+
+      await Schema.writeSchemaFileFromData(schema, resp.data.schema);
     } catch (error) {
       const sourceError = new SourceError(
         (error as Error).message,
