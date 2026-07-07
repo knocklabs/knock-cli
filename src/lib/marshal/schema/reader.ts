@@ -79,12 +79,20 @@ export const readAllSchemaFiles = async (
   const validated: SchemaFileDataContext[] = [];
   for (const schema of schemas) {
     try {
+      const itemType = validateSchemaItemType(schema.content.item_type);
+
+      // The file path determines where a schema is pushed, so a file that
+      // declares a different item_type is ambiguous. Error instead of silently
+      // reinterpreting it.
+      if (itemType !== schema.itemType) {
+        throw new Error(
+          `Schema file declares item_type \`${itemType}\` but its file path implies \`${schema.itemType}\``,
+        );
+      }
+
       validated.push({
         ...schema,
-        content: {
-          ...schema.content,
-          item_type: validateSchemaItemType(schema.content.item_type),
-        },
+        content: { ...schema.content, item_type: itemType },
       });
     } catch (error) {
       errors.push(

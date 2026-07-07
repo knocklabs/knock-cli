@@ -115,6 +115,23 @@ describe("commands/schema/push", () => {
     });
 
   setupUpsertSchema()
+    .do(() => {
+      // A tenant.json file that declares item_type user contradicts its path.
+      fs.outputJsonSync(
+        path.resolve(sandboxDir, "schemas", "tenant.json"),
+        userSchema,
+      );
+    })
+    .stdout()
+    .command(["schema push", "--all"])
+    .exit(2)
+    .it("errors when a schema file's item_type contradicts its path", () => {
+      sinon.assert.notCalled(
+        KnockApiV1.prototype.upsertSchema as sinon.SinonStub,
+      );
+    });
+
+  setupUpsertSchema()
     .stdout()
     .command(["schema push", "object"])
     .exit(2)
