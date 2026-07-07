@@ -152,6 +152,57 @@ describe("commands/schema/pull", () => {
       ).to.be.true;
     });
 
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.resolves({ input: true }),
+    )
+    .stub(KnockApiV1.prototype, "listSchemas", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: factory.paginatedResp([userSchema, objectSchema]),
+        }),
+      ),
+    )
+    .do(() => {
+      // Stale schema files no longer present remotely, plus an unrelated file
+      // the prune must leave alone.
+      fs.outputJsonSync(path.resolve(sandboxDir, "schemas", "tenant.json"), {
+        item_type: "tenant",
+        properties: [],
+      });
+      fs.outputJsonSync(
+        path.resolve(sandboxDir, "schemas", "objects", "legacy.json"),
+        { item_type: "object", item_id: "legacy", properties: [] },
+      );
+      fs.outputFileSync(
+        path.resolve(sandboxDir, "schemas", "README.md"),
+        "notes",
+      );
+    })
+    .stdout()
+    .command(["schema pull", "--all", "--force"])
+    .it("removes local schema files no longer present remotely", () => {
+      expect(fs.existsSync(path.resolve(sandboxDir, "schemas", "user.json"))).to
+        .be.true;
+      expect(
+        fs.existsSync(
+          path.resolve(sandboxDir, "schemas", "objects", "accounts.json"),
+        ),
+      ).to.be.true;
+
+      expect(fs.existsSync(path.resolve(sandboxDir, "schemas", "tenant.json")))
+        .to.be.false;
+      expect(
+        fs.existsSync(
+          path.resolve(sandboxDir, "schemas", "objects", "legacy.json"),
+        ),
+      ).to.be.false;
+
+      expect(fs.existsSync(path.resolve(sandboxDir, "schemas", "README.md"))).to
+        .be.true;
+    });
+
   setupGetSchema()
     .stdout()
     .command(["schema pull", "object"])
