@@ -93,6 +93,9 @@
       "partial": {
         "description": "Manage template partials."
       },
+      "source": {
+        "description": "Manage sources."
+      },
       "workflow": {
         "description": "Manage notification workflows."
       },
