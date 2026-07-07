@@ -177,6 +177,14 @@ export default class SchemaPush extends BaseCommand<typeof SchemaPush> {
     if (itemType !== "object" && collection) {
       this.error("Flag --collection can only be provided for object schemas");
     }
+
+    if (itemType === "object" && collection) {
+      try {
+        Schema.validateSchemaCollection(collection);
+      } catch (error) {
+        this.error((error as Error).message);
+      }
+    }
   }
 
   private async getSchemasDirContext() {
