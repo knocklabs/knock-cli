@@ -76,14 +76,22 @@ export const readAllSchemaFiles = async (
     }
   }
 
-  return [
-    schemas.map((schema) => ({
-      ...schema,
-      content: {
-        ...schema.content,
-        item_type: validateSchemaItemType(schema.content.item_type),
-      },
-    })),
-    errors,
-  ];
+  const validated: SchemaFileDataContext[] = [];
+  for (const schema of schemas) {
+    try {
+      validated.push({
+        ...schema,
+        content: {
+          ...schema.content,
+          item_type: validateSchemaItemType(schema.content.item_type),
+        },
+      });
+    } catch (error) {
+      errors.push(
+        new SourceError((error as Error).message, schema.abspath, "ReadError"),
+      );
+    }
+  }
+
+  return [validated, errors];
 };
