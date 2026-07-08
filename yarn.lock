@@ -4782,9 +4782,9 @@ quick-lru@^5.1.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
 
-quicktype-core@^23.2.6:
+quicktype-core@23.2.6:
   version "23.2.6"
-  resolved "https://registry.yarnpkg.com/quicktype-core/-/quicktype-core-23.2.6.tgz#24571b4c162789f847dbc6fab5547383b6e937bd"
+  resolved "https://registry.npmjs.org/quicktype-core/-/quicktype-core-23.2.6.tgz#24571b4c162789f847dbc6fab5547383b6e937bd"
   integrity sha512-asfeSv7BKBNVb9WiYhFRBvBZHcRutPRBwJMxW0pefluK4kkKu4lv0IvZBwFKvw2XygLcL1Rl90zxWDHYgkwCmA==
   dependencies:
     "@glideapps/ts-necessities" "2.2.3"

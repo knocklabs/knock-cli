@@ -34,7 +34,7 @@
     "locale-codes": "^1.3.1",
     "lodash": "^4.18.1",
     "open": "8.4.2",
-    "quicktype-core": "^23.2.6",
+    "quicktype-core": "23.2.6",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -118,8 +118,8 @@
     "format.write": "yarn run format --write",
     "format.check": "yarn run format --check",
     "type.check": "tsc",
-    "postpack": "shx rm -f oclif.manifest.json",
-    "prepack": "yarn build && oclif manifest && oclif readme",
+    "postpack": "shx rm -f oclif.manifest.json npm-shrinkwrap.json",
+    "prepack": "yarn build && oclif manifest && oclif readme && npm shrinkwrap",
     "test": "mocha \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md",
     "check": "yarn run lint && yarn run format.check && yarn run type.check"
