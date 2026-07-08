@@ -132,6 +132,42 @@ describe("commands/schema/push", () => {
     });
 
   setupUpsertSchema()
+    .do(() => {
+      // An accounts.json file that declares a different collection contradicts
+      // its path.
+      fs.outputJsonSync(
+        path.resolve(sandboxDir, "schemas", "objects", "accounts.json"),
+        { ...objectSchema, item_id: "projects" },
+      );
+    })
+    .stdout()
+    .command(["schema push", "--all"])
+    .exit(2)
+    .it("errors when an object schema's item_id contradicts its path", () => {
+      sinon.assert.notCalled(
+        KnockApiV1.prototype.upsertSchema as sinon.SinonStub,
+      );
+    });
+
+  setupUpsertSchema()
+    .do(() => {
+      // A filename that yields an invalid collection (`.`) must be reported as
+      // a read error, not crash the run.
+      fs.outputJsonSync(
+        path.resolve(sandboxDir, "schemas", "objects", "..json"),
+        objectSchema,
+      );
+    })
+    .stdout()
+    .command(["schema push", "--all"])
+    .exit(2)
+    .it("errors on an invalid object schema filename", () => {
+      sinon.assert.notCalled(
+        KnockApiV1.prototype.upsertSchema as sinon.SinonStub,
+      );
+    });
+
+  setupUpsertSchema()
     .stdout()
     .command(["schema push", "object"])
     .exit(2)
