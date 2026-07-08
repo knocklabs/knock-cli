@@ -191,6 +191,108 @@ describe("lib/api-v1", () => {
     });
   });
 
+  describe("schemas", () => {
+    it("lists schemas with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          status: 200,
+          data: factory.paginatedResp([]),
+        }),
+      );
+
+      const flags = {
+        environment: "development",
+        branch: "my-branch",
+        "rogue-flag": "hey",
+        ...factory.gFlags(),
+      };
+      await apiV1.listSchemas(factory.props({ flags }), { itemType: "object" });
+
+      sinon.assert.calledWith(stub, "/v1/schemas", {
+        params: {
+          environment: "development",
+          branch: "my-branch",
+          item_type: "object",
+        },
+      });
+
+      stub.restore();
+    });
+
+    it("gets one schema with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").returns(
+        Promise.resolve({
+          status: 200,
+          data: { schema: {} },
+        }),
+      );
+
+      const flags = {
+        environment: "development",
+        branch: "my-branch",
+        ...factory.gFlags(),
+      };
+      await apiV1.getSchema(factory.props({ flags }), "object", "accounts");
+
+      sinon.assert.calledWith(stub, "/v1/schemas/object", {
+        params: {
+          environment: "development",
+          branch: "my-branch",
+          item_id: "accounts",
+        },
+      });
+
+      stub.restore();
+    });
+
+    it("upserts one schema with a schema envelope", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          status: 200,
+          data: { schema: {} },
+        }),
+      );
+
+      const flags = {
+        environment: "development",
+        branch: "my-branch",
+        ...factory.gFlags(),
+      };
+      const schema = {
+        item_type: "object" as const,
+        item_id: "accounts",
+        properties: [{ key: "plan", type: "string" }],
+      };
+      await apiV1.upsertSchema(
+        factory.props({ flags }),
+        "object",
+        schema,
+        "accounts",
+      );
+
+      sinon.assert.calledWith(
+        stub,
+        "/v1/schemas/object",
+        { schema },
+        {
+          params: {
+            environment: "development",
+            branch: "my-branch",
+            item_id: "accounts",
+          },
+        },
+      );
+
+      stub.restore();
+    });
+  });
+
   describe("listCommits", () => {
     it("makes a GET request to /v1/commits with supported params", async () => {
       const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
