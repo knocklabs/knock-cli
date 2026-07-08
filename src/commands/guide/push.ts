@@ -38,6 +38,7 @@ export default class GuidePush extends BaseCommand<typeof GuidePush> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    "allow-empty": CustomFlags.allowEmptyOnPush,
     force: CustomFlags.force,
   };
 

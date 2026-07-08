@@ -7,7 +7,14 @@ import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
-import { ALL_RESOURCE_TYPES } from "@/lib/resources";
+import {
+  ALL_RESOURCE_TYPES,
+  ALLOW_EMPTY_RESOURCE_TYPES,
+} from "@/lib/resources";
+
+const ALLOW_EMPTY_RESOURCE_TYPE_SET = new Set<string>(
+  ALLOW_EMPTY_RESOURCE_TYPES,
+);
 
 export default class Commit extends BaseCommand<typeof Commit> {
   static summary =
@@ -28,6 +35,7 @@ export default class Commit extends BaseCommand<typeof Commit> {
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
+    "allow-empty": CustomFlags.allowEmpty,
     "resource-type": Flags.string({
       summary:
         "Commit only changes for the given resource type. Can be used alone or together with --resource-id.",
@@ -48,10 +56,27 @@ export default class Commit extends BaseCommand<typeof Commit> {
       );
     }
 
+    if (flags["allow-empty"]) {
+      if (!flags["resource-type"] || !flags["resource-id"]) {
+        this.error(
+          "The --allow-empty flag must be used with a single --resource-type and --resource-id.",
+        );
+      }
+
+      if (!ALLOW_EMPTY_RESOURCE_TYPE_SET.has(flags["resource-type"])) {
+        this.error(
+          "Empty commits for `audience` are not yet supported. Other supported resource types: " +
+            ALLOW_EMPTY_RESOURCE_TYPES.join(", "),
+        );
+      }
+    }
+
     const scope = formatCommandScope(flags);
     const qualifier = this.formatResourceQualifier(flags);
 
-    const prompt = qualifier
+    const prompt = flags["allow-empty"]
+      ? `Create empty commit for ${qualifier} in the ${scope}?`
+      : qualifier
       ? `Commit ${qualifier} in the ${scope}?`
       : `Commit all changes in the ${scope}?`;
     const input = flags.force || (await promptToConfirm(prompt));
@@ -61,7 +86,9 @@ export default class Commit extends BaseCommand<typeof Commit> {
       this.apiV1.commitAllChanges(this.props),
     );
 
-    const successMsg = qualifier
+    const successMsg = flags["allow-empty"]
+      ? `‣ Successfully created empty commit for ${qualifier} in ${scope}`
+      : qualifier
       ? `‣ Successfully committed ${qualifier} in ${scope}`
       : `‣ Successfully committed all changes in ${scope}`;
     this.log(successMsg);
@@ -72,7 +99,7 @@ export default class Commit extends BaseCommand<typeof Commit> {
     "resource-id"?: string;
   }): string | null {
     if (flags["resource-type"] && flags["resource-id"]) {
-      return `\`${flags["resource-type"]}\` changes for \`${flags["resource-id"]}\``;
+      return `\`${flags["resource-type"]}\` \`${flags["resource-id"]}\``;
     }
 
     if (flags["resource-type"]) {

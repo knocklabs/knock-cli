@@ -41,6 +41,7 @@ export default class PartialPush extends BaseCommand<typeof PartialPush> {
       char: "m",
       dependsOn: ["commit"],
     }),
+    "allow-empty": CustomFlags.allowEmptyOnPush,
     force: CustomFlags.force,
   };
 

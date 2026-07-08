@@ -117,6 +117,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
       force: flags.force,
     });
     const data = { workflow };
@@ -196,6 +197,7 @@ export default class ApiV1 {
       environment: flags.environment,
       branch: flags.branch,
       commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
       resource_type: flags["resource-type"],
       resource_id: flags["resource-id"],
     });
@@ -262,6 +264,7 @@ export default class ApiV1 {
       branch: flags.branch,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
       namespace: translation.namespace,
       force: flags.force,
     });
@@ -329,6 +332,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
       force: flags.force,
     });
     const data = { email_layout: layout };
@@ -391,6 +395,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
       force: flags.force,
     });
     const data = { partial };
@@ -465,6 +470,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
       force: flags.force,
     });
     const data = { message_type: messageType };
@@ -567,6 +573,7 @@ export default class ApiV1 {
       annotate: flags.annotate,
       commit: flags.commit,
       commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
       force: flags.force,
     });
     const data = { guide };

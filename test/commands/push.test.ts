@@ -584,6 +584,42 @@ describe("commands/push", () => {
               );
             },
           );
+
+        test
+          .command([
+            "push",
+            "--knock-dir",
+            ".",
+            "--commit",
+            "--allow-empty",
+            "-m",
+            "Empty touch",
+          ])
+          .it("forwards allow-empty to resource push commands", () => {
+            sinon.assert.calledOnceWithExactly(
+              upsertWorkflowStub,
+              sinon.match(
+                ({ args, flags }) =>
+                  isEqual(args, {}) &&
+                  isEqual(flags, {
+                    annotate: true,
+                    "service-token": "valid-token",
+                    environment: "development",
+                    all: true,
+                    "workflows-dir": {
+                      abspath: workflowsSubdirPath,
+                      exists: true,
+                    },
+                    commit: true,
+                    "commit-message": "Empty touch",
+                    "allow-empty": true,
+                  }),
+              ),
+              sinon.match((workflow) =>
+                isEqual(workflow, { key: "foo", name: "Foo" }),
+              ),
+            );
+          });
       });
 
       describe("and a non-empty message-types directory", () => {
