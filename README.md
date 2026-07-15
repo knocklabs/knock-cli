@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/1.2.1 darwin-arm64 node-v24.13.0
+@knocklabs/cli/1.2.1 linux-x64 node-v22.14.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -40,6 +40,7 @@ USAGE
 * [`knock branch exit`](#knock-branch-exit)
 * [`knock branch list`](#knock-branch-list)
 * [`knock branch merge SLUG`](#knock-branch-merge-slug)
+* [`knock branch rebase SLUG`](#knock-branch-rebase-slug)
 * [`knock branch switch SLUG`](#knock-branch-switch-slug)
 * [`knock channel list`](#knock-channel-list)
 * [`knock commit`](#knock-commit)
@@ -372,6 +373,27 @@ FLAGS
 ```
 
 _See code: [src/commands/branch/merge.ts](https://github.com/knocklabs/knock-cli/blob/v1.2.1/src/commands/branch/merge.ts)_
+
+## `knock branch rebase SLUG`
+
+Rebases a branch onto the development environment, bringing in changes from main while preserving branch commits.
+
+```
+USAGE
+  $ knock branch rebase SLUG [--json] [--service-token <value>] [--force]
+
+ARGUMENTS
+  SLUG  The slug of the branch to rebase
+
+FLAGS
+  --force                  Remove the confirmation prompt.
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/branch/rebase.ts](https://github.com/knocklabs/knock-cli/blob/v1.2.1/src/commands/branch/rebase.ts)_
 
 ## `knock branch switch SLUG`
 
@@ -744,7 +766,7 @@ DESCRIPTION
   Display help for knock.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.49/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.53/src/commands/help.ts)_
 
 ## `knock init`
 
