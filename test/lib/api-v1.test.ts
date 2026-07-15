@@ -811,4 +811,28 @@ describe("lib/api-v1", () => {
       stub.restore();
     });
   });
+
+  describe("rebaseBranch", () => {
+    it("makes a PUT request to /v1/branches/:branchSlug/rebase with supported params", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "put").returns(
+        Promise.resolve({
+          status: 200,
+          data: factory.branch(),
+        }),
+      );
+
+      await apiV1.rebaseBranch("test-branch", "development");
+
+      sinon.assert.calledWith(
+        stub,
+        "/v1/branches/test-branch/rebase",
+        {},
+        { params: { environment: "development" } },
+      );
+
+      stub.restore();
+    });
+  });
 });

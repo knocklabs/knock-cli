@@ -660,6 +660,17 @@ export default class ApiV1 {
     return environments;
   }
 
+  // By resources: Branches
+
+  async rebaseBranch(
+    branchSlug: string,
+    environment: string,
+  ): Promise<AxiosResponse<Branch>> {
+    const params = { environment };
+
+    return this.put(`/branches/${branchSlug}/rebase`, {}, { params });
+  }
+
   // By methods:
 
   async get(
