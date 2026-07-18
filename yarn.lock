@@ -4680,10 +4680,10 @@ quick-lru@^5.1.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
 
-quicktype-core@23.2.6:
-  version "23.2.6"
-  resolved "https://registry.npmjs.org/quicktype-core/-/quicktype-core-23.2.6.tgz#24571b4c162789f847dbc6fab5547383b6e937bd"
-  integrity sha512-asfeSv7BKBNVb9WiYhFRBvBZHcRutPRBwJMxW0pefluK4kkKu4lv0IvZBwFKvw2XygLcL1Rl90zxWDHYgkwCmA==
+quicktype-core@23.3.25:
+  version "23.3.25"
+  resolved "https://registry.yarnpkg.com/quicktype-core/-/quicktype-core-23.3.25.tgz#94199267cb66c18b47897c03c4456441fcccbb7d"
+  integrity sha512-WOKJw/DemC1pO8CD0tgZ/Fn8FzWvWIeLPrbfpwfNbnPoXnehNgDRFesPYpgrNlF0Pce98aUBqqT55fsidaJGVQ==
   dependencies:
     "@glideapps/ts-necessities" "2.2.3"
     browser-or-node "^3.0.0"
@@ -4691,14 +4691,14 @@ quicktype-core@23.2.6:
     cross-fetch "^4.0.0"
     is-url "^1.2.4"
     js-base64 "^3.7.7"
-    lodash "^4.17.21"
+    lodash "^4.18.1"
     pako "^1.0.6"
     pluralize "^8.0.0"
     readable-stream "4.5.2"
     unicode-properties "^1.4.1"
     urijs "^1.19.1"
     wordwrap "^1.0.0"
-    yaml "^2.4.1"
+    yaml "^2.8.3"
 
 railroad-diagrams@^1.0.0:
   version "1.0.0"
@@ -5664,10 +5664,10 @@ yallist@^3.0.2:
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-3.1.1.tgz#dbb7daf9bfd8bac9ab45ebf602b8cbad0d5d08fd"
   integrity sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==
 
-yaml@^2.4.1:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.7.1.tgz#44a247d1b88523855679ac7fa7cda6ed7e135cf6"
-  integrity sha512-10ULxpnOCQXxJvBgxsn9ptjq6uviG/htZKk9veJGhlqn3w/DxQ631zFF+nlQXLwmImeS5amR2dl2U8sg6U9jsQ==
+yaml@^2.8.3:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.9.0.tgz#78274afd93598a1dfdd6130df6a566defcbf9aa4"
+  integrity sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==
 
 yargs-parser@^21.1.1:
   version "21.1.1"
