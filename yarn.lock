@@ -980,10 +980,10 @@
     diff "9.0.0"
     picocolors "^1.1.1"
 
-"@knocklabs/mgmt@0.32.0":
-  version "0.32.0"
-  resolved "https://registry.yarnpkg.com/@knocklabs/mgmt/-/mgmt-0.32.0.tgz#249557d6657bf049604704d16e154fa0ce6b1358"
-  integrity sha512-q3IzmAQNlwK0qSFEQKq4HMUHUge2KHrbuQSTXLCkkSiCBEulNURGiOuJP0qUcHt6AruxDnynBTfcHIeDDJMuog==
+"@knocklabs/mgmt@0.33.0":
+  version "0.33.0"
+  resolved "https://registry.yarnpkg.com/@knocklabs/mgmt/-/mgmt-0.33.0.tgz#917af8039449162dacea058151a3cf3ab96e9c57"
+  integrity sha512-LVzoV3dSw068nhhHUh0/o3zd2aPAF1ugM3BpnvDOgAir6F8AqZO04uhHCAVK3g09mP/O3jyGHtdbPG+w2cfP5g==
 
 "@napi-rs/nice-android-arm-eabi@1.0.1":
   version "1.0.1"
