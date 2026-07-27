@@ -1546,7 +1546,7 @@ _See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/k
 
 ## `knock whoami`
 
-Verify the provided service token.
+Verify authentication and show the current account and user.
 
 ```
 USAGE
