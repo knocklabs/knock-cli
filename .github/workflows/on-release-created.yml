@@ -6,7 +6,7 @@ jobs:
   validate-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Validate version match
         run: |
@@ -29,8 +29,8 @@ jobs:
     needs: [validate-release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: yarn
@@ -88,5 +88,5 @@ jobs:
           scope: "@knocklabs"
       - run: yarn
       - name: Update npm for trusted publishing
-        run: npm install --global npm@latest
+        run: npm install --global npm@11
       - run: npm publish --access public
