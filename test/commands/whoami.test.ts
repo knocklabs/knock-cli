@@ -18,12 +18,17 @@ describe("commands/whoami", () => {
     user_id: null,
   };
 
-  const userData: AuthVerifyResponse = {
+  const userData: AuthVerifyResponse & {
+    user_name: string;
+    user_email: string;
+  } = {
     type: "oauth_context",
     account_name: "Collab.io",
     account_slug: "collab-io",
     service_token_name: null,
     user_id: "123",
+    user_name: "Jane Doe",
+    user_email: "jane@collab.io",
   };
 
   describe("given a valid service token via flag", () => {
@@ -77,6 +82,8 @@ describe("commands/whoami", () => {
       .it("runs the command to make a whoami request", (ctx) => {
         expect(ctx.stdout).to.contain("Account name: Collab.io");
         expect(ctx.stdout).to.contain("User ID: 123");
+        expect(ctx.stdout).to.contain("User name: Jane Doe");
+        expect(ctx.stdout).to.contain("User email: jane@collab.io");
       });
 
     test
@@ -111,6 +118,8 @@ describe("commands/whoami", () => {
 
           expect(ctx.stdout).to.contain("Account name: Collab.io");
           expect(ctx.stdout).to.contain("User ID: 123");
+          expect(ctx.stdout).to.contain("User name: Jane Doe");
+          expect(ctx.stdout).to.contain("User email: jane@collab.io");
         },
       );
 

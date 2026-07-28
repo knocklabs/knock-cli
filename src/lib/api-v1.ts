@@ -705,6 +705,8 @@ export type WhoamiResp = {
   account_slug: string;
   service_token_name: string | null;
   user_id: string | null;
+  user_name?: string | null;
+  user_email?: string | null;
   account_features?: AccountFeatures;
 };
 
