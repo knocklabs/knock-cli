@@ -2,6 +2,10 @@ export const DEFAULT_DASHBOARD_URL = "https://dashboard.knock.app";
 export const DEFAULT_AUTH_URL = "https://signin.knock.app";
 export const DEFAULT_API_URL = "https://control.knock.app";
 
+/** URL for the Management API OpenAPI document (unauthenticated). */
+export const openApiSpecUrl = (apiOrigin: string): string =>
+  `${apiOrigin.replace(/\/$/, "")}/v1/openapi`;
+
 export const authSuccessUrl = (dashboardUrl: string): string =>
   `${dashboardUrl}/auth/oauth/cli`;
 
