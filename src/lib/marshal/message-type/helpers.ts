@@ -4,6 +4,7 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
+import { isPathArg, resolvePathArg } from "@/lib/helpers/path";
 import {
   ProjectConfig,
   resolveResourceDir,
@@ -106,6 +107,17 @@ export const ensureValidCommandTarget = async (
 
   // Message type key arg is given, which means no --all flag.
   if (args.messageTypeKey) {
+    if (isPathArg(args.messageTypeKey)) {
+      const { key, abspath } = resolvePathArg(args.messageTypeKey);
+      const messageTypeDirCtx: MessageTypeDirContext = {
+        type: "message_type",
+        key,
+        abspath,
+        exists: await isMessageTypeDir(abspath),
+      };
+      return { type: "messageTypeDir", context: messageTypeDirCtx };
+    }
+
     if (resourceDirCtx && resourceDirCtx.key !== args.messageTypeKey) {
       return ux.error(
         `Cannot run ${commandId} \`${args.messageTypeKey}\` inside another message type directory:\n${resourceDirCtx.key}`,
