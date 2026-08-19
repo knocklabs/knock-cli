@@ -1,7 +1,10 @@
 import { expect } from "@oclif/test";
 
 import { factory } from "@/../test/support";
-import { formatCategories } from "@/lib/marshal/workflow/helpers";
+import {
+  formatCategories,
+  formatStepSummary,
+} from "@/lib/marshal/workflow/helpers";
 
 describe("lib/marshal/workflow/helpers", () => {
   describe("formatCategories", () => {
@@ -42,4 +45,15 @@ describe("lib/marshal/workflow/helpers", () => {
   });
 
   // TODO: Write tests for formatStepSummary if/once the output is agreed.
+
+  describe("formatStepSummary", () => {
+    it("includes guide_key for in-app guide channel steps", () => {
+      const step = factory.channelStep("in_app_guide", {
+        guide_key: "onboarding",
+      });
+
+      expect(formatStepSummary(step)).to.include("Guide: onboarding");
+      expect(formatStepSummary(step)).to.not.include("Channel:");
+    });
+  });
 });

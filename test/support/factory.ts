@@ -155,6 +155,16 @@ export const channelStep = (
   type: ChannelType,
   attrs: Partial<ChannelStepData> = {},
 ): ChannelStepData => {
+  if (type === "in_app_guide") {
+    return {
+      ref: sequence("in_app_guide_"),
+      type: StepType.Channel,
+      channel_type: "in_app_guide",
+      guide_key: sequence("guide-"),
+      ...attrs,
+    };
+  }
+
   const step = {
     ref: sequence(`${type}_`),
     channel_key: sequence("provider-"),

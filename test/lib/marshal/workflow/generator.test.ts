@@ -24,6 +24,7 @@ const availableStepTypes: StepTag[] = [
   "fetch",
   "email",
   "in_app_feed",
+  "in_app_guide",
   "sms",
   "push",
   "chat",
@@ -56,6 +57,23 @@ describe("lib/marshal/workflow/generator", () => {
 
       expect(error).to.equal(undefined);
       expect(tags).to.eql(["delay", "in_app_feed", "sms"]);
+    });
+
+    it("accepts the canonical `in_app_guide` step tag", () => {
+      const [tags, error] = parseStepsInput("in_app_guide", availableStepTypes);
+
+      expect(error).to.equal(undefined);
+      expect(tags).to.eql(["in_app_guide"]);
+    });
+
+    it("normalizes the legacy hyphenated `in-app-guide` step tag to `in_app_guide`", () => {
+      const [tags, error] = parseStepsInput(
+        "delay,in-app-guide,sms",
+        availableStepTypes,
+      );
+
+      expect(error).to.equal(undefined);
+      expect(tags).to.eql(["delay", "in_app_guide", "sms"]);
     });
 
     it("returns an error for an invalid step tag", () => {
@@ -104,6 +122,32 @@ describe("lib/marshal/workflow/generator", () => {
                   method: "get",
                   url: "https://example.com",
                 },
+              },
+            ],
+          },
+        });
+      });
+    });
+
+    describe("given a single in-app guide channel step", () => {
+      it("returns a bundle with scaffolded workflow.json without template files", () => {
+        const bundle = scaffoldWorkflowDirBundle(
+          {
+            name: "My new workflow",
+            steps: ["in_app_guide"],
+          },
+          channelsByType,
+        );
+
+        expect(bundle).to.eql({
+          "workflow.json": {
+            name: "My new workflow",
+            steps: [
+              {
+                ref: "in_app_guide_1",
+                type: "channel",
+                channel_type: "in_app_guide",
+                guide_key: "<GUIDE KEY>",
               },
             ],
           },
