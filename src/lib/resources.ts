@@ -20,6 +20,7 @@ export const ALLOW_EMPTY_RESOURCE_TYPES = [
   "workflow",
   "message_type",
   "guide",
+  "goal",
   "translation",
 ] as const satisfies readonly NonHiddenResourceType[];
 
@@ -37,6 +38,8 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   // Message types then guides, as guides use message types.
   "message_type",
   "guide",
+  // Goals can be attached to workflows, guides, and broadcasts
+  "goal",
   "translation",
 ];
 
@@ -52,4 +55,5 @@ export const RESOURCE_SUBDIRS: Record<NonHiddenResourceType, string> = {
   workflow: "workflows",
   message_type: "message-types",
   guide: "guides",
+  goal: "goals",
 } as const;

@@ -12,6 +12,7 @@ import { InputError } from "@/lib/helpers/error";
 import { prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import * as EmailLayout from "@/lib/marshal/email-layout";
+import * as Goal from "@/lib/marshal/goal";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
@@ -596,6 +597,83 @@ export default class ApiV1 {
     return this.put(`/guides/${args.guideKey}/activate`, {}, { params });
   }
 
+  // By resources: Goals
+
+  async listGoals<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListGoalResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/goals", { params });
+  }
+
+  async getGoal<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetGoalResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+    });
+
+    return this.get(`/goals/${args.goalKey}`, { params });
+  }
+
+  async upsertGoal<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    goal: Goal.GoalData,
+  ): Promise<AxiosResponse<UpsertGoalResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+    });
+    const data = goal;
+
+    return this.put(`/goals/${goal.key}`, data, { params });
+  }
+
+  async validateGoal(
+    { flags }: Props,
+    goal: Goal.GoalData,
+  ): Promise<AxiosResponse<ValidateGoalResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+    const data = goal;
+
+    return this.put(`/goals/${goal.key}/validate`, data, {
+      params,
+    });
+  }
+
+  async cloneGoal<A extends MaybeWithAnnotation>(
+    { args, flags }: Props,
+    newGoalKey: string,
+  ): Promise<AxiosResponse<CloneGoalResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      annotate: flags.annotate,
+    });
+    const data = { new_goal_key: newGoalKey };
+
+    return this.post(`/goals/${args.goalKey}/clone`, data, { params });
+  }
+
+  async archiveGoal({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ArchiveGoalResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+
+    return this.delete(`/goals/${args.goalKey}`, { params });
+  }
+
   // By resources: Schemas
 
   async listSchemas(
@@ -686,6 +764,21 @@ export default class ApiV1 {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse> {
     return this.client.put(`/${API_VERSION}` + subpath, data, config);
+  }
+
+  async post(
+    subpath: string,
+    data?: unknown,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.post(`/${API_VERSION}` + subpath, data, config);
+  }
+
+  async delete(
+    subpath: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.delete(`/${API_VERSION}` + subpath, config);
   }
 }
 
@@ -833,6 +926,32 @@ export type UpsertGuideResp<A extends MaybeWithAnnotation = unknown> = {
 
 export type ActivateGuideResp = {
   guide?: Guide.GuideData;
+  errors?: InputError[];
+};
+
+export type ListGoalResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Goal.GoalData<A>>;
+
+export type GetGoalResp<A extends MaybeWithAnnotation = unknown> =
+  Goal.GoalData<A>;
+
+export type UpsertGoalResp<A extends MaybeWithAnnotation = unknown> = {
+  goal?: Goal.GoalData<A>;
+  errors?: InputError[];
+};
+
+export type ValidateGoalResp = {
+  goal?: Goal.GoalData;
+  errors?: InputError[];
+};
+
+export type CloneGoalResp<A extends MaybeWithAnnotation = unknown> = {
+  goal?: Goal.GoalData<A>;
+  errors?: InputError[];
+};
+
+export type ArchiveGoalResp = {
+  goal?: Goal.GoalData;
   errors?: InputError[];
 };
 

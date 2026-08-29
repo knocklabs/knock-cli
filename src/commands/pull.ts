@@ -14,6 +14,7 @@ import {
 } from "@/lib/resources";
 
 import AudiencePull from "./audience/pull";
+import GoalPull from "./goal/pull";
 import GuidePull from "./guide/pull";
 import EmailLayoutPull from "./layout/pull";
 import MessageTypePull from "./message-type/pull";
@@ -120,6 +121,9 @@ const runResourcePullCommand = async (
 
     case "guide":
       return GuidePull.run([...args, "--guides-dir", subdirPath]);
+
+    case "goal":
+      return GoalPull.run([...args, "--goals-dir", subdirPath]);
 
     default: {
       const invalidResourceType: never = resourceType;
