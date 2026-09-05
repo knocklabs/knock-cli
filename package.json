@@ -17,14 +17,14 @@
     "/oclif.manifest.json"
   ],
   "resolutions": {
-    "axios": "1.19.0"
+    "axios": "1.20.0"
   },
   "dependencies": {
     "@knocklabs/jsonlint": "^2.0.3",
     "@knocklabs/mgmt": "0.33.0",
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
-    "axios": "1.19.0",
+    "axios": "1.20.0",
     "date-fns": "^2.30.0",
     "degit": "^2.8.6",
     "enquirer": "^2.4.1",
