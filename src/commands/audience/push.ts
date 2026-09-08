@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { indentString } from "@/lib/helpers/string";
@@ -17,11 +16,7 @@ export default class AudiencePush extends BaseCommand<typeof AudiencePush> {
     "Push one or more audiences from a local file system to Knock.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "The environment to push the audience to. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all audiences from the target directory.",

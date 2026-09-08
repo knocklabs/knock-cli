@@ -30,7 +30,6 @@ describe("commands/message-type/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
         );
@@ -53,7 +52,6 @@ describe("commands/message-type/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
               }),
           ),
@@ -170,7 +168,6 @@ describe("commands/message-type/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    environment: "development",
                   }),
               ),
             );
@@ -183,7 +180,6 @@ describe("commands/message-type/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    environment: "development",
                     after: "xyz",
                   }),
               ),

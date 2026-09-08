@@ -17,17 +17,17 @@ describe("commands/commit/index", () => {
     )
     .stdout()
     .command(["commit", "-m", "commit all the changes!"])
-    .it("calls apiV1 commitAllChanges with expected props", () => {
+    .it("commits against the account default environment", (ctx) => {
       sinon.assert.calledWith(
         KnockApiV1.prototype.commitAllChanges as any,
         sinon.match(({ flags }) =>
           isEqual(flags, {
             "service-token": "valid-token",
-            environment: "development",
             "commit-message": "commit all the changes!",
           }),
         ),
       );
+      expect(ctx.stdout).to.contain("account default environment");
     });
 
   describe("given a branch flag", () => {
@@ -53,7 +53,6 @@ describe("commands/commit/index", () => {
           sinon.match(({ flags }) =>
             isEqual(flags, {
               "service-token": "valid-token",
-              environment: "development",
               branch: "my-feature-branch-123",
               "commit-message": "commit all the changes!",
             }),
@@ -85,7 +84,6 @@ describe("commands/commit/index", () => {
           sinon.match(({ flags }) =>
             isEqual(flags, {
               "service-token": "valid-token",
-              environment: "development",
               "commit-message": "commit workflows only",
               "resource-type": "workflow",
             }),
@@ -121,7 +119,6 @@ describe("commands/commit/index", () => {
             sinon.match(({ flags }) =>
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 "commit-message": "commit specific workflow",
                 "resource-type": "workflow",
                 "resource-id": "my-workflow-key",
@@ -200,7 +197,6 @@ describe("commands/commit/index", () => {
           sinon.match(({ flags }) =>
             isEqual(flags, {
               "service-token": "valid-token",
-              environment: "development",
               "commit-message": "Empty touch",
               "resource-type": "workflow",
               "resource-id": "my-workflow-key",

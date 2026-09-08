@@ -1,8 +1,11 @@
 export const formatCommandScope = (flags: {
-  environment: string;
+  environment?: string;
   branch?: string;
 }): string => {
   const { environment, branch } = flags;
 
-  return `\`${branch ?? environment}\` ${branch ? "branch" : "environment"}`;
+  if (branch) return `\`${branch}\` branch`;
+  if (environment) return `\`${environment}\` environment`;
+
+  return "account default environment";
 };

@@ -1,10 +1,11 @@
-import { Flags, ux } from "@oclif/core";
+import { ux } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDate } from "@/lib/helpers/date";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import {
   maybePromptPageAction,
@@ -17,9 +18,7 @@ export default class SourceList extends BaseCommand<typeof SourceList> {
   static summary = "Display all sources for an environment.";
 
   static flags = {
-    environment: Flags.string({
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     ...pageFlags,
   };
 

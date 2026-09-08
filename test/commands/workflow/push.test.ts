@@ -77,7 +77,6 @@ describe("commands/workflow/push", () => {
               isEqual(flags, {
                 "service-token": "valid-token",
 
-                environment: "development",
                 // Internally set flags
                 annotate: true,
               }),
@@ -109,7 +108,6 @@ describe("commands/workflow/push", () => {
               isEqual(flags, {
                 "service-token": "valid-token",
 
-                environment: "development",
                 // Commit flags
                 commit: true,
                 "commit-message": "this is a commit comment!",
@@ -147,7 +145,6 @@ describe("commands/workflow/push", () => {
                 isEqual(flags, {
                   "service-token": "valid-token",
 
-                  environment: "development",
                   commit: true,
                   "commit-message": "Empty touch",
                   "allow-empty": true,
@@ -175,7 +172,6 @@ describe("commands/workflow/push", () => {
               isEqual(args, { workflowKey: "new-comment" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 force: true,
                 annotate: true,
               }),
@@ -336,7 +332,6 @@ describe("commands/workflow/push", () => {
           annotate: true,
           "service-token": "valid-token",
 
-          environment: "development",
           all: true,
           "workflows-dir": {
             abspath: indexDirPath,
@@ -388,7 +383,7 @@ describe("commands/workflow/push", () => {
             return (
               args.workflowKey === "foo" &&
               flags["service-token"] === "valid-token" &&
-              flags.environment === "development" &&
+              flags.environment === undefined &&
               flags.branch === "my-feature-branch-123" &&
               flags.annotate === true
             );

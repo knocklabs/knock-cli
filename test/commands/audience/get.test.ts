@@ -35,9 +35,7 @@ describe("commands/audience/get", () => {
         sinon.assert.calledWith(
           KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
           "foo",
-          sinon.match({
-            environment: "development",
-          }),
+          sinon.match({}),
         );
       });
   });
@@ -87,7 +85,6 @@ describe("commands/audience/get", () => {
           KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
           "foo",
           sinon.match({
-            environment: "development",
             branch: "my-feature-branch-123",
           }),
         );

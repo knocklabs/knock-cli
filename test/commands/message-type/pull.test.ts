@@ -74,7 +74,6 @@ describe("commands/message-type/pull", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 annotate: true,
               }),
           ),
@@ -112,7 +111,6 @@ describe("commands/message-type/pull", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
                 annotate: true,
               }),
@@ -143,7 +141,6 @@ describe("commands/message-type/pull", () => {
                   exists: false,
                 },
                 "service-token": "valid-token",
-                environment: "development",
                 annotate: true,
                 limit: 100,
               }),

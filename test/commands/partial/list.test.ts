@@ -30,7 +30,6 @@ describe("commands/partial/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
         );
@@ -88,7 +87,6 @@ describe("commands/partial/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
               }),
           ),
@@ -169,8 +167,6 @@ describe("commands/partial/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-
-                    environment: "development",
                   }),
               ),
             );
@@ -184,7 +180,6 @@ describe("commands/partial/list", () => {
                   isEqual(flags, {
                     "service-token": "valid-token",
 
-                    environment: "development",
                     after: "xyz",
                   }),
               ),

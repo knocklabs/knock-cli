@@ -197,7 +197,7 @@ describe("commands/push", () => {
       process.env = originalEnv;
     });
 
-    describe("with development environment", () => {
+    describe("with account default environment", () => {
       describe("and a non-empty layouts directory", () => {
         const layoutsSubdirPath = path.resolve(sandboxDir, "layouts");
 
@@ -242,7 +242,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     all: true,
                     "layouts-dir": {
                       abspath: layoutsSubdirPath,
@@ -250,6 +249,18 @@ describe("commands/push", () => {
                     },
                   }),
               ),
+              sinon.match((layout) =>
+                isEqual(layout, { key: "messages", name: "Messages" }),
+              ),
+            );
+          });
+
+        test
+          .command(["push", "--knock-dir", ".", "--environment", "production"])
+          .it("forwards an explicit environment override", () => {
+            sinon.assert.calledOnceWithExactly(
+              upsertLayoutStub,
+              sinon.match(({ flags }) => flags.environment === "production"),
               sinon.match((layout) =>
                 isEqual(layout, { key: "messages", name: "Messages" }),
               ),
@@ -276,7 +287,6 @@ describe("commands/push", () => {
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
-                      environment: "development",
                       all: true,
                       "layouts-dir": {
                         abspath: layoutsSubdirPath,
@@ -336,7 +346,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     all: true,
                     "partials-dir": {
                       abspath: partialsSubdirPath,
@@ -370,7 +379,6 @@ describe("commands/push", () => {
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
-                      environment: "development",
                       all: true,
                       "partials-dir": {
                         abspath: partialsSubdirPath,
@@ -431,7 +439,6 @@ describe("commands/push", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    environment: "development",
                     all: true,
                     "translations-dir": {
                       abspath: translationsSubdirPath,
@@ -469,7 +476,6 @@ describe("commands/push", () => {
                     isEqual(args, {}) &&
                     isEqual(flags, {
                       "service-token": "valid-token",
-                      environment: "development",
                       all: true,
                       "translations-dir": {
                         abspath: translationsSubdirPath,
@@ -534,7 +540,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     all: true,
                     "workflows-dir": {
                       abspath: workflowsSubdirPath,
@@ -568,7 +573,6 @@ describe("commands/push", () => {
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
-                      environment: "development",
                       all: true,
                       "workflows-dir": {
                         abspath: workflowsSubdirPath,
@@ -604,7 +608,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     all: true,
                     "workflows-dir": {
                       abspath: workflowsSubdirPath,
@@ -669,7 +672,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     all: true,
                     "message-types-dir": {
                       abspath: messageTypesSubdirPath,
@@ -703,7 +705,6 @@ describe("commands/push", () => {
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
-                      environment: "development",
                       all: true,
                       "message-types-dir": {
                         abspath: messageTypesSubdirPath,
@@ -763,7 +764,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     all: true,
                     "guides-dir": {
                       abspath: guidesSubdirPath,
@@ -795,7 +795,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     all: true,
                     "guides-dir": {
                       abspath: guidesSubdirPath,
@@ -905,7 +904,6 @@ describe("commands/push", () => {
                     isEqual(flags, {
                       annotate: true,
                       "service-token": "valid-token",
-                      environment: "development",
                       all: true,
                       "partials-dir": {
                         abspath: partialsSubdirPath,
@@ -927,7 +925,6 @@ describe("commands/push", () => {
                       annotate: true,
                       "service-token": "valid-token",
 
-                      environment: "development",
                       all: true,
                       "workflows-dir": {
                         abspath: workflowsSubdirPath,
@@ -1176,7 +1173,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     branch: "my-feature-branch-123",
                     all: true,
                     "layouts-dir": {
@@ -1198,7 +1194,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     branch: "my-feature-branch-123",
                     all: true,
                     "partials-dir": {
@@ -1219,7 +1214,6 @@ describe("commands/push", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    environment: "development",
                     branch: "my-feature-branch-123",
                     all: true,
                     "translations-dir": {
@@ -1246,7 +1240,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     branch: "my-feature-branch-123",
                     all: true,
                     "workflows-dir": {
@@ -1268,7 +1261,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     branch: "my-feature-branch-123",
                     all: true,
                     "message-types-dir": {
@@ -1290,7 +1282,6 @@ describe("commands/push", () => {
                   isEqual(flags, {
                     annotate: true,
                     "service-token": "valid-token",
-                    environment: "development",
                     branch: "my-feature-branch-123",
                     all: true,
                     "guides-dir": {
@@ -1386,14 +1377,6 @@ describe("commands/push", () => {
           .it("throws an error");
       });
     });
-  });
-
-  describe("with environment other than development", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN })
-      .command(["push", "--knock-dir", ".", "--environment", "production"])
-      .exit(2)
-      .it("exits with status 2");
   });
 
   describe("with knock.json config", () => {

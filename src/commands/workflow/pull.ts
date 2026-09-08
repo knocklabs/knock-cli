@@ -29,10 +29,7 @@ export default class WorkflowPull extends BaseCommand<typeof WorkflowPull> {
     "Pull one or more workflows from an environment into a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to pull all workflows from the specified environment.",

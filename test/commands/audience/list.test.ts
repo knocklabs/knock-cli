@@ -22,9 +22,7 @@ describe("commands/audience/list", () => {
       .it("calls apiV1 listAudiences with correct props", () => {
         sinon.assert.calledWith(
           KnockMgmt.Audiences.prototype.list as sinon.SinonStub,
-          sinon.match({
-            environment: "development",
-          }),
+          sinon.match({}),
         );
       });
   });
@@ -71,7 +69,6 @@ describe("commands/audience/list", () => {
         sinon.assert.calledWith(
           KnockMgmt.Audiences.prototype.list as sinon.SinonStub,
           sinon.match({
-            environment: "development",
             branch: "my-feature-branch-123",
           }),
         );
@@ -137,18 +134,12 @@ describe("commands/audience/list", () => {
             sinon.assert.calledTwice(listStub);
 
             // First call without page params.
-            sinon.assert.calledWith(
-              listStub.firstCall,
-              sinon.match({
-                environment: "development",
-              }),
-            );
+            sinon.assert.calledWith(listStub.firstCall, sinon.match({}));
 
             // Second call with page params to fetch the next page.
             sinon.assert.calledWith(
               listStub.secondCall,
               sinon.match({
-                environment: "development",
                 after: "xyz",
               }),
             );

@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
@@ -21,12 +20,7 @@ export default class MessageTypePush extends BaseCommand<
     "Push one or more message types from a local file system to Knock.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "Pushing a message type is only allowed in the development environment",
-      default: KnockEnv.Development,
-      options: [KnockEnv.Development],
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all message types from the target directory.",

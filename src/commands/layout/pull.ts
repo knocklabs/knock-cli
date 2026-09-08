@@ -31,10 +31,7 @@ export default class EmailLayoutPull extends BaseCommand<
     "Pull one or more email layouts from an environment into a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary:

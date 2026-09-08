@@ -4,7 +4,6 @@ import { Flags } from "@oclif/core";
 import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
-import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import { slugify } from "@/lib/helpers/string";
@@ -30,11 +29,7 @@ export default class MessageTypeNew extends BaseCommand<typeof MessageTypeNew> {
       summary: "The key of the message type",
       char: "k",
     }),
-    environment: Flags.string({
-      summary:
-        "The environment to create the message type in. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     force: Flags.boolean({
       summary:
@@ -134,7 +129,11 @@ export default class MessageTypeNew extends BaseCommand<typeof MessageTypeNew> {
       spinner.start("‣ Pushing message type to Knock");
 
       try {
-        await MessageTypePush.run([key]);
+        await MessageTypePush.run([
+          key,
+          ...(flags.environment ? ["--environment", flags.environment] : []),
+          ...(flags.branch ? ["--branch", flags.branch] : []),
+        ]);
       } catch (error) {
         this.error(`Failed to push message type to Knock: ${error}`);
       } finally {

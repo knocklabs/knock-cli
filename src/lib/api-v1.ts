@@ -9,7 +9,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
-import { prune } from "@/lib/helpers/object.isomorphic";
+import { AnyObj, prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
@@ -435,11 +435,17 @@ export default class ApiV1 {
   }
 
   async listAllMessageTypes(
-    params: MessageTypeListParams,
+    params?: MessageTypeListParams,
   ): Promise<MessageType.MessageTypeData[]> {
     const messageTypes: MessageType.MessageTypeData[] = [];
+    const query = params
+      ? (prune(params as unknown as AnyObj) as MessageTypeListParams)
+      : null;
+    const messageTypesPage = query
+      ? this.mgmtClient.messageTypes.list(query)
+      : this.mgmtClient.messageTypes.list();
 
-    for await (const messageType of this.mgmtClient.messageTypes.list(params)) {
+    for await (const messageType of messageTypesPage) {
       messageTypes.push(messageType as MessageType.MessageTypeData);
     }
 
@@ -658,6 +664,16 @@ export default class ApiV1 {
     }
 
     return environments;
+  }
+
+  async getDefaultEnvironmentSlug(): Promise<string> {
+    const [defaultEnvironment] = await this.listAllEnvironments();
+
+    if (!defaultEnvironment) {
+      throw new Error("No environments are available for this account.");
+    }
+
+    return defaultEnvironment.slug;
   }
 
   // By methods:

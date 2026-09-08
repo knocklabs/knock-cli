@@ -303,7 +303,6 @@ describe("commands/workflow/run", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
                 recipients: ["alice"],
               }),
@@ -332,7 +331,6 @@ describe("commands/workflow/run", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 recipients: ["alice"],
                 "sandbox-mode": true,
               }),
@@ -361,7 +359,6 @@ describe("commands/workflow/run", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 recipients: ["alice"],
                 "skip-delay": true,
               }),

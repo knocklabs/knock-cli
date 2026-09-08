@@ -119,6 +119,11 @@ export const branch = slug({
   default: once(readSlugFromBranchFile),
 });
 
+export const environment = Flags.string({
+  summary:
+    "The environment to use. When omitted, the account's default environment is used.",
+});
+
 export const force = Flags.boolean({
   summary:
     "Force pushes the resource or resources to Knock, overwriting whatever is currently stored. " +

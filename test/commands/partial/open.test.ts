@@ -26,6 +26,9 @@ describe("commands/partial/open", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
+      )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()
       .command(["partial open", "foo"])
@@ -43,6 +46,9 @@ describe("commands/partial/open", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
+      )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()
       .command(["partial open", "foo", "--environment", "production"])
@@ -59,6 +65,9 @@ describe("commands/partial/open", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
       )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()

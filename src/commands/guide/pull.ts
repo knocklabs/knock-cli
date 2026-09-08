@@ -29,10 +29,7 @@ export default class GuidePull extends BaseCommand<typeof GuidePull> {
     "Pull one or more guides from an environment into a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to pull all guides from the specified environment.",

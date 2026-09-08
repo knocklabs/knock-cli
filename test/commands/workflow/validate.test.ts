@@ -50,8 +50,6 @@ describe("commands/workflow/validate (a single workflow)", () => {
               isEqual(args, { workflowKey: "new-comment" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-
-                environment: "development",
               }),
           ),
           sinon.match((workflow) =>
@@ -249,7 +247,6 @@ describe("commands/workflow/validate (all workflows)", () => {
         const expectedFlags = {
           "service-token": "valid-token",
 
-          environment: "development",
           all: true,
           "workflows-dir": {
             abspath: indexDirPath,
@@ -352,7 +349,7 @@ describe("commands/workflow/validate (all workflows)", () => {
             return (
               args.workflowKey === "foo" &&
               flags["service-token"] === "valid-token" &&
-              flags.environment === "development" &&
+              flags.environment === undefined &&
               flags.branch === "my-feature-branch-123"
             );
           }),

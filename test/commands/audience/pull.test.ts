@@ -75,7 +75,6 @@ describe("commands/audience/pull (a single audience)", () => {
           KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
           "vip-users",
           sinon.match({
-            environment: "development",
             annotate: true,
           }),
         );
@@ -112,7 +111,6 @@ describe("commands/audience/pull (a single audience)", () => {
             KnockMgmt.Audiences.prototype.retrieve as sinon.SinonStub,
             "vip-users",
             sinon.match({
-              environment: "development",
               branch: "my-feature-branch-123",
               annotate: true,
             }),

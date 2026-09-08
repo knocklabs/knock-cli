@@ -39,7 +39,6 @@ describe("commands/translation/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 format: "json",
               }),
           ),
@@ -129,7 +128,6 @@ describe("commands/translation/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
                 format: "json",
               }),

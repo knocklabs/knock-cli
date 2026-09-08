@@ -146,9 +146,9 @@ describe("commands/pull", () => {
       .stdout()
       .command(["pull", "--knock-dir", "."])
       .it(
-        "calls apiV1 to list resources in the development environment",
+        "calls apiV1 to list resources in the account default environment",
         () => {
-          assertApiV1ListFunctionsCalled({ environment: "development" });
+          assertApiV1ListFunctionsCalled();
           sinon.assert.calledOnce(enquirer.prototype.prompt as any);
         },
       );
@@ -190,7 +190,6 @@ describe("commands/pull", () => {
       ])
       .it("calls apiV1 to list resources in the given branch", () => {
         assertApiV1ListFunctionsCalled({
-          environment: "development",
           branch: "my-feature-branch-123",
         });
         sinon.assert.calledOnce(enquirer.prototype.prompt as any);
@@ -247,7 +246,7 @@ describe("commands/pull", () => {
       .stdout()
       .command(["pull", "--knock-dir", ".", "--force"])
       .it("skips the confirmation prompt", () => {
-        assertApiV1ListFunctionsCalled({ environment: "development" });
+        assertApiV1ListFunctionsCalled();
         sinon.assert.notCalled(enquirer.prototype.prompt as any);
       });
   });
@@ -461,7 +460,6 @@ function assertApiV1ListFunctionsCalled(
             exists: false,
           },
           "service-token": "valid-token",
-          environment: "development",
           force: true,
           annotate: true,
           limit: 100,
@@ -482,7 +480,6 @@ function assertApiV1ListFunctionsCalled(
             exists: false,
           },
           "service-token": "valid-token",
-          environment: "development",
           force: true,
           annotate: true,
           limit: 100,
@@ -503,7 +500,6 @@ function assertApiV1ListFunctionsCalled(
             exists: false,
           },
           "service-token": "valid-token",
-          environment: "development",
           force: true,
           limit: 100,
           format: "json",
@@ -524,7 +520,6 @@ function assertApiV1ListFunctionsCalled(
             exists: false,
           },
           "service-token": "valid-token",
-          environment: "development",
           force: true,
           annotate: true,
           limit: 100,

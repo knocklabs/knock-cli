@@ -30,7 +30,6 @@ describe("commands/guide/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
         );
@@ -145,7 +144,6 @@ describe("commands/guide/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    environment: "development",
                   }),
               ),
             );
@@ -158,7 +156,6 @@ describe("commands/guide/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-                    environment: "development",
                     after: "xyz",
                   }),
               ),
@@ -200,7 +197,6 @@ describe("commands/guide/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
               }),
           ),

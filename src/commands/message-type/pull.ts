@@ -28,17 +28,13 @@ export default class MessageTypePull extends BaseCommand<
   typeof MessageTypePull
 > {
   static summary =
-    "Pull one or more in-app message types from an environment into a local file system.";
+    "Pull one or more in-app message types into a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
-      summary:
-        "Whether to pull all in-app message types from the specified environment.",
+      summary: "Whether to pull all in-app message types.",
     }),
     "message-types-dir": CustomFlags.dirPath({
       summary:

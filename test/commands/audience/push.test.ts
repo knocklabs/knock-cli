@@ -67,7 +67,6 @@ describe("commands/audience/push", () => {
           KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
           "default",
           sinon.match({
-            environment: "development",
             annotate: true,
             audience: sinon.match({
               name: "Default",
@@ -85,7 +84,6 @@ describe("commands/audience/push", () => {
           KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
           "default",
           sinon.match({
-            environment: "development",
             annotate: true,
             audience: sinon.match({
               name: "Default",
@@ -112,7 +110,6 @@ describe("commands/audience/push", () => {
           KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
           "default",
           sinon.match({
-            environment: "development",
             commit: true,
             commit_message: "this is a commit comment!",
             annotate: true,
@@ -138,7 +135,6 @@ describe("commands/audience/push", () => {
             KnockMgmt.Audiences.prototype.upsert as sinon.SinonStub,
             "default",
             sinon.match({
-              environment: "development",
               branch: "my-feature-branch-123",
               annotate: true,
               audience: sinon.match({

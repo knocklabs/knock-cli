@@ -50,7 +50,6 @@ describe("commands/translation/validate (a single translation)", () => {
               isEqual(args, { translationRef: "en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
           sinon.match((translation) =>
@@ -84,7 +83,6 @@ describe("commands/translation/validate (a single translation)", () => {
               isEqual(args, { translationRef: "admin.en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
           sinon.match((translation) =>
@@ -123,7 +121,6 @@ describe("commands/translation/validate (a single translation)", () => {
               isEqual(args, { translationRef: "admin.en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
               }),
           ),
@@ -198,7 +195,6 @@ describe("commands/translation/validate (a single translation)", () => {
               isEqual(args, { translationRef: "en" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
           sinon.match((translation) =>
@@ -309,7 +305,6 @@ describe("commands/translation/validate (all translations)", () => {
           const expectedArgs = {};
           const expectedFlags = {
             "service-token": "valid-token",
-            environment: "development",
             all: true,
             "translations-dir": {
               abspath: indexDirPath,

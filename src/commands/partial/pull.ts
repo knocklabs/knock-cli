@@ -29,10 +29,7 @@ export default class PartialPull extends BaseCommand<typeof PartialPull> {
     "Pull one or more partial from an environment into a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to pull all partials from the specified environment.",

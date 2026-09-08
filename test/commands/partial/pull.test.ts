@@ -72,7 +72,6 @@ describe("commands/partial/pull", () => {
               isEqual(flags, {
                 "service-token": "valid-token",
 
-                environment: "development",
                 annotate: true,
               }),
           ),
@@ -109,7 +108,6 @@ describe("commands/partial/pull", () => {
                 },
                 "service-token": "valid-token",
 
-                environment: "development",
                 annotate: true,
                 limit: 100,
               }),
@@ -158,7 +156,6 @@ describe("commands/partial/pull", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
                 annotate: true,
               }),

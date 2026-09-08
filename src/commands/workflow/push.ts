@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
@@ -19,11 +18,7 @@ export default class WorkflowPush extends BaseCommand<typeof WorkflowPush> {
     "Push one or more workflows from a local file system to Knock.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "The environment to push the workflow to. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all workflows from the target directory.",

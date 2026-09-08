@@ -5,7 +5,6 @@ import { Flags } from "@oclif/core";
 import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
-import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import { slugify } from "@/lib/helpers/string";
@@ -40,11 +39,7 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
       summary: "Comma-separated list of step types to include in the workflow",
       char: "s",
     }),
-    environment: Flags.string({
-      summary:
-        "The environment to create the workflow in. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     force: Flags.boolean({
       summary:
@@ -144,7 +139,11 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
       spinner.start("‣ Pushing workflow to Knock");
 
       try {
-        await WorkflowPush.run([key]);
+        await WorkflowPush.run([
+          key,
+          ...(flags.environment ? ["--environment", flags.environment] : []),
+          ...(flags.branch ? ["--branch", flags.branch] : []),
+        ]);
       } catch (error) {
         this.error(`Failed to push workflow to Knock: ${error}`);
       } finally {
