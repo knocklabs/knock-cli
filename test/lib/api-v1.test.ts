@@ -9,6 +9,20 @@ const dummyConfig = new Config({ root: "/path/to/bin" });
 
 describe("lib/api-v1", () => {
   describe("listWorkflows", () => {
+    it("omits the environment query param when not supplied", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+
+      const stub = sinon.stub(apiV1.client, "get").resolves(
+        factory.resp({
+          data: factory.paginatedResp([]),
+        }),
+      );
+
+      await apiV1.listWorkflows(factory.props());
+
+      sinon.assert.calledWith(stub, "/v1/workflows", { params: {} });
+    });
+
     it("makes a GET request to /v1/workflows with supported params", async () => {
       const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
 
@@ -45,6 +59,44 @@ describe("lib/api-v1", () => {
       sinon.assert.calledWith(stub, "/v1/workflows", { params });
 
       stub.restore();
+    });
+  });
+
+  describe("listAllMessageTypes", () => {
+    it("accepts omitted params", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+      const listStub = sinon
+        .stub(apiV1.mgmtClient.messageTypes, "list")
+        .returns({
+          [Symbol.asyncIterator]: async function* () {
+            yield factory.messageType({ key: "banner" });
+          },
+        } as any);
+
+      const messageTypes = await apiV1.listAllMessageTypes();
+
+      sinon.assert.calledOnceWithExactly(listStub);
+      sinon.assert.match(messageTypes, [sinon.match({ key: "banner" })]);
+    });
+
+    it("prunes an undefined environment from params", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+      const listStub = sinon
+        .stub(apiV1.mgmtClient.messageTypes, "list")
+        .returns({
+          [Symbol.asyncIterator]: async function* () {
+            yield factory.messageType({ key: "banner" });
+          },
+        } as any);
+
+      await apiV1.listAllMessageTypes({
+        environment: undefined,
+        hide_uncommitted_changes: true,
+      });
+
+      sinon.assert.calledOnceWithExactly(listStub, {
+        hide_uncommitted_changes: true,
+      });
     });
   });
 

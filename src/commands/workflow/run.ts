@@ -12,10 +12,7 @@ export default class WorkflowRun extends BaseCommand<typeof WorkflowRun> {
   static summary = "Test run a workflow using the latest version from Knock.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment in which to run the workflow",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     recipients: maybeJsonStrAsList({
       required: true,

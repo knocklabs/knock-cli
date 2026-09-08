@@ -17,13 +17,10 @@ import { withSpinner } from "@/lib/helpers/request";
 export default class MessageTypeList extends BaseCommand<
   typeof MessageTypeList
 > {
-  static summary = "Display all in-app message types for an environment.";
+  static summary = "Display all in-app message types.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",

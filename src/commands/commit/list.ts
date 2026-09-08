@@ -20,10 +20,7 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
   static summary = "Display all commits in an environment";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     promoted: Flags.boolean({
       summary:

@@ -100,7 +100,6 @@ describe("commands/translation/pull", () => {
                 exists: false,
               },
               "service-token": "valid-token",
-              environment: "development",
               limit: 100,
               format: "json",
             }),
@@ -155,7 +154,6 @@ describe("commands/translation/pull", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 format: "json",
               }),
           ),
@@ -202,7 +200,6 @@ describe("commands/translation/pull", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
                 format: "json",
               }),
@@ -254,7 +251,6 @@ describe("commands/translation/pull", () => {
               isEqual(flags, {
                 all: true,
                 "service-token": "valid-token",
-                environment: "development",
                 limit: 100,
                 format: "json",
               }),

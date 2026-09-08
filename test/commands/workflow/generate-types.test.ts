@@ -308,7 +308,7 @@ describe("commands/workflow/generate-types", () => {
           sinon.match(({ flags }) => {
             return (
               flags["service-token"] === "valid-token" &&
-              flags.environment === "development" &&
+              flags.environment === undefined &&
               flags.branch === "my-feature-branch-123" &&
               flags.annotate === true &&
               flags.limit === 100

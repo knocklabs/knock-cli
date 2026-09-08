@@ -51,7 +51,6 @@ describe("commands/message-type/validate (a single message type)", () => {
               isEqual(args, { messageTypeKey: "card" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
           sinon.match((messageType) =>
@@ -80,7 +79,6 @@ describe("commands/message-type/validate (a single message type)", () => {
                 isEqual(args, { messageTypeKey: "card" }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  environment: "development",
                   branch: "my-feature-branch-123",
                 }),
             ),
@@ -231,7 +229,6 @@ describe("commands/message-type/validate (all message types)", () => {
         const expectedArgs = {};
         const expectedFlags = {
           "service-token": "valid-token",
-          environment: "development",
           all: true,
           "message-types-dir": {
             abspath: indexDirPath,

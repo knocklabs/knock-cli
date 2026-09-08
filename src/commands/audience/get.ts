@@ -12,10 +12,7 @@ export default class AudienceGet extends BaseCommand<typeof AudienceGet> {
   static summary = "Display a single audience from an environment.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",

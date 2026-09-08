@@ -26,6 +26,9 @@ describe("commands/audience/open", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
+      )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()
       .command(["audience open", "vip-users"])
@@ -40,6 +43,9 @@ describe("commands/audience/open", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
       )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()
@@ -59,6 +65,9 @@ describe("commands/audience/open", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
       )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()

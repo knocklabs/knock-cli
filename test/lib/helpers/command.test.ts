@@ -16,5 +16,10 @@ describe("lib/helpers/command", () => {
       });
       expect(result).to.equal("`my-feature-branch-123` branch");
     });
+
+    it("returns the account default when no scope is supplied", () => {
+      const result = formatCommandScope({});
+      expect(result).to.equal("account default environment");
+    });
   });
 });

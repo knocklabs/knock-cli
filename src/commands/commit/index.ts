@@ -3,7 +3,6 @@ import { Flags } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
@@ -18,15 +17,10 @@ const ALLOW_EMPTY_RESOURCE_TYPE_SET = new Set<string>(
 
 export default class Commit extends BaseCommand<typeof Commit> {
   static summary =
-    "Commit all changes in development environment, or only changes for a specific resource type.";
+    "Commit all changes in an environment, or only changes for a specific resource type.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "Committing changes applies to the development environment only, use `commit promote` to promote changes to a subsequent environment.",
-      default: KnockEnv.Development,
-      options: [KnockEnv.Development],
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     "commit-message": Flags.string({
       summary: "Use the given value as the commit message.",

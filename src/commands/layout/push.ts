@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
@@ -21,12 +20,7 @@ export default class EmailLayoutPush extends BaseCommand<
     "Push one or more email layouts from a local file system to Knock.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "Pushing an email layout is only allowed in the development environment",
-      default: KnockEnv.Development,
-      options: [KnockEnv.Development],
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all layouts from the target directory.",

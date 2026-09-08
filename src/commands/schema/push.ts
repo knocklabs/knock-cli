@@ -14,10 +14,7 @@ export default class SchemaPush extends BaseCommand<typeof SchemaPush> {
     "Push one or more local item schemas to a Knock environment.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all schemas from the target schemas directory.",

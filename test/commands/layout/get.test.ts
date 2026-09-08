@@ -36,7 +36,6 @@ describe("commands/layout/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
         );
@@ -70,7 +69,6 @@ describe("commands/layout/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
               }),
           ),

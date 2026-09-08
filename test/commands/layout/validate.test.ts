@@ -50,7 +50,6 @@ describe("commands/layout/validate (a single layout)", () => {
               isEqual(args, { emailLayoutKey: "default" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
           sinon.match((layout) =>
@@ -87,7 +86,6 @@ describe("commands/layout/validate (a single layout)", () => {
               isEqual(args, { emailLayoutKey: "default" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
               }),
           ),
@@ -233,7 +231,6 @@ describe("commands/layout/validate (all layouts)", () => {
         const expectedArgs = {};
         const expectedFlags = {
           "service-token": "valid-token",
-          environment: "development",
           all: true,
           "layouts-dir": {
             abspath: indexDirPath,

@@ -3,7 +3,6 @@ import { Args, Flags } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
@@ -22,12 +21,7 @@ export default class TranslationValidate extends BaseCommand<
   static verifyFeatureEnabled = "translations" as const;
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "Validating a translation is only done in the development environment",
-      default: KnockEnv.Development,
-      options: [KnockEnv.Development],
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary:

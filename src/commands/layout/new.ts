@@ -4,7 +4,6 @@ import { Flags } from "@oclif/core";
 import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
-import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import { slugify } from "@/lib/helpers/string";
@@ -30,11 +29,7 @@ export default class EmailLayoutNew extends BaseCommand<typeof EmailLayoutNew> {
       summary: "The key of the email layout",
       char: "k",
     }),
-    environment: Flags.string({
-      summary:
-        "The environment to create the email layout in. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     force: Flags.boolean({
       summary:
@@ -134,7 +129,11 @@ export default class EmailLayoutNew extends BaseCommand<typeof EmailLayoutNew> {
       spinner.start("‣ Pushing email layout to Knock");
 
       try {
-        await EmailLayoutPush.run([key]);
+        await EmailLayoutPush.run([
+          key,
+          ...(flags.environment ? ["--environment", flags.environment] : []),
+          ...(flags.branch ? ["--branch", flags.branch] : []),
+        ]);
       } catch (error) {
         this.error(`Failed to push email layout to Knock: ${error}`);
       } finally {

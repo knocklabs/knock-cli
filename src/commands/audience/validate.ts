@@ -3,7 +3,6 @@ import { Args, Flags } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { indentString } from "@/lib/helpers/string";
@@ -18,11 +17,7 @@ export default class AudienceValidate extends BaseCommand<
   static summary = "Validate one or more audiences from a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "The environment to validate the audience against. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to validate all audiences from the target directory.",

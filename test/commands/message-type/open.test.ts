@@ -26,13 +26,16 @@ describe("commands/message-type/open", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("production"),
+      )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()
       .command(["message-type open", "foo"])
       .it("opens the correct URL", () => {
         sinon.assert.calledWith(
           browser.openUrl as any,
-          "https://dashboard.knock.app/collab-io/development/message-types/foo",
+          "https://dashboard.knock.app/collab-io/production/message-types/foo",
         );
       });
   });
@@ -42,6 +45,9 @@ describe("commands/message-type/open", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
       )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()
@@ -59,6 +65,9 @@ describe("commands/message-type/open", () => {
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
+      )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
       )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()

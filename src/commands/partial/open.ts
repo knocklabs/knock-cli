@@ -1,4 +1,4 @@
-import { Args, Flags, ux } from "@oclif/core";
+import { Args, ux } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { browser } from "@/lib/helpers/browser";
@@ -11,10 +11,7 @@ export default class PartialOpen extends BaseCommand<typeof PartialOpen> {
   static summary = "Open a partial in the Knock dashboard.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
   };
 
@@ -36,7 +33,8 @@ export default class PartialOpen extends BaseCommand<typeof PartialOpen> {
     const { partialKey } = this.props.args;
     const { environment, branch } = this.props.flags;
 
-    const envOrBranch = branch ?? environment;
+    const envOrBranch =
+      branch ?? environment ?? (await this.apiV1.getDefaultEnvironmentSlug());
 
     const url = viewPartialUrl(
       this.sessionContext.dashboardOrigin,

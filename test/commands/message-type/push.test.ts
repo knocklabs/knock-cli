@@ -117,7 +117,6 @@ describe("commands/message-type/push", () => {
               isEqual(args, { messageTypeKey: "banner" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 annotate: true,
               }),
           ),
@@ -156,7 +155,6 @@ describe("commands/message-type/push", () => {
               isEqual(args, { messageTypeKey: "banner" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 force: true,
                 annotate: true,
               }),
@@ -204,7 +202,6 @@ describe("commands/message-type/push", () => {
                 isEqual(args, { messageTypeKey: "banner" }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  environment: "development",
                   commit: true,
                   "commit-message": "this is a commit comment!",
                   annotate: true,
@@ -293,7 +290,6 @@ describe("commands/message-type/push", () => {
                 isEqual(args, { messageTypeKey: "banner" }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  environment: "development",
                   branch: "my-feature-branch-123",
                   annotate: true,
                 }),
@@ -465,7 +461,6 @@ describe("commands/message-type/push", () => {
         const expectedFlags = {
           annotate: true,
           "service-token": "valid-token",
-          environment: "development",
           all: true,
           "message-types-dir": {
             abspath: indexDirPath,

@@ -1,10 +1,11 @@
-import { Args, Flags, ux } from "@oclif/core";
+import { Args, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
 import { SourceEnvironmentSettings } from "@/lib/marshal/source";
@@ -18,9 +19,7 @@ export default class SourceGet extends BaseCommand<typeof SourceGet> {
   static summary = "Display a single source from an environment.";
 
   static flags = {
-    environment: Flags.string({
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
   };
 
   static args = {

@@ -10,13 +10,10 @@ import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
 
 export default class MessageTypeGet extends BaseCommand<typeof MessageTypeGet> {
-  static summary = "Display a single in-app message type from an environment.";
+  static summary = "Display a single in-app message type.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     "hide-uncommitted-changes": Flags.boolean({
       summary: "Hide any uncommitted changes.",

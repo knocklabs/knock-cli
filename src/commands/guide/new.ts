@@ -4,7 +4,6 @@ import { Flags } from "@oclif/core";
 import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
-import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import { slugify } from "@/lib/helpers/string";
@@ -36,11 +35,7 @@ export default class GuideNew extends BaseCommand<typeof GuideNew> {
         "The message type key to use for the guide. You cannot use this flag with --template.",
       char: "m",
     }),
-    environment: Flags.string({
-      summary:
-        "The environment to create the guide in. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     force: Flags.boolean({
       summary:
@@ -145,7 +140,11 @@ export default class GuideNew extends BaseCommand<typeof GuideNew> {
       spinner.start("‣ Pushing guide to Knock");
 
       try {
-        await GuidePush.run([key]);
+        await GuidePush.run([
+          key,
+          ...(flags.environment ? ["--environment", flags.environment] : []),
+          ...(flags.branch ? ["--branch", flags.branch] : []),
+        ]);
       } catch (error) {
         this.error(`Failed to push guide to Knock: ${error}`);
       } finally {

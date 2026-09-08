@@ -50,7 +50,6 @@ describe("commands/guide/validate (a single guide)", () => {
               isEqual(args, { guideKey: "welcome-guide" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
           sinon.match((guide) =>
@@ -79,7 +78,6 @@ describe("commands/guide/validate (a single guide)", () => {
                 isEqual(args, { guideKey: "welcome-guide" }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  environment: "development",
                   branch: "my-feature-branch-123",
                 }),
             ),
@@ -248,7 +246,6 @@ describe("commands/guide/validate (all guides)", () => {
         const expectedArgs = {};
         const expectedFlags = {
           "service-token": "valid-token",
-          environment: "development",
           all: true,
           "guides-dir": {
             abspath: indexDirPath,

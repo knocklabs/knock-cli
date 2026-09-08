@@ -2,8 +2,10 @@ import * as path from "node:path";
 
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
+import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
+import MessageTypePush from "@/commands/message-type/push";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 
@@ -129,6 +131,33 @@ describe("commands/message-type/new", () => {
           expect(messageTypeJson.variants[0].key).to.equal("default");
         },
       );
+  });
+
+  describe("given explicit scope flags with push", () => {
+    setupWithStub()
+      .stub(MessageTypePush, "run", (stub) => stub.resolves())
+      .command([
+        "message-type new",
+        "--key",
+        "scoped-message-type",
+        "--name",
+        "Scoped Message Type",
+        "--force",
+        "--push",
+        "--environment",
+        "development",
+        "--branch",
+        "my-feature-branch",
+      ])
+      .it("forwards the explicit environment and branch", () => {
+        sinon.assert.calledWith(MessageTypePush.run as sinon.SinonStub, [
+          "scoped-message-type",
+          "--environment",
+          "development",
+          "--branch",
+          "my-feature-branch",
+        ]);
+      });
   });
 
   describe("given a valid message type key", () => {

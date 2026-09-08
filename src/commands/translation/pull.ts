@@ -26,10 +26,7 @@ export default class TranslationPull extends BaseCommand<
   static verifyFeatureEnabled = "translations" as const;
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary:

@@ -46,7 +46,6 @@ describe("commands/audience/validate (a single audience)", () => {
           KnockMgmt.Audiences.prototype.validate as sinon.SinonStub,
           "default",
           sinon.match({
-            environment: "development",
             audience: sinon.match({
               name: "Default",
               type: "static",
@@ -69,7 +68,6 @@ describe("commands/audience/validate (a single audience)", () => {
             KnockMgmt.Audiences.prototype.validate as sinon.SinonStub,
             "default",
             sinon.match({
-              environment: "development",
               branch: "my-feature-branch-123",
               audience: sinon.match({
                 name: "Default",

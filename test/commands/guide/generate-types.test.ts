@@ -190,7 +190,6 @@ describe("commands/guide/generate-types", () => {
           sinon.match(({ flags }) => {
             const expectedFlags = {
               "service-token": "valid-token",
-              environment: "development",
               branch: "my-feature-branch-123",
               limit: 100,
               "include-json-schema": true,

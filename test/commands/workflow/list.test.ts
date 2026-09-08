@@ -30,8 +30,6 @@ describe("commands/workflow/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-
-                environment: "development",
               }),
           ),
         );
@@ -147,8 +145,6 @@ describe("commands/workflow/list", () => {
                   isEqual(args, {}) &&
                   isEqual(flags, {
                     "service-token": "valid-token",
-
-                    environment: "development",
                   }),
               ),
             );
@@ -162,7 +158,6 @@ describe("commands/workflow/list", () => {
                   isEqual(flags, {
                     "service-token": "valid-token",
 
-                    environment: "development",
                     after: "xyz",
                   }),
               ),
@@ -204,7 +199,6 @@ describe("commands/workflow/list", () => {
               isEqual(args, {}) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 branch: "my-feature-branch-123",
               }),
           ),

@@ -50,7 +50,6 @@ describe("commands/partial/validate (a single partial)", () => {
               isEqual(args, { partialKey: "default" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
           sinon.match((partial) =>
@@ -79,7 +78,6 @@ describe("commands/partial/validate (a single partial)", () => {
                 isEqual(args, { partialKey: "default" }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  environment: "development",
                   branch: "my-feature-branch-123",
                 }),
             ),
@@ -226,7 +224,6 @@ describe("commands/partial/validate (all partials)", () => {
         const expectedArgs = {};
         const expectedFlags = {
           "service-token": "valid-token",
-          environment: "development",
           all: true,
           "partials-dir": {
             abspath: indexDirPath,

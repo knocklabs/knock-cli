@@ -4,7 +4,6 @@ import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
-import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
@@ -26,12 +25,7 @@ export default class Push extends BaseCommand<typeof Push> {
   static summary = "Push all resources from a local file system to Knock.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "Pushing resources is only allowed in the development environment",
-      default: KnockEnv.Development,
-      options: [KnockEnv.Development],
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     "knock-dir": CustomFlags.dirPath({
       summary: "The target directory path to find all resources to push.",
@@ -66,8 +60,7 @@ export default class Push extends BaseCommand<typeof Push> {
 
     const args = [
       "--all",
-      "--environment",
-      flags.environment,
+      ...(flags.environment ? ["--environment", flags.environment] : []),
       ...(flags.branch ? ["--branch", flags.branch] : []),
       ...(flags["service-token"]
         ? ["--service-token", flags["service-token"]]

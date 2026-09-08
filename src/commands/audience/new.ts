@@ -4,7 +4,6 @@ import { Flags } from "@oclif/core";
 import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
-import { KnockEnv } from "@/lib/helpers/const";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import { slugify } from "@/lib/helpers/string";
@@ -44,11 +43,7 @@ export default class AudienceNew extends BaseCommand<typeof AudienceNew> {
       summary: "The description of the audience",
       char: "d",
     }),
-    environment: Flags.string({
-      summary:
-        "The environment to create the audience in. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     force: Flags.boolean({
       summary:
@@ -163,7 +158,10 @@ export default class AudienceNew extends BaseCommand<typeof AudienceNew> {
     if (flags.push) {
       spinner.start("‣ Pushing audience to Knock");
 
-      const pushArgs = [key, "--environment", flags.environment];
+      const pushArgs = [
+        key,
+        ...(flags.environment ? ["--environment", flags.environment] : []),
+      ];
       if (flags.branch) {
         pushArgs.push("--branch", flags.branch);
       }

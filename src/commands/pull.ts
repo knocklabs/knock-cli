@@ -26,10 +26,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
     "Pull all resources from an environment into a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     "knock-dir": CustomFlags.dirPath({
       summary: "The target directory path to pull all resources into.",
@@ -67,8 +64,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
 
     const args = [
       "--all",
-      "--environment",
-      flags.environment,
+      ...(flags.environment ? ["--environment", flags.environment] : []),
       ...(flags.branch ? ["--branch", flags.branch] : []),
       ...(flags["hide-uncommitted-changes"]
         ? ["--hide-uncommitted-changes"]
