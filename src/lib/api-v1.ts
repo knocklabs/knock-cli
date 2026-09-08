@@ -676,6 +676,17 @@ export default class ApiV1 {
     return defaultEnvironment.slug;
   }
 
+  // By resources: Branches
+
+  async rebaseBranch(
+    branchSlug: string,
+    environment: string,
+  ): Promise<AxiosResponse<Branch>> {
+    const params = { environment };
+
+    return this.put(`/branches/${branchSlug}/rebase`, {}, { params });
+  }
+
   // By methods:
 
   async get(
@@ -710,6 +721,8 @@ export type WhoamiResp = {
   account_slug: string;
   service_token_name: string | null;
   user_id: string | null;
+  user_name?: string | null;
+  user_email?: string | null;
   account_features?: AccountFeatures;
 };
 

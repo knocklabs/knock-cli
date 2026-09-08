@@ -181,6 +181,19 @@ const scaffoldPushChannelStep = (
   return [scaffoldedStep, bundleFragment];
 };
 
+const scaffoldInAppGuideChannelStep = (
+  refSuffix: number,
+): StepScaffoldFuncRet => {
+  const scaffoldedStep: WorkflowStepData = {
+    ref: `in_app_guide_${refSuffix}`,
+    type: StepType.Channel,
+    channel_type: "in_app_guide",
+    guide_key: "<GUIDE KEY>",
+  };
+
+  return [scaffoldedStep, {}];
+};
+
 const scaffoldChatChannelStep = (
   refSuffix: number,
   channels: Channel[],
@@ -211,6 +224,7 @@ const STEP_TAGS = [
   "fetch",
   "email",
   "in_app_feed",
+  "in_app_guide",
   "sms",
   "push",
   "chat",
@@ -222,6 +236,7 @@ export const StepTagChoices = {
   fetch: "HTTP Fetch step",
   email: "Email channel step",
   in_app_feed: "In-app feed channel step",
+  in_app_guide: "In-app guide channel step",
   sms: "SMS channel step",
   push: "Push channel step",
   chat: "Chat channel step",
@@ -248,15 +263,24 @@ const stepScaffoldFuncs: Record<
   // Channel steps
   email: scaffoldEmailChannelStep,
   in_app_feed: scaffoldInAppFeedChannelStep,
+  in_app_guide: scaffoldInAppGuideChannelStep,
   sms: scaffoldSmsChannelStep,
   push: scaffoldPushChannelStep,
   chat: scaffoldChatChannelStep,
 };
 
-// Accept "in-app-feed" for backward compatibility, but normalize to the snake
-// case one as the canonical tag.
-const normalizeStepTag = (tag: string): string =>
-  tag === "in-app-feed" ? "in_app_feed" : tag;
+// Accept hyphenated aliases for backward compatibility, but normalize to the
+// snake case ones as the canonical tags.
+const normalizeStepTag = (tag: string): string => {
+  switch (tag) {
+    case "in-app-feed":
+      return "in_app_feed";
+    case "in-app-guide":
+      return "in_app_guide";
+    default:
+      return tag;
+  }
+};
 
 /*
  * Takes a comma seperated string of step tags, then parses and returns a list
@@ -338,6 +362,8 @@ const scaffoldWorkflowDirBundle = (
             stepCount,
             get(channelsByType, tag, []),
           );
+        case "in_app_guide":
+          return (stepScaffoldFuncs[tag] as StepScaffoldFunc)(stepCount);
         default:
           return (stepScaffoldFuncs[tag] as StepScaffoldFunc)(stepCount);
       }
@@ -364,6 +390,10 @@ function swapChannelReferences(
   step: ChannelStepData,
   channelsByType: Record<Channel["type"], Channel[]>,
 ): WorkflowStepData {
+  if (step.channel_type === "in_app_guide") {
+    return step;
+  }
+
   // Temporary until we start shipping the `channel_type` field on channel steps
   // so that we can then branch by that value.
   switch (step.channel_key) {
@@ -400,6 +430,10 @@ function walkWorkflowSteps(
   return steps.map((step) => {
     switch (step.type) {
       case StepType.Channel:
+        if (step.channel_type === "in_app_guide") {
+          return step;
+        }
+
         return swapChannelReferences(step, channelsByType);
       case StepType.Branch:
         return {

@@ -98,7 +98,11 @@ const formatStringList = (
 const channelStepSummaryLines = (step: WorkflowStepData) => {
   if (step.type !== StepType.Channel) return [];
 
-  const { channel_key, channel_group_key } = step;
+  const { channel_key, channel_group_key, channel_type, guide_key } = step;
+
+  if (channel_type === "in_app_guide" || guide_key) {
+    return [guide_key && `Guide: ${guide_key}`].filter((x) => x);
+  }
 
   return [
     channel_key && `Channel: ${channel_key}`,

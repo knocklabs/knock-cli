@@ -10,6 +10,7 @@ export type ChannelType =
   | "chat"
   | "email"
   | "in_app_feed"
+  | "in_app_guide"
   | "push"
   | "sms"
   | "http";
@@ -43,9 +44,11 @@ type TemplateData<A extends MaybeWithAnnotation = unknown> = A &
 export type ChannelStepData<A extends MaybeWithAnnotation = unknown> =
   WorkflowStepBase & {
     type: StepType.Channel;
+    channel_type?: ChannelType;
     channel_key?: string;
     channel_group_key?: string;
-    template: TemplateData<A>;
+    guide_key?: string;
+    template?: TemplateData<A>;
   };
 
 /* Batch step */
