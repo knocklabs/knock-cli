@@ -5,17 +5,13 @@ import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { AudienceData } from "../audience";
 import { EmailLayoutData } from "../email-layout";
+import { GoalData } from "../goal";
 import { GuideData } from "../guide";
 import { MessageTypeData } from "../message-type";
 import { PartialData } from "../partial";
 import { ReusableStepData } from "../reusable-step";
 import { WorkflowData } from "../workflow";
 
-/*
- * Sanitize the resource data into a format that's appropriate for reading
- * and writing, by stripping out any annotation fields and handling readonly
- * fields.
- */
 type ResourceData<A extends WithAnnotation> =
   | AudienceData<A>
   | EmailLayoutData<A>
@@ -23,6 +19,7 @@ type ResourceData<A extends WithAnnotation> =
   | WorkflowData<A>
   | MessageTypeData<A>
   | GuideData<A>
+  | GoalData<A>
   | ReusableStepData<A>;
 
 // Volatile fields that change per-branch or over time, excluded to avoid noisy diffs

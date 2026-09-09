@@ -14,6 +14,7 @@ import {
 } from "@/lib/resources";
 
 import AudiencePush from "./audience/push";
+import GoalPush from "./goal/push";
 import GuidePush from "./guide/push";
 import EmailLayoutPush from "./layout/push";
 import MessageTypePush from "./message-type/push";
@@ -122,6 +123,9 @@ const runResourcePushCommand = async (
 
     case "guide":
       return GuidePush.run([...args, "--guides-dir", subdirPath]);
+
+    case "goal":
+      return GoalPush.run([...args, "--goals-dir", subdirPath]);
 
     default: {
       const invalidResourceType: never = resourceType;
