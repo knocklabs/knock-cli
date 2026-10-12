@@ -57,4 +57,27 @@ describe("commands/goal/new", () => {
     .command(["goal new", "trial-conversion"])
     .catch((error) => expect(error.message).to.match(/already exists/))
     .it("errors when the goal directory already exists");
+
+  describe("given inside an existing resource directory", () => {
+    beforeEach(() => {
+      const workflowJsonPath = path.resolve(
+        sandboxDir,
+        "my-workflow",
+        "workflow.json",
+      );
+      fs.outputJsonSync(workflowJsonPath, { name: "My Workflow" });
+      process.chdir(path.resolve(sandboxDir, "my-workflow"));
+    });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stdout()
+      .command(["goal new", "nested-goal"])
+      .catch((error) =>
+        expect(error.message).to.match(
+          /Cannot create a new goal inside an existing/,
+        ),
+      )
+      .it("throws an error");
+  });
 });

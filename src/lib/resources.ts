@@ -30,6 +30,11 @@ export type ResourceCliCapabilities = {
   supportsCommit: boolean;
   supportsAllowEmpty: boolean;
   supportsForceOnPush: boolean;
+  /**
+   * When true, bulk `knock pull` / `knock push` warn and continue if this
+   * resource fails (e.g. server-side feature flag / scopes gating).
+   */
+  softFailOnBulk: boolean;
 };
 
 export const RESOURCE_CLI_CAPABILITIES: Record<
@@ -42,6 +47,7 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsCommit: true,
     supportsAllowEmpty: false,
     supportsForceOnPush: true,
+    softFailOnBulk: false,
   },
   partial: {
     supportsBranch: true,
@@ -49,6 +55,7 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsCommit: true,
     supportsAllowEmpty: true,
     supportsForceOnPush: true,
+    softFailOnBulk: false,
   },
   email_layout: {
     supportsBranch: true,
@@ -56,6 +63,7 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsCommit: true,
     supportsAllowEmpty: true,
     supportsForceOnPush: true,
+    softFailOnBulk: false,
   },
   goal: {
     supportsBranch: false,
@@ -63,6 +71,7 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsCommit: false,
     supportsAllowEmpty: false,
     supportsForceOnPush: false,
+    softFailOnBulk: true,
   },
   workflow: {
     supportsBranch: true,
@@ -70,6 +79,7 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsCommit: true,
     supportsAllowEmpty: true,
     supportsForceOnPush: true,
+    softFailOnBulk: false,
   },
   message_type: {
     supportsBranch: true,
@@ -77,6 +87,7 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsCommit: true,
     supportsAllowEmpty: true,
     supportsForceOnPush: true,
+    softFailOnBulk: false,
   },
   guide: {
     supportsBranch: true,
@@ -84,6 +95,7 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsCommit: true,
     supportsAllowEmpty: true,
     supportsForceOnPush: true,
+    softFailOnBulk: false,
   },
   translation: {
     supportsBranch: true,
@@ -91,6 +103,7 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsCommit: true,
     supportsAllowEmpty: true,
     supportsForceOnPush: true,
+    softFailOnBulk: false,
   },
 };
 

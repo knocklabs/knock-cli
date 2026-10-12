@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import { Flags } from "@oclif/core";
+import { Flags, ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
@@ -8,11 +8,13 @@ import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
 import {
-  ALL_RESOURCE_TYPES,
-  buildBulkPushArgs,
-  NonHiddenResourceType,
-  RESOURCE_DIR_FLAGS,
-  RESOURCE_SUBDIRS,
+    ALL_RESOURCE_TYPES,
+    buildBulkPushArgs,
+    BulkPushFlags,
+    NonHiddenResourceType,
+    RESOURCE_CLI_CAPABILITIES,
+    RESOURCE_DIR_FLAGS,
+    RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
 import AudiencePush from "./audience/push";
@@ -75,7 +77,7 @@ export default class Push extends BaseCommand<typeof Push> {
 const runResourcePushCommand = async (
   resourceType: NonHiddenResourceType,
   targetDirCtx: DirContext,
-  flags: BulkPushCommandFlags,
+  flags: BulkPushFlags,
 ): Promise<void> => {
   const subdirPath = path.resolve(
     targetDirCtx.abspath,
@@ -94,45 +96,49 @@ const runResourcePushCommand = async (
     subdirPath,
   ];
 
-  switch (resourceType) {
-    case "audience":
-      return AudiencePush.run(args);
+  try {
+    switch (resourceType) {
+      case "audience":
+        return await AudiencePush.run(args);
 
-    case "email_layout":
-      return EmailLayoutPush.run(args);
+      case "email_layout":
+        return await EmailLayoutPush.run(args);
 
-    case "partial":
-      return PartialPush.run(args);
+      case "partial":
+        return await PartialPush.run(args);
 
-    case "translation":
-      return TranslationPush.run(args);
+      case "translation":
+        return await TranslationPush.run(args);
 
-    case "workflow":
-      return WorkflowPush.run(args);
+      case "workflow":
+        return await WorkflowPush.run(args);
 
-    case "message_type":
-      return MessageTypePush.run(args);
+      case "message_type":
+        return await MessageTypePush.run(args);
 
-    case "guide":
-      return GuidePush.run(args);
+      case "guide":
+        return await GuidePush.run(args);
 
-    case "goal":
-      return GoalPush.run(args);
+      case "goal":
+        return await GoalPush.run(args);
 
-    default: {
-      const invalidResourceType: never = resourceType;
-      throw new Error(`Unknown resource type: ${invalidResourceType}`);
+      default: {
+        const invalidResourceType: never = resourceType;
+        throw new Error(`Unknown resource type: ${invalidResourceType}`);
+      }
     }
-  }
-};
+  } catch (error) {
+    // Some resources (e.g. goals) are gated server-side. Soft-fail so the rest
+    // of `knock push` (workflows, guides, etc.) still completes.
+    if (RESOURCE_CLI_CAPABILITIES[resourceType].softFailOnBulk) {
+      ux.warn(
+        `Skipping ${RESOURCE_SUBDIRS[resourceType]}: ${
+          (error as Error).message
+        }`,
+      );
+      return;
+    }
 
-type BulkPushCommandFlags = {
-  environment?: string;
-  branch?: string;
-  "service-token"?: string;
-  "api-origin"?: string;
-  commit?: boolean;
-  "commit-message"?: string;
-  "allow-empty"?: boolean;
-  force?: boolean;
+    throw error;
+  }
 };

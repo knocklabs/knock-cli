@@ -8,11 +8,13 @@ import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import {
-  ALL_RESOURCE_TYPES,
-  buildBulkPullArgs,
-  NonHiddenResourceType,
-  RESOURCE_DIR_FLAGS,
-  RESOURCE_SUBDIRS,
+    ALL_RESOURCE_TYPES,
+    buildBulkPullArgs,
+    BulkPullFlags,
+    NonHiddenResourceType,
+    RESOURCE_CLI_CAPABILITIES,
+    RESOURCE_DIR_FLAGS,
+    RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
 import AudiencePull from "./audience/pull";
@@ -75,7 +77,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
 const runResourcePullCommand = async (
   resourceType: NonHiddenResourceType,
   targetDirCtx: DirContext,
-  flags: BulkPullCommandFlags,
+  flags: BulkPullFlags,
 ): Promise<void> => {
   const subdirPath = path.resolve(
     targetDirCtx.abspath,
@@ -120,21 +122,17 @@ const runResourcePullCommand = async (
       }
     }
   } catch (error) {
-    // Goals are gated server-side (feature flag / scopes). A failure must not
-    // abort the rest of `knock pull` (workflows, guides, etc.).
-    if (resourceType === "goal") {
-      ux.warn(`Skipping goals: ${(error as Error).message}`);
+    // Some resources (e.g. goals) are gated server-side. Soft-fail so the rest
+    // of `knock pull` (workflows, guides, etc.) still completes.
+    if (RESOURCE_CLI_CAPABILITIES[resourceType].softFailOnBulk) {
+      ux.warn(
+        `Skipping ${RESOURCE_SUBDIRS[resourceType]}: ${
+          (error as Error).message
+        }`,
+      );
       return;
     }
 
     throw error;
   }
-};
-
-type BulkPullCommandFlags = {
-  environment?: string;
-  branch?: string;
-  "hide-uncommitted-changes"?: boolean;
-  "service-token"?: string;
-  "api-origin"?: string;
 };

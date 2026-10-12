@@ -6,8 +6,8 @@ import * as fs from "fs-extra";
 import { DirContext } from "@/lib/helpers/fs";
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import {
-    ProjectConfig,
-    resolveResourceDir,
+  ProjectConfig,
+  resolveResourceDir,
 } from "@/lib/helpers/project-config";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { GoalDirContext, RunContext } from "@/lib/run-context";

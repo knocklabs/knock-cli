@@ -1,3 +1,5 @@
+import * as path from "node:path";
+
 import { Args } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
@@ -18,6 +20,13 @@ export default class GoalNew extends BaseCommand<typeof GoalNew> {
 
   async run(): Promise<void> {
     const { goalKey } = this.props.args;
+    const { resourceDir, cwd } = this.runContext;
+
+    if (resourceDir) {
+      return this.error(
+        `Cannot create a new goal inside an existing ${resourceDir.type} directory`,
+      );
+    }
 
     const validationError = Goal.validateGoalKey(goalKey);
     if (validationError) {
@@ -27,10 +36,10 @@ export default class GoalNew extends BaseCommand<typeof GoalNew> {
     const goalsIndexDirCtx = await resolveResourceDir(
       this.projectConfig,
       "goal",
-      this.runContext.cwd,
+      cwd,
     );
 
-    const goalDirPath = `${goalsIndexDirCtx.abspath}/${goalKey}`;
+    const goalDirPath = path.resolve(goalsIndexDirCtx.abspath, goalKey);
     const exists = await Goal.isGoalDir(goalDirPath);
 
     if (exists) {
