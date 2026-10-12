@@ -1,18 +1,18 @@
 import { Goal } from "@knocklabs/mgmt/resources/goals";
-import { Flags, ux } from "@oclif/core";
+import { ux } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDate } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import {
-    maybePromptPageAction,
-    pageFlags,
-    PageInfo,
-    paramsForPageAction,
+  maybePromptPageAction,
+  pageFlags,
+  PageInfo,
+  paramsForPageAction,
 } from "@/lib/helpers/page";
 import { spinner } from "@/lib/helpers/ux";
-import * as GoalMarshal from "@/lib/marshal/goal";
 
 type ListGoalData = {
   entries: Goal[];
@@ -23,10 +23,7 @@ export default class GoalList extends BaseCommand<typeof GoalList> {
   static summary = "Display all goals for an environment.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     ...pageFlags,
   };
 
@@ -83,13 +80,11 @@ export default class GoalList extends BaseCommand<typeof GoalList> {
       },
       event_type: {
         header: "Event type",
-        get: (entry) =>
-          GoalMarshal.formatEventType((entry as unknown as Goal).condition),
+        get: (entry) => (entry as unknown as Goal).condition.event.event_type,
       },
       event_key: {
         header: "Event key",
-        get: (entry) =>
-          GoalMarshal.formatEventKey((entry as unknown as Goal).condition),
+        get: (entry) => (entry as unknown as Goal).condition.event.event_key,
       },
       updated_at: {
         header: "Updated at",

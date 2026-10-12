@@ -21,10 +21,7 @@ export default class GoalPull extends BaseCommand<typeof GoalPull> {
     "Pull one or more goals from an environment into a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     all: Flags.boolean({
       summary: "Whether to pull all goals from the specified environment.",
     }),

@@ -36,7 +36,7 @@ describe("commands/goal/list", () => {
         sinon.assert.calledWith(
           KnockMgmt.Goals.prototype.list as sinon.SinonStub,
           sinon.match({
-            environment: "development",
+            environment: undefined,
           }),
         );
 

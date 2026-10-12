@@ -139,16 +139,3 @@ export const toGoalRequest = (content: AnyObj): GoalRequest => {
 
   return request;
 };
-
-type GoalConditionLike = {
-  event: {
-    event_type: string;
-    event_key: string;
-  };
-};
-
-export const formatEventType = (condition: GoalConditionLike): string =>
-  condition.event.event_type;
-
-export const formatEventKey = (condition: GoalConditionLike): string =>
-  condition.event.event_key;

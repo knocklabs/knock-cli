@@ -9,7 +9,9 @@ import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
 import {
   ALL_RESOURCE_TYPES,
+  buildBulkPushArgs,
   NonHiddenResourceType,
+  RESOURCE_DIR_FLAGS,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
@@ -59,29 +61,13 @@ export default class Push extends BaseCommand<typeof Push> {
       );
     }
 
-    const args = [
-      "--all",
-      ...(flags.environment ? ["--environment", flags.environment] : []),
-      ...(flags.branch ? ["--branch", flags.branch] : []),
-      ...(flags["service-token"]
-        ? ["--service-token", flags["service-token"]]
-        : []),
-      ...(flags["api-origin"] ? ["--api-origin", flags["api-origin"]] : []),
-      ...(flags.commit ? ["--commit"] : []),
-      ...(flags["commit-message"]
-        ? ["--commit-message", flags["commit-message"]]
-        : []),
-      ...(flags["allow-empty"] ? ["--allow-empty"] : []),
-      ...(flags.force ? ["--force"] : []),
-    ];
-
     // Note: Because we're pushing the different resource types sequentially,
     // if one of the push commands fails, we may end up in a partially pushed
     // state, with only some of the resources upserted. This is the best we can
     // do until we have a bulk push mAPI endpoint.
     for (const resourceType of ALL_RESOURCE_TYPES) {
       // eslint-disable-next-line no-await-in-loop
-      await runResourcePushCommand(resourceType, targetDirCtx, args);
+      await runResourcePushCommand(resourceType, targetDirCtx, flags);
     }
   }
 }
@@ -89,7 +75,7 @@ export default class Push extends BaseCommand<typeof Push> {
 const runResourcePushCommand = async (
   resourceType: NonHiddenResourceType,
   targetDirCtx: DirContext,
-  args: string[],
+  flags: BulkPushCommandFlags,
 ): Promise<void> => {
   const subdirPath = path.resolve(
     targetDirCtx.abspath,
@@ -102,54 +88,51 @@ const runResourcePushCommand = async (
     return;
   }
 
+  const args = [
+    ...buildBulkPushArgs(resourceType, flags),
+    RESOURCE_DIR_FLAGS[resourceType],
+    subdirPath,
+  ];
+
   switch (resourceType) {
     case "audience":
-      return AudiencePush.run([...args, "--audiences-dir", subdirPath]);
+      return AudiencePush.run(args);
 
     case "email_layout":
-      return EmailLayoutPush.run([...args, "--layouts-dir", subdirPath]);
+      return EmailLayoutPush.run(args);
 
     case "partial":
-      return PartialPush.run([...args, "--partials-dir", subdirPath]);
+      return PartialPush.run(args);
 
     case "translation":
-      return TranslationPush.run([...args, "--translations-dir", subdirPath]);
+      return TranslationPush.run(args);
 
     case "workflow":
-      return WorkflowPush.run([...args, "--workflows-dir", subdirPath]);
+      return WorkflowPush.run(args);
 
     case "message_type":
-      return MessageTypePush.run([...args, "--message-types-dir", subdirPath]);
+      return MessageTypePush.run(args);
 
     case "guide":
-      return GuidePush.run([...args, "--guides-dir", subdirPath]);
+      return GuidePush.run(args);
 
-    case "goal": {
-      // Goals auto-publish and are not branch/commit resources.
-      const goalArgs = args.filter((arg, index, all) => {
-        if (
-          arg === "--branch" ||
-          arg === "--commit" ||
-          arg === "--allow-empty" ||
-          arg === "--commit-message"
-        ) {
-          return false;
-        }
-
-        const prev = all[index - 1];
-        if (prev === "--branch" || prev === "--commit-message") {
-          return false;
-        }
-
-        return true;
-      });
-
-      return GoalPush.run([...goalArgs, "--goals-dir", subdirPath]);
-    }
+    case "goal":
+      return GoalPush.run(args);
 
     default: {
       const invalidResourceType: never = resourceType;
       throw new Error(`Unknown resource type: ${invalidResourceType}`);
     }
   }
+};
+
+type BulkPushCommandFlags = {
+  environment?: string;
+  branch?: string;
+  "service-token"?: string;
+  "api-origin"?: string;
+  commit?: boolean;
+  "commit-message"?: string;
+  "allow-empty"?: boolean;
+  force?: boolean;
 };

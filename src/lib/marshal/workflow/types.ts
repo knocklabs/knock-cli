@@ -1,12 +1,11 @@
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import type { Conditions } from "@/lib/marshal/conditions";
 import {
-  Duration,
-  KeyValueBlock,
-  MaybeWithAnnotation,
+    Duration,
+    GoalAttachment,
+    KeyValueBlock,
+    MaybeWithAnnotation,
 } from "@/lib/marshal/shared/types";
-
-import { GoalAttachment } from "../goal/types";
 
 export type ChannelType =
   | "chat"

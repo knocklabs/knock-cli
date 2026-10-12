@@ -3,6 +3,8 @@ import { test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as sinon from "sinon";
 
+import KnockApiV1 from "@/lib/api-v1";
+
 describe("commands/goal/clone", () => {
   describe("given no goal key args", () => {
     test
@@ -15,6 +17,9 @@ describe("commands/goal/clone", () => {
   describe("given source and new goal keys with --force", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
+      )
       .stub(KnockMgmt.Goals.prototype, "clone", (stub) =>
         stub.resolves({
           goal: {
@@ -46,7 +51,7 @@ describe("commands/goal/clone", () => {
           KnockMgmt.Goals.prototype.clone as sinon.SinonStub,
           "trial-conversion",
           sinon.match({
-            environment: "development",
+            environment: undefined,
             clone: {
               key: "trial-conversion-copy",
               name: "trial-conversion-copy",

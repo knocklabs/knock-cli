@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import { Flags } from "@oclif/core";
+import { Flags, ux } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import * as CustomFlags from "@/lib/helpers/flag";
@@ -9,7 +9,9 @@ import { resolveKnockDir } from "@/lib/helpers/project-config";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import {
   ALL_RESOURCE_TYPES,
+  buildBulkPullArgs,
   NonHiddenResourceType,
+  RESOURCE_DIR_FLAGS,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
@@ -63,24 +65,9 @@ export default class Pull extends BaseCommand<typeof Pull> {
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
-    const args = [
-      "--all",
-      ...(flags.environment ? ["--environment", flags.environment] : []),
-      ...(flags.branch ? ["--branch", flags.branch] : []),
-      ...(flags["hide-uncommitted-changes"]
-        ? ["--hide-uncommitted-changes"]
-        : []),
-      ...(flags["service-token"]
-        ? ["--service-token", flags["service-token"]]
-        : []),
-      ...(flags["api-origin"] ? ["--api-origin", flags["api-origin"]] : []),
-      // Always use the force flag to skip prompts
-      "--force",
-    ];
-
     for (const resourceType of ALL_RESOURCE_TYPES) {
       // eslint-disable-next-line no-await-in-loop
-      await runResourcePullCommand(resourceType, targetDirCtx, args);
+      await runResourcePullCommand(resourceType, targetDirCtx, flags);
     }
   }
 }
@@ -88,56 +75,66 @@ export default class Pull extends BaseCommand<typeof Pull> {
 const runResourcePullCommand = async (
   resourceType: NonHiddenResourceType,
   targetDirCtx: DirContext,
-  args: string[],
+  flags: BulkPullCommandFlags,
 ): Promise<void> => {
   const subdirPath = path.resolve(
     targetDirCtx.abspath,
     RESOURCE_SUBDIRS[resourceType],
   );
+  const args = [
+    ...buildBulkPullArgs(resourceType, flags),
+    RESOURCE_DIR_FLAGS[resourceType],
+    subdirPath,
+  ];
 
-  switch (resourceType) {
-    case "audience":
-      return AudiencePull.run([...args, "--audiences-dir", subdirPath]);
+  try {
+    switch (resourceType) {
+      case "audience":
+        return await AudiencePull.run(args);
 
-    case "email_layout":
-      return EmailLayoutPull.run([...args, "--layouts-dir", subdirPath]);
+      case "email_layout":
+        return await EmailLayoutPull.run(args);
 
-    case "partial":
-      return PartialPull.run([...args, "--partials-dir", subdirPath]);
+      case "partial":
+        return await PartialPull.run(args);
 
-    // TODO(KNO-9451): Include translation in the knock pull
-    case "translation":
-      return TranslationPull.run([...args, "--translations-dir", subdirPath]);
+      // TODO(KNO-9451): Include translation in the knock pull
+      case "translation":
+        return await TranslationPull.run(args);
 
-    case "workflow":
-      return WorkflowPull.run([...args, "--workflows-dir", subdirPath]);
+      case "workflow":
+        return await WorkflowPull.run(args);
 
-    case "message_type":
-      return MessageTypePull.run([...args, "--message-types-dir", subdirPath]);
+      case "message_type":
+        return await MessageTypePull.run(args);
 
-    case "guide":
-      return GuidePull.run([...args, "--guides-dir", subdirPath]);
+      case "guide":
+        return await GuidePull.run(args);
 
-    case "goal": {
-      // Goals are not branch resources and have no uncommitted state.
-      const goalArgs = args.filter((arg, index, all) => {
-        if (arg === "--branch" || arg === "--hide-uncommitted-changes") {
-          return false;
-        }
+      case "goal":
+        return await GoalPull.run(args);
 
-        if (all[index - 1] === "--branch") {
-          return false;
-        }
-
-        return true;
-      });
-
-      return GoalPull.run([...goalArgs, "--goals-dir", subdirPath]);
+      default: {
+        const invalidResourceType: never = resourceType;
+        throw new Error(`Unknown resource type: ${invalidResourceType}`);
+      }
+    }
+  } catch (error) {
+    // Goals are gated server-side (feature flag / scopes). A failure must not
+    // abort the rest of `knock pull` (workflows, guides, etc.).
+    if (resourceType === "goal") {
+      ux.warn(`Skipping goals: ${(error as Error).message}`);
+      return;
     }
 
-    default: {
-      const invalidResourceType: never = resourceType;
-      throw new Error(`Unknown resource type: ${invalidResourceType}`);
-    }
+    throw error;
   }
+};
+
+type BulkPullCommandFlags = {
+  environment?: string;
+  branch?: string;
+  "hide-uncommitted-changes"?: boolean;
+  "service-token"?: string;
+  "api-origin"?: string;
 };

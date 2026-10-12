@@ -1,8 +1,7 @@
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import { Conditions } from "../conditions";
-import { GoalAttachment } from "../goal/types";
-import { MaybeWithAnnotation } from "../shared/types";
+import { GoalAttachment, MaybeWithAnnotation } from "../shared/types";
 
 export type GuideStepData = {
   ref: string;

@@ -42,7 +42,7 @@ describe("commands/goal/get", () => {
           KnockMgmt.Goals.prototype.retrieve as sinon.SinonStub,
           "trial-conversion",
           sinon.match({
-            environment: "development",
+            environment: undefined,
           }),
         );
 

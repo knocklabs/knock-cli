@@ -3,7 +3,6 @@ import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { indentString } from "@/lib/helpers/string";
@@ -17,10 +16,7 @@ export default class GoalPush extends BaseCommand<typeof GoalPush> {
   static summary = "Push one or more goals from a local file system to Knock.";
 
   static flags = {
-    environment: Flags.string({
-      summary: "The environment to push the goal to. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     all: Flags.boolean({
       summary: "Whether to push all goals from the target directory.",
     }),
@@ -28,7 +24,6 @@ export default class GoalPush extends BaseCommand<typeof GoalPush> {
       summary: "The target directory path to find all goals to push.",
       dependsOn: ["all"],
     }),
-    force: CustomFlags.force,
   };
 
   static args = {

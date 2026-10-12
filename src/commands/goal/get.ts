@@ -1,21 +1,18 @@
 import { Goal } from "@knocklabs/mgmt/resources/goals";
-import { Args, Flags, ux } from "@oclif/core";
+import { Args, ux } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { spinner } from "@/lib/helpers/ux";
-import * as GoalMarshal from "@/lib/marshal/goal";
 
 export default class GoalGet extends BaseCommand<typeof GoalGet> {
   static summary = "Display a single goal from an environment.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
   };
 
   static args = {
@@ -76,11 +73,11 @@ export default class GoalGet extends BaseCommand<typeof GoalGet> {
       },
       {
         key: "Event type",
-        value: GoalMarshal.formatEventType(goal.condition),
+        value: event.event_type,
       },
       {
         key: "Event key",
-        value: GoalMarshal.formatEventKey(goal.condition),
+        value: event.event_key,
       },
       ...(event.event_type === "integration_source"
         ? [

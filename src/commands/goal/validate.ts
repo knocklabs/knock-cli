@@ -16,10 +16,7 @@ export default class GoalValidate extends BaseCommand<typeof GoalValidate> {
   static summary = "Validate one or more goals from a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use for validation.",
-    }),
+    environment: CustomFlags.environment,
     all: Flags.boolean({
       summary: "Whether to validate all goals in the target directory.",
     }),

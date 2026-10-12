@@ -25,7 +25,7 @@ describe("commands/goal/archive", () => {
           KnockMgmt.Goals.prototype.archive as sinon.SinonStub,
           "trial-conversion",
           sinon.match({
-            environment: "development",
+            environment: undefined,
           }),
         );
       });

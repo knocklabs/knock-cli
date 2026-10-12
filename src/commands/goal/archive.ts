@@ -2,6 +2,7 @@ import { Args, Flags, ux } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { ApiError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 
 export default class GoalArchive extends BaseCommand<typeof GoalArchive> {
@@ -13,10 +14,7 @@ workflow, guide, or broadcast is still attached to the goal.
 `;
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     force: Flags.boolean({
       summary: "Remove the confirmation prompt.",
     }),
@@ -36,7 +34,7 @@ workflow, guide, or broadcast is still attached to the goal.
     if (!flags.force) {
       const confirmed = await promptToConfirm(
         `WARNING: Archiving goal \`${goalKey}\` will affect ALL environments.\n` +
-          `This action cannot be undone if attachments still reference the goal. Continue?`,
+          `This action cannot be undone. Continue?`,
       );
       if (!confirmed) {
         this.log("Archive cancelled.");

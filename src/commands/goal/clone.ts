@@ -3,6 +3,7 @@ import { Args, Flags, ux } from "@oclif/core";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Goal from "@/lib/marshal/goal";
 
@@ -10,10 +11,7 @@ export default class GoalClone extends BaseCommand<typeof GoalClone> {
   static summary = "Clone a goal to a new goal key.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The source environment to clone from.",
-    }),
+    environment: CustomFlags.environment,
     "dest-environment": Flags.string({
       summary:
         "The destination environment for the clone. Defaults to --environment.",
@@ -46,7 +44,10 @@ export default class GoalClone extends BaseCommand<typeof GoalClone> {
       return this.error(`Invalid goal key: ${validationError}`);
     }
 
-    const destEnvironment = flags["dest-environment"] || flags.environment;
+    const destEnvironment =
+      flags["dest-environment"] ||
+      flags.environment ||
+      (await this.apiV1.getDefaultEnvironmentSlug());
     const name = flags.name || newGoalKey;
 
     const prompt = `Clone goal \`${goalKey}\` to \`${newGoalKey}\` in ${destEnvironment}?`;
