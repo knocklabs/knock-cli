@@ -8,13 +8,13 @@ import { formatDate } from "@/lib/helpers/date";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import {
-  maybePromptPageAction,
-  pageFlags,
-  paramsForPageAction,
+    maybePromptPageAction,
+    pageFlags,
+    paramsForPageAction,
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
 import { formatCommitAuthor } from "@/lib/marshal/commit";
-import { ALL_RESOURCE_TYPES } from "@/lib/resources";
+import { COMMITTABLE_RESOURCE_TYPES } from "@/lib/resources";
 
 export default class CommitList extends BaseCommand<typeof CommitList> {
   static summary = "Display all commits in an environment";
@@ -31,7 +31,7 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       summary:
         "Filter commits by resource type. Can be used alone or together with resource-id. Use multiple --resource-type flags for multiple values.",
       multiple: true,
-      options: ALL_RESOURCE_TYPES,
+      options: COMMITTABLE_RESOURCE_TYPES,
     }),
     "resource-id": Flags.string({
       summary:

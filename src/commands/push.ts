@@ -1,19 +1,25 @@
 import * as path from "node:path";
 
-import { Flags } from "@oclif/core";
+import { Flags, ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
+import { isSoftFailableBulkError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
 import {
-  ALL_RESOURCE_TYPES,
-  RESOURCE_SUBDIRS,
-  SyncableResourceType,
+    ALL_RESOURCE_TYPES,
+    buildBulkPushArgs,
+    BulkPushFlags,
+    NonHiddenResourceType,
+    RESOURCE_CLI_CAPABILITIES,
+    RESOURCE_DIR_FLAGS,
+    RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
 import AudiencePush from "./audience/push";
+import GoalPush from "./goal/push";
 import GuidePush from "./guide/push";
 import EmailLayoutPush from "./layout/push";
 import MessageTypePush from "./message-type/push";
@@ -58,37 +64,21 @@ export default class Push extends BaseCommand<typeof Push> {
       );
     }
 
-    const args = [
-      "--all",
-      ...(flags.environment ? ["--environment", flags.environment] : []),
-      ...(flags.branch ? ["--branch", flags.branch] : []),
-      ...(flags["service-token"]
-        ? ["--service-token", flags["service-token"]]
-        : []),
-      ...(flags["api-origin"] ? ["--api-origin", flags["api-origin"]] : []),
-      ...(flags.commit ? ["--commit"] : []),
-      ...(flags["commit-message"]
-        ? ["--commit-message", flags["commit-message"]]
-        : []),
-      ...(flags["allow-empty"] ? ["--allow-empty"] : []),
-      ...(flags.force ? ["--force"] : []),
-    ];
-
     // Note: Because we're pushing the different resource types sequentially,
     // if one of the push commands fails, we may end up in a partially pushed
     // state, with only some of the resources upserted. This is the best we can
     // do until we have a bulk push mAPI endpoint.
     for (const resourceType of ALL_RESOURCE_TYPES) {
       // eslint-disable-next-line no-await-in-loop
-      await runResourcePushCommand(resourceType, targetDirCtx, args);
+      await runResourcePushCommand(resourceType, targetDirCtx, flags);
     }
   }
 }
 
 const runResourcePushCommand = async (
-  resourceType: SyncableResourceType,
+  resourceType: NonHiddenResourceType,
   targetDirCtx: DirContext,
-  args: string[],
+  flags: BulkPushFlags,
 ): Promise<void> => {
   const subdirPath = path.resolve(
     targetDirCtx.abspath,
@@ -101,31 +91,58 @@ const runResourcePushCommand = async (
     return;
   }
 
-  switch (resourceType) {
-    case "audience":
-      return AudiencePush.run([...args, "--audiences-dir", subdirPath]);
+  const args = [
+    ...buildBulkPushArgs(resourceType, flags),
+    RESOURCE_DIR_FLAGS[resourceType],
+    subdirPath,
+  ];
 
-    case "email_layout":
-      return EmailLayoutPush.run([...args, "--layouts-dir", subdirPath]);
+  try {
+    switch (resourceType) {
+      case "audience":
+        return await AudiencePush.run(args);
 
-    case "partial":
-      return PartialPush.run([...args, "--partials-dir", subdirPath]);
+      case "email_layout":
+        return await EmailLayoutPush.run(args);
 
-    case "translation":
-      return TranslationPush.run([...args, "--translations-dir", subdirPath]);
+      case "partial":
+        return await PartialPush.run(args);
 
-    case "workflow":
-      return WorkflowPush.run([...args, "--workflows-dir", subdirPath]);
+      case "translation":
+        return await TranslationPush.run(args);
 
-    case "message_type":
-      return MessageTypePush.run([...args, "--message-types-dir", subdirPath]);
+      case "workflow":
+        return await WorkflowPush.run(args);
 
-    case "guide":
-      return GuidePush.run([...args, "--guides-dir", subdirPath]);
+      case "message_type":
+        return await MessageTypePush.run(args);
 
-    default: {
-      const invalidResourceType: never = resourceType;
-      throw new Error(`Unknown resource type: ${invalidResourceType}`);
+      case "guide":
+        return await GuidePush.run(args);
+
+      case "goal":
+        return await GoalPush.run(args);
+
+      default: {
+        const invalidResourceType: never = resourceType;
+        throw new Error(`Unknown resource type: ${invalidResourceType}`);
+      }
     }
+  } catch (error) {
+    // Soft-fail only for gate/scope errors (see isSoftFailableBulkError), so
+    // validation failures still abort the rest of `knock push`.
+    if (
+      RESOURCE_CLI_CAPABILITIES[resourceType].softFailOnBulk &&
+      isSoftFailableBulkError(error)
+    ) {
+      ux.warn(
+        `Skipping ${RESOURCE_SUBDIRS[resourceType]}: ${
+          (error as Error).message
+        }`,
+      );
+      return;
+    }
+
+    throw error;
   }
 };
