@@ -13,9 +13,9 @@ import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Goal from "@/lib/marshal/goal";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import {
-    ensureResourceDirForTarget,
-    GoalDirContext,
-    ResourceTarget,
+  ensureResourceDirForTarget,
+  GoalDirContext,
+  ResourceTarget,
 } from "@/lib/run-context";
 
 const toGoalApiError = (error: unknown): ApiError => {
