@@ -6,6 +6,8 @@ import {
   MaybeWithAnnotation,
 } from "@/lib/marshal/shared/types";
 
+import { GoalAttachment } from "../goal/types";
+
 export type ChannelType =
   | "chat"
   | "email"
@@ -147,6 +149,7 @@ export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {
   description?: string;
   steps: WorkflowStepData<A>[];
   trigger_data_json_schema?: Record<string, any>;
+  goal_attachment?: GoalAttachment | null;
   created_at: string;
   updated_at: string;
   sha: string;

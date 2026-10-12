@@ -124,8 +124,28 @@ const runResourcePushCommand = async (
     case "guide":
       return GuidePush.run([...args, "--guides-dir", subdirPath]);
 
-    case "goal":
-      return GoalPush.run([...args, "--goals-dir", subdirPath]);
+    case "goal": {
+      // Goals auto-publish and are not branch/commit resources.
+      const goalArgs = args.filter((arg, index, all) => {
+        if (
+          arg === "--branch" ||
+          arg === "--commit" ||
+          arg === "--allow-empty" ||
+          arg === "--commit-message"
+        ) {
+          return false;
+        }
+
+        const prev = all[index - 1];
+        if (prev === "--branch" || prev === "--commit-message") {
+          return false;
+        }
+
+        return true;
+      });
+
+      return GoalPush.run([...goalArgs, "--goals-dir", subdirPath]);
+    }
 
     default: {
       const invalidResourceType: never = resourceType;

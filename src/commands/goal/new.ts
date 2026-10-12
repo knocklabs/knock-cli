@@ -46,10 +46,7 @@ export default class GoalNew extends BaseCommand<typeof GoalNew> {
 
     spinner.start("‣ Scaffolding");
 
-    const newGoal = Goal.buildNewGoal(goalKey);
-    await Goal.writeGoalDirFromData(goalDirCtx, newGoal as any, {
-      withSchema: true,
-    });
+    await Goal.generateGoalDir(goalDirCtx, { name: goalKey });
 
     spinner.stop();
 

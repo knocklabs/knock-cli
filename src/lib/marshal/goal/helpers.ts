@@ -4,14 +4,16 @@ import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import { DirContext } from "@/lib/helpers/fs";
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import {
-  ProjectConfig,
-  resolveResourceDir,
+    ProjectConfig,
+    resolveResourceDir,
 } from "@/lib/helpers/project-config";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
 import { GoalDirContext, RunContext } from "@/lib/run-context";
 
 import { GOAL_JSON } from "./processor.isomorphic";
+import { GoalCondition, GoalRequest } from "./types";
 
 export const goalJsonPath = (goalDirCtx: GoalDirContext): string =>
   path.resolve(goalDirCtx.abspath, GOAL_JSON);
@@ -120,24 +122,33 @@ export const ensureValidCommandTarget = async (
   return ux.error("Missing 1 required arg:\ngoalKey");
 };
 
-export const formatTags = (
-  goal: { tags?: string[] },
-  opts?: { truncateAfter?: number; emptyDisplay?: string },
-): string => {
-  const { truncateAfter, emptyDisplay } = opts || {};
+/*
+ * Builds the writable goal payload for upsert / validate from local file content.
+ */
+export const toGoalRequest = (content: AnyObj): GoalRequest => {
+  const { name, description, condition } = content;
 
-  if (!goal.tags || goal.tags.length === 0) {
-    return emptyDisplay || "";
+  const request: GoalRequest = {
+    name: name as string,
+    condition: condition as GoalCondition,
+  };
+
+  if (description !== undefined) {
+    request.description = description as string | null;
   }
 
-  const tags = truncateAfter ? goal.tags.slice(0, truncateAfter) : goal.tags;
-
-  const formatted = tags.join(", ");
-  const moreCount = goal.tags.length - tags.length;
-
-  return moreCount > 0 ? `${formatted} (+${moreCount} more)` : formatted;
+  return request;
 };
 
-export const formatStatus = (goal: { archived?: boolean }): string => {
-  return goal.archived ? "archived" : "active";
+type GoalConditionLike = {
+  event: {
+    event_type: string;
+    event_key: string;
+  };
 };
+
+export const formatEventType = (condition: GoalConditionLike): string =>
+  condition.event.event_type;
+
+export const formatEventKey = (condition: GoalConditionLike): string =>
+  condition.event.event_key;

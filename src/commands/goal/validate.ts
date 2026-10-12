@@ -1,3 +1,4 @@
+import type { GoalRequest } from "@knocklabs/mgmt/resources/goals";
 import { Args, Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
@@ -5,9 +6,11 @@ import BaseCommand, { Props } from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Goal from "@/lib/marshal/goal";
+
+import GoalPush from "./push";
 
 export default class GoalValidate extends BaseCommand<typeof GoalValidate> {
   static summary = "Validate one or more goals from a local file system.";
@@ -57,42 +60,47 @@ export default class GoalValidate extends BaseCommand<typeof GoalValidate> {
       goals,
     );
 
-    spinner.stop();
-
     if (apiErrors.length > 0) {
       this.error(formatErrors(apiErrors, { prependBy: "\n\n" }));
     }
 
+    spinner.stop();
+
+    const goalKeys = goals.map((g) => g.key);
     const scope = formatCommandScope(this.props.flags);
-    const goalKeys = goals.map((g) => g.key).join(", ");
     this.log(
-      `‣ Successfully validated ${goals.length} goal(s) in ${scope}: ${goalKeys}`,
+      `‣ Successfully validated ${goals.length} goal(s) in ${scope}:\n` +
+        indentString(goalKeys.join("\n"), 4),
     );
   }
 
   static async validateAll(
-    apiV1Client: ApiV1.default,
-    props: Props,
+    api: ApiV1.T,
+    props: Props<typeof GoalValidate | typeof GoalPush>,
     goals: Goal.GoalDirData[],
   ): Promise<SourceError[]> {
-    const errors: SourceError[] = [];
+    const { flags } = props;
 
-    for (const goal of goals) {
-      // eslint-disable-next-line no-await-in-loop
-      const resp = await apiV1Client.validateGoal(props, {
-        ...goal.content,
-        key: goal.key,
-      } as Goal.GoalData);
+    const errorPromises = goals.map(async (goal) => {
+      try {
+        await api.mgmtClient.goals.validate(goal.key, {
+          environment: flags.environment,
+          goal: Goal.toGoalRequest(goal.content) as GoalRequest,
+        });
 
-      if (!isSuccessResp(resp)) {
-        const error = new SourceError(
-          formatErrorRespMessage(resp),
+        return;
+      } catch (error) {
+        return new SourceError(
+          (error as Error).message,
           Goal.goalJsonPath(goal),
           "ApiError",
         );
-        errors.push(error);
       }
-    }
+    });
+
+    const errors = (await Promise.all(errorPromises)).filter(
+      (e): e is Exclude<typeof e, undefined> => Boolean(e),
+    );
 
     return errors;
   }

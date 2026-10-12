@@ -118,8 +118,22 @@ const runResourcePullCommand = async (
     case "guide":
       return GuidePull.run([...args, "--guides-dir", subdirPath]);
 
-    case "goal":
-      return GoalPull.run([...args, "--goals-dir", subdirPath]);
+    case "goal": {
+      // Goals are not branch resources and have no uncommitted state.
+      const goalArgs = args.filter((arg, index, all) => {
+        if (arg === "--branch" || arg === "--hide-uncommitted-changes") {
+          return false;
+        }
+
+        if (all[index - 1] === "--branch") {
+          return false;
+        }
+
+        return true;
+      });
+
+      return GoalPull.run([...goalArgs, "--goals-dir", subdirPath]);
+    }
 
     default: {
       const invalidResourceType: never = resourceType;

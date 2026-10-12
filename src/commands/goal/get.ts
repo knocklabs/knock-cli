@@ -1,13 +1,12 @@
+import { Goal } from "@knocklabs/mgmt/resources/goals";
 import { Args, Flags, ux } from "@oclif/core";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { formatDateTime } from "@/lib/helpers/date";
 import { ApiError } from "@/lib/helpers/error";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
-import * as Goal from "@/lib/marshal/goal";
+import * as GoalMarshal from "@/lib/marshal/goal";
 
 export default class GoalGet extends BaseCommand<typeof GoalGet> {
   static summary = "Display a single goal from an environment.";
@@ -27,7 +26,7 @@ export default class GoalGet extends BaseCommand<typeof GoalGet> {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<ApiV1.GetGoalResp | void> {
+  async run(): Promise<Goal | void> {
     spinner.start("‣ Loading");
 
     const { goal } = await this.loadGoal();
@@ -40,32 +39,29 @@ export default class GoalGet extends BaseCommand<typeof GoalGet> {
     this.render(goal);
   }
 
-  private async loadGoal(): Promise<{
-    goal: ApiV1.GetGoalResp;
-  }> {
-    const goalResp = await this.apiV1.getGoal(this.props);
+  private async loadGoal(): Promise<{ goal: Goal }> {
+    const { goalKey } = this.props.args;
+    const { flags } = this.props;
 
-    if (!isSuccessResp(goalResp)) {
-      const message = formatErrorRespMessage(goalResp);
-      ux.error(new ApiError(message));
+    try {
+      const goal = await this.apiV1.mgmtClient.goals.retrieve(goalKey, {
+        environment: flags.environment,
+      });
+
+      return { goal };
+    } catch (error) {
+      ux.error(new ApiError((error as Error).message));
     }
-
-    return {
-      goal: goalResp.data,
-    };
   }
 
-  render(goal: ApiV1.GetGoalResp): void {
+  render(goal: Goal): void {
     const { goalKey } = this.props.args;
 
     const scope = formatCommandScope(this.props.flags);
     this.log(`‣ Showing goal \`${goalKey}\` in ${scope}\n`);
 
+    const event = goal.condition.event;
     const rows = [
-      {
-        key: "Status",
-        value: Goal.formatStatus(goal),
-      },
       {
         key: "Name",
         value: goal.name,
@@ -79,33 +75,30 @@ export default class GoalGet extends BaseCommand<typeof GoalGet> {
         value: goal.description || "-",
       },
       {
-        key: "Target Type",
-        value: goal.target.type,
+        key: "Event type",
+        value: GoalMarshal.formatEventType(goal.condition),
       },
       {
-        key: "Target Threshold",
-        value: goal.target.threshold?.toString() || "-",
+        key: "Event key",
+        value: GoalMarshal.formatEventKey(goal.condition),
       },
-      {
-        key: "Target Unit",
-        value: goal.target.unit || "-",
-      },
-      {
-        key: "Target Expression",
-        value: goal.target.expression || "-",
-      },
-      {
-        key: "Window Size",
-        value: goal.window.size.toString(),
-      },
-      {
-        key: "Window Unit",
-        value: goal.window.unit,
-      },
-      {
-        key: "Tags",
-        value: Goal.formatTags(goal, { emptyDisplay: "-" }),
-      },
+      ...(event.event_type === "integration_source"
+        ? [
+            {
+              key: "Integration source",
+              value: event.integration_source_key,
+            },
+            {
+              key: "Recipient path",
+              value: event.recipient_path || "-",
+            },
+          ]
+        : [
+            {
+              key: "Audience key",
+              value: event.audience_key,
+            },
+          ]),
       {
         key: "Created at",
         value: formatDateTime(goal.created_at),

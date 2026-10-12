@@ -1,3 +1,4 @@
+import type { GoalRequest } from "@knocklabs/mgmt/resources/goals";
 import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
@@ -5,8 +6,6 @@ import { formatCommandScope } from "@/lib/helpers/command";
 import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { merge } from "@/lib/helpers/object.isomorphic";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Goal from "@/lib/marshal/goal";
@@ -73,28 +72,28 @@ export default class GoalPush extends BaseCommand<typeof GoalPush> {
     spinner.start(`‣ Pushing`);
 
     for (const goal of goals) {
-      const props = merge(this.props, { flags: { annotate: true } });
-
-      // eslint-disable-next-line no-await-in-loop
-      const resp = await this.apiV1.upsertGoal<WithAnnotation>(props, {
-        ...goal.content,
-        key: goal.key,
-      } as Goal.GoalData);
-
-      if (isSuccessResp(resp)) {
+      try {
         // eslint-disable-next-line no-await-in-loop
-        await Goal.writeGoalDirFromData(goal, resp.data.goal!, {
-          withSchema: true,
+        const resp = await this.apiV1.mgmtClient.goals.upsert(goal.key, {
+          environment: flags.environment,
+          annotate: true,
+          goal: Goal.toGoalRequest(goal.content) as GoalRequest,
         });
-        continue;
-      }
 
-      const error = new SourceError(
-        formatErrorRespMessage(resp),
-        Goal.goalJsonPath(goal),
-        "ApiError",
-      );
-      this.error(formatError(error));
+        // eslint-disable-next-line no-await-in-loop
+        await Goal.writeGoalDirFromData(
+          goal,
+          resp.goal as Goal.GoalData<WithAnnotation>,
+          { withSchema: true },
+        );
+      } catch (error) {
+        const sourceError = new SourceError(
+          (error as Error).message,
+          Goal.goalJsonPath(goal),
+          "ApiError",
+        );
+        this.error(formatError(sourceError));
+      }
     }
 
     spinner.stop();

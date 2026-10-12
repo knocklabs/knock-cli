@@ -1,20 +1,12 @@
 import * as path from "node:path";
 
-import { Args, Flags } from "@oclif/core";
+import { Args, Flags, ux } from "@oclif/core";
 
-import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { merge } from "@/lib/helpers/object.isomorphic";
-import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
-import {
-  formatErrorRespMessage,
-  isSuccessResp,
-  withSpinner,
-} from "@/lib/helpers/request";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Goal from "@/lib/marshal/goal";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
@@ -76,24 +68,31 @@ export default class GoalPull extends BaseCommand<typeof GoalPull> {
       if (!input) return;
     }
 
-    const resp = await withSpinner<ApiV1.GetGoalResp<WithAnnotation>>(() => {
-      const props = merge(this.props, {
-        args: { goalKey: dirContext.key },
-        flags: { annotate: true },
+    spinner.start("‣ Loading");
+
+    try {
+      const goal = await this.apiV1.mgmtClient.goals.retrieve(dirContext.key, {
+        environment: flags.environment,
+        annotate: true,
       });
 
-      return this.apiV1.getGoal(props);
-    });
+      await Goal.writeGoalDirFromData(
+        dirContext,
+        goal as Goal.GoalData<WithAnnotation>,
+        { withSchema: true },
+      );
 
-    await Goal.writeGoalDirFromData(dirContext, resp.data, {
-      withSchema: true,
-    });
+      spinner.stop();
 
-    const action = dirContext.exists ? "updated" : "created";
-    const scope = formatCommandScope(flags);
-    this.log(
-      `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} using ${scope}`,
-    );
+      const action = dirContext.exists ? "updated" : "created";
+      const scope = formatCommandScope(flags);
+      this.log(
+        `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} using ${scope}`,
+      );
+    } catch (error) {
+      spinner.stop();
+      ux.error(new ApiError((error as Error).message));
+    }
   }
 
   async getGoalDirContext(): Promise<GoalDirContext> {
@@ -147,42 +146,35 @@ export default class GoalPull extends BaseCommand<typeof GoalPull> {
 
     spinner.start(`‣ Loading`);
 
-    const goals = await this.listAllGoals();
-    await Goal.writeGoalsIndexDir(targetDirCtx, goals, {
-      withSchema: true,
-    });
-    spinner.stop();
+    try {
+      const goals = await this.listAllGoals();
+      await Goal.writeGoalsIndexDir(targetDirCtx, goals, {
+        withSchema: true,
+      });
+      spinner.stop();
 
-    const action = targetDirCtx.exists ? "updated" : "created";
-    const scope = formatCommandScope(flags);
-    this.log(
-      `‣ Successfully ${action} the goals directory at ${targetDirCtx.abspath} using ${scope}`,
-    );
+      const action = targetDirCtx.exists ? "updated" : "created";
+      const scope = formatCommandScope(flags);
+      this.log(
+        `‣ Successfully ${action} the goals directory at ${targetDirCtx.abspath} using ${scope}`,
+      );
+    } catch (error) {
+      spinner.stop();
+      ux.error(new ApiError((error as Error).message));
+    }
   }
 
-  async listAllGoals(
-    pageParams: Partial<PageInfo> = {},
-    goalsFetchedSoFar: Goal.GoalData<WithAnnotation>[] = [],
-  ): Promise<Goal.GoalData<WithAnnotation>[]> {
-    const props = merge(this.props, {
-      flags: {
-        ...pageParams,
-        annotate: true,
-        limit: MAX_PAGINATION_LIMIT,
-      },
-    });
+  async listAllGoals(): Promise<Goal.GoalData<WithAnnotation>[]> {
+    const { flags } = this.props;
+    const goals: Goal.GoalData<WithAnnotation>[] = [];
 
-    const resp = await this.apiV1.listGoals<WithAnnotation>(props);
-    if (!isSuccessResp(resp)) {
-      const message = formatErrorRespMessage(resp);
-      this.error(new ApiError(message));
+    for await (const goal of this.apiV1.mgmtClient.goals.list({
+      environment: flags.environment,
+      annotate: true,
+    })) {
+      goals.push(goal as Goal.GoalData<WithAnnotation>);
     }
 
-    const { entries, page_info: pageInfo } = resp.data;
-    const goals = [...goalsFetchedSoFar, ...entries];
-
-    return pageInfo.after
-      ? this.listAllGoals({ after: pageInfo.after }, goals)
-      : goals;
+    return goals;
   }
 }

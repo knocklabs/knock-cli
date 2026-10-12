@@ -13,6 +13,7 @@ export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
 /**
  * Resource types that support empty commits via --allow-empty.
  * Excludes audience until @knocklabs/mgmt ships allow_empty on upsert params.
+ * Excludes goal because goals auto-publish and are not committed.
  */
 export const ALLOW_EMPTY_RESOURCE_TYPES = [
   "partial",
@@ -20,7 +21,6 @@ export const ALLOW_EMPTY_RESOURCE_TYPES = [
   "workflow",
   "message_type",
   "guide",
-  "goal",
   "translation",
 ] as const satisfies readonly NonHiddenResourceType[];
 
@@ -34,12 +34,12 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   "partial",
   // Email layouts next, as workflows with email channel steps may reference them
   "email_layout",
+  // Goals before workflows/guides that may attach them
+  "goal",
   "workflow",
   // Message types then guides, as guides use message types.
   "message_type",
   "guide",
-  // Goals can be attached to workflows, guides, and broadcasts
-  "goal",
   "translation",
 ];
 
