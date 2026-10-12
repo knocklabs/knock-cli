@@ -9,13 +9,13 @@ import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
 import {
-    ALL_RESOURCE_TYPES,
-    buildBulkPushArgs,
-    BulkPushFlags,
-    NonHiddenResourceType,
-    RESOURCE_CLI_CAPABILITIES,
-    RESOURCE_DIR_FLAGS,
-    RESOURCE_SUBDIRS,
+  ALL_RESOURCE_TYPES,
+  buildBulkPushArgs,
+  BulkPushFlags,
+  NonHiddenResourceType,
+  RESOURCE_CLI_CAPABILITIES,
+  RESOURCE_DIR_FLAGS,
+  RESOURCE_SUBDIRS,
 } from "@/lib/resources";
 
 import AudiencePush from "./audience/push";

@@ -8,9 +8,9 @@ import { formatDate } from "@/lib/helpers/date";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
 import {
-    maybePromptPageAction,
-    pageFlags,
-    paramsForPageAction,
+  maybePromptPageAction,
+  pageFlags,
+  paramsForPageAction,
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
 import { formatCommitAuthor } from "@/lib/marshal/commit";

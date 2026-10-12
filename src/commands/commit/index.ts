@@ -7,8 +7,8 @@ import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import {
-    ALLOW_EMPTY_RESOURCE_TYPES,
-    COMMITTABLE_RESOURCE_TYPES,
+  ALLOW_EMPTY_RESOURCE_TYPES,
+  COMMITTABLE_RESOURCE_TYPES,
 } from "@/lib/resources";
 
 const ALLOW_EMPTY_RESOURCE_TYPE_SET = new Set<string>(

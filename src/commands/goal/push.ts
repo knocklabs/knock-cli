@@ -4,10 +4,10 @@ import { Args, Flags } from "@oclif/core";
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import {
-    formatError,
-    formatErrors,
-    isSoftFailableBulkError,
-    SourceError,
+  formatError,
+  formatErrors,
+  isSoftFailableBulkError,
+  SourceError,
 } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { indentString } from "@/lib/helpers/string";

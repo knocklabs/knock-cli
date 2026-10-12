@@ -5,9 +5,9 @@ import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import {
-    formatErrors,
-    isSoftFailableBulkError,
-    SourceError,
+  formatErrors,
+  isSoftFailableBulkError,
+  SourceError,
 } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { indentString } from "@/lib/helpers/string";
