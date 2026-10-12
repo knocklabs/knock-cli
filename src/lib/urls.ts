@@ -55,3 +55,11 @@ export const viewAudienceUrl = (
   audienceKey: string,
 ): string =>
   `${dashboardUrl}/${accountSlug}/${envOrBranchSlug.toLowerCase()}/audiences/${audienceKey}`;
+
+export const viewGoalUrl = (
+  dashboardUrl: string,
+  accountSlug: string,
+  envOrBranchSlug: string,
+  goalKey: string,
+): string =>
+  `${dashboardUrl}/${accountSlug}/${envOrBranchSlug.toLowerCase()}/goals/${goalKey}`;

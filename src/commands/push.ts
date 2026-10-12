@@ -9,8 +9,8 @@ import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
 import {
   ALL_RESOURCE_TYPES,
-  NonHiddenResourceType,
   RESOURCE_SUBDIRS,
+  SyncableResourceType,
 } from "@/lib/resources";
 
 import AudiencePush from "./audience/push";
@@ -86,7 +86,7 @@ export default class Push extends BaseCommand<typeof Push> {
 }
 
 const runResourcePushCommand = async (
-  resourceType: NonHiddenResourceType,
+  resourceType: SyncableResourceType,
   targetDirCtx: DirContext,
   args: string[],
 ): Promise<void> => {

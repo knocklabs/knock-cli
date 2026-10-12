@@ -84,6 +84,9 @@
       "commit": {
         "description": "Commit or promote changes."
       },
+      "goal": {
+        "description": "Manage goals."
+      },
       "guide": {
         "description": "Manage in-app guides."
       },
