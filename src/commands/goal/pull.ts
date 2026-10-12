@@ -1,5 +1,6 @@
 import * as path from "node:path";
 
+import KnockMgmt from "@knocklabs/mgmt";
 import { Args, Flags, ux } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
@@ -7,14 +8,31 @@ import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
+import { formatMgmtError } from "@/lib/helpers/request";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Goal from "@/lib/marshal/goal";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 import {
-  ensureResourceDirForTarget,
-  GoalDirContext,
-  ResourceTarget,
+    ensureResourceDirForTarget,
+    GoalDirContext,
+    ResourceTarget,
 } from "@/lib/run-context";
+
+const toGoalApiError = (error: unknown): ApiError => {
+  if (error instanceof KnockMgmt.APIError) {
+    const code =
+      error.error &&
+      typeof error.error === "object" &&
+      "code" in error.error &&
+      typeof (error.error as { code?: unknown }).code === "string"
+        ? (error.error as { code: string }).code
+        : undefined;
+
+    return new ApiError(formatMgmtError(error), error.status, code);
+  }
+
+  return new ApiError((error as Error).message);
+};
 
 export default class GoalPull extends BaseCommand<typeof GoalPull> {
   static summary =
@@ -88,7 +106,7 @@ export default class GoalPull extends BaseCommand<typeof GoalPull> {
       );
     } catch (error) {
       spinner.stop();
-      ux.error(new ApiError((error as Error).message));
+      ux.error(toGoalApiError(error));
     }
   }
 
@@ -157,7 +175,7 @@ export default class GoalPull extends BaseCommand<typeof GoalPull> {
       );
     } catch (error) {
       spinner.stop();
-      ux.error(new ApiError((error as Error).message));
+      ux.error(toGoalApiError(error));
     }
   }
 

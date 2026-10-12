@@ -31,8 +31,9 @@ export type ResourceCliCapabilities = {
   supportsAllowEmpty: boolean;
   supportsForceOnPush: boolean;
   /**
-   * When true, bulk `knock pull` / `knock push` warn and continue if this
-   * resource fails (e.g. server-side feature flag / scopes gating).
+   * When true, bulk `knock pull` / `knock push` may warn and continue if this
+   * resource fails with a soft-failable gate/scope error (see
+   * `isSoftFailableBulkError`). Validation and other failures still abort.
    */
   softFailOnBulk: boolean;
 };
@@ -194,6 +195,14 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   "guide",
   "translation",
 ];
+
+/**
+ * Resource types that participate in the commit API. Goals auto-publish and
+ * are not committed, so they are excluded from commit CLI `--resource-type`.
+ */
+export const COMMITTABLE_RESOURCE_TYPES = ALL_RESOURCE_TYPES.filter(
+  (resourceType) => RESOURCE_CLI_CAPABILITIES[resourceType].supportsCommit,
+);
 
 /**
  * Default names for resource-specific directories used when pushing or pulling

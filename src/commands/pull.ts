@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { Flags, ux } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { isSoftFailableBulkError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
@@ -122,9 +123,12 @@ const runResourcePullCommand = async (
       }
     }
   } catch (error) {
-    // Some resources (e.g. goals) are gated server-side. Soft-fail so the rest
-    // of `knock pull` (workflows, guides, etc.) still completes.
-    if (RESOURCE_CLI_CAPABILITIES[resourceType].softFailOnBulk) {
+    // Soft-fail only for gate/scope errors (see isSoftFailableBulkError), so
+    // validation failures still abort the rest of `knock pull`.
+    if (
+      RESOURCE_CLI_CAPABILITIES[resourceType].softFailOnBulk &&
+      isSoftFailableBulkError(error)
+    ) {
       ux.warn(
         `Skipping ${RESOURCE_SUBDIRS[resourceType]}: ${
           (error as Error).message
