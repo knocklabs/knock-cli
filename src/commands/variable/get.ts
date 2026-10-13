@@ -81,26 +81,25 @@ export default class VariableGet extends BaseCommand<typeof VariableGet> {
 
     const overrides =
       variable.type === "secret"
-        ? Object.entries(variable.environment_values_set ?? {})
-        : Object.entries(variable.environment_values ?? {});
+        ? Object.entries(variable.environment_values_set ?? {}).map(
+            ([slug, set]) => ({
+              environment: slug,
+              value: set ? "set" : "unset",
+            }),
+          )
+        : Object.entries(variable.environment_values ?? {}).map(
+            ([slug, value]) => ({
+              environment: slug,
+              value: displayValue("public", value, "override"),
+            }),
+          );
 
     if (overrides.length === 0) return;
 
     this.log("");
-    ux.table(
-      overrides.map(([slug, value]) => ({
-        environment: slug,
-        value:
-          variable.type === "secret"
-            ? value
-              ? "set"
-              : "unset"
-            : displayValue("public", value as string | null, "override"),
-      })),
-      {
-        environment: { header: "Environment" },
-        value: { header: "Value" },
-      },
-    );
+    ux.table(overrides, {
+      environment: { header: "Environment" },
+      value: { header: "Value" },
+    });
   }
 }
