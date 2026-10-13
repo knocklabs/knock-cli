@@ -116,11 +116,20 @@ export default class VariablePull extends BaseCommand<typeof VariablePull> {
     const current = await this.readOrEmpty(target);
 
     if (resp.status === 404) {
-      const removed = removeEntry(current, key);
-      if (removed.removed)
-        await writeVariablesFile(target.abspath, removed.file);
-      const action = removed.removed ? "Removed" : "No entry for";
-      this.log(`‣ ${action} \`${key}\` in ${target.abspath}`);
+      if (!(key in current)) {
+        this.log(`‣ No entry for \`${key}\` in ${target.abspath}`);
+        return;
+      }
+
+      if (!this.props.flags.force) {
+        const confirmed = await promptToConfirm(
+          `Remove \`${key}\` from ${target.abspath}?\n  It is not in Knock. A local value that has not been pushed will be deleted.`,
+        );
+        if (!confirmed) return;
+      }
+
+      await writeVariablesFile(target.abspath, removeEntry(current, key).file);
+      this.log(`‣ Removed \`${key}\` from ${target.abspath}`);
       return;
     }
 

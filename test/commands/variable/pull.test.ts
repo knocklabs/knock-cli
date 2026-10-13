@@ -1,6 +1,7 @@
 import * as path from "node:path";
 
 import { expect, test } from "@oclif/test";
+import enquirer from "enquirer";
 import * as fs from "fs-extra";
 import * as sinon from "sinon";
 
@@ -152,12 +153,44 @@ describe("commands/variable/pull", () => {
     .loadConfig()
     .do(() => process.chdir(sandboxDir))
     .stdout()
-    .command(["variable pull", "stripe_api_key"])
+    .command(["variable pull", "stripe_api_key", "--force"])
     .it("removes a missing key and leaves the other entries", () => {
       const written = fs.readJsonSync(path.join(sandboxDir, "variables.json"));
       expect(written.stripe_api_key).to.equal(undefined);
       expect(written.keep_me.value).to.equal("stay");
     });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({ status: 404, data: { message: "not found" } }),
+      ),
+    )
+    .stub(enquirer.prototype, "prompt", (stub) =>
+      stub.resolves({ input: false }),
+    )
+    .do(() => {
+      fs.writeJsonSync(path.join(sandboxDir, "variables.json"), {
+        stripe_api_key: {
+          type: "secret",
+          value: "local-only-secret",
+        },
+      });
+    })
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stdout()
+    .command(["variable pull", "stripe_api_key"])
+    .it(
+      "does not delete a local-only entry when confirmation is declined",
+      () => {
+        const written = fs.readJsonSync(
+          path.join(sandboxDir, "variables.json"),
+        );
+        expect(written.stripe_api_key.value).to.equal("local-only-secret");
+      },
+    );
 
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
