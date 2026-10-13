@@ -568,6 +568,13 @@ export default class ApiV1 {
     return this.get(`/variables/${encodeURIComponent(key)}`);
   }
 
+  async upsertVariable(
+    key: string,
+    body: Variable.VariableRequest,
+  ): Promise<AxiosResponse<Variable.Variable>> {
+    return this.put(`/variables/${encodeURIComponent(key)}`, body);
+  }
+
   async deleteVariable(
     key: string,
     environment?: string,
