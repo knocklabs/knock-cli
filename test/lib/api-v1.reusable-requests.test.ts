@@ -59,4 +59,35 @@ describe("lib/api-v1 reusable requests", () => {
       expect(resp.data.entries[0].key).to.equal("fetch-user");
     });
   });
+
+  describe("getReusableRequest", () => {
+    it("GETs /v1/reusable_requests/:key", async () => {
+      const scope = nock(API_ORIGIN)
+        .get("/v1/reusable_requests/fetch-user")
+        .query({
+          environment: "development",
+          branch: "feature-branch",
+          annotate: "true",
+          hide_uncommitted_changes: "true",
+        })
+        .reply(200, reusableRequest);
+
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+      const resp = await apiV1.getReusableRequest(
+        factory.props({
+          args: { reusableRequestKey: "fetch-user" },
+          flags: {
+            environment: "development",
+            branch: "feature-branch",
+            annotate: true,
+            "hide-uncommitted-changes": true,
+          },
+        }),
+      );
+
+      expect(scope.isDone()).to.equal(true);
+      expect(resp.data.key).to.equal("fetch-user");
+      expect(resp.data.type).to.equal("http_fetch");
+    });
+  });
 });

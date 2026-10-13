@@ -84,6 +84,7 @@ USAGE
 * [`knock partial validate [PARTIALKEY]`](#knock-partial-validate-partialkey)
 * [`knock pull`](#knock-pull)
 * [`knock push`](#knock-push)
+* [`knock reusable-request get REUSABLEREQUESTKEY`](#knock-reusable-request-get-reusablerequestkey)
 * [`knock reusable-request list`](#knock-reusable-request-list)
 * [`knock schema pull [ITEMTYPE]`](#knock-schema-pull-itemtype)
 * [`knock schema push [ITEMTYPE]`](#knock-schema-push-itemtype)
@@ -1308,6 +1309,27 @@ FLAGS
 ```
 
 _See code: [src/commands/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/push.ts)_
+
+## `knock reusable-request get REUSABLEREQUESTKEY`
+
+Display a single reusable request from an environment.
+
+```
+USAGE
+  $ knock reusable-request get REUSABLEREQUESTKEY [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--hide-uncommitted-changes]
+
+FLAGS
+  --branch=<value>            The slug of the branch to use.
+  --environment=<value>       The environment to use. When omitted, the account's default environment is used.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --service-token=<value>     The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/get.ts)_
 
 ## `knock reusable-request list`
 
