@@ -568,6 +568,15 @@ export default class ApiV1 {
     return this.get(`/variables/${encodeURIComponent(key)}`);
   }
 
+  async deleteVariable(
+    key: string,
+    environment?: string,
+  ): Promise<AxiosResponse<void>> {
+    const params = prune({ environment });
+
+    return this.delete(`/variables/${encodeURIComponent(key)}`, { params });
+  }
+
   async validateGuide(
     { flags }: Props,
     guide: Guide.GuideInput,
