@@ -84,6 +84,7 @@ USAGE
 * [`knock partial validate [PARTIALKEY]`](#knock-partial-validate-partialkey)
 * [`knock pull`](#knock-pull)
 * [`knock push`](#knock-push)
+* [`knock reusable-request archive REUSABLEREQUESTKEY`](#knock-reusable-request-archive-reusablerequestkey)
 * [`knock reusable-request get REUSABLEREQUESTKEY`](#knock-reusable-request-get-reusablerequestkey)
 * [`knock reusable-request list`](#knock-reusable-request-list)
 * [`knock schema pull [ITEMTYPE]`](#knock-schema-pull-itemtype)
@@ -1309,6 +1310,37 @@ FLAGS
 ```
 
 _See code: [src/commands/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/push.ts)_
+
+## `knock reusable-request archive REUSABLEREQUESTKEY`
+
+Archive a reusable request (affects ALL environments).
+
+```
+USAGE
+  $ knock reusable-request archive REUSABLEREQUESTKEY --environment <value> [--json] [--service-token <value>] [--branch
+    <value>] [--force]
+
+ARGUMENTS
+  REUSABLEREQUESTKEY  The key of the reusable request to archive.
+
+FLAGS
+  --branch=<value>         The slug of the branch to use.
+  --environment=<value>    (required) The environment to use.
+  --force                  Skip confirmation prompt.
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Archive a reusable request (affects ALL environments).
+
+
+  WARNING: Archiving a reusable request affects ALL environments and cannot be undone.
+  Use this command with caution.
+```
+
+_See code: [src/commands/reusable-request/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/archive.ts)_
 
 ## `knock reusable-request get REUSABLEREQUESTKEY`
 
