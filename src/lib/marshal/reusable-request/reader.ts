@@ -72,8 +72,21 @@ export const readReusableRequestDir = async (
   if (!result[0]) return result;
 
   const [reusableRequestJson] = result;
+  const readonlyFields = reusableRequestJson.__readonly;
+  const reusableRequest = omitDeep(reusableRequestJson, ["__readonly"]);
 
-  return [omitDeep(reusableRequestJson, ["__readonly"]), []];
+  // The API annotates type as readonly, but upsert and validate require it
+  // in the request body. Keep it when the annotation parked it under __readonly.
+  if (
+    reusableRequest.type === undefined &&
+    readonlyFields &&
+    typeof readonlyFields === "object" &&
+    "type" in readonlyFields
+  ) {
+    reusableRequest.type = (readonlyFields as { type?: unknown }).type;
+  }
+
+  return [reusableRequest, []];
 };
 
 /*
