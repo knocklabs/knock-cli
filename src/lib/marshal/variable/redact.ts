@@ -8,8 +8,23 @@ import {
 } from "./types";
 
 // A value is present when the API returned a non-empty string.
-export const isPresent = (value: string | null | undefined): boolean =>
+export const isPresent = (value: string | null | undefined): value is string =>
   typeof value === "string" && value !== "";
+
+// The environment-scoped list response is the override slot. That slot is
+// null when the environment should use the default, so the value that applies
+// has to be chosen from the project-scoped variable. A non-empty override
+// wins. Null, "", and a missing slug use the default. redactVariable drops
+// the string when the variable is secret.
+export const withEffectiveValue = (
+  variable: Variable,
+  environment: string,
+): Variable => {
+  const override = variable.environment_values?.[environment];
+  const value = isPresent(override) ? override : variable.value ?? null;
+
+  return { ...variable, value, environment_values: undefined };
+};
 
 export const displayValue = (
   type: VariableType,
