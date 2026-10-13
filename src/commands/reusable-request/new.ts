@@ -69,6 +69,10 @@ export default class ReusableRequestNew extends BaseCommand<
     const { flags } = this.props;
     const { resourceDir } = this.runContext;
 
+    if (flags.json && (!flags.name || !flags.key || !flags.force)) {
+      this.error("Pass --name, --key, and --force when using --json.");
+    }
+
     if (resourceDir) {
       return this.error(
         `Cannot create a new reusable request inside an existing ${resourceDir.type} directory`,
@@ -156,6 +160,10 @@ export default class ReusableRequestNew extends BaseCommand<
         pushArgs.push("--branch", flags.branch);
       }
 
+      if (flags.json) {
+        pushArgs.push("--json");
+      }
+
       try {
         await ReusableRequestPush.run(pushArgs);
       } catch (error) {
@@ -163,6 +171,9 @@ export default class ReusableRequestNew extends BaseCommand<
       } finally {
         spinner.stop();
       }
+
+      // Push prints its own JSON result when --json is set.
+      if (flags.json) return;
     }
 
     if (flags.json) {
