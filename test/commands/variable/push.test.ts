@@ -170,4 +170,51 @@ describe("commands/variable/push", () => {
         KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
       );
     });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({ status: 404, data: { message: "not found" } }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "upsertVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "stripe_api_key",
+            type: "secret",
+            value: "obfuscated-placeholder",
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-01T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .do(() => {
+      fs.writeJsonSync(filePath(), {
+        stripe_api_key: {
+          type: "secret",
+          value: "sk_live_super_secret",
+        },
+      });
+    })
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stdout()
+    .command(["variable push", "--force"])
+    .it("sends a secret string once and strips it from the file", () => {
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
+        "stripe_api_key",
+        { type: "secret", value: "sk_live_super_secret" },
+      );
+      const written = fs.readJsonSync(filePath());
+      expect(written.stripe_api_key).to.eql({
+        type: "secret",
+        value_set: true,
+      });
+      expect(JSON.stringify(written)).to.not.contain("sk_live");
+      expect(JSON.stringify(written)).to.not.contain("obfuscated");
+    });
 });

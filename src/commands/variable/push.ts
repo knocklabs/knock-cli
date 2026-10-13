@@ -10,10 +10,10 @@ import {
   BRANCH_ERROR,
   describePushEntry,
   entryToRequest,
-  publicEntryFromResponse,
   readVariablesFile,
   resolveVariablesFile,
   secretEntryAfterPush,
+  toFileEntry,
   upsertEntry,
   validateVariablesFile,
   VariableEntry,
@@ -131,7 +131,7 @@ export default class VariablePush extends BaseCommand<typeof VariablePush> {
       const nextEntry =
         entry.type === "secret"
           ? secretEntryAfterPush(entry, body)
-          : publicEntryFromResponse(resp.data);
+          : toFileEntry(resp.data);
       file = upsertEntry(file, key, nextEntry);
       // eslint-disable-next-line no-await-in-loop
       await writeVariablesFile(target.abspath, file);
