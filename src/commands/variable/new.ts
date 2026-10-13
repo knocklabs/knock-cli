@@ -113,10 +113,10 @@ export default class VariableNew extends BaseCommand<typeof VariableNew> {
       key,
       "--variables-file",
       target.abspath,
-      ...(flags.force ? ["--force"] : []),
       ...(flags["service-token"]
         ? ["--service-token", flags["service-token"]]
         : []),
+      ...(flags["api-origin"] ? ["--api-origin", flags["api-origin"]] : []),
     ];
 
     await VariablePush.run(pushArgs);
