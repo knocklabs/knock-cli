@@ -4,10 +4,10 @@ import { AxiosResponse } from "axios";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
-import { merge } from "@/lib/helpers/object.isomorphic";
 import {
   maybePromptPageAction,
   pageFlags,
+  PageInfo,
   paramsForPageAction,
 } from "@/lib/helpers/page";
 import { withSpinner } from "@/lib/helpers/request";
@@ -18,6 +18,11 @@ import {
   RedactedVariable,
   redactVariable,
 } from "@/lib/marshal/variable";
+
+type RedactedList = {
+  entries: RedactedVariable[];
+  page_info: PageInfo;
+};
 
 export default class VariableList extends BaseCommand<typeof VariableList> {
   static summary =
@@ -40,7 +45,7 @@ export default class VariableList extends BaseCommand<typeof VariableList> {
 
   static enableJsonFlag = true;
 
-  async run(): Promise<ApiV1.ListVariableResp | void> {
+  async run(): Promise<RedactedList | void> {
     if (this.props.flags.branch) this.error(BRANCH_ERROR);
 
     const resp = await this.request();
@@ -52,28 +57,32 @@ export default class VariableList extends BaseCommand<typeof VariableList> {
   }
 
   async request(
-    pageParams = {},
+    pageParams: { after?: string; before?: string } = {},
   ): Promise<AxiosResponse<ApiV1.ListVariableResp>> {
-    const props = merge(this.props, { flags: { ...pageParams } });
+    const { flags } = this.props;
 
     return withSpinner<ApiV1.ListVariableResp>(() =>
-      this.apiV1.listVariables(props),
+      this.apiV1.listVariables({
+        environment: flags.environment,
+        type: flags.type,
+        after: pageParams.after ?? flags.after,
+        before: pageParams.before ?? flags.before,
+        limit: flags.limit,
+      }),
     );
   }
 
-  redact(data: ApiV1.ListVariableResp): ApiV1.ListVariableResp {
+  redact(data: ApiV1.ListVariableResp): RedactedList {
     const environment = this.props.flags.environment;
 
     return {
-      ...data,
-      entries: data.entries.map((entry) =>
-        redactVariable(entry, environment),
-      ) as ApiV1.ListVariableResp["entries"],
+      page_info: data.page_info,
+      entries: data.entries.map((entry) => redactVariable(entry, environment)),
     };
   }
 
-  async render(data: ApiV1.ListVariableResp): Promise<void> {
-    const entries = data.entries as unknown as RedactedVariable[];
+  async render(data: RedactedList): Promise<void> {
+    const { entries } = data;
     const { environment } = this.props.flags;
     const scope = environment ? `in \`${environment}\`` : "in the project";
     const noun = entries.length === 1 ? "variable" : "variables";
@@ -114,7 +123,7 @@ export default class VariableList extends BaseCommand<typeof VariableList> {
     return this.prompt(data);
   }
 
-  async prompt(data: ApiV1.ListVariableResp): Promise<void> {
+  async prompt(data: RedactedList): Promise<void> {
     const pageAction = await maybePromptPageAction(data.page_info);
     const pageParams =
       pageAction && paramsForPageAction(pageAction, data.page_info);
