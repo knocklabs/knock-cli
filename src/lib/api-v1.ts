@@ -733,6 +733,25 @@ export default class ApiV1 {
     });
   }
 
+  async validateReusableRequest(
+    { flags }: Props,
+    reusableRequest: AnyObj & { key: string },
+  ): Promise<AxiosResponse<ValidateReusableRequestResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const data = {
+      reusable_request: ReusableRequest.toReusableRequestInput(reusableRequest),
+    };
+
+    return this.put(
+      `/reusable_requests/${reusableRequest.key}/validate`,
+      data,
+      { params },
+    );
+  }
+
   // By methods:
 
   async get(
@@ -933,5 +952,10 @@ export type GetReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
 
 export type ArchiveReusableRequestResp = {
   result?: string;
+  errors?: InputError[];
+};
+
+export type ValidateReusableRequestResp = {
+  reusable_request?: ReusableRequest.ReusableRequestData;
   errors?: InputError[];
 };
