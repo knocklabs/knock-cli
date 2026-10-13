@@ -555,14 +555,10 @@ export default class ApiV1 {
     return this.get(`/sources/${args.sourceKey}`, { params });
   }
 
-  async listVariables({
-    flags,
-  }: Props): Promise<AxiosResponse<ListVariableResp>> {
-    const params = prune({
-      environment: flags.environment,
-      type: flags.type,
-      ...toPageParams(flags),
-    });
+  async listVariables(
+    query: ListVariablesParams = {},
+  ): Promise<AxiosResponse<ListVariableResp>> {
+    const params = prune({ ...query });
 
     return this.get("/variables", { params });
   }
@@ -867,6 +863,14 @@ export type ActivateGuideResp = {
 
 export type ListSourceResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<Source.SourceData<A>>;
+
+export type ListVariablesParams = {
+  environment?: string;
+  type?: string;
+  after?: string;
+  before?: string;
+  limit?: number;
+};
 
 export type ListVariableResp = PaginatedResp<Variable.Variable>;
 

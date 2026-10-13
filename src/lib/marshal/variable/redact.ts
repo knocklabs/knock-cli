@@ -46,18 +46,6 @@ export const formatRedactedEnvironments = (entry: RedactedVariable): string => {
     .join(", ");
 };
 
-export const formatEnvironmentColumn = (variable: Variable): string => {
-  const values = variable.environment_values;
-  if (!values || Object.keys(values).length === 0) return "-";
-
-  return Object.entries(values)
-    .map(
-      ([slug, value]) =>
-        `${slug}: ${displayValue(variable.type, value, "override")}`,
-    )
-    .join(", ");
-};
-
 const nullMap = (values: EnvironmentValues | undefined): EnvironmentValues => {
   const mapped: EnvironmentValues = {};
   for (const slug of Object.keys(values ?? {})) mapped[slug] = null;
@@ -73,6 +61,30 @@ const presenceMap = (
   }
 
   return mapped;
+};
+
+export type SecretPresence = {
+  value_set: boolean;
+  environment_values_set: Record<string, boolean>;
+};
+
+// Previous presence plus the fields this write sent. "" unsets. Omission keeps
+// the previous presence. The API string is never an input.
+export const applySecretWrite = (
+  previous: SecretPresence,
+  body: VariableRequest,
+): SecretPresence => {
+  const environmentValuesSet = { ...previous.environment_values_set };
+
+  for (const [slug, value] of Object.entries(body.environment_values ?? {})) {
+    environmentValuesSet[slug] = value !== "";
+  }
+
+  return {
+    value_set:
+      body.value === undefined ? previous.value_set : body.value !== "",
+    environment_values_set: environmentValuesSet,
+  };
 };
 
 // Drop secret strings. "", null, and missing mean unset. Any other secret
@@ -169,46 +181,31 @@ export const secretEntryAfterPush = (
   else if (entry.description !== undefined)
     next.description = entry.description;
 
-  if (body.value === undefined) {
-    if (entry.value_set !== undefined) next.value_set = entry.value_set;
-    else if (typeof entry.value === "string")
-      next.value_set = entry.value !== "";
-  } else {
-    next.value_set = body.value !== "";
-  }
-
-  const environmentValuesSet: Record<string, boolean> = {
+  const previousFlags: Record<string, boolean> = {
     ...entry.environment_values_set,
   };
   for (const [slug, value] of Object.entries(entry.environment_values ?? {})) {
-    if (!(slug in environmentValuesSet) && typeof value === "string") {
-      environmentValuesSet[slug] = value !== "";
+    if (!(slug in previousFlags) && typeof value === "string") {
+      previousFlags[slug] = value !== "";
     }
   }
 
-  for (const [slug, value] of Object.entries(body.environment_values ?? {})) {
-    environmentValuesSet[slug] = value !== "";
-  }
+  const presence = applySecretWrite(
+    {
+      value_set:
+        entry.value_set ??
+        (typeof entry.value === "string" ? entry.value !== "" : false),
+      environment_values_set: previousFlags,
+    },
+    body,
+  );
+  next.value_set = presence.value_set;
 
-  if (Object.keys(environmentValuesSet).length > 0) {
-    next.environment_values_set = environmentValuesSet;
+  if (Object.keys(presence.environment_values_set).length > 0) {
+    next.environment_values_set = presence.environment_values_set;
   }
 
   return next;
-};
-
-export const publicEntryFromResponse = (variable: Variable): VariableEntry => {
-  const entry: VariableEntry = {
-    type: "public",
-    value: variable.value ?? null,
-  };
-  if (variable.description !== undefined)
-    entry.description = variable.description;
-  if (variable.environment_values) {
-    entry.environment_values = variable.environment_values;
-  }
-
-  return entry;
 };
 
 const partitionEnvironmentValues = (

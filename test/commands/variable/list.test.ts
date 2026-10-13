@@ -110,6 +110,34 @@ describe("commands/variable/list", () => {
 
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "listVariables", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            entries: [
+              {
+                ...variables[1],
+                value: "sk_prod_super_secret",
+                environment_values: undefined,
+              },
+            ],
+            page_info: factory.pageInfo(),
+          },
+        }),
+      ),
+    )
+    .stdout()
+    .command(["variable list", "--environment", "production", "--json"])
+    .it("redacts an environment-scoped secret", (ctx) => {
+      const parsed = JSON.parse(ctx.stdout);
+      expect(parsed.entries[0].environment).to.equal("production");
+      expect(parsed.entries[0].value_set).to.equal(true);
+      expect(parsed.entries[0].environment_values).to.equal(undefined);
+      expect(ctx.stdout).to.not.contain("sk_prod_super_secret");
+    });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stdout()
     .command(["variable list", "--branch", "feature-branch"])
     .catch(/Variables are not branch-scoped/)

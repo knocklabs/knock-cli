@@ -5,6 +5,7 @@ import {
   redactVariable,
   secretEntryAfterPush,
   toFileEntry,
+  validateEntry,
   Variable,
 } from "@/lib/marshal/variable";
 
@@ -106,5 +107,37 @@ describe("variable marshal", () => {
       description: "Stripe secret key",
     });
     expect(secretEntryAfterPush(entry, body)).to.eql(entry);
+  });
+
+  it("sends a secret string once and rewrites the entry without it", () => {
+    const entry = {
+      type: "secret" as const,
+      value: "sk_live_super_secret",
+      environment_values: { development: "sk_dev_super_secret" },
+    };
+    const body = entryToRequest(entry);
+
+    expect(body).to.eql({
+      type: "secret",
+      value: "sk_live_super_secret",
+      environment_values: { development: "sk_dev_super_secret" },
+    });
+    const next = secretEntryAfterPush(entry, body);
+    expect(next).to.eql({
+      type: "secret",
+      value_set: true,
+      environment_values_set: { development: true },
+    });
+    expect(JSON.stringify(next)).to.not.contain("sk_");
+  });
+
+  it("rejects value_set on a public entry", () => {
+    expect(
+      validateEntry("app_name", {
+        type: "public",
+        value: "Acme",
+        value_set: true,
+      }),
+    ).to.include("`app_name` is public and cannot include value_set.");
   });
 });
