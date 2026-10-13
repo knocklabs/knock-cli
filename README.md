@@ -97,6 +97,7 @@ USAGE
 * [`knock variable get KEY`](#knock-variable-get-key)
 * [`knock variable list`](#knock-variable-list)
 * [`knock variable pull [KEY]`](#knock-variable-pull-key)
+* [`knock variable push [KEY]`](#knock-variable-push-key)
 * [`knock variable set KEY`](#knock-variable-set-key)
 * [`knock whoami`](#knock-whoami)
 * [`knock workflow activate WORKFLOWKEY`](#knock-workflow-activate-workflowkey)
@@ -1621,6 +1622,29 @@ FLAGS
 ```
 
 _See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/pull.ts)_
+
+## `knock variable push [KEY]`
+
+Push variables from variables.json to Knock.
+
+```
+USAGE
+  $ knock variable push [KEY] [--service-token <value>] [--environment <value>] [--branch <value>] [--knock-dir
+    <value>] [--variables-file <value>] [--force]
+
+ARGUMENTS
+  KEY  Push only this entry. Omit to push every entry.
+
+FLAGS
+  --branch=<value>          Rejected. Variables are not branch-scoped.
+  --environment=<value>     Rejected. Push writes the project catalog in variables.json.
+  --force                   Skip the confirmation prompt.
+  --knock-dir=<value>       Knock directory used to locate variables.json.
+  --service-token=<value>   The service token to authenticate with.
+  --variables-file=<value>  Path to variables.json. Defaults to <knock dir>/variables.json.
+```
+
+_See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/push.ts)_
 
 ## `knock variable set KEY`
 
