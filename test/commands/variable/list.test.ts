@@ -1,7 +1,7 @@
 import { expect, test } from "@oclif/test";
 
 import { factory } from "@/../test/support";
-import KnockApiV1 from "@/lib/api-v1";
+import KnockApiV1, { type ListVariablesParams } from "@/lib/api-v1";
 import { Variable } from "@/lib/marshal/variable";
 
 const variables: Variable[] = [
@@ -64,31 +64,47 @@ describe("commands/variable/list", () => {
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(KnockApiV1.prototype, "listVariables", (stub) =>
-      stub.resolves(
-        factory.resp({
-          data: {
-            entries: [
-              {
-                ...variables[0],
-                value: "Acme Prod",
-                environment_values: {
-                  development: "Acme Dev",
-                  staging: "Acme Stage",
-                },
-              },
-            ],
-            page_info: factory.pageInfo(),
-          },
-        }),
-      ),
+      stub.resolves(listResp()),
     )
     .stdout()
     .command(["variable list", "--environment", "production"])
-    .it("shows only the value for that environment", (ctx) => {
-      expect(ctx.stdout).to.contain("Showing 1 variable in `production`");
+    .it("shows the override when that environment has one", (ctx) => {
+      expect(ctx.stdout).to.contain("Showing 2 variables in `production`");
       expect(ctx.stdout).to.contain("Acme Prod");
       expect(ctx.stdout).to.not.contain("Acme Dev");
-      expect(ctx.stdout).to.not.contain("Acme Stage");
+      expect(ctx.stdout).to.contain("set");
+      expect(ctx.stdout).to.not.contain("sk_live_super_secret");
+    });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "listVariables", (stub) =>
+      stub.callsFake((query: ListVariablesParams) => {
+        expect(query.environment).to.equal(undefined);
+        return Promise.resolve(
+          factory.resp({
+            data: {
+              entries: [
+                {
+                  ...variables[0],
+                  environment_values: {
+                    development: "Acme Dev",
+                    production: null,
+                  },
+                },
+              ],
+              page_info: factory.pageInfo(),
+            },
+          }),
+        );
+      }),
+    )
+    .stdout()
+    .command(["variable list", "--environment", "production"])
+    .it("uses the default when the environment override is unset", (ctx) => {
+      expect(ctx.stdout).to.contain("Acme");
+      expect(ctx.stdout).to.not.contain("Acme Dev");
+      expect(ctx.stdout).to.not.contain("Acme Prod");
     });
 
   test
@@ -111,14 +127,36 @@ describe("commands/variable/list", () => {
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(KnockApiV1.prototype, "listVariables", (stub) =>
+      stub.resolves(listResp()),
+    )
+    .stdout()
+    .command(["variable list", "--environment", "production", "--json"])
+    .it("redacts the effective secret for one environment", (ctx) => {
+      const parsed = JSON.parse(ctx.stdout);
+      const secret = parsed.entries.find(
+        (entry: { key: string }) => entry.key === "stripe_api_key",
+      );
+
+      expect(secret.environment).to.equal("production");
+      expect(secret.value).to.equal(null);
+      expect(secret.value_set).to.equal(true);
+      expect(secret.environment_values).to.equal(undefined);
+      expect(secret.environment_values_set).to.equal(undefined);
+      expect(ctx.stdout).to.not.contain("sk_live_super_secret");
+      expect(ctx.stdout).to.not.contain("sk_dev_super_secret");
+    });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "listVariables", (stub) =>
       stub.resolves(
         factory.resp({
           data: {
             entries: [
               {
                 ...variables[1],
-                value: "sk_prod_super_secret",
-                environment_values: undefined,
+                value: null,
+                environment_values: { production: "" },
               },
             ],
             page_info: factory.pageInfo(),
@@ -128,13 +166,14 @@ describe("commands/variable/list", () => {
     )
     .stdout()
     .command(["variable list", "--environment", "production", "--json"])
-    .it("redacts an environment-scoped secret", (ctx) => {
-      const parsed = JSON.parse(ctx.stdout);
-      expect(parsed.entries[0].environment).to.equal("production");
-      expect(parsed.entries[0].value_set).to.equal(true);
-      expect(parsed.entries[0].environment_values).to.equal(undefined);
-      expect(ctx.stdout).to.not.contain("sk_prod_super_secret");
-    });
+    .it(
+      "reports a secret unset when neither override nor default is set",
+      (ctx) => {
+        const parsed = JSON.parse(ctx.stdout);
+        expect(parsed.entries[0].value_set).to.equal(false);
+        expect(parsed.entries[0].value).to.equal(null);
+      },
+    );
 
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

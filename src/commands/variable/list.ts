@@ -17,6 +17,7 @@ import {
   formatRedactedEnvironments,
   RedactedVariable,
   redactVariable,
+  withEffectiveValue,
 } from "@/lib/marshal/variable";
 
 type RedactedList = {
@@ -61,9 +62,11 @@ export default class VariableList extends BaseCommand<typeof VariableList> {
   ): Promise<AxiosResponse<ApiV1.ListVariableResp>> {
     const { flags } = this.props;
 
+    // Do not send --environment. That list is the override slot, which is
+    // null when the default should apply. The project list has both, and
+    // withEffectiveValue chooses the one that applies.
     return withSpinner<ApiV1.ListVariableResp>(() =>
       this.apiV1.listVariables({
-        environment: flags.environment,
         type: flags.type,
         after: pageParams.after ?? flags.after,
         before: pageParams.before ?? flags.before,
@@ -77,7 +80,12 @@ export default class VariableList extends BaseCommand<typeof VariableList> {
 
     return {
       page_info: data.page_info,
-      entries: data.entries.map((entry) => redactVariable(entry, environment)),
+      entries: data.entries.map((entry) =>
+        redactVariable(
+          environment ? withEffectiveValue(entry, environment) : entry,
+          environment,
+        ),
+      ),
     };
   }
 
