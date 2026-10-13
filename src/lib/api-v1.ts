@@ -567,6 +567,15 @@ export default class ApiV1 {
     return this.get(`/variables/${encodeURIComponent(key)}`);
   }
 
+  async deleteVariable(
+    key: string,
+    environment?: string,
+  ): Promise<AxiosResponse<void>> {
+    const params = prune({ environment });
+
+    return this.del(`/variables/${encodeURIComponent(key)}`, { params });
+  }
+
   async validateGuide(
     { flags }: Props,
     guide: Guide.GuideInput,
@@ -715,6 +724,13 @@ export default class ApiV1 {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse> {
     return this.client.put(`/${API_VERSION}` + subpath, data, config);
+  }
+
+  async del(
+    subpath: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.delete(`/${API_VERSION}` + subpath, config);
   }
 }
 
