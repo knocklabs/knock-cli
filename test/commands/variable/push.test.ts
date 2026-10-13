@@ -217,4 +217,61 @@ describe("commands/variable/push", () => {
       expect(JSON.stringify(written)).to.not.contain("sk_live");
       expect(JSON.stringify(written)).to.not.contain("obfuscated");
     });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "stripe_api_key",
+            type: "secret",
+            description: "Stripe secret key",
+            value: "obfuscated-placeholder",
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-04T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "upsertVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "stripe_api_key",
+            type: "secret",
+            value: null,
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-05T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .do(() => {
+      fs.writeJsonSync(filePath(), {
+        stripe_api_key: {
+          type: "secret",
+          description: "Stripe secret key",
+          value_set: false,
+        },
+      });
+    })
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stdout()
+    .command(["variable push", "--force"])
+    .it(
+      "keeps a remote secret marked set when the local entry has no value",
+      () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
+          "stripe_api_key",
+          { type: "secret", description: "Stripe secret key" },
+        );
+        const written = fs.readJsonSync(filePath());
+        expect(written.stripe_api_key.value_set).to.equal(true);
+        expect(written.stripe_api_key.value).to.equal(undefined);
+        expect(JSON.stringify(written)).to.not.contain("obfuscated");
+      },
+    );
 });

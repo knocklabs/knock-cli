@@ -7,12 +7,13 @@ import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import {
+  applySecretWrite,
   BRANCH_ERROR,
   describePushEntry,
   entryToRequest,
+  isPresent,
   readVariablesFile,
   resolveVariablesFile,
-  secretEntryAfterPush,
   toFileEntry,
   upsertEntry,
   validateVariablesFile,
@@ -130,7 +131,7 @@ export default class VariablePush extends BaseCommand<typeof VariablePush> {
 
       const nextEntry =
         entry.type === "secret"
-          ? secretEntryAfterPush(entry, body)
+          ? secretEntryFromRemote(entry, body, remoteTypes.get(key) ?? null)
           : toFileEntry(resp.data);
       file = upsertEntry(file, key, nextEntry);
       // eslint-disable-next-line no-await-in-loop
@@ -148,8 +149,8 @@ export default class VariablePush extends BaseCommand<typeof VariablePush> {
   private async lookup(
     keys: string[],
     file: VariablesFile,
-  ): Promise<Map<string, VariableEntry["type"] | null>> {
-    const found = new Map<string, VariableEntry["type"] | null>();
+  ): Promise<Map<string, RemotePresence | null>> {
+    const found = new Map<string, RemotePresence | null>();
 
     for (const key of keys) {
       // eslint-disable-next-line no-await-in-loop
@@ -169,9 +170,48 @@ export default class VariablePush extends BaseCommand<typeof VariablePush> {
         );
       }
 
-      found.set(key, resp.data.type);
+      found.set(key, {
+        type: resp.data.type,
+        valueSet: isPresent(resp.data.value),
+        environmentValuesSet: Object.fromEntries(
+          Object.entries(resp.data.environment_values ?? {}).map(
+            ([slug, value]) => [slug, isPresent(value)],
+          ),
+        ),
+      });
     }
 
     return found;
   }
 }
+
+type RemotePresence = {
+  type: VariableEntry["type"];
+  valueSet: boolean;
+  environmentValuesSet: Record<string, boolean>;
+};
+
+const secretEntryFromRemote = (
+  entry: VariableEntry,
+  body: ReturnType<typeof entryToRequest>,
+  remote: RemotePresence | null,
+): VariableEntry => {
+  const presence = applySecretWrite(
+    {
+      value_set: remote?.valueSet ?? false,
+      environment_values_set: remote?.environmentValuesSet ?? {},
+    },
+    body,
+  );
+  const next: VariableEntry = { type: "secret", value_set: presence.value_set };
+
+  if (body.description !== undefined) next.description = body.description;
+  else if (entry.description !== undefined)
+    next.description = entry.description;
+
+  if (Object.keys(presence.environment_values_set).length > 0) {
+    next.environment_values_set = presence.environment_values_set;
+  }
+
+  return next;
+};
