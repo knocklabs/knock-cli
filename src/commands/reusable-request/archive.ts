@@ -40,14 +40,19 @@ Use this command with caution.
     const { reusableRequestKey } = this.props.args;
     const { force, json } = this.props.flags;
 
+    if (json && !force) {
+      this.error(
+        "Pass --force to archive a reusable request when using --json.",
+      );
+    }
+
     if (!force) {
       const confirmed = await promptToConfirm(
         `WARNING: Archiving reusable request \`${reusableRequestKey}\` will affect ALL environments.\n` +
           `This action cannot be undone. Continue?`,
       );
       if (!confirmed) {
-        this.log("Archive cancelled.");
-        return;
+        this.error("Archive cancelled.");
       }
     }
 

@@ -71,6 +71,30 @@ describe("commands/reusable-request/archive", () => {
       });
   });
 
+  describe("given --json without --force", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "archiveReusableRequest", (stub) =>
+        stub.resolves(factory.resp({ data: { result: "success" } })),
+      )
+      .stdout()
+      .command([
+        "reusable-request archive",
+        "fetch-user",
+        "--environment",
+        "development",
+        "--json",
+      ])
+      .it("does not archive", (ctx) => {
+        const parsed = JSON.parse(ctx.stdout);
+        expect(parsed.error.oclif.exit).to.equal(2);
+        expect(parsed.result).to.equal(undefined);
+        sinon.assert.notCalled(
+          KnockApiV1.prototype.archiveReusableRequest as sinon.SinonStub,
+        );
+      });
+  });
+
   describe("given confirmation prompt is declined", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
@@ -87,8 +111,8 @@ describe("commands/reusable-request/archive", () => {
         "--environment",
         "development",
       ])
-      .it("does not archive when declined", (ctx) => {
-        expect(ctx.stdout).to.contain("Archive cancelled");
+      .catch(/Archive cancelled/)
+      .it("does not archive when declined", () => {
         sinon.assert.notCalled(
           KnockApiV1.prototype.archiveReusableRequest as sinon.SinonStub,
         );

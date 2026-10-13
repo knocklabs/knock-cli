@@ -724,6 +724,11 @@ export default class ApiV1 {
     args,
     flags,
   }: Props): Promise<AxiosResponse<ArchiveReusableRequestResp>> {
+    const keyError = ReusableRequest.reusableRequestKeyError(
+      String(args.reusableRequestKey),
+    );
+    if (keyError) throw keyError;
+
     const params = prune({
       environment: flags.environment,
     });

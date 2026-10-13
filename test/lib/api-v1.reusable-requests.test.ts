@@ -112,5 +112,23 @@ describe("lib/api-v1 reusable requests", () => {
       expect(scope.isDone()).to.equal(true);
       expect(resp.data.result).to.equal("success");
     });
+
+    it("rejects a key that is not safe to put in the request path", async () => {
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+
+      try {
+        await apiV1.archiveReusableRequest(
+          factory.props({
+            args: { reusableRequestKey: "../fetch-user" },
+            flags: { environment: "development" },
+          }),
+        );
+        expect.fail("expected an invalid key error");
+      } catch (error) {
+        expect((error as Error).message).to.match(
+          /Invalid reusable request key/,
+        );
+      }
+    });
   });
 });
