@@ -1,10 +1,10 @@
 import * as path from "node:path";
 
-import { Flags, ux } from "@oclif/core";
+import { Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
 import BaseCommand from "@/lib/base-command";
-import { isSoftFailableBulkError } from "@/lib/helpers/error";
+import { runBulkResourceCommand } from "@/lib/helpers/bulk-soft-fail";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
@@ -13,7 +13,6 @@ import {
   buildBulkPushArgs,
   BulkPushFlags,
   NonHiddenResourceType,
-  RESOURCE_CLI_CAPABILITIES,
   RESOURCE_DIR_FLAGS,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
@@ -97,52 +96,38 @@ const runResourcePushCommand = async (
     subdirPath,
   ];
 
-  try {
+  // Soft-fail only for gate/scope errors (see isSoftFailableBulkError), so
+  // validation failures still abort the rest of `knock push`.
+  return runBulkResourceCommand(resourceType, () => {
     switch (resourceType) {
       case "audience":
-        return await AudiencePush.run(args);
+        return AudiencePush.run(args);
 
       case "email_layout":
-        return await EmailLayoutPush.run(args);
+        return EmailLayoutPush.run(args);
 
       case "partial":
-        return await PartialPush.run(args);
+        return PartialPush.run(args);
 
       case "translation":
-        return await TranslationPush.run(args);
+        return TranslationPush.run(args);
 
       case "workflow":
-        return await WorkflowPush.run(args);
+        return WorkflowPush.run(args);
 
       case "message_type":
-        return await MessageTypePush.run(args);
+        return MessageTypePush.run(args);
 
       case "guide":
-        return await GuidePush.run(args);
+        return GuidePush.run(args);
 
       case "goal":
-        return await GoalPush.run(args);
+        return GoalPush.run(args);
 
       default: {
         const invalidResourceType: never = resourceType;
         throw new Error(`Unknown resource type: ${invalidResourceType}`);
       }
     }
-  } catch (error) {
-    // Soft-fail only for gate/scope errors (see isSoftFailableBulkError), so
-    // validation failures still abort the rest of `knock push`.
-    if (
-      RESOURCE_CLI_CAPABILITIES[resourceType].softFailOnBulk &&
-      isSoftFailableBulkError(error)
-    ) {
-      ux.warn(
-        `Skipping ${RESOURCE_SUBDIRS[resourceType]}: ${
-          (error as Error).message
-        }`,
-      );
-      return;
-    }
-
-    throw error;
-  }
+  });
 };

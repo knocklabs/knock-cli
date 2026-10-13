@@ -38,9 +38,12 @@ export class ApiError extends CustomError {
 /**
  * Message patterns that indicate a feature/availability gate rather than a
  * schema validation failure. Used because Control returns 422 for both.
+ *
+ * Keep this specific to account-gate copy. Bare "unavailable" and "not enabled"
+ * also appear in ordinary goal validation errors and must not soft-skip push.
  */
 const FEATURE_GATE_MESSAGE_RE =
-  /not (?:yet )?enabled|feature (?:flag )?(?:is )?disabled|unavailable|not available for (?:this |your )?account|(?:resource|feature) is not (?:supported|enabled)/i;
+  /not (?:yet )?enabled for (?:this |your )?account|feature (?:flag )?(?:is )?disabled|not available for (?:this |your )?account|(?:resource|feature) is not (?:supported|enabled)/i;
 
 /**
  * Whether a bulk pull/push failure should warn-and-continue for softFailOnBulk

@@ -1,9 +1,9 @@
 import * as path from "node:path";
 
-import { Flags, ux } from "@oclif/core";
+import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
-import { isSoftFailableBulkError } from "@/lib/helpers/error";
+import { runBulkResourceCommand } from "@/lib/helpers/bulk-soft-fail";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
@@ -13,7 +13,6 @@ import {
   buildBulkPullArgs,
   BulkPullFlags,
   NonHiddenResourceType,
-  RESOURCE_CLI_CAPABILITIES,
   RESOURCE_DIR_FLAGS,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
@@ -90,53 +89,39 @@ const runResourcePullCommand = async (
     subdirPath,
   ];
 
-  try {
+  // Soft-fail only for gate/scope errors (see isSoftFailableBulkError), so
+  // validation failures still abort the rest of `knock pull`.
+  return runBulkResourceCommand(resourceType, () => {
     switch (resourceType) {
       case "audience":
-        return await AudiencePull.run(args);
+        return AudiencePull.run(args);
 
       case "email_layout":
-        return await EmailLayoutPull.run(args);
+        return EmailLayoutPull.run(args);
 
       case "partial":
-        return await PartialPull.run(args);
+        return PartialPull.run(args);
 
       // TODO(KNO-9451): Include translation in the knock pull
       case "translation":
-        return await TranslationPull.run(args);
+        return TranslationPull.run(args);
 
       case "workflow":
-        return await WorkflowPull.run(args);
+        return WorkflowPull.run(args);
 
       case "message_type":
-        return await MessageTypePull.run(args);
+        return MessageTypePull.run(args);
 
       case "guide":
-        return await GuidePull.run(args);
+        return GuidePull.run(args);
 
       case "goal":
-        return await GoalPull.run(args);
+        return GoalPull.run(args);
 
       default: {
         const invalidResourceType: never = resourceType;
         throw new Error(`Unknown resource type: ${invalidResourceType}`);
       }
     }
-  } catch (error) {
-    // Soft-fail only for gate/scope errors (see isSoftFailableBulkError), so
-    // validation failures still abort the rest of `knock pull`.
-    if (
-      RESOURCE_CLI_CAPABILITIES[resourceType].softFailOnBulk &&
-      isSoftFailableBulkError(error)
-    ) {
-      ux.warn(
-        `Skipping ${RESOURCE_SUBDIRS[resourceType]}: ${
-          (error as Error).message
-        }`,
-      );
-      return;
-    }
-
-    throw error;
-  }
+  });
 };

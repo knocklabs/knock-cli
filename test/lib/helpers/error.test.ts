@@ -59,6 +59,23 @@ describe("lib/helpers/error", () => {
           ),
         ),
       ).to.equal(false);
+
+      expect(
+        isSoftFailableBulkError(
+          new KnockMgmt.UnprocessableEntityError(
+            422,
+            { message: "integration source is unavailable" },
+            undefined,
+            new Headers(),
+          ),
+        ),
+      ).to.equal(false);
+
+      expect(
+        isSoftFailableBulkError(
+          new ApiError("tracking is not enabled (status: 422)", 422),
+        ),
+      ).to.equal(false);
     });
 
     it("does not soft-fail plain ExitErrors or messages without status", () => {
