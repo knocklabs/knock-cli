@@ -124,6 +124,10 @@ const runResourcePushCommand = async (
       case "goal":
         return GoalPush.run(args);
 
+      case "reusable_request":
+        // The push command lands in a follow-up. Skip until then.
+        return;
+
       default: {
         const invalidResourceType: never = resourceType;
         throw new Error(`Unknown resource type: ${invalidResourceType}`);

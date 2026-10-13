@@ -66,6 +66,14 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     supportsForceOnPush: true,
     softFailOnBulk: false,
   },
+  reusable_request: {
+    supportsBranch: true,
+    supportsHideUncommitted: true,
+    supportsCommit: true,
+    supportsAllowEmpty: true,
+    supportsForceOnPush: true,
+    softFailOnBulk: false,
+  },
   goal: {
     supportsBranch: false,
     supportsHideUncommitted: false,
@@ -187,6 +195,8 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   "partial",
   // Email layouts next, as workflows with email channel steps may reference them
   "email_layout",
+  // Workflows can link to reusable requests, so push those first.
+  "reusable_request",
   // Goals before workflows/guides that may attach them
   "goal",
   "workflow",
@@ -212,6 +222,7 @@ export const RESOURCE_SUBDIRS: Record<NonHiddenResourceType, string> = {
   audience: "audiences",
   email_layout: "layouts",
   partial: "partials",
+  reusable_request: "reusable-requests",
   translation: "translations",
   workflow: "workflows",
   message_type: "message-types",
@@ -226,6 +237,7 @@ export const RESOURCE_DIR_FLAGS: Record<NonHiddenResourceType, string> = {
   audience: "--audiences-dir",
   email_layout: "--layouts-dir",
   partial: "--partials-dir",
+  reusable_request: "--reusable-requests-dir",
   translation: "--translations-dir",
   workflow: "--workflows-dir",
   message_type: "--message-types-dir",

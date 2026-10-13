@@ -87,6 +87,7 @@ USAGE
 * [`knock reusable-request archive REUSABLEREQUESTKEY`](#knock-reusable-request-archive-reusablerequestkey)
 * [`knock reusable-request get REUSABLEREQUESTKEY`](#knock-reusable-request-get-reusablerequestkey)
 * [`knock reusable-request list`](#knock-reusable-request-list)
+* [`knock reusable-request pull [REUSABLEREQUESTKEY]`](#knock-reusable-request-pull-reusablerequestkey)
 * [`knock schema pull [ITEMTYPE]`](#knock-schema-pull-itemtype)
 * [`knock schema push [ITEMTYPE]`](#knock-schema-push-itemtype)
 * [`knock source get SOURCEKEY`](#knock-source-get-sourcekey)
@@ -1386,6 +1387,30 @@ GLOBAL FLAGS
 ```
 
 _See code: [src/commands/reusable-request/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/list.ts)_
+
+## `knock reusable-request pull [REUSABLEREQUESTKEY]`
+
+Pull one or more reusable requests from an environment into a local file system.
+
+```
+USAGE
+  $ knock reusable-request pull [REUSABLEREQUESTKEY] [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--reusable-requests-dir <value> --all] [--hide-uncommitted-changes] [--force]
+
+FLAGS
+  --all                            Whether to pull all reusable requests from the specified environment.
+  --branch=<value>                 The slug of the branch to use.
+  --environment=<value>            The environment to use. When omitted, the account's default environment is used.
+  --force                          Remove the confirmation prompt.
+  --hide-uncommitted-changes       Hide any uncommitted changes.
+  --reusable-requests-dir=<value>  The target directory path to pull all reusable requests into.
+  --service-token=<value>          The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/pull.ts)_
 
 ## `knock schema pull [ITEMTYPE]`
 
