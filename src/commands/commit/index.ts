@@ -7,8 +7,8 @@ import * as CustomFlags from "@/lib/helpers/flag";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import {
-  ALL_RESOURCE_TYPES,
   ALLOW_EMPTY_RESOURCE_TYPES,
+  COMMIT_RESOURCE_TYPES,
 } from "@/lib/resources";
 
 const ALLOW_EMPTY_RESOURCE_TYPE_SET = new Set<string>(
@@ -33,7 +33,7 @@ export default class Commit extends BaseCommand<typeof Commit> {
     "resource-type": Flags.string({
       summary:
         "Commit only changes for the given resource type. Can be used alone or together with --resource-id.",
-      options: ALL_RESOURCE_TYPES,
+      options: COMMIT_RESOURCE_TYPES,
     }),
     "resource-id": Flags.string({
       summary:

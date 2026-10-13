@@ -15,6 +15,7 @@ import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
+import * as ReusableRequest from "@/lib/marshal/reusable-request";
 import * as Schema from "@/lib/marshal/schema";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Source from "@/lib/marshal/source";
@@ -687,6 +688,92 @@ export default class ApiV1 {
     return this.put(`/branches/${branchSlug}/rebase`, {}, { params });
   }
 
+  // By resources: Reusable requests
+
+  async listReusableRequests<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListReusableRequestResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      ...toPageParams(flags),
+    });
+
+    return this.get("/reusable_requests", { params });
+  }
+
+  async getReusableRequest<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetReusableRequestResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/reusable_requests/${args.reusableRequestKey}`, {
+      params,
+    });
+  }
+
+  async upsertReusableRequest<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    reusableRequest: AnyObj & { key: string },
+  ): Promise<AxiosResponse<UpsertReusableRequestResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
+      force: flags.force,
+    });
+    const data = {
+      reusable_request: ReusableRequest.toReusableRequestInput(reusableRequest),
+    };
+
+    return this.put(`/reusable_requests/${reusableRequest.key}`, data, {
+      params,
+    });
+  }
+
+  async validateReusableRequest(
+    { flags }: Props,
+    reusableRequest: AnyObj & { key: string },
+  ): Promise<AxiosResponse<ValidateReusableRequestResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const data = {
+      reusable_request: ReusableRequest.toReusableRequestInput(reusableRequest),
+    };
+
+    return this.put(
+      `/reusable_requests/${reusableRequest.key}/validate`,
+      data,
+      { params },
+    );
+  }
+
+  async archiveReusableRequest({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ArchiveReusableRequestResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+
+    return this.delete(`/reusable_requests/${args.reusableRequestKey}`, {
+      params,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -702,6 +789,13 @@ export default class ApiV1 {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse> {
     return this.client.put(`/${API_VERSION}` + subpath, data, config);
+  }
+
+  async delete(
+    subpath: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.delete(`/${API_VERSION}` + subpath, config);
   }
 }
 
@@ -871,3 +965,25 @@ export type UpsertSchemaResp = {
 };
 
 export type ListBranchResp = PaginatedResp<Branch>;
+
+export type ListReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<ReusableRequest.ReusableRequestData<A>>;
+
+export type GetReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
+  ReusableRequest.ReusableRequestData<A>;
+
+export type UpsertReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
+  {
+    reusable_request?: ReusableRequest.ReusableRequestData<A>;
+    errors?: InputError[];
+  };
+
+export type ValidateReusableRequestResp = {
+  reusable_request?: ReusableRequest.ReusableRequestData;
+  errors?: InputError[];
+};
+
+export type ArchiveReusableRequestResp = {
+  result?: string;
+  errors?: InputError[];
+};

@@ -10,6 +10,7 @@ import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
+import * as ReusableRequest from "@/lib/marshal/reusable-request";
 import * as Translation from "@/lib/marshal/translation";
 import * as Workflow from "@/lib/marshal/workflow";
 
@@ -32,6 +33,8 @@ const evaluateRecursively = async (
   if (!ctx.resourceDir) {
     if (await Audience.isAudienceDir(currDir)) {
       ctx.resourceDir = buildResourceDirContext("audience", currDir);
+    } else if (await ReusableRequest.isReusableRequestDir(currDir)) {
+      ctx.resourceDir = buildResourceDirContext("reusable_request", currDir);
     } else if (await Workflow.isWorkflowDir(currDir)) {
       ctx.resourceDir = buildResourceDirContext("workflow", currDir);
     } else if (await Guide.isGuideDir(currDir)) {

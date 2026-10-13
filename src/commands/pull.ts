@@ -18,6 +18,7 @@ import GuidePull from "./guide/pull";
 import EmailLayoutPull from "./layout/pull";
 import MessageTypePull from "./message-type/pull";
 import PartialPull from "./partial/pull";
+import ReusableRequestPull from "./reusable-request/pull";
 import TranslationPull from "./translation/pull";
 import WorkflowPull from "./workflow/pull";
 
@@ -100,6 +101,14 @@ const runResourcePullCommand = async (
 
     case "email_layout":
       return EmailLayoutPull.run([...args, "--layouts-dir", subdirPath]);
+
+    case "reusable_request":
+      await ReusableRequestPull.run([
+        ...args,
+        "--reusable-requests-dir",
+        subdirPath,
+      ]);
+      return;
 
     case "partial":
       return PartialPull.run([...args, "--partials-dir", subdirPath]);

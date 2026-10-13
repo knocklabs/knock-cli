@@ -8,6 +8,7 @@ import { EmailLayoutData } from "../email-layout";
 import { GuideData } from "../guide";
 import { MessageTypeData } from "../message-type";
 import { PartialData } from "../partial";
+import type { ReusableRequestData } from "../reusable-request";
 import { ReusableStepData } from "../reusable-step";
 import { WorkflowData } from "../workflow";
 
@@ -23,6 +24,7 @@ type ResourceData<A extends WithAnnotation> =
   | WorkflowData<A>
   | MessageTypeData<A>
   | GuideData<A>
+  | ReusableRequestData<A>
   | ReusableStepData<A>;
 
 // Volatile fields that change per-branch or over time, excluded to avoid noisy diffs

@@ -119,6 +119,16 @@ const setupWithListStubs = (
         }),
       ),
     )
+    .stub(KnockApiV1.prototype, "listReusableRequests", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            entries: [],
+            page_info: factory.pageInfo(),
+          },
+        }),
+      ),
+    )
     .stub(enquirer.prototype, "prompt", (stub) =>
       stub.onFirstCall().resolves({ input: "y" }),
     );
@@ -503,6 +513,26 @@ function assertApiV1ListFunctionsCalled(
           force: true,
           limit: 100,
           format: "json",
+          ...expectedFlags,
+        }),
+    ),
+  );
+
+  sinon.assert.calledWith(
+    KnockApiV1.prototype.listReusableRequests as any,
+    sinon.match(
+      ({ args, flags }) =>
+        isEqual(args, {}) &&
+        isEqual(flags, {
+          all: true,
+          "reusable-requests-dir": {
+            abspath: path.resolve(sandboxDir, "reusable-requests"),
+            exists: false,
+          },
+          "service-token": "valid-token",
+          force: true,
+          annotate: true,
+          limit: 100,
           ...expectedFlags,
         }),
     ),

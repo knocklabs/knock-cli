@@ -18,6 +18,7 @@ import GuidePush from "./guide/push";
 import EmailLayoutPush from "./layout/push";
 import MessageTypePush from "./message-type/push";
 import PartialPush from "./partial/push";
+import ReusableRequestPush from "./reusable-request/push";
 import TranslationPush from "./translation/push";
 import WorkflowPush from "./workflow/push";
 
@@ -107,6 +108,14 @@ const runResourcePushCommand = async (
 
     case "email_layout":
       return EmailLayoutPush.run([...args, "--layouts-dir", subdirPath]);
+
+    case "reusable_request":
+      await ReusableRequestPush.run([
+        ...args,
+        "--reusable-requests-dir",
+        subdirPath,
+      ]);
+      return;
 
     case "partial":
       return PartialPush.run([...args, "--partials-dir", subdirPath]);

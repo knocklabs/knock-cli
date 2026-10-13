@@ -15,6 +15,10 @@ import { EmailLayoutData } from "@/lib/marshal/email-layout";
 import { GuideData } from "@/lib/marshal/guide";
 import { MessageTypeData } from "@/lib/marshal/message-type";
 import { PartialData, PartialType } from "@/lib/marshal/partial";
+import {
+  ReusableRequestData,
+  ReusableRequestType,
+} from "@/lib/marshal/reusable-request";
 import { ReusableStepData } from "@/lib/marshal/reusable-step";
 import { SourceData } from "@/lib/marshal/source";
 import { TranslationData } from "@/lib/marshal/translation";
@@ -394,6 +398,31 @@ export const reusableStep = (
     created_at: "2022-12-31T12:00:00.000000Z",
     updated_at: "2022-12-31T12:00:00.000000Z",
     sha: "<SOME_SHA>",
+    ...attrs,
+  };
+};
+
+export const reusableRequest = (
+  attrs: Partial<ReusableRequestData> = {},
+): ReusableRequestData => {
+  return {
+    key: "fetch-user",
+    name: "Fetch user",
+    type: ReusableRequestType.HttpFetch,
+    description: "Loads a user from the API.",
+    environment: "development",
+    settings: {
+      method: "get",
+      url: "https://example.com",
+      body: null,
+      headers: [{ key: "X-API-Key", value: "1234567890" }],
+      query_params: [{ key: "key", value: "value" }],
+      response_path: null,
+      signing_key: null,
+    },
+    created_at: "2021-01-01T00:00:00Z",
+    updated_at: "2021-01-01T00:00:00Z",
+    sha: "abc123",
     ...attrs,
   };
 };

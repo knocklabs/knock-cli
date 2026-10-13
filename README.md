@@ -84,6 +84,13 @@ USAGE
 * [`knock partial validate [PARTIALKEY]`](#knock-partial-validate-partialkey)
 * [`knock pull`](#knock-pull)
 * [`knock push`](#knock-push)
+* [`knock reusable-request archive REUSABLEREQUESTKEY`](#knock-reusable-request-archive-reusablerequestkey)
+* [`knock reusable-request get REUSABLEREQUESTKEY`](#knock-reusable-request-get-reusablerequestkey)
+* [`knock reusable-request list`](#knock-reusable-request-list)
+* [`knock reusable-request new`](#knock-reusable-request-new)
+* [`knock reusable-request pull [REUSABLEREQUESTKEY]`](#knock-reusable-request-pull-reusablerequestkey)
+* [`knock reusable-request push [REUSABLEREQUESTKEY]`](#knock-reusable-request-push-reusablerequestkey)
+* [`knock reusable-request validate [REUSABLEREQUESTKEY]`](#knock-reusable-request-validate-reusablerequestkey)
 * [`knock schema pull [ITEMTYPE]`](#knock-schema-pull-itemtype)
 * [`knock schema push [ITEMTYPE]`](#knock-schema-push-itemtype)
 * [`knock source get SOURCEKEY`](#knock-source-get-sourcekey)
@@ -1307,6 +1314,187 @@ FLAGS
 ```
 
 _See code: [src/commands/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/push.ts)_
+
+## `knock reusable-request archive REUSABLEREQUESTKEY`
+
+Archive a reusable request (affects ALL environments).
+
+```
+USAGE
+  $ knock reusable-request archive REUSABLEREQUESTKEY --environment <value> [--json] [--service-token <value>] [--branch
+    <value>] [--force]
+
+ARGUMENTS
+  REUSABLEREQUESTKEY  The key of the reusable request to archive.
+
+FLAGS
+  --branch=<value>         The slug of the branch to use.
+  --environment=<value>    (required) The environment to use.
+  --force                  Skip confirmation prompt.
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Archive a reusable request (affects ALL environments).
+
+
+  WARNING: Archiving a reusable request affects ALL environments and cannot be undone.
+  Use this command with caution.
+```
+
+_See code: [src/commands/reusable-request/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/archive.ts)_
+
+## `knock reusable-request get REUSABLEREQUESTKEY`
+
+Display a single reusable request from an environment.
+
+```
+USAGE
+  $ knock reusable-request get REUSABLEREQUESTKEY [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--hide-uncommitted-changes]
+
+FLAGS
+  --branch=<value>            The slug of the branch to use.
+  --environment=<value>       The environment to use. When omitted, the account's default environment is used.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --service-token=<value>     The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/get.ts)_
+
+## `knock reusable-request list`
+
+Display all reusable requests for an environment.
+
+```
+USAGE
+  $ knock reusable-request list [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--hide-uncommitted-changes] [--after <value>] [--before <value>] [--limit <value>]
+
+FLAGS
+  --after=<value>             The cursor after which to fetch the next page.
+  --before=<value>            The cursor before which to fetch the previous page.
+  --branch=<value>            The slug of the branch to use.
+  --environment=<value>       The environment to use. When omitted, the account's default environment is used.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --limit=<value>             The total number of entries to fetch per page.
+  --service-token=<value>     The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/list.ts)_
+
+## `knock reusable-request new`
+
+Create a new reusable request with a minimal configuration.
+
+```
+USAGE
+  $ knock reusable-request new [--json] [--service-token <value>] [-n <value>] [-k <value>] [-t http_fetch] [-d <value>]
+    [--method get|post|put|delete|patch] [--url <value>] [--environment <value>] [--branch <value>] [--force] [-p]
+
+FLAGS
+  -d, --description=<value>    The description of the reusable request
+  -k, --key=<value>            The key of the reusable request
+  -n, --name=<value>           The name of the reusable request
+  -p, --push                   Whether or not to push the reusable request to Knock after creation.
+  -t, --type=<option>          [default: http_fetch] The reusable request type. Only http_fetch is supported.
+                               <options: http_fetch>
+      --branch=<value>         The slug of the branch to use.
+      --environment=<value>    The environment to use. When omitted, the account's default environment is used.
+      --force                  Force the creation of the reusable request directory without confirmation.
+      --method=<option>        [default: get] The HTTP method of the request.
+                               <options: get|post|put|delete|patch>
+      --service-token=<value>  The service token to authenticate with.
+      --url=<value>            [default: https://example.com] The URL of the request.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/new.ts)_
+
+## `knock reusable-request pull [REUSABLEREQUESTKEY]`
+
+Pull one or more reusable requests from an environment into a local file system.
+
+```
+USAGE
+  $ knock reusable-request pull [REUSABLEREQUESTKEY] [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--reusable-requests-dir <value> --all] [--hide-uncommitted-changes] [--force]
+
+FLAGS
+  --all                            Whether to pull all reusable requests from the specified environment.
+  --branch=<value>                 The slug of the branch to use.
+  --environment=<value>            The environment to use. When omitted, the account's default environment is used.
+  --force                          Remove the confirmation prompt.
+  --hide-uncommitted-changes       Hide any uncommitted changes.
+  --reusable-requests-dir=<value>  The target directory path to pull all reusable requests into.
+  --service-token=<value>          The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/pull.ts)_
+
+## `knock reusable-request push [REUSABLEREQUESTKEY]`
+
+Push one or more reusable requests from a local file system to Knock.
+
+```
+USAGE
+  $ knock reusable-request push [REUSABLEREQUESTKEY] [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--reusable-requests-dir <value> --all] [-m <value> --commit] [--allow-empty ] [--force]
+
+FLAGS
+  -m, --commit-message=<value>         Use the given value as the commit message
+      --all                            Whether to push all reusable requests from the target directory.
+      --allow-empty                    Create an empty commit for an already-published resource (analogous to git commit
+                                       --allow-empty).
+      --branch=<value>                 The slug of the branch to use.
+      --commit                         Push and commit the reusable request(s) at the same time
+      --environment=<value>            The environment to use. When omitted, the account's default environment is used.
+      --force                          Force pushes the resource or resources to Knock, overwriting whatever is
+                                       currently stored. If you're using this on a non-development environment, you
+                                       should also ensure you `commit` the changes.
+      --reusable-requests-dir=<value>  The target directory path to find all reusable requests to push.
+      --service-token=<value>          The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/push.ts)_
+
+## `knock reusable-request validate [REUSABLEREQUESTKEY]`
+
+Validate one or more reusable requests from a local file system.
+
+```
+USAGE
+  $ knock reusable-request validate [REUSABLEREQUESTKEY] [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--reusable-requests-dir <value> --all]
+
+FLAGS
+  --all                            Whether to validate all reusable requests from the target directory.
+  --branch=<value>                 The slug of the branch to use.
+  --environment=<value>            The environment to use. When omitted, the account's default environment is used.
+  --reusable-requests-dir=<value>  The target directory path to find all reusable requests to validate.
+  --service-token=<value>          The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/validate.ts)_
 
 ## `knock schema pull [ITEMTYPE]`
 

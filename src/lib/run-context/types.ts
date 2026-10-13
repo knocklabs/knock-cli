@@ -24,6 +24,7 @@ export type ResourceType =
   | "partial"
   | "message_type"
   | "guide"
+  | "reusable_request"
   | "reusable_step";
 
 type ResourceDirContextBase = DirContext & {
@@ -59,6 +60,10 @@ export type GuideDirContext = ResourceDirContextBase & {
   type: "guide";
 };
 
+export type ReusableRequestDirContext = ResourceDirContextBase & {
+  type: "reusable_request";
+};
+
 export type ReusableStepDirContext = ResourceDirContextBase & {
   type: "reusable_step";
 };
@@ -71,6 +76,7 @@ export type ResourceDirContext =
   | PartialDirContext
   | MessageTypeDirContext
   | GuideDirContext
+  | ReusableRequestDirContext
   | ReusableStepDirContext;
 
 export type ResourceTarget = {
