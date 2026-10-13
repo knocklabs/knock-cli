@@ -10,6 +10,8 @@ import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as ReusableRequest from "@/lib/marshal/reusable-request";
 
+import ReusableRequestPush from "./push";
+
 export default class ReusableRequestValidate extends BaseCommand<
   typeof ReusableRequestValidate
 > {
@@ -85,7 +87,7 @@ export default class ReusableRequestValidate extends BaseCommand<
 
   static async validateAll(
     api: ApiV1.T,
-    props: Props<typeof ReusableRequestValidate>,
+    props: Props<typeof ReusableRequestValidate | typeof ReusableRequestPush>,
     reusableRequests: ReusableRequest.ReusableRequestDirData[],
   ): Promise<SourceError[]> {
     const errorPromises = reusableRequests.map(async (reusableRequest) => {

@@ -114,6 +114,58 @@ describe("lib/api-v1 reusable requests", () => {
     });
   });
 
+  describe("upsertReusableRequest", () => {
+    it("PUTs /v1/reusable_requests/:key with a reusable_request body", async () => {
+      const scope = nock(API_ORIGIN)
+        .put("/v1/reusable_requests/fetch-user", {
+          reusable_request: {
+            type: "http_fetch",
+            name: "Fetch user",
+            description: "Loads a user from the API.",
+            settings: reusableRequest.settings,
+          },
+        })
+        .query({
+          environment: "development",
+          branch: "feature-branch",
+          annotate: "true",
+          commit: "true",
+          commit_message: "add fetch",
+          allow_empty: "true",
+          force: "true",
+        })
+        .reply(200, { reusable_request: reusableRequest });
+
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+      const resp = await apiV1.upsertReusableRequest(
+        factory.props({
+          flags: {
+            environment: "development",
+            branch: "feature-branch",
+            annotate: true,
+            commit: true,
+            "commit-message": "add fetch",
+            "allow-empty": true,
+            force: true,
+          },
+        }),
+        {
+          key: "fetch-user",
+          type: reusableRequest.type,
+          name: reusableRequest.name,
+          description: reusableRequest.description,
+          settings: reusableRequest.settings,
+          environment: "development",
+          sha: "abc123",
+          created_at: reusableRequest.created_at,
+        },
+      );
+
+      expect(scope.isDone()).to.equal(true);
+      expect(resp.data.reusable_request?.key).to.equal("fetch-user");
+    });
+  });
+
   describe("validateReusableRequest", () => {
     it("PUTs /v1/reusable_requests/:key/validate", async () => {
       const scope = nock(API_ORIGIN)
