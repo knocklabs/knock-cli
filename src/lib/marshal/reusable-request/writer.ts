@@ -15,25 +15,18 @@ import {
   REUSABLE_REQUEST_JSON,
   ReusableRequestDirBundle,
 } from "./processor.isomorphic";
-import { readReusableRequestDir } from "./reader";
 import { ReusableRequestData } from "./types";
 
 /*
- * Writes a remote reusable request into a local directory, using a previously
- * pulled copy as a reference when one exists.
+ * Writes a remote reusable request into a local directory.
+ * Reusable requests have no extractable fields, so the local copy is not
+ * used to preserve extracted file paths.
  */
 export const writeReusableRequestDirFromData = async (
   reusableRequestDirCtx: ReusableRequestDirContext,
   remoteReusableRequest: ReusableRequestData<WithAnnotation>,
 ): Promise<void> => {
-  const [localReusableRequest] = reusableRequestDirCtx.exists
-    ? await readReusableRequestDir(reusableRequestDirCtx)
-    : [];
-
-  const bundle = buildReusableRequestDirBundle(
-    remoteReusableRequest,
-    localReusableRequest,
-  );
+  const bundle = buildReusableRequestDirBundle(remoteReusableRequest);
 
   return writeReusableRequestDirFromBundle(reusableRequestDirCtx, bundle);
 };

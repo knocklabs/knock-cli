@@ -7,7 +7,7 @@ import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { merge } from "@/lib/helpers/object.isomorphic";
+import { merge, omitDeep } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT, PageInfo } from "@/lib/helpers/page";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import {
@@ -109,7 +109,7 @@ export default class ReusableRequestPull extends BaseCommand<
     const scope = formatCommandScope(flags);
     const message = `‣ Successfully ${action} \`${dirContext.key}\` at ${dirContext.abspath} using ${scope}`;
 
-    if (flags.json) return resp.data;
+    if (flags.json) return omitDeep(resp.data, ["__annotation"]);
 
     this.log(message);
   }
@@ -148,7 +148,7 @@ export default class ReusableRequestPull extends BaseCommand<
     const action = targetDirCtx.exists ? "updated" : "created";
     const scope = formatCommandScope(flags);
 
-    if (flags.json) return reusableRequests;
+    if (flags.json) return omitDeep(reusableRequests, ["__annotation"]);
 
     this.log(
       `‣ Successfully ${action} the reusable requests directory at ${targetDirCtx.abspath} using ${scope}`,
@@ -188,9 +188,19 @@ export default class ReusableRequestPull extends BaseCommand<
     const { reusableRequestKey } = this.props.args;
     const { resourceDir, cwd: runCwd } = this.runContext;
 
+    if (reusableRequestKey) {
+      const keyError =
+        ReusableRequest.validateReusableRequestKey(reusableRequestKey);
+      if (keyError) {
+        return this.error(
+          `Invalid reusable request key \`${reusableRequestKey}\` (${keyError})`,
+        );
+      }
+    }
+
     if (resourceDir) {
       const target: ResourceTarget = {
-        commandId: BaseCommand.id,
+        commandId: this.id ?? "reusable-request pull",
         type: "reusable_request",
         key: reusableRequestKey,
       };
