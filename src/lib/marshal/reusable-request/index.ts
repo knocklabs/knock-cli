@@ -1,3 +1,4 @@
+export * from "./generator";
 export * from "./helpers";
 export * from "./key";
 export * from "./processor.isomorphic";
