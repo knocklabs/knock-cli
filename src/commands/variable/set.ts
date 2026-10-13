@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/helpers/error";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
 import {
+  applySecretWrite,
   BRANCH_ERROR,
   describeSet,
   isPresent,
@@ -249,26 +250,20 @@ export default class VariableSet extends BaseCommand<typeof VariableSet> {
   ): RedactedVariable {
     if (body.type === "public") return redactVariable(saved);
 
-    const valueSet =
-      body.value === undefined
-        ? remote
-          ? isPresent(remote.value)
-          : false
-        : body.value !== "";
-
-    const environmentValuesSet: Record<string, boolean> = {};
-    for (const [slug, value] of Object.entries(
-      remote?.environment_values ?? {},
-    )) {
-      environmentValuesSet[slug] = isPresent(value);
-    }
-
-    for (const [slug, value] of Object.entries(body.environment_values ?? {})) {
-      environmentValuesSet[slug] = value !== "";
-    }
+    const presence = applySecretWrite(
+      {
+        value_set: remote ? isPresent(remote.value) : false,
+        environment_values_set: Object.fromEntries(
+          Object.entries(remote?.environment_values ?? {}).map(
+            ([slug, value]) => [slug, isPresent(value)],
+          ),
+        ),
+      },
+      body,
+    );
 
     const environmentValues: Record<string, null> = {};
-    for (const slug of Object.keys(environmentValuesSet)) {
+    for (const slug of Object.keys(presence.environment_values_set)) {
       environmentValues[slug] = null;
     }
 
@@ -280,11 +275,11 @@ export default class VariableSet extends BaseCommand<typeof VariableSet> {
       inserted_at: saved.inserted_at,
       updated_at: saved.updated_at,
       value: null,
-      value_set: valueSet,
-      ...(Object.keys(environmentValuesSet).length > 0
+      value_set: presence.value_set,
+      ...(Object.keys(presence.environment_values_set).length > 0
         ? {
             environment_values: environmentValues,
-            environment_values_set: environmentValuesSet,
+            environment_values_set: presence.environment_values_set,
           }
         : {}),
     };

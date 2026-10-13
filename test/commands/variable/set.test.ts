@@ -191,4 +191,90 @@ describe("commands/variable/set", () => {
         KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
       );
     });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(fs, "readFileSync", (stub) => stub.returns("from-stdin-secret"))
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({ status: 404, data: { message: "not found" } }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "upsertVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "stripe_api_key",
+            type: "secret",
+            value: null,
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-01T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stdout()
+    .command([
+      "variable set",
+      "stripe_api_key",
+      "--type",
+      "secret",
+      "--value-stdin",
+      "--json",
+    ])
+    .it("records a stdin secret as set without printing it", (ctx) => {
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
+        "stripe_api_key",
+        { type: "secret", value: "from-stdin-secret" },
+      );
+      const parsed = JSON.parse(ctx.stdout);
+      expect(parsed.value_set).to.equal(true);
+      expect(parsed.value).to.equal(null);
+      expect(ctx.stdout).to.not.contain("from-stdin-secret");
+    });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "stripe_api_key",
+            type: "secret",
+            value: "sk_live_super_secret",
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-01T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "upsertVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "stripe_api_key",
+            type: "secret",
+            value: null,
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-02T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stdout()
+    .command(["variable set", "stripe_api_key", "--unset-value", "--json"])
+    .it("clears a secret default", (ctx) => {
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
+        "stripe_api_key",
+        { type: "secret", value: "" },
+      );
+      expect(JSON.parse(ctx.stdout).value_set).to.equal(false);
+      expect(ctx.stdout).to.not.contain("sk_live_super_secret");
+    });
 });
