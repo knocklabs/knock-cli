@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/1.3.0 linux-x64 node-v20.20.2
+@knocklabs/cli/1.3.0 linux-x64 node-v22.14.0
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -93,6 +93,13 @@ USAGE
 * [`knock translation pull [TRANSLATIONREF]`](#knock-translation-pull-translationref)
 * [`knock translation push [TRANSLATIONREF]`](#knock-translation-push-translationref)
 * [`knock translation validate [TRANSLATIONREF]`](#knock-translation-validate-translationref)
+* [`knock variable delete KEY`](#knock-variable-delete-key)
+* [`knock variable get KEY`](#knock-variable-get-key)
+* [`knock variable list`](#knock-variable-list)
+* [`knock variable new`](#knock-variable-new)
+* [`knock variable pull [KEY]`](#knock-variable-pull-key)
+* [`knock variable push [KEY]`](#knock-variable-push-key)
+* [`knock variable set KEY`](#knock-variable-set-key)
 * [`knock whoami`](#knock-whoami)
 * [`knock workflow activate WORKFLOWKEY`](#knock-workflow-activate-workflowkey)
 * [`knock workflow generate-types`](#knock-workflow-generate-types)
@@ -1523,6 +1530,186 @@ FLAGS
 ```
 
 _See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/translation/validate.ts)_
+
+## `knock variable delete KEY`
+
+Delete a variable, or clear one environment override.
+
+```
+USAGE
+  $ knock variable delete KEY [--json] [--service-token <value>] [--environment <value>] [--branch <value>] [--force]
+
+ARGUMENTS
+  KEY  The variable key.
+
+FLAGS
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --environment=<value>    Clear only this environment's override. The variable itself is not deleted.
+  --force                  Skip the confirmation prompt.
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/variable/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/delete.ts)_
+
+## `knock variable get KEY`
+
+Display a variable and its environment overrides.
+
+```
+USAGE
+  $ knock variable get KEY [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+
+ARGUMENTS
+  KEY  The variable key.
+
+FLAGS
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --environment=<value>    Rejected. Get always shows the default and every environment override.
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/variable/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/get.ts)_
+
+## `knock variable list`
+
+Display variables in the project, or the value that applies in one environment.
+
+```
+USAGE
+  $ knock variable list [--json] [--service-token <value>] [--environment <value>] [--type public|secret] [--branch
+    <value>] [--after <value>] [--before <value>] [--limit <value>]
+
+FLAGS
+  --after=<value>          The cursor after which to fetch the next page.
+  --before=<value>         The cursor before which to fetch the previous page.
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --environment=<value>    Show only the value that applies in this environment: the override when one is set, otherwise
+                           the default.
+  --limit=<value>          The total number of entries to fetch per page.
+  --service-token=<value>  The service token to authenticate with.
+  --type=<option>          Filter variables by type.
+                           <options: public|secret>
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/list.ts)_
+
+## `knock variable new`
+
+Add a variable entry to variables.json.
+
+```
+USAGE
+  $ knock variable new --key <value> --type public|secret [--service-token <value>] [--value <value>]
+    [--description <value>] [--knock-dir <value>] [--variables-file <value>] [--force] [--push] [--branch <value>]
+
+FLAGS
+  --branch=<value>          Rejected. Variables are not branch-scoped.
+  --description=<value>     Variable description.
+  --force                   Skip the confirmation prompt when creating the file.
+  --key=<value>             (required) Variable key.
+  --knock-dir=<value>       Knock directory used to locate variables.json.
+  --push                    Push the new entry after writing it.
+  --service-token=<value>   The service token to authenticate with.
+  --type=<option>           (required) public or secret.
+                            <options: public|secret>
+  --value=<value>           Default value. Public variables only.
+  --variables-file=<value>  Path to variables.json. Defaults to <knock dir>/variables.json.
+```
+
+_See code: [src/commands/variable/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/new.ts)_
+
+## `knock variable pull [KEY]`
+
+Pull variables into variables.json.
+
+```
+USAGE
+  $ knock variable pull [KEY] [--service-token <value>] [--environment <value>] [--branch <value>] [--knock-dir
+    <value>] [--variables-file <value>] [--force]
+
+ARGUMENTS
+  KEY  Update only this entry. Omit to pull every variable.
+
+FLAGS
+  --branch=<value>          Rejected. Variables are not branch-scoped.
+  --environment=<value>     Rejected. Pull always fetches the project catalog.
+  --force                   Skip the confirmation prompt.
+  --knock-dir=<value>       Knock directory used to locate variables.json.
+  --service-token=<value>   The service token to authenticate with.
+  --variables-file=<value>  Path to variables.json. Defaults to <knock dir>/variables.json.
+```
+
+_See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/pull.ts)_
+
+## `knock variable push [KEY]`
+
+Push variables from variables.json to Knock.
+
+```
+USAGE
+  $ knock variable push [KEY] [--service-token <value>] [--environment <value>] [--branch <value>] [--knock-dir
+    <value>] [--variables-file <value>] [--force]
+
+ARGUMENTS
+  KEY  Push only this entry. Omit to push every entry.
+
+FLAGS
+  --branch=<value>          Rejected. Variables are not branch-scoped.
+  --environment=<value>     Rejected. Push writes the project catalog in variables.json.
+  --force                   Skip the confirmation prompt.
+  --knock-dir=<value>       Knock directory used to locate variables.json.
+  --service-token=<value>   The service token to authenticate with.
+  --variables-file=<value>  Path to variables.json. Defaults to <knock dir>/variables.json.
+```
+
+_See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/push.ts)_
+
+## `knock variable set KEY`
+
+Create or update a variable.
+
+```
+USAGE
+  $ knock variable set KEY [--json] [--service-token <value>] [--type public|secret] [--value <value>]
+    [--value-file <value>] [--value-stdin] [--unset-value] [--description <value>] [--unset-description]
+    [--environment-value <value>...] [--environment-value-file <value>...] [--unset-environment <value>...]
+    [--environment <value>] [--branch <value>]
+
+ARGUMENTS
+  KEY  The variable key.
+
+FLAGS
+  --branch=<value>                     Rejected. Variables are not branch-scoped.
+  --description=<value>                Variable description.
+  --environment=<value>                Rejected. Use --environment-value, --environment-value-file, or
+                                       --unset-environment.
+  --environment-value=<value>...       Set one environment override as <slug>=<value>. Repeatable. Public variables
+                                       only.
+  --environment-value-file=<value>...  Set one environment override from a file as <slug>=<path>. Repeatable.
+  --service-token=<value>              The service token to authenticate with.
+  --type=<option>                      public or secret. Required when creating a variable.
+                                       <options: public|secret>
+  --unset-description                  Clear the description.
+  --unset-environment=<value>...       Clear one environment override. Repeatable.
+  --unset-value                        Clear the default value.
+  --value=<value>                      Default value. Public variables only.
+  --value-file=<value>                 Read the default value from a file. The bytes are not trimmed.
+  --value-stdin                        Read the default value from stdin until EOF. The bytes are not trimmed.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/variable/set.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/set.ts)_
 
 ## `knock whoami`
 

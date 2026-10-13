@@ -19,6 +19,7 @@ import * as Schema from "@/lib/marshal/schema";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Source from "@/lib/marshal/source";
 import * as Translation from "@/lib/marshal/translation";
+import * as Variable from "@/lib/marshal/variable";
 import * as Workflow from "@/lib/marshal/workflow";
 
 import { SessionContext } from "./types";
@@ -554,6 +555,38 @@ export default class ApiV1 {
     return this.get(`/sources/${args.sourceKey}`, { params });
   }
 
+  async listVariables({
+    flags,
+  }: Props): Promise<AxiosResponse<ListVariableResp>> {
+    const params = prune({
+      environment: flags.environment,
+      type: flags.type,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/variables", { params });
+  }
+
+  async getVariable(key: string): Promise<AxiosResponse<Variable.Variable>> {
+    return this.get(`/variables/${encodeURIComponent(key)}`);
+  }
+
+  async upsertVariable(
+    key: string,
+    body: Variable.VariableRequest,
+  ): Promise<AxiosResponse<Variable.Variable>> {
+    return this.put(`/variables/${encodeURIComponent(key)}`, body);
+  }
+
+  async deleteVariable(
+    key: string,
+    environment?: string,
+  ): Promise<AxiosResponse<void>> {
+    const params = prune({ environment });
+
+    return this.del(`/variables/${encodeURIComponent(key)}`, { params });
+  }
+
   async validateGuide(
     { flags }: Props,
     guide: Guide.GuideInput,
@@ -702,6 +735,13 @@ export default class ApiV1 {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse> {
     return this.client.put(`/${API_VERSION}` + subpath, data, config);
+  }
+
+  async del(
+    subpath: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.delete(`/${API_VERSION}` + subpath, config);
   }
 }
 
@@ -854,6 +894,8 @@ export type ActivateGuideResp = {
 
 export type ListSourceResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<Source.SourceData<A>>;
+
+export type ListVariableResp = PaginatedResp<Variable.Variable>;
 
 export type GetSourceResp<A extends MaybeWithAnnotation = unknown> =
   Source.SourceData<A>;
