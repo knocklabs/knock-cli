@@ -3,7 +3,6 @@ import { Args, Flags } from "@oclif/core";
 import BaseCommand from "@/lib/base-command";
 import { ApiError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
-import { merge } from "@/lib/helpers/object.isomorphic";
 import { MAX_PAGINATION_LIMIT } from "@/lib/helpers/page";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
@@ -152,15 +151,10 @@ export default class VariablePull extends BaseCommand<typeof VariablePull> {
     after?: string,
     fetched: Variable[] = [],
   ): Promise<Variable[]> {
-    const props = merge(this.props, {
-      flags: {
-        after,
-        limit: MAX_PAGINATION_LIMIT,
-        environment: undefined,
-        branch: undefined,
-      },
+    const resp = await this.apiV1.listVariables({
+      after,
+      limit: MAX_PAGINATION_LIMIT,
     });
-    const resp = await this.apiV1.listVariables(props);
 
     if (!isSuccessResp(resp)) {
       this.error(new ApiError(formatErrorRespMessage(resp)));
