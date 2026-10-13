@@ -15,6 +15,7 @@ import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
+import * as ReusableRequest from "@/lib/marshal/reusable-request";
 import * as Schema from "@/lib/marshal/schema";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Source from "@/lib/marshal/source";
@@ -687,6 +688,22 @@ export default class ApiV1 {
     return this.put(`/branches/${branchSlug}/rebase`, {}, { params });
   }
 
+  // By resources: Reusable requests
+
+  async listReusableRequests<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListReusableRequestResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      ...toPageParams(flags),
+    });
+
+    return this.get("/reusable_requests", { params });
+  }
+
   // By methods:
 
   async get(
@@ -871,3 +888,6 @@ export type UpsertSchemaResp = {
 };
 
 export type ListBranchResp = PaginatedResp<Branch>;
+
+export type ListReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<ReusableRequest.ReusableRequestData<A>>;
