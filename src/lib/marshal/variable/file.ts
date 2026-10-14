@@ -15,13 +15,10 @@ export type VariablesFileContext = {
 };
 
 export const resolveVariablesFile = async (
-  variablesFileFlag: DirContext | undefined,
   projectConfig: ProjectConfig | undefined,
   knockDirFlag: DirContext | undefined,
   cwd: string,
 ): Promise<VariablesFileContext> => {
-  if (variablesFileFlag) return variablesFileFlag;
-
   const knockDir = await resolveKnockDir(knockDirFlag, projectConfig);
   const abspath = knockDir
     ? path.join(knockDir.abspath, VARIABLES_FILENAME)
