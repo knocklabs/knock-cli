@@ -14,6 +14,9 @@ export default class ReusableRequestArchive extends BaseCommand<
   static description = `
 WARNING: Archiving a reusable request affects ALL environments and cannot be undone.
 Use this command with caution.
+
+This does not remove the local reusable request directory. Pushing that
+directory later creates the reusable request again.
 `;
 
   static flags = {
