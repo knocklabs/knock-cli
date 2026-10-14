@@ -12,6 +12,11 @@ import { PartialData } from "../partial";
 import { ReusableStepData } from "../reusable-step";
 import { WorkflowData } from "../workflow";
 
+/*
+ * Sanitize the resource data into a format that's appropriate for reading
+ * and writing, by stripping out any annotation fields and handling readonly
+ * fields.
+ */
 type ResourceData<A extends WithAnnotation> =
   | AudienceData<A>
   | EmailLayoutData<A>
