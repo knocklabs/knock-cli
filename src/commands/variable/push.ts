@@ -36,10 +36,6 @@ export default class VariablePush extends BaseCommand<typeof VariablePush> {
       summary: "Knock directory used to locate variables.json.",
       required: false,
     }),
-    "variables-file": CustomFlags.filePath({
-      summary:
-        "Path to variables.json. Defaults to <knock dir>/variables.json.",
-    }),
     force: Flags.boolean({
       summary: "Skip the confirmation prompt.",
     }),
@@ -62,7 +58,6 @@ export default class VariablePush extends BaseCommand<typeof VariablePush> {
     }
 
     const target = await resolveVariablesFile(
-      flags["variables-file"],
       this.projectConfig,
       flags["knock-dir"],
       this.runContext.cwd,
