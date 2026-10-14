@@ -5,6 +5,7 @@ import { WithAnnotation } from "@/lib/marshal/shared/types";
 
 import { AudienceData } from "../audience";
 import { EmailLayoutData } from "../email-layout";
+import { GoalData } from "../goal";
 import { GuideData } from "../guide";
 import { MessageTypeData } from "../message-type";
 import { PartialData } from "../partial";
@@ -23,6 +24,7 @@ type ResourceData<A extends WithAnnotation> =
   | WorkflowData<A>
   | MessageTypeData<A>
   | GuideData<A>
+  | GoalData<A>
   | ReusableStepData<A>;
 
 // Volatile fields that change per-branch or over time, excluded to avoid noisy diffs

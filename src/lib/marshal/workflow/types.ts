@@ -2,6 +2,7 @@ import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import type { Conditions } from "@/lib/marshal/conditions";
 import {
   Duration,
+  GoalAttachment,
   KeyValueBlock,
   MaybeWithAnnotation,
 } from "@/lib/marshal/shared/types";
@@ -147,6 +148,7 @@ export type WorkflowData<A extends MaybeWithAnnotation = unknown> = A & {
   description?: string;
   steps: WorkflowStepData<A>[];
   trigger_data_json_schema?: Record<string, any>;
+  goal_attachment?: GoalAttachment | null;
   created_at: string;
   updated_at: string;
   sha: string;

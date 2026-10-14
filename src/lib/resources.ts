@@ -4,13 +4,6 @@ import type { ResourceType } from "./run-context";
 export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
 
 /**
- * An ordered array of all resource types.
- *
- * Order is important here, specifically when pushing all resources. For
- * example, if an email layout references a partial, that partial must be pushed
- * first or else the validation and upsert of the layout will fail.
- */
-/**
  * Resource types that support empty commits via --allow-empty.
  * Excludes audience until @knocklabs/mgmt ships allow_empty on upsert params.
  */
@@ -26,7 +19,14 @@ export const ALLOW_EMPTY_RESOURCE_TYPES = [
 export type AllowEmptyResourceType =
   (typeof ALLOW_EMPTY_RESOURCE_TYPES)[number];
 
-export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
+/**
+ * Ordered resource types included in bulk `knock pull` / `knock push`.
+ * Goals are intentionally omitted until bulk sync is wired up.
+ *
+ * Order matters when pushing: e.g. email layouts that reference partials need
+ * those partials pushed first.
+ */
+export const ALL_RESOURCE_TYPES = [
   // Audiences can be referenced by workflows, so push them early
   "audience",
   // Partials first, as email layouts and workflows may reference them
@@ -38,7 +38,9 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   "message_type",
   "guide",
   "translation",
-];
+] as const satisfies readonly NonHiddenResourceType[];
+
+export type SyncableResourceType = (typeof ALL_RESOURCE_TYPES)[number];
 
 /**
  * Default names for resource-specific directories used when pushing or pulling
@@ -52,4 +54,5 @@ export const RESOURCE_SUBDIRS: Record<NonHiddenResourceType, string> = {
   workflow: "workflows",
   message_type: "message-types",
   guide: "guides",
+  goal: "goals",
 } as const;

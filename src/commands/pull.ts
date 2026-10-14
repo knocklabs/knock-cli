@@ -9,8 +9,8 @@ import { resolveKnockDir } from "@/lib/helpers/project-config";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import {
   ALL_RESOURCE_TYPES,
-  NonHiddenResourceType,
   RESOURCE_SUBDIRS,
+  SyncableResourceType,
 } from "@/lib/resources";
 
 import AudiencePull from "./audience/pull";
@@ -85,7 +85,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
 }
 
 const runResourcePullCommand = async (
-  resourceType: NonHiddenResourceType,
+  resourceType: SyncableResourceType,
   targetDirCtx: DirContext,
   args: string[],
 ): Promise<void> => {

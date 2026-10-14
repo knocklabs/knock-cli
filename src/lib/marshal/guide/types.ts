@@ -1,7 +1,7 @@
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
 import { Conditions } from "../conditions";
-import { MaybeWithAnnotation } from "../shared/types";
+import { GoalAttachment, MaybeWithAnnotation } from "../shared/types";
 
 export type GuideStepData = {
   ref: string;
@@ -36,6 +36,7 @@ export type GuideData<A extends MaybeWithAnnotation = unknown> = A & {
   target_property_conditions?: Conditions;
   activation_location_rules?: GuideActivationLocationRule[];
   steps: GuideStepData[];
+  goal_attachment?: GoalAttachment | null;
   updated_at: string;
   created_at: string;
   environment: string;
