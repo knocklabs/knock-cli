@@ -4,7 +4,11 @@ import { Args, Flags } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { formatErrors, SourceError } from "@/lib/helpers/error";
+import {
+  formatErrors,
+  isSoftFailableBulkError,
+  SourceError,
+} from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
@@ -87,6 +91,12 @@ export default class GoalValidate extends BaseCommand<typeof GoalValidate> {
 
         return;
       } catch (error) {
+        // Bubble gate/scope failures so bulk push can soft-skip; keep
+        // validation failures as SourceErrors for the normal error path.
+        if (isSoftFailableBulkError(error)) {
+          throw error;
+        }
+
         return new SourceError(
           (error as Error).message,
           Goal.goalJsonPath(goal),

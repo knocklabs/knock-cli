@@ -1,3 +1,5 @@
+import KnockMgmt from "@knocklabs/mgmt";
+
 import { indentString } from "@/lib/helpers/string";
 
 // Individual changeset errors from the server side.
@@ -32,6 +34,49 @@ export class ApiError extends CustomError {
     this.code = code;
   }
 }
+
+/**
+ * Message patterns that indicate a feature/availability gate rather than a
+ * schema validation failure. Used because Control returns 422 for both.
+ *
+ * Keep this specific to account-gate copy. Bare "unavailable" and "not enabled"
+ * also appear in ordinary goal validation errors and must not soft-skip push.
+ */
+const FEATURE_GATE_MESSAGE_RE =
+  /not (?:yet )?enabled for (?:this |your )?account|feature (?:flag )?(?:is )?disabled|not available for (?:this |your )?account|(?:resource|feature) is not (?:supported|enabled)/i;
+
+/**
+ * Whether a bulk pull/push failure should warn-and-continue for softFailOnBulk
+ * resources. Auth/scope denials always qualify; 422 only when the message looks
+ * like a feature gate (Goals gating shares 422 with validation errors).
+ *
+ * @param error - Caught error from a resource pull/push command
+ * @returns true when bulk sync should skip this resource and continue
+ */
+export const isSoftFailableBulkError = (error: unknown): boolean => {
+  let status: number | undefined;
+  let message = "";
+
+  if (error instanceof KnockMgmt.APIError) {
+    status = error.status;
+    message = `${error.error?.message ?? ""} ${error.message}`;
+  } else if (error instanceof ApiError) {
+    status = error.status;
+    message = error.message;
+  } else {
+    return false;
+  }
+
+  if (status === 401 || status === 403) {
+    return true;
+  }
+
+  if (status === 422) {
+    return FEATURE_GATE_MESSAGE_RE.test(message);
+  }
+
+  return false;
+};
 
 // Error to indicate a syntax error in json and where.
 export class JsonSyntaxError extends CustomError {}

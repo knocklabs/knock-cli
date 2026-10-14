@@ -3,7 +3,12 @@ import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
+import {
+  formatError,
+  formatErrors,
+  isSoftFailableBulkError,
+  SourceError,
+} from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
@@ -82,6 +87,10 @@ export default class GoalPush extends BaseCommand<typeof GoalPush> {
           { withSchema: true },
         );
       } catch (error) {
+        if (isSoftFailableBulkError(error)) {
+          throw error;
+        }
+
         const sourceError = new SourceError(
           (error as Error).message,
           Goal.goalJsonPath(goal),

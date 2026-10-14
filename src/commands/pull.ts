@@ -3,17 +3,22 @@ import * as path from "node:path";
 import { Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
+import { runBulkResourceCommand } from "@/lib/helpers/bulk-soft-fail";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { DirContext } from "@/lib/helpers/fs";
 import { resolveKnockDir } from "@/lib/helpers/project-config";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import {
   ALL_RESOURCE_TYPES,
+  buildBulkPullArgs,
+  BulkPullFlags,
+  NonHiddenResourceType,
+  RESOURCE_DIR_FLAGS,
   RESOURCE_SUBDIRS,
-  SyncableResourceType,
 } from "@/lib/resources";
 
 import AudiencePull from "./audience/pull";
+import GoalPull from "./goal/pull";
 import GuidePull from "./guide/pull";
 import EmailLayoutPull from "./layout/pull";
 import MessageTypePull from "./message-type/pull";
@@ -62,64 +67,61 @@ export default class Pull extends BaseCommand<typeof Pull> {
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
-    const args = [
-      "--all",
-      ...(flags.environment ? ["--environment", flags.environment] : []),
-      ...(flags.branch ? ["--branch", flags.branch] : []),
-      ...(flags["hide-uncommitted-changes"]
-        ? ["--hide-uncommitted-changes"]
-        : []),
-      ...(flags["service-token"]
-        ? ["--service-token", flags["service-token"]]
-        : []),
-      ...(flags["api-origin"] ? ["--api-origin", flags["api-origin"]] : []),
-      // Always use the force flag to skip prompts
-      "--force",
-    ];
-
     for (const resourceType of ALL_RESOURCE_TYPES) {
       // eslint-disable-next-line no-await-in-loop
-      await runResourcePullCommand(resourceType, targetDirCtx, args);
+      await runResourcePullCommand(resourceType, targetDirCtx, flags);
     }
   }
 }
 
 const runResourcePullCommand = async (
-  resourceType: SyncableResourceType,
+  resourceType: NonHiddenResourceType,
   targetDirCtx: DirContext,
-  args: string[],
+  flags: BulkPullFlags,
 ): Promise<void> => {
   const subdirPath = path.resolve(
     targetDirCtx.abspath,
     RESOURCE_SUBDIRS[resourceType],
   );
+  const args = [
+    ...buildBulkPullArgs(resourceType, flags),
+    RESOURCE_DIR_FLAGS[resourceType],
+    subdirPath,
+  ];
 
-  switch (resourceType) {
-    case "audience":
-      return AudiencePull.run([...args, "--audiences-dir", subdirPath]);
+  // Soft-fail only for gate/scope errors (see isSoftFailableBulkError), so
+  // validation failures still abort the rest of `knock pull`.
+  return runBulkResourceCommand(resourceType, () => {
+    switch (resourceType) {
+      case "audience":
+        return AudiencePull.run(args);
 
-    case "email_layout":
-      return EmailLayoutPull.run([...args, "--layouts-dir", subdirPath]);
+      case "email_layout":
+        return EmailLayoutPull.run(args);
 
-    case "partial":
-      return PartialPull.run([...args, "--partials-dir", subdirPath]);
+      case "partial":
+        return PartialPull.run(args);
 
-    // TODO(KNO-9451): Include translation in the knock pull
-    case "translation":
-      return TranslationPull.run([...args, "--translations-dir", subdirPath]);
+      // TODO(KNO-9451): Include translation in the knock pull
+      case "translation":
+        return TranslationPull.run(args);
 
-    case "workflow":
-      return WorkflowPull.run([...args, "--workflows-dir", subdirPath]);
+      case "workflow":
+        return WorkflowPull.run(args);
 
-    case "message_type":
-      return MessageTypePull.run([...args, "--message-types-dir", subdirPath]);
+      case "message_type":
+        return MessageTypePull.run(args);
 
-    case "guide":
-      return GuidePull.run([...args, "--guides-dir", subdirPath]);
+      case "guide":
+        return GuidePull.run(args);
 
-    default: {
-      const invalidResourceType: never = resourceType;
-      throw new Error(`Unknown resource type: ${invalidResourceType}`);
+      case "goal":
+        return GoalPull.run(args);
+
+      default: {
+        const invalidResourceType: never = resourceType;
+        throw new Error(`Unknown resource type: ${invalidResourceType}`);
+      }
     }
-  }
+  });
 };

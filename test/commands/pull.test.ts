@@ -119,6 +119,9 @@ const setupWithListStubs = (
         }),
       ),
     )
+    .stub(KnockMgmt.Goals.prototype, "list", (stub) =>
+      stub.returns(createAsyncIterator([])),
+    )
     .stub(enquirer.prototype, "prompt", (stub) =>
       stub.onFirstCall().resolves({ input: "y" }),
     );
@@ -149,6 +152,7 @@ describe("commands/pull", () => {
         "calls apiV1 to list resources in the account default environment",
         () => {
           assertApiV1ListFunctionsCalled();
+          sinon.assert.calledOnce(KnockMgmt.Goals.prototype.list as any);
           sinon.assert.calledOnce(enquirer.prototype.prompt as any);
         },
       );
