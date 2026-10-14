@@ -20,15 +20,11 @@ import {
 
 const toGoalApiError = (error: unknown): ApiError => {
   if (error instanceof KnockMgmt.APIError) {
-    const code =
-      error.error &&
-      typeof error.error === "object" &&
-      "code" in error.error &&
-      typeof (error.error as { code?: unknown }).code === "string"
-        ? (error.error as { code: string }).code
-        : undefined;
-
-    return new ApiError(formatMgmtError(error), error.status, code);
+    return new ApiError(
+      formatMgmtError(error),
+      error.status,
+      error.error?.code,
+    );
   }
 
   return new ApiError((error as Error).message);
