@@ -59,14 +59,7 @@ export const isSoftFailableBulkError = (error: unknown): boolean => {
 
   if (error instanceof KnockMgmt.APIError) {
     status = error.status;
-    const bodyMessage =
-      error.error &&
-      typeof error.error === "object" &&
-      "message" in error.error &&
-      typeof (error.error as { message?: unknown }).message === "string"
-        ? (error.error as { message: string }).message
-        : "";
-    message = `${bodyMessage} ${error.message}`;
+    message = `${error.error?.message ?? ""} ${error.message}`;
   } else if (error instanceof ApiError) {
     status = error.status;
     message = error.message;
