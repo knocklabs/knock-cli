@@ -2003,7 +2003,7 @@ Push variables from variables.json to Knock.
 ```
 USAGE
   $ knock variable push [KEY] [--service-token <value>] [--environment <value>] [--branch <value>] [--knock-dir
-    <value>] [--variables-file <value>] [--force]
+    <value>] [--force]
 
 ARGUMENTS
   KEY  Push only this entry. Omit to push every entry.
@@ -2014,7 +2014,6 @@ FLAGS
   --force                   Skip the confirmation prompt.
   --knock-dir=<value>       Knock directory used to locate variables.json.
   --service-token=<value>   The service token to authenticate with.
-  --variables-file=<value>  Path to variables.json. Defaults to <knock dir>/variables.json.
 ```
 
 _See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/push.ts)_
