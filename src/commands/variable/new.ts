@@ -39,10 +39,6 @@ export default class VariableNew extends BaseCommand<typeof VariableNew> {
       summary: "Knock directory used to locate variables.json.",
       required: false,
     }),
-    "variables-file": CustomFlags.filePath({
-      summary:
-        "Path to variables.json. Defaults to <knock dir>/variables.json.",
-    }),
     force: Flags.boolean({
       summary: "Skip the confirmation prompt when creating the file.",
     }),
@@ -73,7 +69,6 @@ export default class VariableNew extends BaseCommand<typeof VariableNew> {
     }
 
     const target = await resolveVariablesFile(
-      flags["variables-file"],
       this.projectConfig,
       flags["knock-dir"],
       this.runContext.cwd,
@@ -111,8 +106,9 @@ export default class VariableNew extends BaseCommand<typeof VariableNew> {
 
     const pushArgs = [
       key,
-      "--variables-file",
-      target.abspath,
+      ...(flags["knock-dir"]
+        ? ["--knock-dir", flags["knock-dir"].abspath]
+        : []),
       ...(flags["service-token"]
         ? ["--service-token", flags["service-token"]]
         : []),
