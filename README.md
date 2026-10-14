@@ -1607,7 +1607,7 @@ Pull variables into variables.json.
 ```
 USAGE
   $ knock variable pull [KEY] [--service-token <value>] [--environment <value>] [--branch <value>] [--knock-dir
-    <value>] [--variables-file <value>] [--force]
+    <value>] [--force]
 
 ARGUMENTS
   KEY  Update only this entry. Omit to pull every variable.
@@ -1618,7 +1618,6 @@ FLAGS
   --force                   Skip the confirmation prompt.
   --knock-dir=<value>       Knock directory used to locate variables.json.
   --service-token=<value>   The service token to authenticate with.
-  --variables-file=<value>  Path to variables.json. Defaults to <knock dir>/variables.json.
 ```
 
 _See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/pull.ts)_
