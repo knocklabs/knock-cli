@@ -1982,7 +1982,7 @@ Add a variable entry to variables.json.
 ```
 USAGE
   $ knock variable new --key <value> --type public|secret [--service-token <value>] [--value <value>]
-    [--description <value>] [--knock-dir <value>] [--variables-file <value>] [--force] [--push] [--branch <value>]
+    [--description <value>] [--knock-dir <value>] [--force] [--push] [--branch <value>]
 
 FLAGS
   --branch=<value>          Rejected. Variables are not branch-scoped.
@@ -1995,7 +1995,6 @@ FLAGS
   --type=<option>           (required) public or secret.
                             <options: public|secret>
   --value=<value>           Default value. Public variables only.
-  --variables-file=<value>  Path to variables.json. Defaults to <knock dir>/variables.json.
 ```
 
 _See code: [src/commands/variable/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/new.ts)_

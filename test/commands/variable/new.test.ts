@@ -114,5 +114,6 @@ describe("commands/variable/new", () => {
       expect(args).to.include("--service-token");
       expect(args).to.include("flag-token");
       expect(args).to.not.include("--force");
+      expect(args).to.not.include("--variables-file");
     });
 });
