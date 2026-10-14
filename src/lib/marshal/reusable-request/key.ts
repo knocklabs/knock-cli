@@ -19,10 +19,3 @@ export const validateReusableRequestKey = (
 
   return undefined;
 };
-
-export const reusableRequestKeyError = (key: string): Error | undefined => {
-  const reason = validateReusableRequestKey(key);
-  if (!reason) return undefined;
-
-  return new Error(`Invalid reusable request key \`${key}\` (${reason})`);
-};
