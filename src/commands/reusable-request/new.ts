@@ -63,15 +63,9 @@ export default class ReusableRequestNew extends BaseCommand<
 
   static args = {};
 
-  static enableJsonFlag = true;
-
-  async run(): Promise<Record<string, unknown> | void> {
+  async run(): Promise<void> {
     const { flags } = this.props;
     const { resourceDir } = this.runContext;
-
-    if (flags.json && (!flags.name || !flags.key || !flags.force)) {
-      this.error("Pass --name, --key, and --force when using --json.");
-    }
 
     if (resourceDir) {
       return this.error(
@@ -160,10 +154,6 @@ export default class ReusableRequestNew extends BaseCommand<
         pushArgs.push("--branch", flags.branch);
       }
 
-      if (flags.json) {
-        pushArgs.push("--json");
-      }
-
       try {
         await ReusableRequestPush.run(pushArgs);
       } catch (error) {
@@ -171,22 +161,6 @@ export default class ReusableRequestNew extends BaseCommand<
       } finally {
         spinner.stop();
       }
-
-      // Push prints its own JSON result when --json is set.
-      if (flags.json) return;
-    }
-
-    if (flags.json) {
-      return {
-        key,
-        name,
-        type: scaffold.type,
-        description: scaffold.description,
-        settings: {
-          method: scaffold.method,
-          url: scaffold.url,
-        },
-      };
     }
 
     this.log(`‣ Successfully created reusable request \`${key}\``);

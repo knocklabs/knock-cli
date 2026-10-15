@@ -4,9 +4,7 @@ import { Config } from "@oclif/core";
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
-import * as sinon from "sinon";
 
-import ReusableRequestPush from "@/commands/reusable-request/push";
 import { sandboxDir } from "@/lib/helpers/const";
 import { REUSABLE_REQUEST_JSON } from "@/lib/marshal/reusable-request";
 
@@ -91,77 +89,5 @@ describe("commands/reusable-request/new", () => {
       ])
       .catch(/Invalid reusable request key/)
       .it("rejects keys that do not match the spec");
-  });
-
-  describe("given --json", () => {
-    beforeEach(() => {
-      process.chdir(sandboxDir);
-    });
-
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
-      .command([
-        "reusable-request new",
-        "--name",
-        "Fetch user",
-        "--key",
-        "fetch-user",
-        "--force",
-        "--json",
-      ])
-      .it("prints the scaffold", (ctx) => {
-        const parsed = JSON.parse(ctx.stdout);
-        expect(parsed.key).to.equal("fetch-user");
-        expect(parsed.type).to.equal("http_fetch");
-        expect(parsed.settings.method).to.equal("get");
-        expect(parsed.settings.url).to.equal("https://example.com");
-      });
-  });
-
-  describe("given --json without the flags needed to skip prompts", () => {
-    beforeEach(() => {
-      process.chdir(sandboxDir);
-    });
-
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stdout()
-      .command(["reusable-request new", "--json"])
-      .it("returns an error instead of prompting", (ctx) => {
-        const parsed = JSON.parse(ctx.stdout);
-        expect(parsed.error.oclif.exit).to.equal(2);
-      });
-  });
-
-  describe("given --json and --push", () => {
-    beforeEach(() => {
-      process.chdir(sandboxDir);
-    });
-
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .stub(ReusableRequestPush, "run", (stub) => stub.resolves())
-      .stdout()
-      .command([
-        "reusable-request new",
-        "--name",
-        "Fetch user",
-        "--key",
-        "fetch-user",
-        "--force",
-        "--json",
-        "--push",
-      ])
-      .it(
-        "asks push to print json and does not add a second document",
-        (ctx) => {
-          sinon.assert.calledWith(
-            ReusableRequestPush.run as sinon.SinonStub,
-            sinon.match((args: string[]) => args.includes("--json")),
-          );
-          expect(ctx.stdout.trim()).to.equal("");
-        },
-      );
   });
 });
