@@ -1,4 +1,11 @@
+import type { CommitListParams } from "@knocklabs/mgmt/resources/commits";
+
 import type { ResourceType } from "./run-context";
+
+type CommitResourceType = Extract<
+  NonNullable<CommitListParams["resource_type"]>,
+  string
+>;
 
 // TODO Remove this once hidden option is removed from message types / guides
 export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
@@ -210,9 +217,11 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
  * Resource types that participate in the commit API. Goals auto-publish and
  * are not committed, so they are excluded from commit CLI `--resource-type`.
  */
-export const COMMITTABLE_RESOURCE_TYPES = ALL_RESOURCE_TYPES.filter(
-  (resourceType) => RESOURCE_CLI_CAPABILITIES[resourceType].supportsCommit,
-);
+export const COMMITTABLE_RESOURCE_TYPES: CommitResourceType[] =
+  ALL_RESOURCE_TYPES.filter(
+    (resourceType): resourceType is CommitResourceType =>
+      RESOURCE_CLI_CAPABILITIES[resourceType].supportsCommit,
+  );
 
 /**
  * Default names for resource-specific directories used when pushing or pulling
