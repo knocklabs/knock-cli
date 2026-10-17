@@ -113,4 +113,44 @@ describe("lib/api-v1 reusable requests", () => {
       expect(resp.data.result).to.equal("success");
     });
   });
+
+  describe("validateReusableRequest", () => {
+    it("PUTs /v1/reusable_requests/:key/validate", async () => {
+      const scope = nock(API_ORIGIN)
+        .put("/v1/reusable_requests/fetch-user/validate", {
+          reusable_request: {
+            type: "http_fetch",
+            name: "Fetch user",
+            settings: { method: "get", url: "https://example.com" },
+          },
+        })
+        .query({
+          environment: "development",
+          branch: "feature-branch",
+        })
+        .reply(200, { reusable_request: reusableRequest });
+
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+      const resp = await apiV1.validateReusableRequest(
+        factory.props({
+          flags: {
+            environment: "development",
+            branch: "feature-branch",
+            annotate: true,
+            commit: true,
+            force: true,
+          },
+        }),
+        {
+          key: "fetch-user",
+          type: "http_fetch" as const,
+          name: "Fetch user",
+          settings: { method: "get", url: "https://example.com" },
+        },
+      );
+
+      expect(scope.isDone()).to.equal(true);
+      expect(resp.status).to.equal(200);
+    });
+  });
 });
