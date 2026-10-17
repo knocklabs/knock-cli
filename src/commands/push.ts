@@ -23,6 +23,7 @@ import GuidePush from "./guide/push";
 import EmailLayoutPush from "./layout/push";
 import MessageTypePush from "./message-type/push";
 import PartialPush from "./partial/push";
+import ReusableRequestPush from "./reusable-request/push";
 import TranslationPush from "./translation/push";
 import WorkflowPush from "./workflow/push";
 
@@ -125,8 +126,7 @@ const runResourcePushCommand = async (
         return GoalPush.run(args);
 
       case "reusable_request":
-        // The push command lands in a follow-up. Skip until then.
-        return Promise.resolve();
+        return ReusableRequestPush.run(args);
 
       default: {
         const invalidResourceType: never = resourceType;

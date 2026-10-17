@@ -88,6 +88,7 @@ USAGE
 * [`knock reusable-request get REUSABLEREQUESTKEY`](#knock-reusable-request-get-reusablerequestkey)
 * [`knock reusable-request list`](#knock-reusable-request-list)
 * [`knock reusable-request pull [REUSABLEREQUESTKEY]`](#knock-reusable-request-pull-reusablerequestkey)
+* [`knock reusable-request push [REUSABLEREQUESTKEY]`](#knock-reusable-request-push-reusablerequestkey)
 * [`knock reusable-request validate [REUSABLEREQUESTKEY]`](#knock-reusable-request-validate-reusablerequestkey)
 * [`knock schema pull [ITEMTYPE]`](#knock-schema-pull-itemtype)
 * [`knock schema push [ITEMTYPE]`](#knock-schema-push-itemtype)
@@ -1412,6 +1413,35 @@ GLOBAL FLAGS
 ```
 
 _See code: [src/commands/reusable-request/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/pull.ts)_
+
+## `knock reusable-request push [REUSABLEREQUESTKEY]`
+
+Push one or more reusable requests from a local file system to Knock.
+
+```
+USAGE
+  $ knock reusable-request push [REUSABLEREQUESTKEY] [--json] [--service-token <value>] [--environment <value>] [--branch
+    <value>] [--reusable-requests-dir <value> --all] [-m <value> --commit] [--allow-empty ] [--force]
+
+FLAGS
+  -m, --commit-message=<value>         Use the given value as the commit message
+      --all                            Whether to push all reusable requests from the target directory.
+      --allow-empty                    Create an empty commit for an already-published resource (analogous to git commit
+                                       --allow-empty).
+      --branch=<value>                 The slug of the branch to use.
+      --commit                         Push and commit the reusable request(s) at the same time
+      --environment=<value>            The environment to use. When omitted, the account's default environment is used.
+      --force                          Force pushes the resource or resources to Knock, overwriting whatever is
+                                       currently stored. If you're using this on a non-development environment, you
+                                       should also ensure you `commit` the changes.
+      --reusable-requests-dir=<value>  The target directory path to find all reusable requests to push.
+      --service-token=<value>          The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/push.ts)_
 
 ## `knock reusable-request validate [REUSABLEREQUESTKEY]`
 

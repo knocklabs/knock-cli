@@ -733,6 +733,28 @@ export default class ApiV1 {
     });
   }
 
+  async upsertReusableRequest<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    reusableRequest: AnyObj & { key: string },
+  ): Promise<AxiosResponse<UpsertReusableRequestResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+      allow_empty: flags["allow-empty"],
+      force: flags.force,
+    });
+    const data = {
+      reusable_request: ReusableRequest.toReusableRequestInput(reusableRequest),
+    };
+
+    return this.put(`/reusable_requests/${reusableRequest.key}`, data, {
+      params,
+    });
+  }
+
   async validateReusableRequest(
     { flags }: Props,
     reusableRequest: AnyObj & { key: string },
@@ -954,6 +976,12 @@ export type ArchiveReusableRequestResp = {
   result?: string;
   errors?: InputError[];
 };
+
+export type UpsertReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
+  {
+    reusable_request?: ReusableRequest.ReusableRequestData<A>;
+    errors?: InputError[];
+  };
 
 export type ValidateReusableRequestResp = {
   reusable_request?: ReusableRequest.ReusableRequestData;
