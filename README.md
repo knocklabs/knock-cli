@@ -93,6 +93,7 @@ USAGE
 * [`knock translation pull [TRANSLATIONREF]`](#knock-translation-pull-translationref)
 * [`knock translation push [TRANSLATIONREF]`](#knock-translation-push-translationref)
 * [`knock translation validate [TRANSLATIONREF]`](#knock-translation-validate-translationref)
+* [`knock variable delete KEY`](#knock-variable-delete-key)
 * [`knock variable get KEY`](#knock-variable-get-key)
 * [`knock variable list`](#knock-variable-list)
 * [`knock whoami`](#knock-whoami)
@@ -1525,6 +1526,29 @@ FLAGS
 ```
 
 _See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/translation/validate.ts)_
+
+## `knock variable delete KEY`
+
+Delete a variable, or clear one environment override.
+
+```
+USAGE
+  $ knock variable delete KEY [--json] [--service-token <value>] [--environment <value>] [--branch <value>] [--force]
+
+ARGUMENTS
+  KEY  The variable key.
+
+FLAGS
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --environment=<value>    Clear only this environment's override. The variable itself is not deleted.
+  --force                  Skip the confirmation prompt.
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/variable/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/delete.ts)_
 
 ## `knock variable get KEY`
 
