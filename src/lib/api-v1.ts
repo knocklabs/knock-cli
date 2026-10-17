@@ -563,6 +563,10 @@ export default class ApiV1 {
     return this.get("/variables", { params });
   }
 
+  async getVariable(key: string): Promise<AxiosResponse<Variable.Variable>> {
+    return this.get(`/variables/${encodeURIComponent(key)}`);
+  }
+
   async validateGuide(
     { flags }: Props,
     guide: Guide.GuideInput,
