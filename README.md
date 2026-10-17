@@ -87,6 +87,7 @@ USAGE
 * [`knock reusable-request archive REUSABLEREQUESTKEY`](#knock-reusable-request-archive-reusablerequestkey)
 * [`knock reusable-request get REUSABLEREQUESTKEY`](#knock-reusable-request-get-reusablerequestkey)
 * [`knock reusable-request list`](#knock-reusable-request-list)
+* [`knock reusable-request new`](#knock-reusable-request-new)
 * [`knock reusable-request pull [REUSABLEREQUESTKEY]`](#knock-reusable-request-pull-reusablerequestkey)
 * [`knock reusable-request push [REUSABLEREQUESTKEY]`](#knock-reusable-request-push-reusablerequestkey)
 * [`knock reusable-request validate [REUSABLEREQUESTKEY]`](#knock-reusable-request-validate-reusablerequestkey)
@@ -1389,6 +1390,36 @@ GLOBAL FLAGS
 ```
 
 _See code: [src/commands/reusable-request/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/list.ts)_
+
+## `knock reusable-request new`
+
+Create a new reusable request with a minimal configuration.
+
+```
+USAGE
+  $ knock reusable-request new [--json] [--service-token <value>] [-n <value>] [-k <value>] [-t http_fetch] [-d <value>]
+    [--method get|post|put|delete|patch] [--url <value>] [--environment <value>] [--branch <value>] [--force] [-p]
+
+FLAGS
+  -d, --description=<value>    The description of the reusable request
+  -k, --key=<value>            The key of the reusable request
+  -n, --name=<value>           The name of the reusable request
+  -p, --push                   Whether or not to push the reusable request to Knock after creation.
+  -t, --type=<option>          [default: http_fetch] The reusable request type. Only http_fetch is supported.
+                               <options: http_fetch>
+      --branch=<value>         The slug of the branch to use.
+      --environment=<value>    The environment to use. When omitted, the account's default environment is used.
+      --force                  Force the creation of the reusable request directory without confirmation.
+      --method=<option>        [default: get] The HTTP method of the request.
+                               <options: get|post|put|delete|patch>
+      --service-token=<value>  The service token to authenticate with.
+      --url=<value>            [default: https://example.com] The URL of the request.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/new.ts)_
 
 ## `knock reusable-request pull [REUSABLEREQUESTKEY]`
 
