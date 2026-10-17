@@ -704,6 +704,22 @@ export default class ApiV1 {
     return this.get("/reusable_requests", { params });
   }
 
+  async getReusableRequest<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetReusableRequestResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/reusable_requests/${args.reusableRequestKey}`, {
+      params,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -891,3 +907,6 @@ export type ListBranchResp = PaginatedResp<Branch>;
 
 export type ListReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<ReusableRequest.ReusableRequestData<A>>;
+
+export type GetReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
+  ReusableRequest.ReusableRequestData<A>;
