@@ -96,6 +96,9 @@
       "partial": {
         "description": "Manage template partials."
       },
+      "reusable-request": {
+        "description": "Manage reusable requests."
+      },
       "schema": {
         "description": "Manage item schemas."
       },

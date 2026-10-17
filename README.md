@@ -84,6 +84,7 @@ USAGE
 * [`knock partial validate [PARTIALKEY]`](#knock-partial-validate-partialkey)
 * [`knock pull`](#knock-pull)
 * [`knock push`](#knock-push)
+* [`knock reusable-request list`](#knock-reusable-request-list)
 * [`knock schema pull [ITEMTYPE]`](#knock-schema-pull-itemtype)
 * [`knock schema push [ITEMTYPE]`](#knock-schema-push-itemtype)
 * [`knock source get SOURCEKEY`](#knock-source-get-sourcekey)
@@ -1307,6 +1308,30 @@ FLAGS
 ```
 
 _See code: [src/commands/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/push.ts)_
+
+## `knock reusable-request list`
+
+Display all reusable requests for an environment.
+
+```
+USAGE
+  $ knock reusable-request list [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+    [--hide-uncommitted-changes] [--after <value>] [--before <value>] [--limit <value>]
+
+FLAGS
+  --after=<value>             The cursor after which to fetch the next page.
+  --before=<value>            The cursor before which to fetch the previous page.
+  --branch=<value>            The slug of the branch to use.
+  --environment=<value>       The environment to use. When omitted, the account's default environment is used.
+  --hide-uncommitted-changes  Hide any uncommitted changes.
+  --limit=<value>             The total number of entries to fetch per page.
+  --service-token=<value>     The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/reusable-request/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/reusable-request/list.ts)_
 
 ## `knock schema pull [ITEMTYPE]`
 
