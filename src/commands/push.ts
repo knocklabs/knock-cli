@@ -126,7 +126,7 @@ const runResourcePushCommand = async (
 
       case "reusable_request":
         // The push command lands in a follow-up. Skip until then.
-        return;
+        return Promise.resolve();
 
       default: {
         const invalidResourceType: never = resourceType;
