@@ -90,4 +90,27 @@ describe("lib/api-v1 reusable requests", () => {
       expect(resp.data.type).to.equal("http_fetch");
     });
   });
+
+  describe("archiveReusableRequest", () => {
+    it("DELETEs /v1/reusable_requests/:key with environment only", async () => {
+      const scope = nock(API_ORIGIN)
+        .delete("/v1/reusable_requests/fetch-user")
+        .query({ environment: "development" })
+        .reply(200, { result: "success" });
+
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+      const resp = await apiV1.archiveReusableRequest(
+        factory.props({
+          args: { reusableRequestKey: "fetch-user" },
+          flags: {
+            environment: "development",
+            branch: "feature-branch",
+          },
+        }),
+      );
+
+      expect(scope.isDone()).to.equal(true);
+      expect(resp.data.result).to.equal("success");
+    });
+  });
 });

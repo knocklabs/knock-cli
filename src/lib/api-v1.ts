@@ -720,6 +720,19 @@ export default class ApiV1 {
     });
   }
 
+  async archiveReusableRequest({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ArchiveReusableRequestResp>> {
+    const params = prune({
+      environment: flags.environment,
+    });
+
+    return this.delete(`/reusable_requests/${args.reusableRequestKey}`, {
+      params,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -735,6 +748,13 @@ export default class ApiV1 {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse> {
     return this.client.put(`/${API_VERSION}` + subpath, data, config);
+  }
+
+  async delete(
+    subpath: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.delete(`/${API_VERSION}` + subpath, config);
   }
 }
 
@@ -910,3 +930,8 @@ export type ListReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
 
 export type GetReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
   ReusableRequest.ReusableRequestData<A>;
+
+export type ArchiveReusableRequestResp = {
+  result?: string;
+  errors?: InputError[];
+};
