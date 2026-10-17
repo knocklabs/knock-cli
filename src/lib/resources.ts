@@ -1,4 +1,11 @@
+import type { CommitListParams } from "@knocklabs/mgmt/resources/commits";
+
 import type { ResourceType } from "./run-context";
+
+type CommitResourceType = Extract<
+  NonNullable<CommitListParams["resource_type"]>,
+  string
+>;
 
 // TODO Remove this once hidden option is removed from message types / guides
 export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
@@ -59,6 +66,14 @@ export const RESOURCE_CLI_CAPABILITIES: Record<
     softFailOnBulk: false,
   },
   email_layout: {
+    supportsBranch: true,
+    supportsHideUncommitted: true,
+    supportsCommit: true,
+    supportsAllowEmpty: true,
+    supportsForceOnPush: true,
+    softFailOnBulk: false,
+  },
+  reusable_request: {
     supportsBranch: true,
     supportsHideUncommitted: true,
     supportsCommit: true,
@@ -187,6 +202,8 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
   "partial",
   // Email layouts next, as workflows with email channel steps may reference them
   "email_layout",
+  // Workflows can link to reusable requests, so push those first.
+  "reusable_request",
   // Goals before workflows/guides that may attach them
   "goal",
   "workflow",
@@ -200,9 +217,11 @@ export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
  * Resource types that participate in the commit API. Goals auto-publish and
  * are not committed, so they are excluded from commit CLI `--resource-type`.
  */
-export const COMMITTABLE_RESOURCE_TYPES = ALL_RESOURCE_TYPES.filter(
-  (resourceType) => RESOURCE_CLI_CAPABILITIES[resourceType].supportsCommit,
-);
+export const COMMITTABLE_RESOURCE_TYPES: CommitResourceType[] =
+  ALL_RESOURCE_TYPES.filter(
+    (resourceType): resourceType is CommitResourceType =>
+      RESOURCE_CLI_CAPABILITIES[resourceType].supportsCommit,
+  );
 
 /**
  * Default names for resource-specific directories used when pushing or pulling
@@ -212,6 +231,7 @@ export const RESOURCE_SUBDIRS: Record<NonHiddenResourceType, string> = {
   audience: "audiences",
   email_layout: "layouts",
   partial: "partials",
+  reusable_request: "reusable-requests",
   translation: "translations",
   workflow: "workflows",
   message_type: "message-types",
@@ -226,6 +246,7 @@ export const RESOURCE_DIR_FLAGS: Record<NonHiddenResourceType, string> = {
   audience: "--audiences-dir",
   email_layout: "--layouts-dir",
   partial: "--partials-dir",
+  reusable_request: "--reusable-requests-dir",
   translation: "--translations-dir",
   workflow: "--workflows-dir",
   message_type: "--message-types-dir",

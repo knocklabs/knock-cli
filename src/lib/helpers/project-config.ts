@@ -123,6 +123,7 @@ export const ResourceDirectoriesByType: Record<
   partial: "partials",
   email_layout: "layouts",
   message_type: "message-types",
+  reusable_request: "reusable-requests",
   translation: "translations",
   goal: "goals",
 } as const;

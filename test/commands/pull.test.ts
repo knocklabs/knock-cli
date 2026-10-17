@@ -1,6 +1,7 @@
 import * as path from "node:path";
 
 import KnockMgmt from "@knocklabs/mgmt";
+import { Config } from "@oclif/core";
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import * as fs from "fs-extra";
@@ -122,11 +123,26 @@ const setupWithListStubs = (
     .stub(KnockMgmt.Goals.prototype, "list", (stub) =>
       stub.returns(createAsyncIterator([])),
     )
+    .stub(KnockApiV1.prototype, "listReusableRequests", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            entries: [],
+            page_info: factory.pageInfo(),
+          },
+        }),
+      ),
+    )
     .stub(enquirer.prototype, "prompt", (stub) =>
       stub.onFirstCall().resolves({ input: "y" }),
     );
 
 describe("commands/pull", () => {
+  // Load the CLI before tests change cwd, so oclif keeps using src/.
+  before(async () => {
+    await Config.load(process.cwd());
+  });
+
   beforeEach(() => {
     fs.removeSync(sandboxDir);
     fs.ensureDirSync(sandboxDir);
@@ -507,6 +523,26 @@ function assertApiV1ListFunctionsCalled(
           force: true,
           limit: 100,
           format: "json",
+          ...expectedFlags,
+        }),
+    ),
+  );
+
+  sinon.assert.calledWith(
+    KnockApiV1.prototype.listReusableRequests as any,
+    sinon.match(
+      ({ args, flags }) =>
+        isEqual(args, {}) &&
+        isEqual(flags, {
+          all: true,
+          "reusable-requests-dir": {
+            abspath: path.resolve(sandboxDir, "reusable-requests"),
+            exists: false,
+          },
+          "service-token": "valid-token",
+          force: true,
+          annotate: true,
+          limit: 100,
           ...expectedFlags,
         }),
     ),
