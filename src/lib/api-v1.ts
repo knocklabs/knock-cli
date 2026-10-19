@@ -774,6 +774,39 @@ export default class ApiV1 {
     );
   }
 
+  // Assets are account-wide. These calls must not send environment or branch.
+
+  async createAsset(input: {
+    key: string;
+    filename: string;
+  }): Promise<AxiosResponse<Asset>> {
+    return this.post("/assets", {
+      key: input.key,
+      filename: input.filename,
+    });
+  }
+
+  async requestAssetUpload(input: {
+    mime_type: string;
+    content_length: number;
+    filename?: string;
+  }): Promise<AxiosResponse<AssetUpload>> {
+    return this.post(
+      "/assets/uploads",
+      prune({
+        mime_type: input.mime_type,
+        content_length: input.content_length,
+        filename: input.filename,
+      }),
+    );
+  }
+
+  async archiveAsset(
+    assetId: string,
+  ): Promise<AxiosResponse<ArchiveAssetResp>> {
+    return this.delete(`/assets/${assetId}`);
+  }
+
   // By methods:
 
   async get(
@@ -789,6 +822,14 @@ export default class ApiV1 {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse> {
     return this.client.put(`/${API_VERSION}` + subpath, data, config);
+  }
+
+  async post(
+    subpath: string,
+    data?: unknown,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.post(`/${API_VERSION}` + subpath, data, config);
   }
 
   async delete(
@@ -986,4 +1027,27 @@ export type UpsertReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
 export type ValidateReusableRequestResp = {
   reusable_request?: ReusableRequest.ReusableRequestData;
   errors?: InputError[];
+};
+
+export type Asset = {
+  id: string;
+  mime_type: string;
+  asset_type: string;
+  url: string;
+  created_at: string;
+  updated_at: string;
+  filename?: string | null;
+};
+
+export type AssetUpload = {
+  key: string;
+  upload_url: string;
+  expires_in: number;
+  mime_type: string;
+  content_length: number;
+  filename?: string | null;
+};
+
+export type ArchiveAssetResp = {
+  result: string;
 };

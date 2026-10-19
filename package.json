@@ -78,6 +78,9 @@
     ],
     "topicSeparator": " ",
     "topics": {
+      "asset": {
+        "description": "Manage account assets."
+      },
       "branch": {
         "description": "Manage branches."
       },
