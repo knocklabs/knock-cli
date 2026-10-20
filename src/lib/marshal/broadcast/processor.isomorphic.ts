@@ -6,17 +6,10 @@
  * reason there are some restrictions for which nodejs imports are allowed in
  * this module. See `.eslintrc.json` for more details.
  */
-import { cloneDeep, set } from "lodash";
-
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
+import { buildStepResourceDirBundle } from "@/lib/marshal/shared/steps.isomorphic";
 import { WithAnnotation } from "@/lib/marshal/shared/types";
 
-import { prepareResourceJson } from "../shared/helpers.isomorphic";
-import {
-  keyLocalStepsByRef,
-  recursivelyBuildStepsDirBundle,
-  WorkflowDirBundle,
-} from "../workflow/processor.isomorphic";
 import type { BroadcastData } from "./types";
 
 export const BROADCAST_JSON = "broadcast.json";
@@ -31,24 +24,17 @@ export type BroadcastDirBundle = {
  * the relative file paths (within the broadcast directory) and its file content
  * to write the broadcast directory.
  *
- * Broadcasts share the same step/template structure as workflows, so we reuse
- * the workflow's content extraction logic for steps.
+ * Broadcasts share workflow step extraction. Extracted files are strings; the
+ * root broadcast.json object is added after that walk.
  */
 export const buildBroadcastDirBundle = (
   remoteBroadcast: BroadcastData<WithAnnotation>,
   localBroadcast?: AnyObj,
   $schema?: string,
-): BroadcastDirBundle => {
-  const bundle: WorkflowDirBundle = {};
-  localBroadcast = localBroadcast || {};
-  const mutBroadcast = cloneDeep(remoteBroadcast);
-  const localStepsByRef = keyLocalStepsByRef(localBroadcast.steps);
-
-  recursivelyBuildStepsDirBundle(bundle, mutBroadcast.steps, localStepsByRef);
-
-  return set(
-    bundle,
-    [BROADCAST_JSON],
-    prepareResourceJson(mutBroadcast, $schema),
+): BroadcastDirBundle =>
+  buildStepResourceDirBundle(
+    remoteBroadcast,
+    localBroadcast,
+    BROADCAST_JSON,
+    $schema,
   );
-};

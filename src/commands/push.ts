@@ -12,7 +12,7 @@ import {
   ALL_RESOURCE_TYPES,
   buildBulkPushArgs,
   BulkPushFlags,
-  NonHiddenResourceType,
+  BulkResourceType,
   RESOURCE_DIR_FLAGS,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
@@ -76,7 +76,7 @@ export default class Push extends BaseCommand<typeof Push> {
 }
 
 const runResourcePushCommand = async (
-  resourceType: NonHiddenResourceType,
+  resourceType: BulkResourceType,
   targetDirCtx: DirContext,
   flags: BulkPushFlags,
 ): Promise<void> => {

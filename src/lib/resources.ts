@@ -8,12 +8,14 @@ type CommitResourceType = Extract<
 >;
 
 // TODO Remove this once hidden option is removed from message types / guides.
-// Broadcasts are excluded here so they stay off bulk `knock pull` / `knock push`.
-// They are managed by their own commands and are not committed.
-export type NonHiddenResourceType = Exclude<
-  ResourceType,
-  "reusable_step" | "broadcast"
->;
+export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
+
+/**
+ * Resource types included in bulk `knock pull` / `knock push`.
+ * Broadcasts have their own commands and are not part of that bulk flow.
+ * Commit resource types are derived from this list, so broadcasts stay out.
+ */
+export type BulkResourceType = Exclude<NonHiddenResourceType, "broadcast">;
 
 /**
  * Resource types that support empty commits via --allow-empty.
@@ -51,7 +53,7 @@ export type ResourceCliCapabilities = {
 };
 
 export const RESOURCE_CLI_CAPABILITIES: Record<
-  NonHiddenResourceType,
+  BulkResourceType,
   ResourceCliCapabilities
 > = {
   audience: {
@@ -148,7 +150,7 @@ export type BulkPushFlags = {
 };
 
 export const buildBulkPullArgs = (
-  resourceType: NonHiddenResourceType,
+  resourceType: BulkResourceType,
   flags: BulkPullFlags,
 ): string[] => {
   const caps = RESOURCE_CLI_CAPABILITIES[resourceType];
@@ -169,7 +171,7 @@ export const buildBulkPullArgs = (
 };
 
 export const buildBulkPushArgs = (
-  resourceType: NonHiddenResourceType,
+  resourceType: BulkResourceType,
   flags: BulkPushFlags,
 ): string[] => {
   const caps = RESOURCE_CLI_CAPABILITIES[resourceType];
@@ -200,7 +202,7 @@ export const buildBulkPushArgs = (
  * example, if an email layout references a partial, that partial must be pushed
  * first or else the validation and upsert of the layout will fail.
  */
-export const ALL_RESOURCE_TYPES: NonHiddenResourceType[] = [
+export const ALL_RESOURCE_TYPES: BulkResourceType[] = [
   // Audiences can be referenced by workflows, so push them early
   "audience",
   // Partials first, as email layouts and workflows may reference them
@@ -232,7 +234,7 @@ export const COMMITTABLE_RESOURCE_TYPES: CommitResourceType[] =
  * Default names for resource-specific directories used when pushing or pulling
  * all resources to/from an environment.
  */
-export const RESOURCE_SUBDIRS: Record<NonHiddenResourceType, string> = {
+export const RESOURCE_SUBDIRS: Record<BulkResourceType, string> = {
   audience: "audiences",
   email_layout: "layouts",
   partial: "partials",
@@ -247,7 +249,7 @@ export const RESOURCE_SUBDIRS: Record<NonHiddenResourceType, string> = {
 /**
  * Flag name for the resource-specific directory on pull/push --all commands.
  */
-export const RESOURCE_DIR_FLAGS: Record<NonHiddenResourceType, string> = {
+export const RESOURCE_DIR_FLAGS: Record<BulkResourceType, string> = {
   audience: "--audiences-dir",
   email_layout: "--layouts-dir",
   partial: "--partials-dir",

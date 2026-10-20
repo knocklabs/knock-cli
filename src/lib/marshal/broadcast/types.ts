@@ -1,7 +1,7 @@
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import type { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 
-import type { WorkflowStepData } from "../workflow/types";
+import { StepType, type WorkflowStepData } from "../workflow/types";
 
 export type BroadcastStatus = "draft" | "scheduled" | "sent";
 
@@ -10,9 +10,13 @@ export type BroadcastSettings = {
   override_preferences?: boolean;
 };
 
-// Broadcasts reuse workflow step types (channel, branch, delay only per MAPI spec)
+// Management API broadcasts only support channel, branch, and delay steps.
+// Nested branch steps stay `WorkflowStepData` until that type is generic.
 export type BroadcastStepData<A extends MaybeWithAnnotation = unknown> =
-  WorkflowStepData<A>;
+  Extract<
+    WorkflowStepData<A>,
+    { type: StepType.Channel | StepType.Branch | StepType.Delay }
+  >;
 
 export type BroadcastData<A extends MaybeWithAnnotation = unknown> = A & {
   key: string;
