@@ -1,3 +1,10 @@
+import * as path from "node:path";
+
+import axios, { type AxiosResponse } from "axios";
+
+import { prune } from "@/lib/helpers/object.isomorphic";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+
 // Spec: AssetUploadRequest.mime_type is one of these values.
 export const ASSET_MIME_TYPES = [
   "image/jpeg",
@@ -9,6 +16,39 @@ export type AssetMimeType = (typeof ASSET_MIME_TYPES)[number];
 
 // Spec: AssetUploadRequest.content_length maximum is 5_000_000, minimum is 1.
 export const MAX_ASSET_BYTES = 5_000_000;
+
+export type Asset = {
+  id: string;
+  mime_type: string;
+  asset_type: string;
+  url: string;
+  created_at: string;
+  updated_at: string;
+  filename?: string | null;
+};
+
+export type AssetUpload = {
+  key: string;
+  upload_url: string;
+  expires_in: number;
+  mime_type: string;
+  content_length: number;
+  filename?: string | null;
+};
+
+export type ArchiveAssetResp = {
+  result: string;
+};
+
+export type ResolvedAssetMimeType =
+  | { mimeType: AssetMimeType }
+  | { error: string };
+
+// Knock calls used by assets. post and delete prepend /v1.
+type AssetClient = {
+  post(subpath: string, data?: unknown): Promise<AxiosResponse>;
+  delete(subpath: string): Promise<AxiosResponse>;
+};
 
 const MIME_BY_EXTENSION: Record<string, AssetMimeType> = {
   ".gif": "image/gif",
@@ -31,12 +71,8 @@ export const byteLengthError = (length: number): string | undefined => {
 
 export const mimeTypeFromExtension = (
   filePath: string,
-): AssetMimeType | undefined => {
-  const dot = filePath.lastIndexOf(".");
-  if (dot < 0) return undefined;
-
-  return MIME_BY_EXTENSION[filePath.slice(dot).toLowerCase()];
-};
+): AssetMimeType | undefined =>
+  MIME_BY_EXTENSION[path.extname(filePath).toLowerCase()];
 
 export const mimeTypeFromBytes = (bytes: Buffer): AssetMimeType | undefined => {
   if (
@@ -75,10 +111,10 @@ export const mimeTypeFromBytes = (bytes: Buffer): AssetMimeType | undefined => {
 export const resolveAssetMimeType = (input: {
   bytes: Buffer;
   sourcePath?: string;
-  override?: string;
-}): AssetMimeType | string => {
+  override?: AssetMimeType;
+}): ResolvedAssetMimeType => {
   if (input.override) {
-    return input.override;
+    return { mimeType: input.override };
   }
 
   const fromExtension = input.sourcePath
@@ -87,23 +123,114 @@ export const resolveAssetMimeType = (input: {
   const fromBytes = mimeTypeFromBytes(input.bytes);
 
   if (fromExtension && fromBytes && fromExtension !== fromBytes) {
-    return (
-      `The file extension says ${fromExtension} but the bytes are ${fromBytes}. ` +
-      "Pass --mime-type to choose one."
-    );
+    return {
+      error:
+        `The file extension says ${fromExtension} but the bytes are ${fromBytes}. ` +
+        "Pass --mime-type to choose one.",
+    };
   }
 
   if (fromExtension && !fromBytes) {
-    return (
-      `The file extension says ${fromExtension} but the bytes are not a JPEG, PNG, or GIF. ` +
-      "Pass --mime-type to choose one."
+    return {
+      error:
+        `The file extension says ${fromExtension} but the bytes are not a JPEG, PNG, or GIF. ` +
+        "Pass --mime-type to choose one.",
+    };
+  }
+
+  if (fromBytes) return { mimeType: fromBytes };
+
+  return {
+    error:
+      "Could not detect the MIME type. Pass --mime-type (image/jpeg, image/png, or image/gif).",
+  };
+};
+
+export const requestAssetUpload = (
+  api: AssetClient,
+  input: {
+    mime_type: AssetMimeType | string;
+    content_length: number;
+    filename?: string;
+  },
+): Promise<AxiosResponse<AssetUpload>> =>
+  api.post(
+    "/assets/uploads",
+    prune({
+      mime_type: input.mime_type,
+      content_length: input.content_length,
+      filename: input.filename,
+    }),
+  );
+
+export const createAsset = (
+  api: AssetClient,
+  input: { key: string; filename: string },
+): Promise<AxiosResponse<Asset>> =>
+  api.post("/assets", {
+    key: input.key,
+    filename: input.filename,
+  });
+
+export const archiveAsset = (
+  api: AssetClient,
+  assetId: string,
+): Promise<AxiosResponse<ArchiveAssetResp>> => api.delete(`/assets/${assetId}`);
+
+// Direct-to-storage PUT. Must not use the Knock client: the signed URL rejects
+// the bearer token, and the signature covers Content-Type and Content-Length.
+export const putAssetBytes = (
+  upload: AssetUpload,
+  bytes: Buffer,
+): Promise<AxiosResponse> =>
+  axios.put(upload.upload_url, bytes, {
+    headers: {
+      "Content-Type": upload.mime_type,
+      "Content-Length": String(upload.content_length),
+    },
+    transformRequest: [(data) => data],
+    transformResponse: [(data) => data],
+    validateStatus: () => true,
+    maxBodyLength: MAX_ASSET_BYTES,
+    maxContentLength: MAX_ASSET_BYTES,
+  });
+
+export const copyAsset = async (
+  api: AssetClient,
+  input: { bytes: Buffer; filename: string; mimeType: AssetMimeType },
+): Promise<Asset> => {
+  const uploadResp = await requestAssetUpload(api, {
+    content_length: input.bytes.length,
+    filename: input.filename,
+    mime_type: input.mimeType,
+  });
+
+  if (!isSuccessResp(uploadResp)) {
+    throw new Error(formatErrorRespMessage(uploadResp));
+  }
+
+  const upload = uploadResp.data;
+  if (upload.content_length !== input.bytes.length) {
+    throw new Error(
+      `The upload URL was signed for ${upload.content_length} bytes, but the file is ${input.bytes.length} bytes. The asset was not created.`,
     );
   }
 
-  if (fromBytes) return fromBytes;
+  const putResp = await putAssetBytes(upload, input.bytes);
+  if (!isSuccessResp(putResp)) {
+    throw new Error(
+      `Upload failed (${putResp.status}). The asset was not created.`,
+    );
+  }
 
-  return "Could not detect the MIME type. Pass --mime-type (image/jpeg, image/png, or image/gif).";
+  const created = await createAsset(api, {
+    filename: input.filename,
+    key: upload.key,
+  });
+
+  if (!isSuccessResp(created)) {
+    throw new Error(formatErrorRespMessage(created));
+  }
+
+  return created.data;
 };
-
-export const isAssetMimeType = (value: string): value is AssetMimeType =>
-  (ASSET_MIME_TYPES as readonly string[]).includes(value);

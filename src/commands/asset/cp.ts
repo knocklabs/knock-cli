@@ -3,17 +3,17 @@ import * as path from "node:path";
 import { Args, Flags } from "@oclif/core";
 import * as fs from "fs-extra";
 
-import * as ApiV1 from "@/lib/api-v1";
 import {
+  type Asset,
   ASSET_MIME_TYPES,
+  type AssetMimeType,
   byteLengthError,
-  isAssetMimeType,
+  copyAsset,
   MAX_ASSET_BYTES,
   resolveAssetMimeType,
 } from "@/lib/assets";
 import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import { spinner } from "@/lib/helpers/ux";
 
 export default class AssetCp extends BaseCommand<typeof AssetCp> {
@@ -48,7 +48,7 @@ Assets are account-wide. This command does not take an environment or branch.
     }),
   };
 
-  async run(): Promise<ApiV1.Asset | void> {
+  async run(): Promise<Asset | void> {
     const source = this.props.args.file;
     const { filename: filenameFlag, json } = this.props.flags;
     const filename = this.displayName(source, filenameFlag);
@@ -57,13 +57,14 @@ Assets are account-wide. This command does not take an environment or branch.
 
     spinner.start(`‣ Copying \`${filename}\``);
 
-    try {
-      const asset = await this.copyAsset(bytes, filename, mimeType);
-      if (json) return asset;
-      this.render(asset, filename);
-    } finally {
-      spinner.stop();
-    }
+    const asset = await copyAsset(this.apiV1, { bytes, filename, mimeType });
+
+    // Stop only after success. A failure leaves the spinner running so the
+    // command error handler can mark it failed instead of done.
+    spinner.stop();
+
+    if (json) return asset;
+    this.render(asset, filename);
   }
 
   private displayName(source: string, filenameFlag?: string): string {
@@ -137,62 +138,21 @@ Assets are account-wide. This command does not take an environment or branch.
     return bytes;
   }
 
-  private mimeType(source: string, bytes: Buffer): string {
+  private mimeType(source: string, bytes: Buffer): AssetMimeType {
     const resolved = resolveAssetMimeType({
       bytes,
-      override: this.props.flags["mime-type"],
+      override: this.props.flags["mime-type"] as AssetMimeType | undefined,
       sourcePath: source === "-" ? undefined : source,
     });
 
-    if (!isAssetMimeType(resolved)) {
-      this.error(resolved);
+    if ("error" in resolved) {
+      this.error(resolved.error);
     }
 
-    return resolved;
+    return resolved.mimeType;
   }
 
-  private async copyAsset(
-    bytes: Buffer,
-    filename: string,
-    mimeType: string,
-  ): Promise<ApiV1.Asset> {
-    const uploadResp = await this.apiV1.requestAssetUpload({
-      content_length: bytes.length,
-      filename,
-      mime_type: mimeType,
-    });
-
-    if (!isSuccessResp(uploadResp)) {
-      this.error(formatErrorRespMessage(uploadResp));
-    }
-
-    const upload = uploadResp.data;
-    if (upload.content_length !== bytes.length) {
-      this.error(
-        `The upload URL was signed for ${upload.content_length} bytes, but the file is ${bytes.length} bytes. The asset was not created.`,
-      );
-    }
-
-    const putResp = await this.apiV1.putAssetBytes(upload, bytes);
-    if (!isSuccessResp(putResp)) {
-      this.error(
-        `Upload failed (${putResp.status}). The asset was not created.`,
-      );
-    }
-
-    const created = await this.apiV1.createAsset({
-      filename,
-      key: upload.key,
-    });
-
-    if (!isSuccessResp(created)) {
-      this.error(formatErrorRespMessage(created));
-    }
-
-    return created.data;
-  }
-
-  private render(asset: ApiV1.Asset, filename: string): void {
+  private render(asset: Asset, filename: string): void {
     const name = asset.filename ?? filename;
 
     this.log(`‣ Copied \`${name}\` (\`${asset.id}\`).`);

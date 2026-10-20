@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 
-import * as ApiV1 from "@/lib/api-v1";
+import { archiveAsset, type ArchiveAssetResp } from "@/lib/assets";
 import BaseCommand from "@/lib/base-command";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
@@ -32,7 +32,7 @@ Assets are account-wide. This command does not take an environment or branch.
     }),
   };
 
-  async run(): Promise<ApiV1.ArchiveAssetResp | void> {
+  async run(): Promise<ArchiveAssetResp | void> {
     const { assetId } = this.props.args;
     const { force, json } = this.props.flags;
 
@@ -56,8 +56,8 @@ Assets are account-wide. This command does not take an environment or branch.
       }
     }
 
-    const resp = await withSpinner<ApiV1.ArchiveAssetResp>(
-      () => this.apiV1.archiveAsset(assetId),
+    const resp = await withSpinner<ArchiveAssetResp>(
+      () => archiveAsset(this.apiV1, assetId),
       { action: `‣ Archiving asset \`${assetId}\`` },
     );
 

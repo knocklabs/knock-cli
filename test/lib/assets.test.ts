@@ -42,16 +42,16 @@ describe("lib/assets", () => {
     it("uses a matching extension and signature", () => {
       expect(
         resolveAssetMimeType({ bytes: png, sourcePath: "logo.png" }),
-      ).to.equal("image/png");
+      ).to.deep.equal({ mimeType: "image/png" });
       expect(
         resolveAssetMimeType({ bytes: jpeg, sourcePath: "photo.JPG" }),
-      ).to.equal("image/jpeg");
+      ).to.deep.equal({ mimeType: "image/jpeg" });
     });
 
     it("uses the signature when the path has no image extension", () => {
-      expect(resolveAssetMimeType({ bytes: png, sourcePath: "logo" })).to.equal(
-        "image/png",
-      );
+      expect(
+        resolveAssetMimeType({ bytes: png, sourcePath: "logo" }),
+      ).to.deep.equal({ mimeType: "image/png" });
     });
 
     it("rejects an extension that disagrees with the bytes", () => {
@@ -60,9 +60,9 @@ describe("lib/assets", () => {
         sourcePath: "logo.png",
       });
 
-      expect(resolved).to.contain("image/png");
-      expect(resolved).to.contain("image/jpeg");
-      expect(resolved).to.contain("--mime-type");
+      expect("error" in resolved && resolved.error).to.contain("image/png");
+      expect("error" in resolved && resolved.error).to.contain("image/jpeg");
+      expect("error" in resolved && resolved.error).to.contain("--mime-type");
     });
 
     it("uses an explicit override", () => {
@@ -72,13 +72,13 @@ describe("lib/assets", () => {
           override: "image/jpeg",
           sourcePath: "logo.png",
         }),
-      ).to.equal("image/jpeg");
+      ).to.deep.equal({ mimeType: "image/jpeg" });
     });
 
     it("asks for --mime-type when stdin bytes are not an image", () => {
-      expect(resolveAssetMimeType({ bytes: Buffer.from("hello") })).to.contain(
-        "--mime-type",
-      );
+      const resolved = resolveAssetMimeType({ bytes: Buffer.from("hello") });
+
+      expect("error" in resolved && resolved.error).to.contain("--mime-type");
     });
   });
 });

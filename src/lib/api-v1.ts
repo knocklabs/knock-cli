@@ -774,58 +774,6 @@ export default class ApiV1 {
     );
   }
 
-  // Assets are account-wide. These calls must not send environment or branch.
-
-  async createAsset(input: {
-    key: string;
-    filename: string;
-  }): Promise<AxiosResponse<Asset>> {
-    return this.post("/assets", {
-      key: input.key,
-      filename: input.filename,
-    });
-  }
-
-  async requestAssetUpload(input: {
-    mime_type: string;
-    content_length: number;
-    filename?: string;
-  }): Promise<AxiosResponse<AssetUpload>> {
-    return this.post(
-      "/assets/uploads",
-      prune({
-        mime_type: input.mime_type,
-        content_length: input.content_length,
-        filename: input.filename,
-      }),
-    );
-  }
-
-  async archiveAsset(
-    assetId: string,
-  ): Promise<AxiosResponse<ArchiveAssetResp>> {
-    return this.delete(`/assets/${assetId}`);
-  }
-
-  // Storage PUT. Must not use the Knock client: the signed URL rejects the
-  // bearer token, and the signature covers Content-Type and Content-Length.
-  async putAssetBytes(
-    upload: AssetUpload,
-    bytes: Buffer,
-  ): Promise<AxiosResponse> {
-    return axios.put(upload.upload_url, bytes, {
-      headers: {
-        "Content-Type": upload.mime_type,
-        "Content-Length": String(upload.content_length),
-      },
-      transformRequest: [(data) => data],
-      transformResponse: [(data) => data],
-      validateStatus: () => true,
-      maxBodyLength: Number.POSITIVE_INFINITY,
-      maxContentLength: Number.POSITIVE_INFINITY,
-    });
-  }
-
   // By methods:
 
   async get(
@@ -1046,27 +994,4 @@ export type UpsertReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
 export type ValidateReusableRequestResp = {
   reusable_request?: ReusableRequest.ReusableRequestData;
   errors?: InputError[];
-};
-
-export type Asset = {
-  id: string;
-  mime_type: string;
-  asset_type: string;
-  url: string;
-  created_at: string;
-  updated_at: string;
-  filename?: string | null;
-};
-
-export type AssetUpload = {
-  key: string;
-  upload_url: string;
-  expires_in: number;
-  mime_type: string;
-  content_length: number;
-  filename?: string | null;
-};
-
-export type ArchiveAssetResp = {
-  result: string;
 };
