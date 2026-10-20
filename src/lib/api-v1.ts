@@ -575,6 +575,27 @@ export default class ApiV1 {
     });
   }
 
+  async runBroadcast({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<RunBroadcastResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const settings = prune({
+      sandbox_mode: flags["sandbox-mode"],
+      skip_delay: flags["skip-delay"],
+    });
+    const data = prune({
+      recipient: { id: flags.recipient },
+      tenant: flags.tenant,
+      ...(Object.keys(settings).length > 0 ? { settings } : {}),
+    });
+
+    return this.put(`/broadcasts/${args.broadcastKey}/run`, data, { params });
+  }
+
   // By resources: Guides
 
   async listGuides<A extends MaybeWithAnnotation>({
@@ -1057,6 +1078,12 @@ export type ValidateBroadcastResp = {
 
 export type SendBroadcastResp = {
   broadcast?: Broadcast.BroadcastData;
+  errors?: InputError[];
+};
+
+export type RunBroadcastResp = {
+  broadcast_run_id?: string;
+  request_id?: string;
   errors?: InputError[];
 };
 
