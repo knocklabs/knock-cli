@@ -118,7 +118,7 @@ yarn check
 
 1. **`src/lib/base-command.ts`** - Base class all commands extend
 2. **`src/lib/resources.ts`** - Resource type definitions
-3. **`src/lib/api-v1.ts`** - Knock API client wrapper
+3. **`src/lib/api-v1.ts`** - Knock API client wrapper. This file is allowed to be long. Add new API methods here instead of splitting them out to stay under a line limit.
 4. **`src/lib/marshal/index.isomorphic.ts`** - Marshaling helpers that are runtime agnostic, and can be used in either a node.js or browser environment
 5. **`src/commands/knock.ts`** - Main entry point command
 
@@ -150,6 +150,7 @@ The CLI primarily interacts with Knock's Management API via the `@knocklabs/mgmt
 - All commands should support `--json` flag for machine-readable output
 - Error messages should be user-friendly and actionable
 - Tests are required for new commands and features
+- `src/lib/api-v1.ts` is allowed to be long. Keep Knock API methods on `ApiV1` even when the file grows past a thousand lines.
 
 ## Cursor Cloud specific instructions
 

@@ -1,3 +1,6 @@
+// This file is the Knock API client. It is allowed to be long.
+// Add resource methods on ApiV1 instead of splitting them out to satisfy a line limit.
+
 import KnockMgmt from "@knocklabs/mgmt";
 import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
@@ -7,10 +10,18 @@ import { MessageTypeListParams } from "@knocklabs/mgmt/resources/message-types";
 import { Config } from "@oclif/core";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
+import {
+  type ArchiveAssetResp,
+  type Asset,
+  type AssetMimeType,
+  type AssetUpload,
+  putAssetBytes,
+} from "@/lib/assets";
 import { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
 import { AnyObj, prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
+import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
@@ -774,6 +785,80 @@ export default class ApiV1 {
     );
   }
 
+  // Assets are account-wide. These calls do not send environment or branch.
+
+  async requestAssetUpload(input: {
+    mime_type: AssetMimeType | string;
+    content_length: number;
+    filename?: string;
+  }): Promise<AxiosResponse<AssetUpload>> {
+    return this.post(
+      "/assets/uploads",
+      prune({
+        mime_type: input.mime_type,
+        content_length: input.content_length,
+        filename: input.filename,
+      }),
+    );
+  }
+
+  async createAsset(input: {
+    key: string;
+    filename: string;
+  }): Promise<AxiosResponse<Asset>> {
+    return this.post("/assets", {
+      key: input.key,
+      filename: input.filename,
+    });
+  }
+
+  async archiveAsset(
+    assetId: string,
+  ): Promise<AxiosResponse<ArchiveAssetResp>> {
+    return this.delete(`/assets/${assetId}`);
+  }
+
+  async copyAsset(input: {
+    bytes: Buffer;
+    filename: string;
+    mimeType: AssetMimeType;
+  }): Promise<Asset> {
+    const uploadResp = await this.requestAssetUpload({
+      content_length: input.bytes.length,
+      filename: input.filename,
+      mime_type: input.mimeType,
+    });
+
+    if (!isSuccessResp(uploadResp)) {
+      throw new Error(formatErrorRespMessage(uploadResp));
+    }
+
+    const upload = uploadResp.data;
+    if (upload.content_length !== input.bytes.length) {
+      throw new Error(
+        `The upload URL was signed for ${upload.content_length} bytes, but the file is ${input.bytes.length} bytes. The asset was not created.`,
+      );
+    }
+
+    const putResp = await putAssetBytes(upload, input.bytes);
+    if (!isSuccessResp(putResp)) {
+      throw new Error(
+        `Upload failed (${putResp.status}). The asset was not created.`,
+      );
+    }
+
+    const created = await this.createAsset({
+      filename: input.filename,
+      key: upload.key,
+    });
+
+    if (!isSuccessResp(created)) {
+      throw new Error(formatErrorRespMessage(created));
+    }
+
+    return created.data;
+  }
+
   // By methods:
 
   async get(
@@ -789,6 +874,14 @@ export default class ApiV1 {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse> {
     return this.client.put(`/${API_VERSION}` + subpath, data, config);
+  }
+
+  async post(
+    subpath: string,
+    data?: unknown,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse> {
+    return this.client.post(`/${API_VERSION}` + subpath, data, config);
   }
 
   async delete(

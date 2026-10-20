@@ -27,6 +27,8 @@ USAGE
 # Commands
 
 <!-- commands -->
+* [`knock asset archive ASSETID`](#knock-asset-archive-assetid)
+* [`knock asset upload FILE`](#knock-asset-upload-file)
 * [`knock audience archive AUDIENCEKEY`](#knock-audience-archive-audiencekey)
 * [`knock audience get AUDIENCEKEY`](#knock-audience-get-audiencekey)
 * [`knock audience list`](#knock-audience-list)
@@ -120,6 +122,69 @@ USAGE
 * [`knock workflow push [WORKFLOWKEY]`](#knock-workflow-push-workflowkey)
 * [`knock workflow run WORKFLOWKEY`](#knock-workflow-run-workflowkey)
 * [`knock workflow validate [WORKFLOWKEY]`](#knock-workflow-validate-workflowkey)
+
+## `knock asset archive ASSETID`
+
+Archive an asset.
+
+```
+USAGE
+  $ knock asset archive ASSETID [--json] [--service-token <value>] [--force]
+
+ARGUMENTS
+  ASSETID  The id of the asset to archive.
+
+FLAGS
+  --force                  Skip confirmation prompt.
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Archive an asset.
+
+
+  Archives an asset for the account.
+
+  Assets are account-wide. This command does not take an environment or branch.
+```
+
+_See code: [src/commands/asset/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/archive.ts)_
+
+## `knock asset upload FILE`
+
+Upload a file into the account as an asset.
+
+```
+USAGE
+  $ knock asset upload FILE [--json] [--service-token <value>] [--filename <value>] [--mime-type
+    image/jpeg|image/png|image/gif]
+
+ARGUMENTS
+  FILE  Path to the file to upload, or - to read stdin.
+
+FLAGS
+  --filename=<value>       Display name for the asset. Defaults to the file's basename. Required when reading stdin.
+  --mime-type=<option>     MIME type override. One of image/jpeg, image/png, or image/gif.
+                           <options: image/jpeg|image/png|image/gif>
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Upload a file into the account as an asset.
+
+
+  Reads a file, uploads the bytes, and records the asset.
+
+  Pass - to read the file from stdin. Stdin requires --filename.
+
+  Assets are account-wide. This command does not take an environment or branch.
+```
+
+_See code: [src/commands/asset/upload.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/upload.ts)_
 
 ## `knock audience archive AUDIENCEKEY`
 
