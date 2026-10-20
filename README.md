@@ -1925,7 +1925,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/delete.ts)_
+_See code: [src/commands/variable/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/delete.ts)_
 
 ## `knock variable get KEY`
 
@@ -1947,7 +1947,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/get.ts)_
+_See code: [src/commands/variable/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/get.ts)_
 
 ## `knock variable list`
 
@@ -1973,7 +1973,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/list.ts)_
+_See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/list.ts)_
 
 ## `knock variable new`
 
@@ -1997,7 +1997,7 @@ FLAGS
   --value=<value>           Default value. Public variables only.
 ```
 
-_See code: [src/commands/variable/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/new.ts)_
+_See code: [src/commands/variable/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/new.ts)_
 
 ## `knock variable pull [KEY]`
 
@@ -2019,7 +2019,7 @@ FLAGS
   --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/pull.ts)_
+_See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/pull.ts)_
 
 ## `knock variable push [KEY]`
 
@@ -2041,7 +2041,7 @@ FLAGS
   --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/push.ts)_
+_See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/push.ts)_
 
 ## `knock variable set KEY`
 
@@ -2079,7 +2079,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/set.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/set.ts)_
+_See code: [src/commands/variable/set.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/set.ts)_
 
 ## `knock whoami`
 
