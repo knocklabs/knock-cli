@@ -1,3 +1,6 @@
+// This file is the Knock API client. It is allowed to be long.
+// Add resource methods on ApiV1 instead of splitting them out to satisfy a line limit.
+
 import KnockMgmt from "@knocklabs/mgmt";
 import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
