@@ -4,12 +4,7 @@ import nock from "nock";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
-import {
-  archiveAsset,
-  createAsset,
-  putAssetBytes,
-  requestAssetUpload,
-} from "@/lib/assets";
+import { putAssetBytes, requestAssetUpload } from "@/lib/assets";
 
 const dummyConfig = new Config({ root: "/path/to/bin" });
 const API_ORIGIN = "https://api.knock.app";
@@ -61,7 +56,7 @@ describe("lib/api-v1 assets", () => {
         });
 
       const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
-      const resp = await createAsset(apiV1, {
+      const resp = await apiV1.createAsset({
         key: upload.key,
         filename: "logo.png",
       });
@@ -168,7 +163,7 @@ describe("lib/api-v1 assets", () => {
         });
 
       const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
-      const resp = await archiveAsset(apiV1, asset.id);
+      const resp = await apiV1.archiveAsset(asset.id);
 
       expect(scope.isDone()).to.equal(true);
       expect(path).to.equal(`/v1/assets/${asset.id}`);

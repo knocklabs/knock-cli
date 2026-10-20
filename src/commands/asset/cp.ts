@@ -8,7 +8,6 @@ import {
   ASSET_MIME_TYPES,
   type AssetMimeType,
   byteLengthError,
-  copyAsset,
   MAX_ASSET_BYTES,
   resolveAssetMimeType,
 } from "@/lib/assets";
@@ -57,7 +56,7 @@ Assets are account-wide. This command does not take an environment or branch.
 
     spinner.start(`‣ Copying \`${filename}\``);
 
-    const asset = await copyAsset(this.apiV1, { bytes, filename, mimeType });
+    const asset = await this.apiV1.copyAsset({ bytes, filename, mimeType });
 
     // Stop only after success. A failure leaves the spinner running so the
     // command error handler can mark it failed instead of done.

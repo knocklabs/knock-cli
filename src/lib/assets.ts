@@ -3,7 +3,6 @@ import * as path from "node:path";
 import axios, { type AxiosResponse } from "axios";
 
 import { prune } from "@/lib/helpers/object.isomorphic";
-import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
 
 // Spec: AssetUploadRequest.mime_type is one of these values.
 export const ASSET_MIME_TYPES = [
@@ -163,20 +162,6 @@ export const requestAssetUpload = (
     }),
   );
 
-export const createAsset = (
-  api: AssetClient,
-  input: { key: string; filename: string },
-): Promise<AxiosResponse<Asset>> =>
-  api.post("/assets", {
-    key: input.key,
-    filename: input.filename,
-  });
-
-export const archiveAsset = (
-  api: AssetClient,
-  assetId: string,
-): Promise<AxiosResponse<ArchiveAssetResp>> => api.delete(`/assets/${assetId}`);
-
 // Direct-to-storage PUT. Must not use the Knock client: the signed URL rejects
 // the bearer token, and the signature covers Content-Type and Content-Length.
 export const putAssetBytes = (
@@ -194,43 +179,3 @@ export const putAssetBytes = (
     maxBodyLength: MAX_ASSET_BYTES,
     maxContentLength: MAX_ASSET_BYTES,
   });
-
-export const copyAsset = async (
-  api: AssetClient,
-  input: { bytes: Buffer; filename: string; mimeType: AssetMimeType },
-): Promise<Asset> => {
-  const uploadResp = await requestAssetUpload(api, {
-    content_length: input.bytes.length,
-    filename: input.filename,
-    mime_type: input.mimeType,
-  });
-
-  if (!isSuccessResp(uploadResp)) {
-    throw new Error(formatErrorRespMessage(uploadResp));
-  }
-
-  const upload = uploadResp.data;
-  if (upload.content_length !== input.bytes.length) {
-    throw new Error(
-      `The upload URL was signed for ${upload.content_length} bytes, but the file is ${input.bytes.length} bytes. The asset was not created.`,
-    );
-  }
-
-  const putResp = await putAssetBytes(upload, input.bytes);
-  if (!isSuccessResp(putResp)) {
-    throw new Error(
-      `Upload failed (${putResp.status}). The asset was not created.`,
-    );
-  }
-
-  const created = await createAsset(api, {
-    filename: input.filename,
-    key: upload.key,
-  });
-
-  if (!isSuccessResp(created)) {
-    throw new Error(formatErrorRespMessage(created));
-  }
-
-  return created.data;
-};

@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 
-import { archiveAsset, type ArchiveAssetResp } from "@/lib/assets";
+import { type ArchiveAssetResp } from "@/lib/assets";
 import BaseCommand from "@/lib/base-command";
 import { withSpinner } from "@/lib/helpers/request";
 import { promptToConfirm } from "@/lib/helpers/ux";
@@ -57,7 +57,7 @@ Assets are account-wide. This command does not take an environment or branch.
     }
 
     const resp = await withSpinner<ArchiveAssetResp>(
-      () => archiveAsset(this.apiV1, assetId),
+      () => this.apiV1.archiveAsset(assetId),
       { action: `‣ Archiving asset \`${assetId}\`` },
     );
 
