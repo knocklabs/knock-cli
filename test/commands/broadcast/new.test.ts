@@ -42,8 +42,9 @@ describe("commands/broadcast/new", () => {
 
         const content = fs.readJsonSync(broadcastPath);
         expect(content.key).to.equal("my-new-broadcast");
-        expect(content.name).to.equal("");
-        expect(content.status).to.equal("draft");
+        expect(content.name).to.equal("My New Broadcast");
+        expect(content.status).to.equal(undefined);
+        expect(content.settings.is_commercial).to.equal(undefined);
         expect(content.steps).to.eql([]);
       });
   });

@@ -26,6 +26,9 @@ describe("commands/broadcast/open", () => {
       .stub(KnockApiV1.prototype, "whoami", (stub) =>
         stub.resolves(factory.resp({ data: whoami })),
       )
+      .stub(KnockApiV1.prototype, "getDefaultEnvironmentSlug", (stub) =>
+        stub.resolves("development"),
+      )
       .stub(browser, "openUrl", (stub) => stub.resolves())
       .stdout()
       .command(["broadcast open", "foo"])

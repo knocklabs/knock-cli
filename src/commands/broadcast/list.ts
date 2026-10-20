@@ -1,4 +1,4 @@
-import { Flags, ux } from "@oclif/core";
+import { ux } from "@oclif/core";
 import { AxiosResponse } from "axios";
 
 import * as ApiV1 from "@/lib/api-v1";
@@ -19,10 +19,7 @@ export default class BroadcastList extends BaseCommand<typeof BroadcastList> {
   static summary = "Display all broadcasts for an environment.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     ...pageFlags,
   };

@@ -71,7 +71,6 @@ describe("commands/broadcast/pull", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 annotate: true,
               }),
           ),

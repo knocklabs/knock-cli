@@ -4,8 +4,6 @@ import { Flags } from "@oclif/core";
 import { prompt } from "enquirer";
 
 import BaseCommand from "@/lib/base-command";
-import { KnockEnv } from "@/lib/helpers/const";
-import * as CustomFlags from "@/lib/helpers/flag";
 import { resolveResourceDir } from "@/lib/helpers/project-config";
 import { slugify } from "@/lib/helpers/string";
 import { promptToConfirm } from "@/lib/helpers/ux";
@@ -28,12 +26,6 @@ export default class BroadcastNew extends BaseCommand<typeof BroadcastNew> {
       summary: "The key of the broadcast",
       char: "k",
     }),
-    environment: Flags.string({
-      summary:
-        "The environment to create the broadcast in. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
-    branch: CustomFlags.branch,
     force: Flags.boolean({
       summary:
         "Force the creation of the broadcast directory without confirmation.",
@@ -109,7 +101,7 @@ export default class BroadcastNew extends BaseCommand<typeof BroadcastNew> {
     const input = flags.force || (await promptToConfirm(promptMessage));
     if (!input) return;
 
-    await Broadcast.generateBroadcastDir(broadcastDirCtx, key);
+    await Broadcast.generateBroadcastDir(broadcastDirCtx, key, name);
 
     this.log(`‣ Successfully created broadcast \`${key}\``);
   }

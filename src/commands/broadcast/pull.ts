@@ -29,10 +29,7 @@ export default class BroadcastPull extends BaseCommand<typeof BroadcastPull> {
     "Pull one or more broadcasts from an environment into a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to pull all broadcasts from the specified environment.",

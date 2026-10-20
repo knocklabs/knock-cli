@@ -1,10 +1,18 @@
 import * as path from "node:path";
 
 import * as fs from "fs-extra";
+import { hasIn, set } from "lodash";
 
 import { formatErrors, JsonDataError } from "@/lib/helpers/error";
 import { ParsedJson, parseJson } from "@/lib/helpers/json";
 import { validateLiquidSyntax } from "@/lib/helpers/liquid";
+import {
+  AnyObj,
+  getLastFound,
+  mapValuesDeep,
+  ObjPath,
+} from "@/lib/helpers/object.isomorphic";
+import { FILEPATH_MARKED_RE } from "@/lib/marshal/shared/const.isomorphic";
 import { VISUAL_BLOCKS_JSON } from "@/lib/marshal/workflow";
 import {
   BroadcastDirContext,
@@ -15,6 +23,15 @@ import {
   ReusableStepDirContext,
   WorkflowDirContext,
 } from "@/lib/run-context";
+
+type ExtractedFileDirContext =
+  | BroadcastDirContext
+  | WorkflowDirContext
+  | EmailLayoutDirContext
+  | PartialDirContext
+  | MessageTypeDirContext
+  | GuideDirContext
+  | ReusableStepDirContext;
 
 /*
  * Read the file at the given path if it exists, validate the content as
@@ -51,14 +68,7 @@ const validateLiquidSyntaxDeep = (
 
 export const readExtractedFileSync = (
   relpath: string,
-  dirCtx:
-    | BroadcastDirContext
-    | WorkflowDirContext
-    | EmailLayoutDirContext
-    | PartialDirContext
-    | MessageTypeDirContext
-    | GuideDirContext
-    | ReusableStepDirContext,
+  dirCtx: ExtractedFileDirContext,
   objPathToFieldStr = "",
 ): ReadExtractedFileResult => {
   // Check if the file actually exists at the given file path.
@@ -176,4 +186,86 @@ export const checkIfValidExtractedFilePathFormat = (
   const pathDiff = path.relative(sourceFileAbspath, extractedFileAbspath);
 
   return !pathDiff.startsWith("..");
+};
+
+// Resource files support up to two levels of content extraction
+// (e.g. broadcast.json -> visual_blocks.json -> 1.content.md).
+const MAX_EXTRACTION_LEVEL = 2;
+
+/*
+ * Compiles referenced extracted files into the resource json and returns the
+ * updated object with that content inlined.
+ *
+ * Extracted paths are relative to the file that references them. This walks
+ * the tree once per extraction level and rebases nested paths so they are
+ * relative to `rootFileName` (for example `broadcast.json` or `workflow.json`).
+ *
+ * Mutates `resourceJson`.
+ */
+export type JoinExtractedFilesResult = [AnyObj, JsonDataError[]];
+type JoinedFilePaths = Record<string, string>;
+
+export const joinExtractedFiles = (
+  dirCtx: ExtractedFileDirContext,
+  resourceJson: AnyObj,
+  rootFileName: string,
+): JoinExtractedFilesResult => {
+  const errors: JsonDataError[] = [];
+  const uniqueFilePaths: Record<string, boolean> = {};
+  const joinedFilePathsPerLevel: JoinedFilePaths[] = [];
+
+  for (const [idx] of Array.from({ length: MAX_EXTRACTION_LEVEL }).entries()) {
+    const currJoinedFilePaths: JoinedFilePaths = {};
+    const prevJoinedFilePaths = joinedFilePathsPerLevel[idx - 1] || {};
+
+    mapValuesDeep(resourceJson, (value, key, parts) => {
+      if (!FILEPATH_MARKED_RE.test(key)) return;
+
+      const objPathToFieldStr = ObjPath.stringify(parts);
+      const inlinObjPathStr = objPathToFieldStr.replace(FILEPATH_MARKED_RE, "");
+
+      if (hasIn(resourceJson, inlinObjPathStr)) return;
+
+      const lastFound = getLastFound(prevJoinedFilePaths, parts);
+      const prevJoinedFilePath =
+        typeof lastFound === "string" ? lastFound : undefined;
+
+      const rebasedFilePath = prevJoinedFilePath
+        ? path.join(path.dirname(prevJoinedFilePath), value)
+        : value;
+
+      const invalidFilePathError = validateExtractedFilePath(
+        rebasedFilePath,
+        path.resolve(dirCtx.abspath, rootFileName),
+        uniqueFilePaths,
+        objPathToFieldStr,
+      );
+      if (invalidFilePathError) {
+        errors.push(invalidFilePathError);
+        set(resourceJson, objPathToFieldStr, undefined);
+        set(resourceJson, inlinObjPathStr, undefined);
+        return;
+      }
+
+      const [content, readExtractedFileError] = readExtractedFileSync(
+        rebasedFilePath,
+        dirCtx,
+        objPathToFieldStr,
+      );
+      if (readExtractedFileError) {
+        errors.push(readExtractedFileError);
+        set(resourceJson, objPathToFieldStr, rebasedFilePath);
+        set(resourceJson, inlinObjPathStr, undefined);
+        return;
+      }
+
+      set(resourceJson, objPathToFieldStr, rebasedFilePath);
+      set(resourceJson, inlinObjPathStr, content);
+      set(currJoinedFilePaths, inlinObjPathStr, rebasedFilePath);
+    });
+
+    joinedFilePathsPerLevel[idx] = currJoinedFilePaths;
+  }
+
+  return [resourceJson, errors];
 };

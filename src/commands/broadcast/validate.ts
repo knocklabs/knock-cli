@@ -3,7 +3,6 @@ import { Args, Flags } from "@oclif/core";
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand, { Props } from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
@@ -11,17 +10,15 @@ import { indentString } from "@/lib/helpers/string";
 import { spinner } from "@/lib/helpers/ux";
 import * as Broadcast from "@/lib/marshal/broadcast";
 
+import BroadcastPush from "./push";
+
 export default class BroadcastValidate extends BaseCommand<
   typeof BroadcastValidate
 > {
   static summary = "Validate one or more broadcasts from a local file system.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "The environment to validate the broadcast in. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to validate all broadcasts from the target directory.",
@@ -84,7 +81,7 @@ export default class BroadcastValidate extends BaseCommand<
 
   static async validateAll(
     api: ApiV1.T,
-    props: Props<typeof BroadcastValidate>,
+    props: Props<typeof BroadcastValidate | typeof BroadcastPush>,
     broadcasts: Broadcast.BroadcastDirData[],
   ): Promise<SourceError[]> {
     const errorPromises = broadcasts.map(async (broadcast) => {

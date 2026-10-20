@@ -44,11 +44,7 @@ export const buildBroadcastDirBundle = (
   const mutBroadcast = cloneDeep(remoteBroadcast);
   const localStepsByRef = keyLocalStepsByRef(localBroadcast.steps);
 
-  recursivelyBuildStepsDirBundle(
-    bundle,
-    mutBroadcast.steps as any,
-    localStepsByRef,
-  );
+  recursivelyBuildStepsDirBundle(bundle, mutBroadcast.steps, localStepsByRef);
 
   return set(
     bundle,

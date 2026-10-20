@@ -60,7 +60,6 @@ describe("commands/broadcast/push", () => {
               isEqual(args, { broadcastKey: "welcome-broadcast" }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
                 annotate: true,
               }),
           ),
@@ -91,7 +90,6 @@ describe("commands/broadcast/push", () => {
                 isEqual(args, { broadcastKey: "welcome-broadcast" }) &&
                 isEqual(flags, {
                   "service-token": "valid-token",
-                  environment: "development",
                   branch: "my-feature-branch-123",
                   annotate: true,
                 }),

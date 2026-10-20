@@ -23,7 +23,7 @@ describe("commands/broadcast/list", () => {
           KnockApiV1.prototype.listBroadcasts as any,
           sinon.match(
             ({ flags }) =>
-              isEqual(flags.environment, "development") &&
+              flags.environment === undefined &&
               isEqual(flags["service-token"], "valid-token"),
           ),
         );

@@ -45,7 +45,6 @@ describe("commands/broadcast/get", () => {
               }) &&
               isEqual(flags, {
                 "service-token": "valid-token",
-                environment: "development",
               }),
           ),
         );

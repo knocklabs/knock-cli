@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 
 import BaseCommand from "@/lib/base-command";
 import { formatCommandScope } from "@/lib/helpers/command";
-import { KnockEnv } from "@/lib/helpers/const";
 import { formatError, formatErrors, SourceError } from "@/lib/helpers/error";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { merge } from "@/lib/helpers/object.isomorphic";
@@ -19,11 +18,7 @@ export default class BroadcastPush extends BaseCommand<typeof BroadcastPush> {
     "Push one or more broadcasts from a local file system to Knock.";
 
   static flags = {
-    environment: Flags.string({
-      summary:
-        "The environment to push the broadcast to. Defaults to development.",
-      default: KnockEnv.Development,
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
     all: Flags.boolean({
       summary: "Whether to push all broadcasts from the target directory.",
@@ -68,7 +63,7 @@ export default class BroadcastPush extends BaseCommand<typeof BroadcastPush> {
 
     const apiErrors = await BroadcastValidate.validateAll(
       this.apiV1,
-      this.props as any,
+      this.props,
       broadcasts,
     );
 

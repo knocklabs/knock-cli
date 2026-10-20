@@ -1,4 +1,4 @@
-import { Args, Flags, ux } from "@oclif/core";
+import { Args, ux } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
@@ -18,10 +18,7 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
   static summary = "Display a single broadcast from an environment.";
 
   static flags = {
-    environment: Flags.string({
-      default: "development",
-      summary: "The environment to use.",
-    }),
+    environment: CustomFlags.environment,
     branch: CustomFlags.branch,
   };
 
@@ -43,7 +40,7 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
     const { flags } = this.props;
     if (flags.json) return broadcast;
 
-    this.render(broadcast, whoami);
+    await this.render(broadcast, whoami);
   }
 
   private async loadBroadcast(): Promise<{
@@ -70,7 +67,10 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
     };
   }
 
-  render(broadcast: ApiV1.GetBroadcastResp, whoami: ApiV1.WhoamiResp): void {
+  async render(
+    broadcast: ApiV1.GetBroadcastResp,
+    whoami: ApiV1.WhoamiResp,
+  ): Promise<void> {
     const { broadcastKey } = this.props.args;
     const { environment, branch } = this.props.flags;
     const scope = formatCommandScope(this.props.flags);
@@ -178,10 +178,13 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
       ? `\n‣ This broadcast has branches with nested steps, view the full broadcast tree in the Knock Dashboard:`
       : `\n‣ View the full broadcast in the Knock Dashboard:`;
 
+    const envOrBranch =
+      branch ?? environment ?? (await this.apiV1.getDefaultEnvironmentSlug());
+
     const url = viewBroadcastUrl(
       this.sessionContext.dashboardOrigin,
       whoami.account_slug,
-      branch ?? environment,
+      envOrBranch,
       broadcast.key,
     );
 

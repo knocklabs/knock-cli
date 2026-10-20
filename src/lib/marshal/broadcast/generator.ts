@@ -3,16 +3,16 @@ import { BroadcastDirContext } from "@/lib/run-context";
 import { BROADCAST_JSON, BroadcastDirBundle } from "./processor.isomorphic";
 import { writeBroadcastDirFromBundle } from "./writer";
 
-const scaffoldBroadcastDirBundle = (key: string): BroadcastDirBundle => {
+const scaffoldBroadcastDirBundle = (
+  key: string,
+  name: string,
+): BroadcastDirBundle => {
   const broadcastJson = {
     key,
-    name: "",
+    name,
     description: "",
     categories: [],
-    target_audience_key: "",
-    status: "draft" as const,
     settings: {
-      is_commercial: false,
       override_preferences: false,
     },
     steps: [],
@@ -26,8 +26,9 @@ const scaffoldBroadcastDirBundle = (key: string): BroadcastDirBundle => {
 export const generateBroadcastDir = async (
   broadcastDirCtx: BroadcastDirContext,
   key: string,
+  name: string,
 ): Promise<void> => {
-  const bundle = scaffoldBroadcastDirBundle(key);
+  const bundle = scaffoldBroadcastDirBundle(key, name);
 
   return writeBroadcastDirFromBundle(broadcastDirCtx, bundle);
 };
