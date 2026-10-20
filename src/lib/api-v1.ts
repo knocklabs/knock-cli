@@ -14,8 +14,8 @@ import {
   type ArchiveAssetResp,
   type Asset,
   type AssetMimeType,
+  type AssetUpload,
   putAssetBytes,
-  requestAssetUpload,
 } from "@/lib/assets";
 import { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
@@ -787,6 +787,21 @@ export default class ApiV1 {
 
   // Assets are account-wide. These calls do not send environment or branch.
 
+  async requestAssetUpload(input: {
+    mime_type: AssetMimeType | string;
+    content_length: number;
+    filename?: string;
+  }): Promise<AxiosResponse<AssetUpload>> {
+    return this.post(
+      "/assets/uploads",
+      prune({
+        mime_type: input.mime_type,
+        content_length: input.content_length,
+        filename: input.filename,
+      }),
+    );
+  }
+
   async createAsset(input: {
     key: string;
     filename: string;
@@ -808,7 +823,7 @@ export default class ApiV1 {
     filename: string;
     mimeType: AssetMimeType;
   }): Promise<Asset> {
-    const uploadResp = await requestAssetUpload(this, {
+    const uploadResp = await this.requestAssetUpload({
       content_length: input.bytes.length,
       filename: input.filename,
       mime_type: input.mimeType,

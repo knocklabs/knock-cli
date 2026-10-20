@@ -4,7 +4,7 @@ import nock from "nock";
 
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
-import { putAssetBytes, requestAssetUpload } from "@/lib/assets";
+import { putAssetBytes } from "@/lib/assets";
 
 const dummyConfig = new Config({ root: "/path/to/bin" });
 const API_ORIGIN = "https://api.knock.app";
@@ -87,7 +87,7 @@ describe("lib/api-v1 assets", () => {
         });
 
       const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
-      const resp = await requestAssetUpload(apiV1, {
+      const resp = await apiV1.requestAssetUpload({
         mime_type: "image/png",
         content_length: 20_480,
         filename: "logo.png",
@@ -109,7 +109,7 @@ describe("lib/api-v1 assets", () => {
         .reply(201, { ...upload, filename: null, mime_type: "image/gif" });
 
       const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
-      const resp = await requestAssetUpload(apiV1, {
+      const resp = await apiV1.requestAssetUpload({
         mime_type: "image/gif",
         content_length: 1,
       });

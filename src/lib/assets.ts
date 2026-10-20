@@ -2,8 +2,6 @@ import * as path from "node:path";
 
 import axios, { type AxiosResponse } from "axios";
 
-import { prune } from "@/lib/helpers/object.isomorphic";
-
 // Spec: AssetUploadRequest.mime_type is one of these values.
 export const ASSET_MIME_TYPES = [
   "image/jpeg",
@@ -42,12 +40,6 @@ export type ArchiveAssetResp = {
 export type ResolvedAssetMimeType =
   | { mimeType: AssetMimeType }
   | { error: string };
-
-// Knock calls used by assets. post and delete prepend /v1.
-type AssetClient = {
-  post(subpath: string, data?: unknown): Promise<AxiosResponse>;
-  delete(subpath: string): Promise<AxiosResponse>;
-};
 
 const MIME_BY_EXTENSION: Record<string, AssetMimeType> = {
   ".gif": "image/gif",
@@ -144,23 +136,6 @@ export const resolveAssetMimeType = (input: {
       "Could not detect the MIME type. Pass --mime-type (image/jpeg, image/png, or image/gif).",
   };
 };
-
-export const requestAssetUpload = (
-  api: AssetClient,
-  input: {
-    mime_type: AssetMimeType | string;
-    content_length: number;
-    filename?: string;
-  },
-): Promise<AxiosResponse<AssetUpload>> =>
-  api.post(
-    "/assets/uploads",
-    prune({
-      mime_type: input.mime_type,
-      content_length: input.content_length,
-      filename: input.filename,
-    }),
-  );
 
 // Direct-to-storage PUT. Must not use the Knock client: the signed URL rejects
 // the bearer token, and the signature covers Content-Type and Content-Length.
