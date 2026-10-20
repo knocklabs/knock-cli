@@ -807,6 +807,25 @@ export default class ApiV1 {
     return this.delete(`/assets/${assetId}`);
   }
 
+  // Storage PUT. Must not use the Knock client: the signed URL rejects the
+  // bearer token, and the signature covers Content-Type and Content-Length.
+  async putAssetBytes(
+    upload: AssetUpload,
+    bytes: Buffer,
+  ): Promise<AxiosResponse> {
+    return axios.put(upload.upload_url, bytes, {
+      headers: {
+        "Content-Type": upload.mime_type,
+        "Content-Length": String(upload.content_length),
+      },
+      transformRequest: [(data) => data],
+      transformResponse: [(data) => data],
+      validateStatus: () => true,
+      maxBodyLength: Number.POSITIVE_INFINITY,
+      maxContentLength: Number.POSITIVE_INFINITY,
+    });
+  }
+
   // By methods:
 
   async get(

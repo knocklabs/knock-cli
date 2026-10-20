@@ -28,8 +28,7 @@ USAGE
 
 <!-- commands -->
 * [`knock asset archive ASSETID`](#knock-asset-archive-assetid)
-* [`knock asset create`](#knock-asset-create)
-* [`knock asset upload`](#knock-asset-upload)
+* [`knock asset cp FILE`](#knock-asset-cp-file)
 * [`knock audience archive AUDIENCEKEY`](#knock-audience-archive-audiencekey)
 * [`knock audience get AUDIENCEKEY`](#knock-audience-get-audiencekey)
 * [`knock audience list`](#knock-audience-list)
@@ -153,67 +152,39 @@ DESCRIPTION
 
 _See code: [src/commands/asset/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/archive.ts)_
 
-## `knock asset create`
+## `knock asset cp FILE`
 
-Create an asset from an uploaded file key.
+Copy a file into the account as an asset.
 
 ```
 USAGE
-  $ knock asset create --key <value> --filename <value> [--json] [--service-token <value>]
+  $ knock asset cp FILE [--json] [--service-token <value>] [--filename <value>] [--mime-type
+    image/jpeg|image/png|image/gif]
+
+ARGUMENTS
+  FILE  Path to the file to copy, or - to read stdin.
 
 FLAGS
-  --filename=<value>       (required) The display name for this asset.
-  --key=<value>            (required) The storage key from the upload request. The file must already be uploaded.
+  --filename=<value>       Display name for the asset. Defaults to the file's basename. Required when reading stdin.
+  --mime-type=<option>     MIME type override. One of image/jpeg, image/png, or image/gif.
+                           <options: image/jpeg|image/png|image/gif>
   --service-token=<value>  The service token to authenticate with.
 
 GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  Create an asset from an uploaded file key.
+  Copy a file into the account as an asset.
 
 
-  Records a library asset for a storage key returned by `knock asset upload`.
-  The file must already be uploaded.
+  Reads a file, uploads the bytes, and records the asset.
 
-  Assets are account-wide. This command does not take an environment or branch.
-```
-
-_See code: [src/commands/asset/create.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/create.ts)_
-
-## `knock asset upload`
-
-Request a time-limited URL to upload an asset file.
-
-```
-USAGE
-  $ knock asset upload --mime-type image/jpeg|image/png|image/gif --content-length <value> [--json]
-    [--service-token <value>] [--filename <value>]
-
-FLAGS
-  --content-length=<value>  (required) The file size in bytes. Maximum is 5000000. The upload URL is signed for this
-                            length.
-  --filename=<value>        The display name to echo back. The upload request does not store it. Send it again when
-                            creating the asset.
-  --mime-type=<option>      (required) The MIME type of the file. One of image/jpeg, image/png, or image/gif.
-                            <options: image/jpeg|image/png|image/gif>
-  --service-token=<value>   The service token to authenticate with.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Request a time-limited URL to upload an asset file.
-
-
-  Requests a signed URL for a direct upload. This command does not send the file
-  bytes. PUT the file to the returned URL with the same Content-Type and
-  Content-Length, then record it with `knock asset create`.
+  Pass - to read the file from stdin. Stdin requires --filename.
 
   Assets are account-wide. This command does not take an environment or branch.
 ```
 
-_See code: [src/commands/asset/upload.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/upload.ts)_
+_See code: [src/commands/asset/cp.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/cp.ts)_
 
 ## `knock audience archive AUDIENCEKEY`
 

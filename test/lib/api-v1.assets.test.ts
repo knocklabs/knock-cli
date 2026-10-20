@@ -118,6 +118,37 @@ describe("lib/api-v1 assets", () => {
     });
   });
 
+  describe("putAssetBytes", () => {
+    it("PUTs the bytes to the signed URL with the signed headers and no bearer token", async () => {
+      const bytes = Buffer.from("GIF89a!", "ascii");
+      let contentType = "";
+      let contentLength = "";
+      let authorization = "";
+
+      const scope = nock("https://account-assets.example")
+        .put("/acc_123/proj_123/file.png")
+        .query({ "X-Amz-Signature": "sig" })
+        .reply(function (this: { req: { headers: Record<string, string> } }) {
+          contentType = this.req.headers["content-type"];
+          contentLength = this.req.headers["content-length"];
+          authorization = this.req.headers.authorization;
+          return [200, ""];
+        });
+
+      const apiV1 = new KnockApiV1(factory.sessionContext(), dummyConfig);
+      const resp = await apiV1.putAssetBytes(
+        { ...upload, content_length: bytes.length, mime_type: "image/gif" },
+        bytes,
+      );
+
+      expect(scope.isDone()).to.equal(true);
+      expect(resp.status).to.equal(200);
+      expect(contentType).to.equal("image/gif");
+      expect(contentLength).to.equal(String(bytes.length));
+      expect(authorization).to.equal(undefined);
+    });
+  });
+
   describe("archiveAsset", () => {
     it("DELETEs /v1/assets/:asset_id with no query params", async () => {
       let path = "";
