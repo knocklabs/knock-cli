@@ -7,8 +7,13 @@ type CommitResourceType = Extract<
   string
 >;
 
-// TODO Remove this once hidden option is removed from message types / guides
-export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
+// TODO Remove this once hidden option is removed from message types / guides.
+// Broadcasts are excluded here so they stay off bulk `knock pull` / `knock push`.
+// They are managed by their own commands and are not committed.
+export type NonHiddenResourceType = Exclude<
+  ResourceType,
+  "reusable_step" | "broadcast"
+>;
 
 /**
  * Resource types that support empty commits via --allow-empty.
