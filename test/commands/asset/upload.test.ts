@@ -9,7 +9,7 @@ import nock from "nock";
 const API_ORIGIN = "https://control.knock.app";
 const STORAGE_ORIGIN = "https://account-assets.example";
 const STORAGE_PATH = "/acc_123/proj_123/file.png";
-const dir = path.join(os.tmpdir(), "knock-asset-cp");
+const dir = path.join(os.tmpdir(), "knock-asset-upload");
 
 const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
 const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
@@ -72,7 +72,7 @@ const mockCopy = (bytes: Buffer, filename: string, mimeType: string) => {
   };
 };
 
-describe("commands/asset/cp", () => {
+describe("commands/asset/upload", () => {
   const originalStdin = process.stdin;
 
   beforeEach(async () => {
@@ -94,14 +94,14 @@ describe("commands/asset/cp", () => {
   describe("given no file", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["asset cp"])
+      .command(["asset upload"])
       .exit(2)
       .it("exits with status 2");
   });
 
   describe("given no service token", () => {
     test
-      .command(["asset cp", "logo.png"])
+      .command(["asset upload", "logo.png"])
       .catch(/No token found/)
       .it("refuses to run");
   });
@@ -109,7 +109,7 @@ describe("commands/asset/cp", () => {
   describe("given an environment flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["asset cp", "logo.png", "--environment", "development"])
+      .command(["asset upload", "logo.png", "--environment", "development"])
       .exit(2)
       .it("rejects --environment because assets are account-wide");
   });
@@ -117,7 +117,12 @@ describe("commands/asset/cp", () => {
   describe("given a branch flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["asset cp", "logo.png", "--branch", "my-feature-branch-123"])
+      .command([
+        "asset upload",
+        "logo.png",
+        "--branch",
+        "my-feature-branch-123",
+      ])
       .exit(2)
       .it("rejects --branch because assets are account-wide");
   });
@@ -130,7 +135,7 @@ describe("commands/asset/cp", () => {
         mockCopy(png, "logo.png", "image/png");
       })
       .stdout()
-      .command(["asset cp", path.join(dir, "logo.png"), "--json"])
+      .command(["asset upload", path.join(dir, "logo.png"), "--json"])
       .it("uploads the bytes and prints the created asset", (ctx) => {
         expect(nock.isDone()).to.equal(true);
         const parsed = JSON.parse(ctx.stdout);
@@ -152,7 +157,7 @@ describe("commands/asset/cp", () => {
         mockCopy(png, "logo.png", "image/png");
       })
       .stdout()
-      .command(["asset cp", path.join(dir, "logo.png")])
+      .command(["asset upload", path.join(dir, "logo.png")])
       .it("prints the asset id and url", (ctx) => {
         expect(nock.isDone()).to.equal(true);
         expect(ctx.stdout).to.contain(asset.id);
@@ -170,7 +175,7 @@ describe("commands/asset/cp", () => {
       })
       .stdout()
       .command([
-        "asset cp",
+        "asset upload",
         path.join(dir, "logo.png"),
         "--filename",
         "Brand logo.png",
@@ -188,7 +193,7 @@ describe("commands/asset/cp", () => {
       .do(async () => {
         await fs.writeFile(path.join(dir, "logo.png"), jpeg);
       })
-      .command(["asset cp", path.join(dir, "logo.png")])
+      .command(["asset upload", path.join(dir, "logo.png")])
       .catch(/extension says image\/png but the bytes are image\/jpeg/)
       .it("does not request an upload");
   });
@@ -202,7 +207,7 @@ describe("commands/asset/cp", () => {
       })
       .stdout()
       .command([
-        "asset cp",
+        "asset upload",
         path.join(dir, "logo.png"),
         "--mime-type",
         "image/jpeg",
@@ -216,7 +221,7 @@ describe("commands/asset/cp", () => {
   describe("given an unsupported mime type", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["asset cp", "logo.png", "--mime-type", "image/webp"])
+      .command(["asset upload", "logo.png", "--mime-type", "image/webp"])
       .exit(2)
       .it("rejects mime types outside the spec");
   });
@@ -227,7 +232,7 @@ describe("commands/asset/cp", () => {
       .do(async () => {
         await fs.writeFile(path.join(dir, "logo.png"), Buffer.alloc(0));
       })
-      .command(["asset cp", path.join(dir, "logo.png")])
+      .command(["asset upload", path.join(dir, "logo.png")])
       .catch(/The file is empty/)
       .it("rejects the file before calling the api");
   });
@@ -240,7 +245,7 @@ describe("commands/asset/cp", () => {
         await fs.ftruncate(fd, 5_000_001);
         await fs.close(fd);
       })
-      .command(["asset cp", path.join(dir, "big.png")])
+      .command(["asset upload", path.join(dir, "big.png")])
       .catch((error: Error) => {
         expect(error.message).to.contain("5000001");
         expect(error.message).to.contain("maximum");
@@ -251,7 +256,7 @@ describe("commands/asset/cp", () => {
   describe("given a missing file", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["asset cp", path.join(dir, "missing.png")])
+      .command(["asset upload", path.join(dir, "missing.png")])
       .catch(/No such file/)
       .it("reports the missing path");
   });
@@ -259,7 +264,7 @@ describe("commands/asset/cp", () => {
   describe("given a directory", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["asset cp", dir])
+      .command(["asset upload", dir])
       .catch(/is not a file/)
       .it("rejects the directory");
   });
@@ -267,8 +272,8 @@ describe("commands/asset/cp", () => {
   describe("given stdin without --filename", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["asset cp", "-"])
-      .catch(/Pass --filename when copying from stdin/)
+      .command(["asset upload", "-"])
+      .catch(/Pass --filename when uploading from stdin/)
       .it("requires a display name");
   });
 
@@ -287,8 +292,8 @@ describe("commands/asset/cp", () => {
         mockCopy(gif, "logo.gif", "image/gif");
       })
       .stdout()
-      .command(["asset cp", "-", "--filename", "logo.gif", "--json"])
-      .it("copies the piped bytes", (ctx) => {
+      .command(["asset upload", "-", "--filename", "logo.gif", "--json"])
+      .it("uploads the piped bytes", (ctx) => {
         expect(nock.isDone()).to.equal(true);
         const parsed = JSON.parse(ctx.stdout);
         expect(parsed.id).to.equal(asset.id);
@@ -306,7 +311,7 @@ describe("commands/asset/cp", () => {
           .post("/v1/assets/uploads")
           .reply(201, uploadFor(Buffer.alloc(4), "logo.png", "image/png"));
       })
-      .command(["asset cp", path.join(dir, "logo.png")])
+      .command(["asset upload", path.join(dir, "logo.png")])
       .catch(/signed for 4 bytes/)
       .it("does not upload or create the asset");
   });
@@ -322,7 +327,7 @@ describe("commands/asset/cp", () => {
         nock(STORAGE_ORIGIN).put(STORAGE_PATH).query(true).reply(403, "");
         nock(API_ORIGIN).post("/v1/assets").reply(201, asset);
       })
-      .command(["asset cp", path.join(dir, "logo.png")])
+      .command(["asset upload", path.join(dir, "logo.png")])
       .catch(/Upload failed \(403\)/)
       .it("does not create the asset", () => {
         expect(
@@ -344,7 +349,7 @@ describe("commands/asset/cp", () => {
           message: "The file must already be uploaded",
         });
       })
-      .command(["asset cp", path.join(dir, "logo.png")])
+      .command(["asset upload", path.join(dir, "logo.png")])
       .catch(/The file must already be uploaded/)
       .it("shows the api error and prints no asset");
   });

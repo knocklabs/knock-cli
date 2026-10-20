@@ -15,8 +15,8 @@ import BaseCommand from "@/lib/base-command";
 import { formatDate } from "@/lib/helpers/date";
 import { spinner } from "@/lib/helpers/ux";
 
-export default class AssetCp extends BaseCommand<typeof AssetCp> {
-  static summary = "Copy a file into the account as an asset.";
+export default class AssetUpload extends BaseCommand<typeof AssetUpload> {
+  static summary = "Upload a file into the account as an asset.";
 
   static description = `
 Reads a file, uploads the bytes, and records the asset.
@@ -31,7 +31,7 @@ Assets are account-wide. This command does not take an environment or branch.
   static args = {
     file: Args.string({
       required: true,
-      description: "Path to the file to copy, or - to read stdin.",
+      description: "Path to the file to upload, or - to read stdin.",
     }),
   };
 
@@ -54,7 +54,7 @@ Assets are account-wide. This command does not take an environment or branch.
     const bytes = await this.readBytes(source);
     const mimeType = this.mimeType(source, bytes);
 
-    spinner.start(`‣ Copying \`${filename}\``);
+    spinner.start(`‣ Uploading \`${filename}\``);
 
     const asset = await this.apiV1.copyAsset({ bytes, filename, mimeType });
 
@@ -76,7 +76,7 @@ Assets are account-wide. This command does not take an environment or branch.
     }
 
     if (source === "-") {
-      this.error("Pass --filename when copying from stdin.");
+      this.error("Pass --filename when uploading from stdin.");
     }
 
     return path.basename(source);
@@ -154,7 +154,7 @@ Assets are account-wide. This command does not take an environment or branch.
   private render(asset: Asset, filename: string): void {
     const name = asset.filename ?? filename;
 
-    this.log(`‣ Copied \`${name}\` (\`${asset.id}\`).`);
+    this.log(`‣ Uploaded \`${name}\` (\`${asset.id}\`).`);
     this.log(`  URL: ${asset.url}`);
     this.log(`  MIME type: ${asset.mime_type}`);
     this.log(`  Type: ${asset.asset_type}`);

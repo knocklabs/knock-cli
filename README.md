@@ -28,7 +28,7 @@ USAGE
 
 <!-- commands -->
 * [`knock asset archive ASSETID`](#knock-asset-archive-assetid)
-* [`knock asset cp FILE`](#knock-asset-cp-file)
+* [`knock asset upload FILE`](#knock-asset-upload-file)
 * [`knock audience archive AUDIENCEKEY`](#knock-audience-archive-audiencekey)
 * [`knock audience get AUDIENCEKEY`](#knock-audience-get-audiencekey)
 * [`knock audience list`](#knock-audience-list)
@@ -152,17 +152,17 @@ DESCRIPTION
 
 _See code: [src/commands/asset/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/archive.ts)_
 
-## `knock asset cp FILE`
+## `knock asset upload FILE`
 
-Copy a file into the account as an asset.
+Upload a file into the account as an asset.
 
 ```
 USAGE
-  $ knock asset cp FILE [--json] [--service-token <value>] [--filename <value>] [--mime-type
+  $ knock asset upload FILE [--json] [--service-token <value>] [--filename <value>] [--mime-type
     image/jpeg|image/png|image/gif]
 
 ARGUMENTS
-  FILE  Path to the file to copy, or - to read stdin.
+  FILE  Path to the file to upload, or - to read stdin.
 
 FLAGS
   --filename=<value>       Display name for the asset. Defaults to the file's basename. Required when reading stdin.
@@ -174,7 +174,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  Copy a file into the account as an asset.
+  Upload a file into the account as an asset.
 
 
   Reads a file, uploads the bytes, and records the asset.
@@ -184,7 +184,7 @@ DESCRIPTION
   Assets are account-wide. This command does not take an environment or branch.
 ```
 
-_See code: [src/commands/asset/cp.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/cp.ts)_
+_See code: [src/commands/asset/upload.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/upload.ts)_
 
 ## `knock audience archive AUDIENCEKEY`
 
