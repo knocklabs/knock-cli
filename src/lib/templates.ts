@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 
 const DEFAULT_ORG = "knocklabs";
 const DEFAULT_REPO = "templates";
+const DOWNLOAD_TIMEOUT_MS = 20_000;
 
 const TEMP_DIR_PREFIX = "knock-cli-templates";
 
@@ -62,6 +63,31 @@ function buildSource(
   return `${base}#${branch}`;
 }
 
+const cloneWithTimeout = (
+  emitter: ReturnType<typeof degit>,
+  dest: string,
+): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(
+        new Error(
+          `Timed out downloading template after ${DOWNLOAD_TIMEOUT_MS}ms`,
+        ),
+      );
+    }, DOWNLOAD_TIMEOUT_MS);
+
+    emitter.clone(dest).then(
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+
 export async function downloadTemplate(
   templateString: string,
 ): Promise<string> {
@@ -85,7 +111,7 @@ export async function downloadTemplate(
       verbose: false,
     });
 
-    await emitter.clone(tempDir);
+    await cloneWithTimeout(emitter, tempDir);
 
     return tempDir;
   } catch (error) {

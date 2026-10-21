@@ -31,6 +31,7 @@ import * as Schema from "@/lib/marshal/schema";
 import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Source from "@/lib/marshal/source";
 import * as Translation from "@/lib/marshal/translation";
+import * as Variable from "@/lib/marshal/variable";
 import * as Workflow from "@/lib/marshal/workflow";
 
 import { SessionContext } from "./types";
@@ -566,6 +567,14 @@ export default class ApiV1 {
     return this.get(`/sources/${args.sourceKey}`, { params });
   }
 
+  async listVariables(
+    query: ListVariablesParams = {},
+  ): Promise<AxiosResponse<ListVariableResp>> {
+    const params = prune({ ...query });
+
+    return this.get("/variables", { params });
+  }
+
   async validateGuide(
     { flags }: Props,
     guide: Guide.GuideInput,
@@ -1041,6 +1050,16 @@ export type ActivateGuideResp = {
 
 export type ListSourceResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<Source.SourceData<A>>;
+
+export type ListVariablesParams = {
+  environment?: string;
+  type?: string;
+  after?: string;
+  before?: string;
+  limit?: number;
+};
+
+export type ListVariableResp = PaginatedResp<Variable.Variable>;
 
 export type GetSourceResp<A extends MaybeWithAnnotation = unknown> =
   Source.SourceData<A>;

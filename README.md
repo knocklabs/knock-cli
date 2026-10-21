@@ -111,6 +111,7 @@ USAGE
 * [`knock translation pull [TRANSLATIONREF]`](#knock-translation-pull-translationref)
 * [`knock translation push [TRANSLATIONREF]`](#knock-translation-push-translationref)
 * [`knock translation validate [TRANSLATIONREF]`](#knock-translation-validate-translationref)
+* [`knock variable list`](#knock-variable-list)
 * [`knock whoami`](#knock-whoami)
 * [`knock workflow activate WORKFLOWKEY`](#knock-workflow-activate-workflowkey)
 * [`knock workflow generate-types`](#knock-workflow-generate-types)
@@ -1961,6 +1962,32 @@ FLAGS
 ```
 
 _See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/translation/validate.ts)_
+
+## `knock variable list`
+
+Display variables in the project, or the value that applies in one environment.
+
+```
+USAGE
+  $ knock variable list [--json] [--service-token <value>] [--environment <value>] [--type public|secret] [--branch
+    <value>] [--after <value>] [--before <value>] [--limit <value>]
+
+FLAGS
+  --after=<value>          The cursor after which to fetch the next page.
+  --before=<value>         The cursor before which to fetch the previous page.
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --environment=<value>    Show only the value that applies in this environment: the override when one is set, otherwise
+                           the default.
+  --limit=<value>          The total number of entries to fetch per page.
+  --service-token=<value>  The service token to authenticate with.
+  --type=<option>          Filter variables by type.
+                           <options: public|secret>
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/list.ts)_
 
 ## `knock whoami`
 

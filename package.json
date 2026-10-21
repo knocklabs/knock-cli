@@ -108,6 +108,9 @@
       "source": {
         "description": "Manage sources."
       },
+      "variable": {
+        "description": "Manage variables."
+      },
       "workflow": {
         "description": "Manage notification workflows."
       },
