@@ -114,6 +114,7 @@ USAGE
 * [`knock variable delete KEY`](#knock-variable-delete-key)
 * [`knock variable get KEY`](#knock-variable-get-key)
 * [`knock variable list`](#knock-variable-list)
+* [`knock variable new`](#knock-variable-new)
 * [`knock variable pull [KEY]`](#knock-variable-pull-key)
 * [`knock variable push [KEY]`](#knock-variable-push-key)
 * [`knock variable set KEY`](#knock-variable-set-key)
@@ -1989,7 +1990,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/delete.ts)_
+_See code: [src/commands/variable/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/delete.ts)_
 
 ## `knock variable get KEY`
 
@@ -2011,7 +2012,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/get.ts)_
+_See code: [src/commands/variable/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/get.ts)_
 
 ## `knock variable list`
 
@@ -2037,7 +2038,31 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/list.ts)_
+_See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/list.ts)_
+
+## `knock variable new`
+
+Add a variable entry to variables.json.
+
+```
+USAGE
+  $ knock variable new --key <value> --type public|secret [--service-token <value>] [--value <value>]
+    [--description <value>] [--knock-dir <value>] [--force] [--push] [--branch <value>]
+
+FLAGS
+  --branch=<value>          Rejected. Variables are not branch-scoped.
+  --description=<value>     Variable description.
+  --force                   Skip the confirmation prompt when creating the file.
+  --key=<value>             (required) Variable key.
+  --knock-dir=<value>       Knock directory used to locate variables.json.
+  --push                    Push the new entry after writing it.
+  --service-token=<value>   The service token to authenticate with.
+  --type=<option>           (required) public or secret.
+                            <options: public|secret>
+  --value=<value>           Default value. Public variables only.
+```
+
+_See code: [src/commands/variable/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/new.ts)_
 
 ## `knock variable pull [KEY]`
 
@@ -2059,7 +2084,7 @@ FLAGS
   --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/pull.ts)_
+_See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/pull.ts)_
 
 ## `knock variable push [KEY]`
 
@@ -2081,7 +2106,7 @@ FLAGS
   --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/push.ts)_
+_See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/push.ts)_
 
 ## `knock variable set KEY`
 
@@ -2119,7 +2144,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/set.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/set.ts)_
+_See code: [src/commands/variable/set.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/set.ts)_
 
 ## `knock whoami`
 
