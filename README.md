@@ -111,6 +111,7 @@ USAGE
 * [`knock translation pull [TRANSLATIONREF]`](#knock-translation-pull-translationref)
 * [`knock translation push [TRANSLATIONREF]`](#knock-translation-push-translationref)
 * [`knock translation validate [TRANSLATIONREF]`](#knock-translation-validate-translationref)
+* [`knock variable get KEY`](#knock-variable-get-key)
 * [`knock variable list`](#knock-variable-list)
 * [`knock whoami`](#knock-whoami)
 * [`knock workflow activate WORKFLOWKEY`](#knock-workflow-activate-workflowkey)
@@ -1962,6 +1963,28 @@ FLAGS
 ```
 
 _See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/translation/validate.ts)_
+
+## `knock variable get KEY`
+
+Display a variable and its environment overrides.
+
+```
+USAGE
+  $ knock variable get KEY [--json] [--service-token <value>] [--environment <value>] [--branch <value>]
+
+ARGUMENTS
+  KEY  The variable key.
+
+FLAGS
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --environment=<value>    Rejected. Get always shows the default and every environment override.
+  --service-token=<value>  The service token to authenticate with.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/variable/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/get.ts)_
 
 ## `knock variable list`
 
