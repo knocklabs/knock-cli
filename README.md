@@ -114,6 +114,7 @@ USAGE
 * [`knock variable delete KEY`](#knock-variable-delete-key)
 * [`knock variable get KEY`](#knock-variable-get-key)
 * [`knock variable list`](#knock-variable-list)
+* [`knock variable set KEY`](#knock-variable-set-key)
 * [`knock whoami`](#knock-whoami)
 * [`knock workflow activate WORKFLOWKEY`](#knock-workflow-activate-workflowkey)
 * [`knock workflow generate-types`](#knock-workflow-generate-types)
@@ -2035,6 +2036,44 @@ GLOBAL FLAGS
 ```
 
 _See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/list.ts)_
+
+## `knock variable set KEY`
+
+Create or update a variable.
+
+```
+USAGE
+  $ knock variable set KEY [--json] [--service-token <value>] [--type public|secret] [--value <value>]
+    [--value-file <value>] [--value-stdin] [--unset-value] [--description <value>] [--unset-description]
+    [--environment-value <value>...] [--environment-value-file <value>...] [--unset-environment <value>...]
+    [--environment <value>] [--branch <value>]
+
+ARGUMENTS
+  KEY  The variable key.
+
+FLAGS
+  --branch=<value>                     Rejected. Variables are not branch-scoped.
+  --description=<value>                Variable description.
+  --environment=<value>                Rejected. Use --environment-value, --environment-value-file, or
+                                       --unset-environment.
+  --environment-value=<value>...       Set one environment override as <slug>=<value>. Repeatable. Public variables
+                                       only.
+  --environment-value-file=<value>...  Set one environment override from a file as <slug>=<path>. Repeatable.
+  --service-token=<value>              The service token to authenticate with.
+  --type=<option>                      public or secret. Required when creating a variable.
+                                       <options: public|secret>
+  --unset-description                  Clear the description.
+  --unset-environment=<value>...       Clear one environment override. Repeatable.
+  --unset-value                        Clear the default value.
+  --value=<value>                      Default value. Public variables only.
+  --value-file=<value>                 Read the default value from a file. The bytes are not trimmed.
+  --value-stdin                        Read the default value from stdin until EOF. The bytes are not trimmed.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+```
+
+_See code: [src/commands/variable/set.ts](https://github.com/knocklabs/knock-cli/blob/v1.3.0/src/commands/variable/set.ts)_
 
 ## `knock whoami`
 
