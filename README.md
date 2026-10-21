@@ -16,7 +16,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/1.4.0 linux-x64 node-v22.14.0
+@knocklabs/cli/1.5.0 linux-x64 node-v22.23.3
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -157,7 +157,7 @@ DESCRIPTION
   Assets are account-wide. This command does not take an environment or branch.
 ```
 
-_See code: [src/commands/asset/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/archive.ts)_
+_See code: [src/commands/asset/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/asset/archive.ts)_
 
 ## `knock asset upload FILE`
 
@@ -191,7 +191,7 @@ DESCRIPTION
   Assets are account-wide. This command does not take an environment or branch.
 ```
 
-_See code: [src/commands/asset/upload.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/asset/upload.ts)_
+_See code: [src/commands/asset/upload.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/asset/upload.ts)_
 
 ## `knock audience archive AUDIENCEKEY`
 
@@ -218,7 +218,7 @@ DESCRIPTION
   Use this command with caution.
 ```
 
-_See code: [src/commands/audience/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/audience/archive.ts)_
+_See code: [src/commands/audience/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/audience/archive.ts)_
 
 ## `knock audience get AUDIENCEKEY`
 
@@ -239,7 +239,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/audience/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/audience/get.ts)_
+_See code: [src/commands/audience/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/audience/get.ts)_
 
 ## `knock audience list`
 
@@ -263,7 +263,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/audience/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/audience/list.ts)_
+_See code: [src/commands/audience/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/audience/list.ts)_
 
 ## `knock audience new`
 
@@ -287,7 +287,7 @@ FLAGS
       --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/audience/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/audience/new.ts)_
+_See code: [src/commands/audience/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/audience/new.ts)_
 
 ## `knock audience open AUDIENCEKEY`
 
@@ -303,7 +303,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/audience/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/audience/open.ts)_
+_See code: [src/commands/audience/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/audience/open.ts)_
 
 ## `knock audience pull [AUDIENCEKEY]`
 
@@ -324,7 +324,7 @@ FLAGS
   --service-token=<value>     The service token to authenticate with.
 ```
 
-_See code: [src/commands/audience/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/audience/pull.ts)_
+_See code: [src/commands/audience/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/audience/pull.ts)_
 
 ## `knock audience push [AUDIENCEKEY]`
 
@@ -348,7 +348,7 @@ FLAGS
       --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/audience/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/audience/push.ts)_
+_See code: [src/commands/audience/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/audience/push.ts)_
 
 ## `knock audience validate [AUDIENCEKEY]`
 
@@ -367,7 +367,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/audience/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/audience/validate.ts)_
+_See code: [src/commands/audience/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/audience/validate.ts)_
 
 ## `knock branch create [SLUG]`
 
@@ -387,7 +387,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/branch/create.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/branch/create.ts)_
+_See code: [src/commands/branch/create.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/branch/create.ts)_
 
 ## `knock branch delete SLUG`
 
@@ -405,7 +405,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/branch/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/branch/delete.ts)_
+_See code: [src/commands/branch/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/branch/delete.ts)_
 
 ## `knock branch exit`
 
@@ -419,7 +419,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/branch/exit.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/branch/exit.ts)_
+_See code: [src/commands/branch/exit.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/branch/exit.ts)_
 
 ## `knock branch list`
 
@@ -439,7 +439,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/branch/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/branch/list.ts)_
+_See code: [src/commands/branch/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/branch/list.ts)_
 
 ## `knock branch merge SLUG`
 
@@ -458,7 +458,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/branch/merge.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/branch/merge.ts)_
+_See code: [src/commands/branch/merge.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/branch/merge.ts)_
 
 ## `knock branch rebase SLUG`
 
@@ -479,7 +479,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/branch/rebase.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/branch/rebase.ts)_
+_See code: [src/commands/branch/rebase.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/branch/rebase.ts)_
 
 ## `knock branch switch SLUG`
 
@@ -498,7 +498,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/branch/switch.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/branch/switch.ts)_
+_See code: [src/commands/branch/switch.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/branch/switch.ts)_
 
 ## `knock channel list`
 
@@ -515,7 +515,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/channel/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/channel/list.ts)_
+_See code: [src/commands/channel/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/channel/list.ts)_
 
 ## `knock commit`
 
@@ -543,7 +543,7 @@ FLAGS
       --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/commit/index.ts)_
+_See code: [src/commands/commit/index.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/commit/index.ts)_
 
 ## `knock commit get ID`
 
@@ -560,7 +560,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/commit/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/commit/get.ts)_
+_See code: [src/commands/commit/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/commit/get.ts)_
 
 ## `knock commit list`
 
@@ -593,7 +593,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/commit/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/commit/list.ts)_
+_See code: [src/commands/commit/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/commit/list.ts)_
 
 ## `knock commit promote`
 
@@ -610,7 +610,7 @@ FLAGS
   --to=<value>             The destination environment to promote all changes from the preceding environment.
 ```
 
-_See code: [src/commands/commit/promote.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/commit/promote.ts)_
+_See code: [src/commands/commit/promote.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/commit/promote.ts)_
 
 ## `knock environment list`
 
@@ -627,7 +627,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/environment/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/environment/list.ts)_
+_See code: [src/commands/environment/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/environment/list.ts)_
 
 ## `knock goal archive GOALKEY`
 
@@ -653,7 +653,7 @@ DESCRIPTION
   workflow, guide, or broadcast is still attached to the goal.
 ```
 
-_See code: [src/commands/goal/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/archive.ts)_
+_See code: [src/commands/goal/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/archive.ts)_
 
 ## `knock goal clone GOALKEY NEWGOALKEY`
 
@@ -676,7 +676,7 @@ FLAGS
   --service-token=<value>     The service token to authenticate with.
 ```
 
-_See code: [src/commands/goal/clone.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/clone.ts)_
+_See code: [src/commands/goal/clone.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/clone.ts)_
 
 ## `knock goal get GOALKEY`
 
@@ -694,7 +694,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/goal/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/get.ts)_
+_See code: [src/commands/goal/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/get.ts)_
 
 ## `knock goal list`
 
@@ -716,7 +716,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/goal/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/list.ts)_
+_See code: [src/commands/goal/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/list.ts)_
 
 ## `knock goal new GOALKEY`
 
@@ -733,7 +733,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/goal/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/new.ts)_
+_See code: [src/commands/goal/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/new.ts)_
 
 ## `knock goal open GOALKEY`
 
@@ -748,7 +748,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/goal/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/open.ts)_
+_See code: [src/commands/goal/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/open.ts)_
 
 ## `knock goal pull [GOALKEY]`
 
@@ -767,7 +767,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/goal/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/pull.ts)_
+_See code: [src/commands/goal/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/pull.ts)_
 
 ## `knock goal push [GOALKEY]`
 
@@ -784,7 +784,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/goal/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/push.ts)_
+_See code: [src/commands/goal/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/push.ts)_
 
 ## `knock goal validate [GOALKEY]`
 
@@ -801,7 +801,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/goal/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/goal/validate.ts)_
+_See code: [src/commands/goal/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/goal/validate.ts)_
 
 ## `knock guide activate GUIDEKEY`
 
@@ -832,7 +832,7 @@ DESCRIPTION
   or deactivated at a later time using the --from and --until flags.
 ```
 
-_See code: [src/commands/guide/activate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/activate.ts)_
+_See code: [src/commands/guide/activate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/activate.ts)_
 
 ## `knock guide generate-types`
 
@@ -855,7 +855,7 @@ DESCRIPTION
   Generate types for all guides in an environment and write them to a file.
 ```
 
-_See code: [src/commands/guide/generate-types.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/generate-types.ts)_
+_See code: [src/commands/guide/generate-types.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/generate-types.ts)_
 
 ## `knock guide get GUIDEKEY`
 
@@ -876,7 +876,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/guide/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/get.ts)_
+_See code: [src/commands/guide/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/get.ts)_
 
 ## `knock guide list`
 
@@ -900,7 +900,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/guide/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/list.ts)_
+_See code: [src/commands/guide/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/list.ts)_
 
 ## `knock guide new`
 
@@ -924,7 +924,7 @@ FLAGS
       --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/guide/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/new.ts)_
+_See code: [src/commands/guide/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/new.ts)_
 
 ## `knock guide open GUIDEKEY`
 
@@ -940,7 +940,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/guide/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/open.ts)_
+_See code: [src/commands/guide/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/open.ts)_
 
 ## `knock guide pull [GUIDEKEY]`
 
@@ -961,7 +961,7 @@ FLAGS
   --service-token=<value>     The service token to authenticate with.
 ```
 
-_See code: [src/commands/guide/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/pull.ts)_
+_See code: [src/commands/guide/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/pull.ts)_
 
 ## `knock guide push [GUIDEKEY]`
 
@@ -987,7 +987,7 @@ FLAGS
       --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/guide/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/push.ts)_
+_See code: [src/commands/guide/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/push.ts)_
 
 ## `knock guide validate [GUIDEKEY]`
 
@@ -1006,7 +1006,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/guide/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/guide/validate.ts)_
+_See code: [src/commands/guide/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/guide/validate.ts)_
 
 ## `knock help [COMMAND]`
 
@@ -1046,7 +1046,7 @@ DESCRIPTION
   resources directory.
 ```
 
-_See code: [src/commands/init.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/init.ts)_
 
 ## `knock layout get EMAILLAYOUTKEY`
 
@@ -1067,7 +1067,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/layout/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/layout/get.ts)_
+_See code: [src/commands/layout/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/layout/get.ts)_
 
 ## `knock layout list`
 
@@ -1091,7 +1091,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/layout/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/layout/list.ts)_
+_See code: [src/commands/layout/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/layout/list.ts)_
 
 ## `knock layout new`
 
@@ -1113,7 +1113,7 @@ FLAGS
       --template=<value>       The template to use for the email layout. Should be `email-layouts/{key}`.
 ```
 
-_See code: [src/commands/layout/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/layout/new.ts)_
+_See code: [src/commands/layout/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/layout/new.ts)_
 
 ## `knock layout open LAYOUTKEY`
 
@@ -1129,7 +1129,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/layout/open.ts)_
+_See code: [src/commands/layout/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/layout/open.ts)_
 
 ## `knock layout pull [EMAILLAYOUTKEY]`
 
@@ -1150,7 +1150,7 @@ FLAGS
   --service-token=<value>     The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/layout/pull.ts)_
+_See code: [src/commands/layout/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/layout/pull.ts)_
 
 ## `knock layout push [EMAILLAYOUTKEY]`
 
@@ -1176,7 +1176,7 @@ FLAGS
       --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/layout/push.ts)_
+_See code: [src/commands/layout/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/layout/push.ts)_
 
 ## `knock layout validate [EMAILLAYOUTKEY]`
 
@@ -1195,7 +1195,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/layout/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/layout/validate.ts)_
+_See code: [src/commands/layout/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/layout/validate.ts)_
 
 ## `knock login`
 
@@ -1209,7 +1209,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/login.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/login.ts)_
 
 ## `knock logout`
 
@@ -1223,7 +1223,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/logout.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/logout.ts)_
+_See code: [src/commands/logout.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/logout.ts)_
 
 ## `knock message-type get MESSAGETYPEKEY`
 
@@ -1244,7 +1244,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/message-type/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/message-type/get.ts)_
+_See code: [src/commands/message-type/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/message-type/get.ts)_
 
 ## `knock message-type list`
 
@@ -1268,7 +1268,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/message-type/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/message-type/list.ts)_
+_See code: [src/commands/message-type/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/message-type/list.ts)_
 
 ## `knock message-type new`
 
@@ -1290,7 +1290,7 @@ FLAGS
       --template=<value>       The template to use for the message type. Should be `message-types/{key}`.
 ```
 
-_See code: [src/commands/message-type/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/message-type/new.ts)_
+_See code: [src/commands/message-type/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/message-type/new.ts)_
 
 ## `knock message-type open MESSAGETYPEKEY`
 
@@ -1306,7 +1306,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/message-type/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/message-type/open.ts)_
+_See code: [src/commands/message-type/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/message-type/open.ts)_
 
 ## `knock message-type pull [MESSAGETYPEKEY]`
 
@@ -1327,7 +1327,7 @@ FLAGS
   --service-token=<value>      The service token to authenticate with.
 ```
 
-_See code: [src/commands/message-type/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/message-type/pull.ts)_
+_See code: [src/commands/message-type/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/message-type/pull.ts)_
 
 ## `knock message-type push [MESSAGETYPEKEY]`
 
@@ -1353,7 +1353,7 @@ FLAGS
       --service-token=<value>      The service token to authenticate with.
 ```
 
-_See code: [src/commands/message-type/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/message-type/push.ts)_
+_See code: [src/commands/message-type/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/message-type/push.ts)_
 
 ## `knock message-type validate [MESSAGETYPEKEY]`
 
@@ -1372,7 +1372,7 @@ FLAGS
   --service-token=<value>      The service token to authenticate with.
 ```
 
-_See code: [src/commands/message-type/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/message-type/validate.ts)_
+_See code: [src/commands/message-type/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/message-type/validate.ts)_
 
 ## `knock partial get PARTIALKEY`
 
@@ -1393,7 +1393,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/partial/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/partial/get.ts)_
+_See code: [src/commands/partial/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/partial/get.ts)_
 
 ## `knock partial list`
 
@@ -1417,7 +1417,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/partial/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/partial/list.ts)_
+_See code: [src/commands/partial/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/partial/list.ts)_
 
 ## `knock partial new`
 
@@ -1443,7 +1443,7 @@ FLAGS
                                with --type.
 ```
 
-_See code: [src/commands/partial/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/partial/new.ts)_
+_See code: [src/commands/partial/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/partial/new.ts)_
 
 ## `knock partial open PARTIALKEY`
 
@@ -1459,7 +1459,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/partial/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/partial/open.ts)_
+_See code: [src/commands/partial/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/partial/open.ts)_
 
 ## `knock partial pull [PARTIALKEY]`
 
@@ -1480,7 +1480,7 @@ FLAGS
   --service-token=<value>     The service token to authenticate with.
 ```
 
-_See code: [src/commands/partial/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/partial/pull.ts)_
+_See code: [src/commands/partial/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/partial/pull.ts)_
 
 ## `knock partial push [PARTIALKEY]`
 
@@ -1506,7 +1506,7 @@ FLAGS
       --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/partial/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/partial/push.ts)_
+_See code: [src/commands/partial/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/partial/push.ts)_
 
 ## `knock partial validate [PARTIALKEY]`
 
@@ -1525,7 +1525,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/partial/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/partial/validate.ts)_
+_See code: [src/commands/partial/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/partial/validate.ts)_
 
 ## `knock pull`
 
@@ -1545,7 +1545,7 @@ FLAGS
   --service-token=<value>     The service token to authenticate with.
 ```
 
-_See code: [src/commands/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/pull.ts)_
+_See code: [src/commands/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/pull.ts)_
 
 ## `knock push`
 
@@ -1570,7 +1570,7 @@ FLAGS
       --service-token=<value>   The service token to authenticate with.
 ```
 
-_See code: [src/commands/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/push.ts)_
+_See code: [src/commands/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/push.ts)_
 
 ## `knock reusable-request archive REUSABLEREQUESTKEY`
 
@@ -1604,7 +1604,7 @@ DESCRIPTION
   is removed so a later push does not create the reusable request again.
 ```
 
-_See code: [src/commands/reusable-request/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/reusable-request/archive.ts)_
+_See code: [src/commands/reusable-request/archive.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/reusable-request/archive.ts)_
 
 ## `knock reusable-request get REUSABLEREQUESTKEY`
 
@@ -1625,7 +1625,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/reusable-request/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/reusable-request/get.ts)_
+_See code: [src/commands/reusable-request/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/reusable-request/get.ts)_
 
 ## `knock reusable-request list`
 
@@ -1649,7 +1649,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/reusable-request/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/reusable-request/list.ts)_
+_See code: [src/commands/reusable-request/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/reusable-request/list.ts)_
 
 ## `knock reusable-request new`
 
@@ -1676,7 +1676,7 @@ FLAGS
       --url=<value>            [default: https://example.com] The URL of the request.
 ```
 
-_See code: [src/commands/reusable-request/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/reusable-request/new.ts)_
+_See code: [src/commands/reusable-request/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/reusable-request/new.ts)_
 
 ## `knock reusable-request pull [REUSABLEREQUESTKEY]`
 
@@ -1700,7 +1700,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/reusable-request/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/reusable-request/pull.ts)_
+_See code: [src/commands/reusable-request/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/reusable-request/pull.ts)_
 
 ## `knock reusable-request push [REUSABLEREQUESTKEY]`
 
@@ -1729,7 +1729,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/reusable-request/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/reusable-request/push.ts)_
+_See code: [src/commands/reusable-request/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/reusable-request/push.ts)_
 
 ## `knock reusable-request validate [REUSABLEREQUESTKEY]`
 
@@ -1751,7 +1751,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/reusable-request/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/reusable-request/validate.ts)_
+_See code: [src/commands/reusable-request/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/reusable-request/validate.ts)_
 
 ## `knock schema pull [ITEMTYPE]`
 
@@ -1772,7 +1772,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/schema/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/schema/pull.ts)_
+_See code: [src/commands/schema/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/schema/pull.ts)_
 
 ## `knock schema push [ITEMTYPE]`
 
@@ -1792,7 +1792,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/schema/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/schema/push.ts)_
+_See code: [src/commands/schema/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/schema/push.ts)_
 
 ## `knock source get SOURCEKEY`
 
@@ -1810,7 +1810,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/source/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/source/get.ts)_
+_See code: [src/commands/source/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/source/get.ts)_
 
 ## `knock source list`
 
@@ -1832,7 +1832,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/source/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/source/list.ts)_
+_See code: [src/commands/source/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/source/list.ts)_
 
 ## `knock translation get TRANSLATIONREF`
 
@@ -1860,7 +1860,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/translation/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/translation/get.ts)_
+_See code: [src/commands/translation/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/translation/get.ts)_
 
 ## `knock translation list`
 
@@ -1884,7 +1884,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/translation/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/translation/list.ts)_
+_See code: [src/commands/translation/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/translation/list.ts)_
 
 ## `knock translation pull [TRANSLATIONREF]`
 
@@ -1912,7 +1912,7 @@ FLAGS
   --translations-dir=<value>  The target directory path to pull all translations into.
 ```
 
-_See code: [src/commands/translation/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/translation/pull.ts)_
+_See code: [src/commands/translation/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/translation/pull.ts)_
 
 ## `knock translation push [TRANSLATIONREF]`
 
@@ -1943,7 +1943,7 @@ FLAGS
       --translations-dir=<value>  The target directory path to find all translations to push.
 ```
 
-_See code: [src/commands/translation/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/translation/push.ts)_
+_See code: [src/commands/translation/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/translation/push.ts)_
 
 ## `knock translation validate [TRANSLATIONREF]`
 
@@ -1967,7 +1967,7 @@ FLAGS
   --translations-dir=<value>  The target directory path to find all translations to validate.
 ```
 
-_See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/translation/validate.ts)_
+_See code: [src/commands/translation/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/translation/validate.ts)_
 
 ## `knock variable delete KEY`
 
@@ -1990,7 +1990,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/delete.ts)_
+_See code: [src/commands/variable/delete.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/variable/delete.ts)_
 
 ## `knock variable get KEY`
 
@@ -2012,7 +2012,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/get.ts)_
+_See code: [src/commands/variable/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/variable/get.ts)_
 
 ## `knock variable list`
 
@@ -2038,7 +2038,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/list.ts)_
+_See code: [src/commands/variable/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/variable/list.ts)_
 
 ## `knock variable new`
 
@@ -2050,19 +2050,19 @@ USAGE
     [--description <value>] [--knock-dir <value>] [--force] [--push] [--branch <value>]
 
 FLAGS
-  --branch=<value>          Rejected. Variables are not branch-scoped.
-  --description=<value>     Variable description.
-  --force                   Skip the confirmation prompt when creating the file.
-  --key=<value>             (required) Variable key.
-  --knock-dir=<value>       Knock directory used to locate variables.json.
-  --push                    Push the new entry after writing it.
-  --service-token=<value>   The service token to authenticate with.
-  --type=<option>           (required) public or secret.
-                            <options: public|secret>
-  --value=<value>           Default value. Public variables only.
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --description=<value>    Variable description.
+  --force                  Skip the confirmation prompt when creating the file.
+  --key=<value>            (required) Variable key.
+  --knock-dir=<value>      Knock directory used to locate variables.json.
+  --push                   Push the new entry after writing it.
+  --service-token=<value>  The service token to authenticate with.
+  --type=<option>          (required) public or secret.
+                           <options: public|secret>
+  --value=<value>          Default value. Public variables only.
 ```
 
-_See code: [src/commands/variable/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/new.ts)_
+_See code: [src/commands/variable/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/variable/new.ts)_
 
 ## `knock variable pull [KEY]`
 
@@ -2077,14 +2077,14 @@ ARGUMENTS
   KEY  Update only this entry. Omit to pull every variable.
 
 FLAGS
-  --branch=<value>          Rejected. Variables are not branch-scoped.
-  --environment=<value>     Rejected. Pull always fetches the project catalog.
-  --force                   Skip the confirmation prompt.
-  --knock-dir=<value>       Knock directory used to locate variables.json.
-  --service-token=<value>   The service token to authenticate with.
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --environment=<value>    Rejected. Pull always fetches the project catalog.
+  --force                  Skip the confirmation prompt.
+  --knock-dir=<value>      Knock directory used to locate variables.json.
+  --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/pull.ts)_
+_See code: [src/commands/variable/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/variable/pull.ts)_
 
 ## `knock variable push [KEY]`
 
@@ -2099,14 +2099,14 @@ ARGUMENTS
   KEY  Push only this entry. Omit to push every entry.
 
 FLAGS
-  --branch=<value>          Rejected. Variables are not branch-scoped.
-  --environment=<value>     Rejected. Push writes the project catalog in variables.json.
-  --force                   Skip the confirmation prompt.
-  --knock-dir=<value>       Knock directory used to locate variables.json.
-  --service-token=<value>   The service token to authenticate with.
+  --branch=<value>         Rejected. Variables are not branch-scoped.
+  --environment=<value>    Rejected. Push writes the project catalog in variables.json.
+  --force                  Skip the confirmation prompt.
+  --knock-dir=<value>      Knock directory used to locate variables.json.
+  --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/push.ts)_
+_See code: [src/commands/variable/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/variable/push.ts)_
 
 ## `knock variable set KEY`
 
@@ -2144,7 +2144,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/variable/set.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/variable/set.ts)_
+_See code: [src/commands/variable/set.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/variable/set.ts)_
 
 ## `knock whoami`
 
@@ -2161,7 +2161,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/whoami.ts)_
+_See code: [src/commands/whoami.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/whoami.ts)_
 
 ## `knock workflow activate WORKFLOWKEY`
 
@@ -2190,7 +2190,7 @@ DESCRIPTION
   with `false` in order to deactivate it.
 ```
 
-_See code: [src/commands/workflow/activate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/activate.ts)_
+_See code: [src/commands/workflow/activate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/activate.ts)_
 
 ## `knock workflow generate-types`
 
@@ -2213,7 +2213,7 @@ DESCRIPTION
   Generate types for all workflows in an environment and write them to a file.
 ```
 
-_See code: [src/commands/workflow/generate-types.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/generate-types.ts)_
+_See code: [src/commands/workflow/generate-types.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/generate-types.ts)_
 
 ## `knock workflow get WORKFLOWKEY`
 
@@ -2234,7 +2234,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/workflow/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/get.ts)_
+_See code: [src/commands/workflow/get.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/get.ts)_
 
 ## `knock workflow list`
 
@@ -2258,7 +2258,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/workflow/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/list.ts)_
+_See code: [src/commands/workflow/list.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/list.ts)_
 
 ## `knock workflow new`
 
@@ -2282,7 +2282,7 @@ FLAGS
       --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/workflow/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/new.ts)_
+_See code: [src/commands/workflow/new.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/new.ts)_
 
 ## `knock workflow open WORKFLOWKEY`
 
@@ -2298,7 +2298,7 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 ```
 
-_See code: [src/commands/workflow/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/open.ts)_
+_See code: [src/commands/workflow/open.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/open.ts)_
 
 ## `knock workflow pull [WORKFLOWKEY]`
 
@@ -2319,7 +2319,7 @@ FLAGS
   --workflows-dir=<value>     The target directory path to pull all workflows into.
 ```
 
-_See code: [src/commands/workflow/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/pull.ts)_
+_See code: [src/commands/workflow/pull.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/pull.ts)_
 
 ## `knock workflow push [WORKFLOWKEY]`
 
@@ -2345,7 +2345,7 @@ FLAGS
       --workflows-dir=<value>   The target directory path to find all workflows to push.
 ```
 
-_See code: [src/commands/workflow/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/push.ts)_
+_See code: [src/commands/workflow/push.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/push.ts)_
 
 ## `knock workflow run WORKFLOWKEY`
 
@@ -2370,7 +2370,7 @@ FLAGS
   --tenant=<value>         A tenant id for the workflow run.
 ```
 
-_See code: [src/commands/workflow/run.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/run.ts)_
+_See code: [src/commands/workflow/run.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/run.ts)_
 
 ## `knock workflow validate [WORKFLOWKEY]`
 
@@ -2389,5 +2389,5 @@ FLAGS
   --workflows-dir=<value>  The target directory path to find all workflows to validate.
 ```
 
-_See code: [src/commands/workflow/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.4.0/src/commands/workflow/validate.ts)_
+_See code: [src/commands/workflow/validate.ts](https://github.com/knocklabs/knock-cli/blob/v1.5.0/src/commands/workflow/validate.ts)_
 <!-- commandsstop -->
