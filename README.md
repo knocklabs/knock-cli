@@ -2,6 +2,8 @@
 
 A command-line interface for interacting with [Knock](https://knock.app).
 
+Requires Node.js >= 24.
+
 <!-- toc -->
 * [@knocklabs/cli](#knocklabscli)
 * [Usage](#usage)
@@ -16,7 +18,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/1.5.0 linux-x64 node-v22.23.3
+@knocklabs/cli/1.5.0 linux-x64 node-v24.22.1
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND

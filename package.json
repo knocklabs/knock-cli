@@ -137,7 +137,7 @@
     "check": "yarn run lint && yarn run format.check && yarn run type.check"
   },
   "engines": {
-    "node": ">=18.17.0"
+    "node": ">=24"
   },
   "bugs": "https://github.com/knocklabs/knock-cli/issues",
   "keywords": [
