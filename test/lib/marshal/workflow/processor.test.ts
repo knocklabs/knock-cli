@@ -238,22 +238,22 @@ describe("lib/marshal/workflow/processor", () => {
   describe("formatExtractedFilePath", () => {
     it("returns a formatted file path based on the object path", () => {
       const result1 = formatExtractedFilePath(["a", "b", "c"], "md");
-      expect(result1).to.equal(xpath("a/b/c.md"));
+      expect(result1).to.equal("a/b/c.md");
 
       const result2 = formatExtractedFilePath(["a", 0, "b", "c"], "txt");
-      expect(result2).to.equal(xpath("a/1.b/c.txt"));
+      expect(result2).to.equal("a/1.b/c.txt");
 
       const result3 = formatExtractedFilePath(["a", 0, "b", 2, "c"], "json");
-      expect(result3).to.equal(xpath("a/1.b/3.c.json"));
+      expect(result3).to.equal("a/1.b/3.c.json");
 
       const result4 = formatExtractedFilePath(["a", 0, 2, "b"], "json");
-      expect(result4).to.equal(xpath("a/1.3.b.json"));
+      expect(result4).to.equal("a/1.3.b.json");
 
       const result5 = formatExtractedFilePath(["a", 0, 2, "b", 1], "md");
-      expect(result5).to.equal(xpath("a/1.3.b/2.md"));
+      expect(result5).to.equal("a/1.3.b/2.md");
 
       const result6 = formatExtractedFilePath(["a", 0, 2], "md");
-      expect(result6).to.equal(xpath("a/1.3.md"));
+      expect(result6).to.equal("a/1.3.md");
     });
 
     it("returns a formatted file path based on the object path and opts", () => {
@@ -261,7 +261,7 @@ describe("lib/marshal/workflow/processor", () => {
         unnestDirsBy: 2,
         nestIntoDirs: ["foo", "bar"],
       });
-      expect(result1).to.equal(xpath("foo/bar/1.c.md"));
+      expect(result1).to.equal("foo/bar/1.c.md");
     });
   });
 
@@ -279,7 +279,7 @@ describe("lib/marshal/workflow/processor", () => {
                 type: "channel",
                 channel_key: "sms-provider",
                 template: {
-                  "text_body@": xpath("sms_1/text_body.txt"),
+                  "text_body@": "sms_1/text_body.txt",
                 },
               },
               {
@@ -301,7 +301,7 @@ describe("lib/marshal/workflow/processor", () => {
                     layout_key: "default",
                   },
                   subject: "New activity",
-                  "html_body@": xpath("email_1/html_body.html"),
+                  "html_body@": "email_1/html_body.html",
                 },
               },
               {
@@ -330,7 +330,7 @@ describe("lib/marshal/workflow/processor", () => {
                             layout_key: "default",
                           },
                           subject: "New activity (2)",
-                          "html_body@": xpath("email_2/html_body.html"),
+                          "html_body@": "email_2/html_body.html",
                         },
                       },
                     ],
@@ -348,7 +348,7 @@ describe("lib/marshal/workflow/processor", () => {
                             layout_key: "default",
                           },
                           subject: "New activity (3)",
-                          "html_body@": xpath("email_3/html_body.html"),
+                          "html_body@": "email_3/html_body.html",
                         },
                       },
                     ],
@@ -362,12 +362,12 @@ describe("lib/marshal/workflow/processor", () => {
               valid: false,
             },
           },
-          [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
-          [xpath("email_1/html_body.html")]:
+          "sms_1/text_body.txt": "Hi {{ recipient.name }}.",
+          "email_1/html_body.html":
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
-          [xpath("email_2/html_body.html")]:
+          "email_2/html_body.html":
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the second email!</p>",
-          [xpath("email_3/html_body.html")]:
+          "email_3/html_body.html":
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the third email!</p>",
         });
       });
@@ -411,7 +411,7 @@ describe("lib/marshal/workflow/processor", () => {
                 type: "channel",
                 channel_key: "sms-provider",
                 template: {
-                  "text_body@": xpath("sms_1/text_body.txt"),
+                  "text_body@": "sms_1/text_body.txt",
                 },
               },
               {
@@ -463,7 +463,7 @@ describe("lib/marshal/workflow/processor", () => {
                             layout_key: "default",
                           },
                           subject: "New activity (2)",
-                          "html_body@": xpath("email_2/html_body.html"),
+                          "html_body@": "email_2/html_body.html",
                         },
                       },
                     ],
@@ -481,7 +481,7 @@ describe("lib/marshal/workflow/processor", () => {
                             layout_key: "default",
                           },
                           subject: "New activity (3)",
-                          "html_body@": xpath("email_3/html_body.html"),
+                          "html_body@": "email_3/html_body.html",
                         },
                       },
                     ],
@@ -495,14 +495,14 @@ describe("lib/marshal/workflow/processor", () => {
               valid: false,
             },
           },
-          [xpath("sms_1/text_body.txt")]: "Hi {{ recipient.name }}.",
+          "sms_1/text_body.txt": "Hi {{ recipient.name }}.",
           // And here..
           [xpath("email_1/default/subject.txt")]: "New activity",
           [xpath("email_1/default/body.html")]:
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p>",
-          [xpath("email_2/html_body.html")]:
+          "email_2/html_body.html":
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the second email!</p>",
-          [xpath("email_3/html_body.html")]:
+          "email_3/html_body.html":
             "<p>Hi <strong>{{ recipient.name }}</strong>.</p><p>This is the third email!</p>",
         });
       });
@@ -592,10 +592,10 @@ describe("lib/marshal/workflow/processor", () => {
                 template: {
                   settings: {
                     layout_key: "default",
-                    "pre_content@": xpath("email_1/settings/pre_content.txt"),
+                    "pre_content@": "email_1/settings/pre_content.txt",
                   },
                   subject: "You've got mail!",
-                  "visual_blocks@": xpath("email_1/visual_blocks.json"),
+                  "visual_blocks@": "email_1/visual_blocks.json",
                 },
               },
             ],
@@ -605,8 +605,8 @@ describe("lib/marshal/workflow/processor", () => {
               valid: false,
             },
           },
-          [xpath("email_1/settings/pre_content.txt")]: "{{ foo }}",
-          [xpath("email_1/visual_blocks.json")]: JSON.stringify(
+          "email_1/settings/pre_content.txt": "{{ foo }}",
+          "email_1/visual_blocks.json": JSON.stringify(
             [
               {
                 layout_attrs: {
@@ -618,13 +618,13 @@ describe("lib/marshal/workflow/processor", () => {
                 type: "markdown",
                 variant: "default",
                 version: 1,
-                "content@": xpath("visual_blocks/1.content.md"),
+                "content@": "visual_blocks/1.content.md",
               },
             ],
             null,
             2,
           ),
-          [xpath("email_1/visual_blocks/1.content.md")]: "Boom",
+          "email_1/visual_blocks/1.content.md": "Boom",
         });
       });
     });

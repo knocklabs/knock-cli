@@ -6,8 +6,6 @@
  * reason there are some restrictions for which nodejs imports are allowed in
  * this module. See `.eslintrc.json` for more details.
  */
-import * as path from "node:path";
-
 import { cloneDeep, get, has, isPlainObject, set, unset } from "lodash";
 
 import {
@@ -17,6 +15,7 @@ import {
   ObjPath,
   omitDeep,
 } from "@/lib/helpers/object.isomorphic";
+import * as path from "@/lib/helpers/path.isomorphic";
 import {
   FILEPATH_MARKED_RE,
   FILEPATH_MARKER,
