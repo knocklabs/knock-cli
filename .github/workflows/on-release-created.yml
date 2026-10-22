@@ -90,3 +90,23 @@ jobs:
       - name: Update npm for trusted publishing
         run: npm install --global npm@11
       - run: npm publish --access public
+
+  notify-release:
+    name: Notify release automation
+    needs: [publish-npm]
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST release tag and repository
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          curl --fail-with-body \
+            --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data "$(jq -n \
+              --arg tag "$RELEASE_TAG" \
+              --arg repository "$REPOSITORY" \
+              '{tag: $tag, repository: $repository}')" \
+            "https://api2.cursor.sh/automations/webhook/a0d6eed9-ca3d-11f1-bec7-b2318963e0b6"
