@@ -1,7 +1,6 @@
 import * as os from "node:os";
 import path from "node:path";
 
-import { default as degit } from "degit";
 import * as fs from "fs-extra";
 
 const DEFAULT_ORG = "knocklabs";
@@ -63,8 +62,14 @@ function buildSource(
   return `${base}#${branch}`;
 }
 
+// degit 3 is ESM-only. Load it at runtime so the CommonJS build can still call it.
+async function loadDegit() {
+  const { default: degit } = await import("degit");
+  return degit;
+}
+
 const cloneWithTimeout = (
-  emitter: ReturnType<typeof degit>,
+  emitter: { clone(dest: string): Promise<void> },
   dest: string,
 ): Promise<void> =>
   new Promise((resolve, reject) => {
@@ -105,6 +110,7 @@ export async function downloadTemplate(
   await fs.ensureDir(tempDir);
 
   try {
+    const degit = await loadDegit();
     const emitter = degit(source, {
       cache: false,
       force: true,
