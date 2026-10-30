@@ -23,6 +23,11 @@ import { ReusableStepData } from "@/lib/marshal/reusable-step";
 import { SourceData } from "@/lib/marshal/source";
 import { TranslationData } from "@/lib/marshal/translation";
 import {
+  WarehouseData,
+  WarehouseSyncData,
+  WarehouseSyncRun,
+} from "@/lib/marshal/warehouse-sync";
+import {
   ChannelStepData,
   ChannelType,
   StepType,
@@ -351,6 +356,76 @@ export const source = (attrs: Partial<SourceData> = {}): SourceData => {
         mappings: [],
       },
     },
+    ...attrs,
+  };
+};
+
+export const warehouse = (
+  attrs: Partial<WarehouseData> = {},
+): WarehouseData => {
+  return {
+    key: "knock-redshift",
+    name: "Knock Redshift",
+    type: "redshift",
+    connection_settings: {
+      host: "warehouse.example.com",
+      database: "dw",
+      username: "knock",
+    },
+    connection_status: "connected",
+    connection_error: null,
+    last_tested_at: "2022-12-31T12:00:00.000000Z",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    created_at: "2022-12-31T12:00:00.000000Z",
+    ...attrs,
+  };
+};
+
+export const warehouseSync = (
+  attrs: Partial<WarehouseSyncData> = {},
+): WarehouseSyncData => {
+  return {
+    key: "users",
+    name: "Users",
+    environment: "development",
+    source: { mode: "sql", query: "SELECT id, email FROM users" },
+    primary_key_column: "id",
+    mappings: [
+      { source_column: "id", target_field: "id", on_null: "set_null" },
+      { source_column: "email", target_field: "email", on_null: "set_null" },
+    ],
+    version_id: randomUUID(),
+    warehouse_key: "knock-redshift",
+    target_type: "user",
+    target: null,
+    enabled: true,
+    frequency_minutes: 1440,
+    status: "live",
+    has_unpublished_changes: false,
+    last_published_at: "2022-12-31T12:00:00.000000Z",
+    publish_error: null,
+    last_failure: null,
+    sha: "<SOME_SHA>",
+    updated_at: "2022-12-31T12:00:00.000000Z",
+    created_at: "2022-12-31T12:00:00.000000Z",
+    ...attrs,
+  };
+};
+
+export const warehouseSyncRun = (
+  attrs: Partial<WarehouseSyncRun> = {},
+): WarehouseSyncRun => {
+  return {
+    id: randomUUID(),
+    status: "completed",
+    submitted_at: "2022-12-31T12:00:00.000000Z",
+    started_at: "2022-12-31T12:00:00.000000Z",
+    ended_at: "2022-12-31T12:02:00.000000Z",
+    records_processed: 10,
+    records_errored: 0,
+    rows_applied: 10,
+    rows_failed: 0,
+    error: null,
     ...attrs,
   };
 };
