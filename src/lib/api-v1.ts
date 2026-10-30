@@ -32,6 +32,7 @@ import { MaybeWithAnnotation } from "@/lib/marshal/shared/types";
 import * as Source from "@/lib/marshal/source";
 import * as Translation from "@/lib/marshal/translation";
 import * as Variable from "@/lib/marshal/variable";
+import * as WarehouseSync from "@/lib/marshal/warehouse-sync";
 import * as Workflow from "@/lib/marshal/workflow";
 
 import { SessionContext } from "./types";
@@ -717,6 +718,63 @@ export default class ApiV1 {
     return defaultEnvironment.slug;
   }
 
+  // By resources: Warehouses and warehouse syncs
+
+  async listWarehouses({
+    flags,
+  }: Props): Promise<AxiosResponse<ListWarehouseResp>> {
+    const params = prune({
+      environment: flags.environment,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/warehouses", { params });
+  }
+
+  async getWarehouse({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetWarehouseResp>> {
+    const params = prune({ environment: flags.environment });
+
+    return this.get(`/warehouses/${args.warehouseKey}`, { params });
+  }
+
+  async listWarehouseSyncs({
+    flags,
+  }: Props): Promise<AxiosResponse<ListWarehouseSyncResp>> {
+    const params = prune({
+      environment: flags.environment,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+      ...toPageParams(flags),
+    });
+
+    return this.get("/warehouse_syncs", { params });
+  }
+
+  async getWarehouseSync({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetWarehouseSyncResp>> {
+    const params = prune({
+      environment: flags.environment,
+      hide_uncommitted_changes: flags["hide-uncommitted-changes"],
+    });
+
+    return this.get(`/warehouse_syncs/${args.warehouseSyncKey}`, { params });
+  }
+
+  async listWarehouseSyncRuns({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<ListWarehouseSyncRunResp>> {
+    const params = prune({ environment: flags.environment });
+
+    return this.get(`/warehouse_syncs/${args.warehouseSyncKey}/runs`, {
+      params,
+    });
+  }
+
   // By resources: Branches
 
   async rebaseBranch(
@@ -1097,6 +1155,18 @@ export type UpsertSchemaResp = {
 };
 
 export type ListBranchResp = PaginatedResp<Branch>;
+
+export type ListWarehouseResp = PaginatedResp<WarehouseSync.WarehouseData>;
+
+export type GetWarehouseResp = WarehouseSync.WarehouseData;
+
+export type ListWarehouseSyncResp =
+  PaginatedResp<WarehouseSync.WarehouseSyncData>;
+
+export type GetWarehouseSyncResp = WarehouseSync.WarehouseSyncData;
+
+export type ListWarehouseSyncRunResp =
+  PaginatedResp<WarehouseSync.WarehouseSyncRun>;
 
 export type ListReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<ReusableRequest.ReusableRequestData<A>>;
