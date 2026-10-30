@@ -22,8 +22,11 @@ export const formatErrorRespMessage = ({
   const { message, errors = [] } = data;
 
   if (status >= 400) {
-    const errs = errors.map(
-      (e: InputError) => new JsonDataError(e.message, e.field),
+    // Some endpoints, like warehouse syncs, send errors as plain strings.
+    const errs = errors.map((e: InputError | string) =>
+      typeof e === "string"
+        ? new JsonDataError(e, "")
+        : new JsonDataError(e.message, e.field),
     );
     return errs.length === 0
       ? message

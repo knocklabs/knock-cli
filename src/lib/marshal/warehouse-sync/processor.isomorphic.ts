@@ -22,6 +22,12 @@ const WRITABLE_FIELDS = [
   "mappings",
 ];
 
+const CLEARABLE_FIELDS = {
+  description: null,
+  source: null,
+  change_tracking: null,
+};
+
 // Volatile fields that change per environment or over time, excluded to avoid noisy diffs
 const REMOVED_READONLY_FIELDS = [
   "sha",
@@ -37,7 +43,12 @@ const REMOVED_READONLY_FIELDS = [
 export const buildWarehouseSyncJson = (
   remoteWarehouseSync: WarehouseSyncData,
 ): AnyObj => {
-  const writable = pick(remoteWarehouseSync, WRITABLE_FIELDS);
+  // The API leaves out empty optional fields. Writing them as null lets a push
+  // clear them in another environment too.
+  const writable = {
+    ...CLEARABLE_FIELDS,
+    ...pick(remoteWarehouseSync, WRITABLE_FIELDS),
+  };
   const readonly = omit(remoteWarehouseSync, [
     ...WRITABLE_FIELDS,
     ...REMOVED_READONLY_FIELDS,

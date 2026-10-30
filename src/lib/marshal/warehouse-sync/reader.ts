@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 
 import { formatErrors, SourceError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
-import { AnyObj, omitDeep } from "@/lib/helpers/object.isomorphic";
+import { AnyObj } from "@/lib/helpers/object.isomorphic";
 import { WarehouseSyncDirContext } from "@/lib/run-context";
 
 import {
@@ -48,7 +48,7 @@ const readWarehouseSyncDirs = async (
   return [warehouseSyncs, errors];
 };
 
-export const readWarehouseSyncDir = async (
+const readWarehouseSyncDir = async (
   warehouseSyncDirCtx: WarehouseSyncDirContext,
 ): Promise<ParseJsonResult> => {
   const { abspath } = warehouseSyncDirCtx;
@@ -61,10 +61,7 @@ export const readWarehouseSyncDir = async (
     throw new Error(`${abspath} is not a warehouse sync directory`);
   }
 
-  const result = await readJson(jsonPath);
-  if (!result[0]) return result;
-
-  return [omitDeep(result[0], ["__readonly"]), []];
+  return readJson(jsonPath);
 };
 
 export const readAllForCommandTarget = async (

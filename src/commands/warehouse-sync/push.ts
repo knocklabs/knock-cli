@@ -18,7 +18,9 @@ export default class WarehouseSyncPush extends BaseCommand<
     "Push one or more warehouse syncs from a local file system to Knock.";
 
   static description =
-    "Saves each warehouse sync as a draft. Pass --commit to publish it too.";
+    "Saves each warehouse sync as a draft. Pass --commit to publish it too. " +
+    "Push leaves a sync's schedule as it is, and a sync that push creates " +
+    "starts with the default schedule.";
 
   // Hidden until warehouse syncs are generally available.
   static hidden = true;

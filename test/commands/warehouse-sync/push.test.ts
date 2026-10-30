@@ -124,12 +124,17 @@ describe("commands/warehouse-sync/push", () => {
 
     setupWithStub({
       status: 422,
-      data: { errors: [{ message: "the first mapping must map id" }] },
+      data: {
+        message: "One or more parameters supplied were invalid",
+        errors: ["the first mapping must map primary_key_column to id"],
+      },
     })
       .stdout()
       .command(["warehouse-sync push", "users"])
       .catch((error) =>
-        expect(error.message).to.contain("the first mapping must map id"),
+        expect(error.message).to.contain(
+          "the first mapping must map primary_key_column to id",
+        ),
       )
       .it("throws an error naming the file");
   });

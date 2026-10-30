@@ -52,16 +52,43 @@ describe("commands/warehouse-sync/run", () => {
       .stub(KnockApiV1.prototype, "runWarehouseSync", (stub) =>
         stub.resolves(
           factory.resp({
-            status: 422,
-            data: { message: "This sync is already running." },
+            status: 409,
+            data: {
+              message:
+                "A run is already in progress. Try again when it finishes.",
+            },
           }),
         ),
       )
       .stdout()
       .command(["warehouse-sync run", "users"])
       .catch((error) =>
-        expect(error.message).to.contain("This sync is already running."),
+        expect(error.message).to.contain("A run is already in progress."),
       )
       .it("throws an error");
+  });
+
+  describe("given the sync can't run", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "runWarehouseSync", (stub) =>
+        stub.resolves(
+          factory.resp({
+            status: 422,
+            data: {
+              message: "One or more parameters supplied were invalid",
+              errors: ["Knock couldn't find the sync's published source."],
+            },
+          }),
+        ),
+      )
+      .stdout()
+      .command(["warehouse-sync run", "users"])
+      .catch((error) =>
+        expect(error.message).to.contain(
+          "Knock couldn't find the sync's published source.",
+        ),
+      )
+      .it("throws an error with the reason");
   });
 });
