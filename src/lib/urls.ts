@@ -56,6 +56,16 @@ export const viewAudienceUrl = (
 ): string =>
   `${dashboardUrl}/${accountSlug}/${envOrBranchSlug.toLowerCase()}/audiences/${audienceKey}`;
 
+export const viewWarehouseSyncUrl = (
+  dashboardUrl: string,
+  accountSlug: string,
+  envSlug: string,
+  sync: { key: string; warehouse_key: string },
+): string =>
+  `${dashboardUrl}/${accountSlug}/${envSlug.toLowerCase()}/sources/${
+    sync.warehouse_key
+  }/syncs/${sync.key}`;
+
 export const viewGoalUrl = (
   dashboardUrl: string,
   accountSlug: string,
