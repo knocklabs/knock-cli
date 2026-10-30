@@ -775,6 +775,47 @@ export default class ApiV1 {
     });
   }
 
+  async upsertWarehouseSync(
+    { flags }: Props,
+    warehouseSync: WarehouseSync.WarehouseSyncInput,
+  ): Promise<AxiosResponse<UpsertWarehouseSyncResp>> {
+    const params = prune({
+      environment: flags.environment,
+      commit: flags.commit,
+      commit_message: flags["commit-message"],
+    });
+    const data = { warehouse_sync: warehouseSync };
+
+    return this.put(`/warehouse_syncs/${warehouseSync.key}`, data, { params });
+  }
+
+  async validateWarehouseSync(
+    { flags }: Props,
+    warehouseSync: WarehouseSync.WarehouseSyncInput,
+  ): Promise<AxiosResponse<ValidateWarehouseSyncResp>> {
+    const params = prune({ environment: flags.environment });
+    const data = { warehouse_sync: warehouseSync };
+
+    return this.put(`/warehouse_syncs/${warehouseSync.key}/validate`, data, {
+      params,
+    });
+  }
+
+  async runWarehouseSync({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<RunWarehouseSyncResp>> {
+    const params = prune({ environment: flags.environment });
+
+    return this.put(
+      `/warehouse_syncs/${args.warehouseSyncKey}/run`,
+      {},
+      {
+        params,
+      },
+    );
+  }
+
   // By resources: Branches
 
   async rebaseBranch(
@@ -1167,6 +1208,18 @@ export type GetWarehouseSyncResp = WarehouseSync.WarehouseSyncData;
 
 export type ListWarehouseSyncRunResp =
   PaginatedResp<WarehouseSync.WarehouseSyncRun>;
+
+export type UpsertWarehouseSyncResp = {
+  warehouse_sync: WarehouseSync.WarehouseSyncData;
+};
+
+export type ValidateWarehouseSyncResp = {
+  warehouse_sync: AnyObj;
+};
+
+export type RunWarehouseSyncResp = {
+  warehouse_sync: WarehouseSync.WarehouseSyncData;
+};
 
 export type ListReusableRequestResp<A extends MaybeWithAnnotation = unknown> =
   PaginatedResp<ReusableRequest.ReusableRequestData<A>>;

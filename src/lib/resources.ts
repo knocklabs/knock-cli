@@ -8,7 +8,12 @@ type CommitResourceType = Extract<
 >;
 
 // TODO Remove this once hidden option is removed from message types / guides
-export type NonHiddenResourceType = Exclude<ResourceType, "reusable_step">;
+// Warehouse syncs stay out of `knock pull --all` and `knock push --all` while
+// they're behind a feature flag.
+export type NonHiddenResourceType = Exclude<
+  ResourceType,
+  "reusable_step" | "warehouse_sync"
+>;
 
 /**
  * Resource types that support empty commits via --allow-empty.
