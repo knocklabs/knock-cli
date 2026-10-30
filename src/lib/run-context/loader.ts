@@ -13,6 +13,7 @@ import * as MessageType from "@/lib/marshal/message-type";
 import * as Partial from "@/lib/marshal/partial";
 import * as ReusableRequest from "@/lib/marshal/reusable-request";
 import * as Translation from "@/lib/marshal/translation";
+import * as WarehouseSync from "@/lib/marshal/warehouse-sync";
 import * as Workflow from "@/lib/marshal/workflow";
 
 import { ResourceType, RunContext } from "./types";
@@ -42,6 +43,8 @@ const evaluateRecursively = async (
       ctx.resourceDir = buildResourceDirContext("guide", currDir);
     } else if (await Goal.isGoalDir(currDir)) {
       ctx.resourceDir = buildResourceDirContext("goal", currDir);
+    } else if (await WarehouseSync.isWarehouseSyncDir(currDir)) {
+      ctx.resourceDir = buildResourceDirContext("warehouse_sync", currDir);
     } else if (await EmailLayout.isEmailLayoutDir(currDir)) {
       ctx.resourceDir = buildResourceDirContext("email_layout", currDir);
     } else if (await Partial.isPartialDir(currDir)) {
