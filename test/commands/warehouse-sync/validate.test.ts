@@ -77,9 +77,13 @@ describe("commands/warehouse-sync/validate", () => {
       .stdout()
       .command(["warehouse-sync validate", "--all"])
       .catch((error) => {
-        expect(error.message).to.contain("tenants/warehouse_sync.json");
+        expect(error.message).to.contain(
+          path.join("tenants", "warehouse_sync.json"),
+        );
         expect(error.message).to.contain("primary_key_column is required");
-        expect(error.message).not.to.contain("users/warehouse_sync.json");
+        expect(error.message).not.to.contain(
+          path.join("users", "warehouse_sync.json"),
+        );
       })
       .it("throws an error for the invalid one");
   });
