@@ -104,6 +104,32 @@ describe("commands/warehouse-sync/pull", () => {
       );
   });
 
+  describe("given a warehouse sync with empty optional fields", () => {
+    const sync = factory.warehouseSync();
+    delete sync.description;
+    delete sync.change_tracking;
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "getWarehouseSync", (stub) =>
+        stub.resolves(factory.resp({ data: sync })),
+      )
+      .stub(enquirer.prototype, "prompt", (stub) =>
+        stub.onFirstCall().resolves({ input: "y" }),
+      )
+      .stdout()
+      .command(["warehouse-sync pull", "users"])
+      .it("writes them as null, so a push clears them", () => {
+        const json = fs.readJsonSync(
+          path.resolve(sandboxDir, "users", "warehouse_sync.json"),
+        );
+
+        expect(json.description).to.equal(null);
+        expect(json.change_tracking).to.equal(null);
+        expect(json.source).to.deep.equal(sync.source);
+      });
+  });
+
   describe("given no warehouse sync key arg nor --all flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

@@ -65,7 +65,10 @@ describe("commands/warehouse-sync/validate", () => {
           .resolves(
             factory.resp({
               status: 422,
-              data: { errors: [{ message: "primary_key_column is required" }] },
+              data: {
+                message: "One or more parameters supplied were invalid",
+                errors: ["primary_key_column is required"],
+              },
             }),
           );
         stub.resolves(factory.resp({ data: { warehouse_sync: {} } }));
