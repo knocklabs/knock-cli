@@ -14,7 +14,7 @@ const TARGET_TYPE_LABELS: Record<WarehouseSyncData["target_type"], string> = {
 export const formatTarget = (
   sync: Pick<WarehouseSyncData, "target_type" | "target">,
 ): string => {
-  const label = TARGET_TYPE_LABELS[sync.target_type];
+  const label = TARGET_TYPE_LABELS[sync.target_type] ?? sync.target_type;
   const detail = sync.target?.collection ?? sync.target?.audience_key;
 
   return detail ? `${label} (${detail})` : label;
