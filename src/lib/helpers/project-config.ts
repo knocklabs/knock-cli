@@ -126,6 +126,7 @@ export const ResourceDirectoriesByType: Record<
   reusable_request: "reusable-requests",
   translation: "translations",
   goal: "goals",
+  warehouse_sync: "warehouse-syncs",
 } as const;
 
 type ValidResourceType = Exclude<ResourceType, "reusable_step">;
