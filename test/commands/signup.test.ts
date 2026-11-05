@@ -1,12 +1,12 @@
 import { expect, test } from "@oclif/test";
+import enquirer from "enquirer";
 import nock from "nock";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import auth from "@/lib/auth";
-import { browser } from "@/lib/helpers/browser";
 import { timer } from "@/lib/helpers/headless-account";
-import { DEFAULT_API_URL, DEFAULT_DASHBOARD_URL } from "@/lib/urls";
+import { DEFAULT_API_URL } from "@/lib/urls";
 import { UserConfigStore } from "@/lib/user-config";
 
 const TOKEN = "knock_st_headless";
@@ -40,40 +40,95 @@ describe("commands/signup", () => {
     nock.enableNetConnect();
   });
 
-  describe("without --headless", () => {
-    test
-      .stdout()
-      .stub(browser, "openUrl", (stub) => stub.resolves())
-      .command(["signup"])
-      .it("opens the signup page in the dashboard", (ctx) => {
-        const url = `${DEFAULT_DASHBOARD_URL}/signup`;
+  describe("without --force", () => {
+    describe("in a terminal", () => {
+      const { isTTY } = process.stdin;
 
-        sinon.assert.calledOnceWithExactly(browser.openUrl as any, url);
-        expect(ctx.stdout).to.contain(url);
+      beforeEach(() => {
+        process.stdin.isTTY = true;
       });
 
-    test
-      .stdout()
-      .stub(browser, "openUrl", (stub) => stub.resolves())
-      .command(["signup", "--json"])
-      .it("returns the url with --json", (ctx) => {
-        expect(JSON.parse(ctx.stdout)).to.eql({
-          signup_url: `${DEFAULT_DASHBOARD_URL}/signup`,
-        });
+      afterEach(() => {
+        process.stdin.isTTY = isTTY;
       });
-  });
 
-  describe("with --headless", () => {
-    describe("given no existing credentials", () => {
       test
         .stdout()
         .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
-        .stub(browser, "openUrl", (stub) => stub.resolves())
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ input: true }),
+        )
         .do(() => {
           mockCreate();
           mockStatus("unclaimed");
         })
-        .command(["signup", "--headless"])
+        .command(["signup"])
+        .it("explains what it will do and asks first", (ctx) => {
+          expect(nock.isDone()).to.equal(true);
+
+          sinon.assert.calledOnce(enquirer.prototype.prompt as any);
+
+          const [{ message }] = (enquirer.prototype.prompt as any).firstCall
+            .args;
+          expect(message).to.contain("new, temporary Knock account");
+          expect(message).to.contain("claims it");
+
+          expect(ctx.stdout).to.contain("Status: unclaimed");
+        });
+
+      test
+        .stdout()
+        .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
+        .stub(enquirer.prototype, "prompt", (stub) =>
+          stub.resolves({ input: false }),
+        )
+        .do(() => mockCreate())
+        .command(["signup"])
+        .it("creates nothing when declined", (ctx) => {
+          expect(nock.isDone()).to.equal(false);
+
+          sinon.assert.notCalled(UserConfigStore.prototype.set as any);
+
+          expect(ctx.stdout).to.contain("Signup cancelled.");
+        });
+
+      test
+        .stdout()
+        .stub(enquirer.prototype, "prompt", (stub) => stub.resolves())
+        .do(() => mockCreate())
+        .command(["signup", "--json"])
+        .it("doesn't prompt with --json, and says why", (ctx) => {
+          sinon.assert.notCalled(enquirer.prototype.prompt as any);
+
+          expect(nock.isDone()).to.equal(false);
+          expect(JSON.parse(ctx.stdout).error.message).to.contain(
+            "Pass --force",
+          );
+        });
+    });
+
+    describe("without a terminal", () => {
+      test
+        .do(() => mockCreate())
+        .command(["signup"])
+        .catch((error) => {
+          expect(error.message).to.contain("Pass --force");
+          expect(nock.isDone()).to.equal(false);
+        })
+        .it("says to pass --force instead of waiting on a prompt");
+    });
+  });
+
+  describe("with --force", () => {
+    describe("given no existing credentials", () => {
+      test
+        .stdout()
+        .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
+        .do(() => {
+          mockCreate();
+          mockStatus("unclaimed");
+        })
+        .command(["signup", "--force"])
         .it("creates the account and saves the token", (ctx) => {
           expect(nock.isDone()).to.equal(true);
 
@@ -81,12 +136,13 @@ describe("commands/signup", () => {
             UserConfigStore.prototype.set as any,
             { serviceToken: TOKEN },
           );
-          sinon.assert.notCalled(browser.openUrl as any);
 
           expect(ctx.stdout).to.contain("Status: unclaimed");
           expect(ctx.stdout).to.contain(`Expires at: ${EXPIRES_AT}`);
           expect(ctx.stdout).to.contain("saved to your Knock config");
-          expect(ctx.stdout).to.contain("knock headless claim --email");
+          expect(ctx.stdout).to.contain(
+            "To claim this account, run `knock headless claim --email <email>`.",
+          );
           expect(ctx.stdout).to.not.contain(TOKEN);
         });
 
@@ -97,13 +153,15 @@ describe("commands/signup", () => {
           mockCreate();
           mockStatus("unclaimed");
         })
-        .command(["signup", "--headless", "--json"])
+        .command(["signup", "--force", "--json"])
         .it("returns the token with --json", (ctx) => {
           expect(JSON.parse(ctx.stdout)).to.eql({
             token: TOKEN,
             token_saved: true,
             status: "unclaimed",
             expires_at: EXPIRES_AT,
+            next_step:
+              "To claim this account, run `knock headless claim --email <email>`.",
           });
         });
     });
@@ -119,7 +177,7 @@ describe("commands/signup", () => {
           mockStatus("provisioning");
           mockStatus("unclaimed");
         })
-        .command(["signup", "--headless"])
+        .command(["signup", "--force"])
         .it("polls every five seconds until it is ready", (ctx) => {
           expect(nock.isDone()).to.equal(true);
 
@@ -140,12 +198,14 @@ describe("commands/signup", () => {
             .get("/v1/headless_accounts/status")
             .reply(200, { status: "provisioning", expires_at: EXPIRES_AT });
         })
-        .command(["signup", "--headless"])
+        .command(["signup", "--force"])
         .it("gives up waiting without failing", (ctx) => {
           sinon.assert.callCount(timer.sleep as any, 24);
 
           expect(ctx.stdout).to.contain("Status: provisioning");
           expect(ctx.stdout).to.contain("still being set up");
+          expect(ctx.stdout).to.contain("knock headless status");
+          expect(ctx.stdout).to.contain("knock headless claim --email");
         });
     });
 
@@ -164,7 +224,7 @@ describe("commands/signup", () => {
             .reply(502, {});
           mockStatus("unclaimed");
         })
-        .command(["signup", "--headless", "--json"])
+        .command(["signup", "--force", "--json"])
         .it("keeps the account and checks again", (ctx) => {
           expect(JSON.parse(ctx.stdout)).to.include({
             token: TOKEN,
@@ -181,7 +241,7 @@ describe("commands/signup", () => {
           mockCreate();
           mockStatus("expired");
         })
-        .command(["signup", "--headless"])
+        .command(["signup", "--force"])
         .it("says to create a new one", (ctx) => {
           expect(ctx.stdout).to.contain("The account has expired.");
           expect(ctx.stdout).to.not.contain("knock headless claim");
@@ -197,7 +257,7 @@ describe("commands/signup", () => {
           mockCreate();
           mockStatus("unclaimed");
         })
-        .command(["signup", "--headless"])
+        .command(["signup", "--force"])
         .it("prints the token instead of saving it", (ctx) => {
           expect(nock.isDone()).to.equal(true);
 
@@ -205,6 +265,9 @@ describe("commands/signup", () => {
 
           expect(ctx.stdout).to.contain("was not saved");
           expect(ctx.stdout).to.contain(`KNOCK_SERVICE_TOKEN=${TOKEN}`);
+          expect(ctx.stdout).to.contain(
+            "with KNOCK_SERVICE_TOKEN set to the account's token",
+          );
         });
     });
 
@@ -219,7 +282,7 @@ describe("commands/signup", () => {
           mockCreate();
           mockStatus("unclaimed");
         })
-        .command(["signup", "--headless", "--json"])
+        .command(["signup", "--force", "--json"])
         .it("leaves it in place", (ctx) => {
           sinon.assert.notCalled(UserConfigStore.prototype.set as any);
 
@@ -253,7 +316,7 @@ describe("commands/signup", () => {
             .get("/v1/headless_accounts/status")
             .reply(200, { status: "unclaimed", expires_at: EXPIRES_AT });
         })
-        .command(["signup", "--headless"])
+        .command(["signup", "--force"])
         .it("doesn't send the session, and prints the token", (ctx) => {
           expect(nock.isDone()).to.equal(true);
 
@@ -278,9 +341,29 @@ describe("commands/signup", () => {
               { "retry-after": "120" },
             );
         })
-        .command(["signup", "--headless"])
+        .command(["signup", "--force"])
         .catch(/Too many requests Try again in 120 seconds\./)
         .it("says when to try again");
+    });
+
+    describe("given the api rate limits the request with --json", () => {
+      test
+        .stdout()
+        .do(() => {
+          nock(DEFAULT_API_URL)
+            .post("/v1/headless_accounts")
+            .reply(
+              429,
+              { code: "rate_limited", message: "Too many requests" },
+              { "retry-after": "120" },
+            );
+        })
+        .command(["signup", "--force", "--json"])
+        .it("includes the message in the output", (ctx) => {
+          expect(JSON.parse(ctx.stdout).error.message).to.equal(
+            "Too many requests Try again in 120 seconds.",
+          );
+        });
     });
 
     describe("given headless accounts are unavailable", () => {
@@ -295,7 +378,7 @@ describe("commands/signup", () => {
             { "retry-after": "60" },
           );
         })
-        .command(["signup", "--headless"])
+        .command(["signup", "--force"])
         .catch(/temporarily unavailable\. Try again in 60 seconds\./)
         .it("says when to try again");
     });

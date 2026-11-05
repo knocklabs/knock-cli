@@ -133,7 +133,7 @@ describe("commands/headless/claim", () => {
         ),
       )
       .command(["headless claim", "--email", EMAIL])
-      .catch(/has closed Run `knock signup --headless`/)
+      .catch(/has closed Run `knock signup`/)
       .it("says to create a new account");
   });
 

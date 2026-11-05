@@ -5,9 +5,8 @@ import { formatErrorRespMessage } from "./request";
 // What to do next, for the errors the API's own message doesn't cover.
 const NEXT_STEPS: Record<string, string> = {
   headless_account_required:
-    "Use the service token from `knock signup --headless`, by passing --service-token or setting KNOCK_SERVICE_TOKEN.",
-  headless_account_expired:
-    "Run `knock signup --headless` to create a new account.",
+    "Use the service token from `knock signup`, by passing --service-token or setting KNOCK_SERVICE_TOKEN.",
+  headless_account_expired: "Run `knock signup` to create a new account.",
 };
 
 /*

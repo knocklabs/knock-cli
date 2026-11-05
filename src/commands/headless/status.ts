@@ -14,10 +14,9 @@ import { spinner } from "@/lib/helpers/ux";
 const NEXT_STEPS: Record<HeadlessAccountStatus, string> = {
   provisioning: "The account is still being set up. Check again in 5 seconds.",
   unclaimed:
-    "The account is ready. To hand it to a person, run `knock headless claim --email <email>`.",
+    "The account is ready. To claim it, run `knock headless claim --email <email>`.",
   claimed: "A person claimed the account. Your service token keeps working.",
-  expired:
-    "The account has expired. Run `knock signup --headless` to create a new one.",
+  expired: "The account has expired. Run `knock signup` to create a new one.",
 };
 
 export default class HeadlessStatus extends BaseCommand<typeof HeadlessStatus> {

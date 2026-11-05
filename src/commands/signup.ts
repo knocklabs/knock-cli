@@ -2,7 +2,6 @@ import { Flags, ux } from "@oclif/core";
 
 import { HeadlessAccountStatus } from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
-import { browser } from "@/lib/helpers/browser";
 import { ApiError } from "@/lib/helpers/error";
 import {
   formatHeadlessAccountError,
@@ -10,62 +9,76 @@ import {
 } from "@/lib/helpers/headless-account";
 import { isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
-import { spinner } from "@/lib/helpers/ux";
-import { signupUrl } from "@/lib/urls";
+import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 
 const READY_POLL_INTERVAL_MS = 5000;
 const READY_MAX_POLLS = 24;
 
-type BrowserSignup = { signup_url: string };
+const CONFIRM_PROMPT =
+  "This will provision a new, temporary Knock account, which is deleted after 24 hours unless a person claims it.\nContinue?";
 
-type HeadlessSignup = {
+type HeadlessAccount = {
   token: string;
   token_saved: boolean;
   status: HeadlessAccountStatus;
   expires_at: string;
+  next_step: string;
+};
+
+const nextStep = (status: HeadlessAccountStatus, tokenSaved: boolean) => {
+  if (status === "expired") {
+    return "The account has expired. Run `knock signup` to create a new one.";
+  }
+
+  const claim =
+    "run `knock headless claim --email <email>`" +
+    (tokenSaved ? "" : " with KNOCK_SERVICE_TOKEN set to the account's token");
+
+  return status === "provisioning"
+    ? `The account is still being set up. Run \`knock headless status\` to check on it. Once it's ready, ${claim} to claim it.`
+    : `To claim this account, ${claim}.`;
 };
 
 export default class Signup extends BaseCommand<typeof Signup> {
   protected requiresAuth = false;
 
-  static summary = "Sign up for a Knock account.";
+  static summary = "Sign up for a temporary Knock account.";
 
   static description =
-    "Opens the Knock dashboard in your browser to sign up. With --headless, " +
-    "creates an account without a browser for an agent to build in right " +
-    "away. The account is deleted after 24 hours unless a person claims it " +
-    "with `knock headless claim`.";
+    "Provisions a new, temporary Knock account without a browser, for an " +
+    "agent to build in right away. The account is deleted after 24 hours " +
+    "unless a person claims it with `knock headless claim`. Pass --force to " +
+    "run without the confirmation prompt.";
 
   static enableJsonFlag = true;
 
   static flags = {
-    headless: Flags.boolean({
-      summary: "Create a headless account, without a browser or a person.",
+    force: Flags.boolean({
+      summary: "Skip confirmation prompt.",
     }),
   };
 
-  public async run(): Promise<BrowserSignup | HeadlessSignup | void> {
-    const { flags } = this.props;
+  public async run(): Promise<HeadlessAccount | void> {
+    const { force, json } = this.props.flags;
 
-    const result = flags.headless
-      ? await this.signupHeadless()
-      : await this.signupInBrowser();
+    // Nothing can answer the prompt in these cases, so don't wait on it.
+    if (!force && (json || !process.stdin.isTTY)) {
+      this.error("Pass --force to sign up without a confirmation prompt.");
+    }
 
-    if (flags.json) return result;
+    const confirmed = force || (await promptToConfirm(CONFIRM_PROMPT));
+
+    if (!confirmed) {
+      this.log("Signup cancelled.");
+      return;
+    }
+
+    const result = await this.createAccount();
+
+    if (json) return result;
   }
 
-  private async signupInBrowser(): Promise<BrowserSignup> {
-    const url = signupUrl(this.sessionContext.dashboardOrigin);
-
-    this.log("‣ Opening the Knock dashboard to sign up...");
-    this.log(`  ${url}`);
-
-    await browser.openUrl(url);
-
-    return { signup_url: url };
-  }
-
-  private async signupHeadless(): Promise<HeadlessSignup> {
+  private async createAccount(): Promise<HeadlessAccount> {
     spinner.start("‣ Creating a headless account");
 
     const resp = await this.apiV1.createHeadlessAccount();
@@ -90,6 +103,7 @@ export default class Signup extends BaseCommand<typeof Signup> {
       token_saved: !unsavedReason,
       status,
       expires_at,
+      next_step: nextStep(status, !unsavedReason),
     };
 
     this.render(result, unsavedReason);
@@ -145,8 +159,8 @@ export default class Signup extends BaseCommand<typeof Signup> {
     return status;
   }
 
-  private render(result: HeadlessSignup, unsavedReason?: string): void {
-    const { token, status, expires_at } = result;
+  private render(result: HeadlessAccount, unsavedReason?: string): void {
+    const { token, status, expires_at, next_step } = result;
 
     this.log("‣ Successfully created a headless account:");
     this.log(indentString(`Status: ${status}\nExpires at: ${expires_at}`, 4));
@@ -163,21 +177,6 @@ export default class Signup extends BaseCommand<typeof Signup> {
 
     this.log("");
 
-    if (status === "provisioning") {
-      this.log(
-        "‣ The account is still being set up. Run `knock headless status` to check on it.",
-      );
-    }
-
-    if (status === "expired") {
-      this.log(
-        "‣ The account has expired. Run `knock signup --headless` to create a new one.",
-      );
-      return;
-    }
-
-    this.log(
-      "‣ To hand the account to a person, run `knock headless claim --email <email>`.",
-    );
+    this.log(`‣ ${next_step}`);
   }
 }

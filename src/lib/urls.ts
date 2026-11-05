@@ -8,9 +8,6 @@ export const authSuccessUrl = (dashboardUrl: string): string =>
 export const authErrorUrl = (dashboardUrl: string, error: string): string =>
   `${dashboardUrl}/auth/oauth/cli?error=${error}`;
 
-export const signupUrl = (dashboardUrl: string): string =>
-  `${dashboardUrl}/signup`;
-
 export const viewWorkflowUrl = (
   dashboardUrl: string,
   accountSlug: string,

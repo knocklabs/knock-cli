@@ -46,7 +46,7 @@ describe("commands/headless/status", () => {
     const cases = [
       ["provisioning", EXPIRES_AT, "still being set up"],
       ["unclaimed", EXPIRES_AT, "knock headless claim --email"],
-      ["expired", EXPIRES_AT, "knock signup --headless"],
+      ["expired", EXPIRES_AT, "knock signup"],
     ];
 
     for (const [status, expiresAt, nextStep] of cases) {
@@ -98,7 +98,7 @@ describe("commands/headless/status", () => {
         });
       })
       .command(["headless status"])
-      .catch(/Use the service token from `knock signup --headless`/)
+      .catch(/Use the service token from `knock signup`/)
       .it("says which token to use");
   });
 
