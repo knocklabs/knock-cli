@@ -4,7 +4,7 @@
 import KnockMgmt from "@knocklabs/mgmt";
 import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
-import type { Commit } from "@knocklabs/mgmt/resources/commits";
+import type { Commit, PromoteGroup } from "@knocklabs/mgmt/resources/commits";
 import { Environment } from "@knocklabs/mgmt/resources/environments";
 import { MessageTypeListParams } from "@knocklabs/mgmt/resources/message-types";
 import { Config } from "@oclif/core";
@@ -198,6 +198,10 @@ export default class ApiV1 {
       promoted: flags.promoted,
       resource_type: flags["resource-type"],
       resource_id: flags["resource-id"],
+      promote_group_id: flags["promote-group-id"],
+      promoted_from_environment: flags["promoted-from-environment"],
+      since: flags.since,
+      until: flags.until,
       ...toPageParams(flags),
     });
 
@@ -1106,11 +1110,14 @@ export type CommitAllChangesResp = {
 
 export type PromoteAllChangesResp = {
   result?: "success";
+  // Null when there were no changes to promote.
+  promote_group?: PromoteGroup | null;
   errors?: InputError[];
 };
 
 export type PromoteOneChangeResp = {
   commit?: Commit;
+  promote_group?: PromoteGroup;
   errors?: InputError[];
 };
 

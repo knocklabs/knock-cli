@@ -37,6 +37,22 @@ export default class CommitList extends BaseCommand<typeof CommitList> {
       summary:
         "Filter commits by resource identifier. Must be used together with resource-type. For most resources, this will be the resource key. In the case of translations, this will be the locale code and namespace, separated by a /. For example, en/courses or en.",
     }),
+    "promote-group-id": Flags.string({
+      summary:
+        "Filter commits to those created by a single promote. A promote's commits live in the environment they were promoted to, so use together with --environment when that isn't the default environment.",
+    }),
+    "promoted-from-environment": Flags.string({
+      summary:
+        "Filter promoted commits by the slug of the environment or branch they were promoted from.",
+    }),
+    since: Flags.string({
+      summary:
+        "Only show commits created at or after this RFC 3339 timestamp. For example, 2026-01-31T09:00:00Z.",
+    }),
+    until: Flags.string({
+      summary:
+        "Only show commits created at or before this RFC 3339 timestamp. For example, 2026-01-31T09:00:00Z.",
+    }),
     ...pageFlags,
   };
 
