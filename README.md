@@ -2140,7 +2140,8 @@ FLAGS
   --unset-value                        Clear the default value.
   --value=<value>                      Default value. Public variables only.
   --value-file=<value>                 Read the default value from a file. The bytes are not trimmed.
-  --value-stdin                        Read the default value from stdin until EOF. The bytes are not trimmed.
+  --value-stdin                        Read the default value from stdin until EOF. The bytes are not trimmed. This is the
+                                       default when no value flag is passed; a terminal prints a prompt on stderr first.
 
 GLOBAL FLAGS
   --json  Format output as json.
