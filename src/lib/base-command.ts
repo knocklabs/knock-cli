@@ -172,6 +172,14 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     }
   }
 
+  // An error's message isn't enumerable, so it would otherwise be left out of
+  // the output of a command run with --json.
+  protected toErrorJson(err: unknown): { error: unknown } {
+    if (!(err instanceof Error)) return { error: err };
+
+    return { error: { ...err, message: err.message } };
+  }
+
   // Base flags are inherited by any command that extends BaseCommand.
   static baseFlags = {
     // Evaluated in the following precedence:
