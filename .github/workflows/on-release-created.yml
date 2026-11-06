@@ -2,11 +2,15 @@ name: Publish package
 on:
   release:
     types: [created]
+
+permissions:
+  contents: read
+
 jobs:
   validate-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Validate version match
         run: |
@@ -28,12 +32,14 @@ jobs:
   publish-brew:
     needs: [validate-release]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24.22.1
-      - run: yarn
+      - run: yarn install --frozen-lockfile --ignore-scripts
 
       - name: Pack tarball
         run: npx oclif pack tarballs -t darwin-x64 --no-xz
@@ -54,7 +60,7 @@ jobs:
       - run: sleep 10s
 
       - name: Update brew tap
-        uses: mislav/bump-homebrew-formula-action@v2
+        uses: mislav/bump-homebrew-formula-action@9d4d820e1d00b99927bd36e67d41fff1cfc8bd07 # v2.4
         if: "!contains(github.ref, '-')" # skip prereleases
         with:
           homebrew-tap: knocklabs/homebrew-tap
@@ -80,13 +86,13 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24.22.1
           registry-url: "https://registry.npmjs.org"
           scope: "@knocklabs"
-      - run: yarn
+      - run: yarn install --frozen-lockfile --ignore-scripts
       - name: Update npm for trusted publishing
         run: npm install --global npm@11
       - run: npm publish --access public
