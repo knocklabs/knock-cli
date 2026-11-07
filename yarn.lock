@@ -799,10 +799,10 @@
     diff "9.0.0"
     picocolors "^1.1.1"
 
-"@knocklabs/mgmt@0.43.0":
-  version "0.43.0"
-  resolved "https://registry.yarnpkg.com/@knocklabs/mgmt/-/mgmt-0.43.0.tgz#d5eae8950fc8d99b48725cb4952deba8e687789e"
-  integrity sha512-FjMlowKTCUbuBrKQIAMG7LiQycQCW1Q3mrg+8cTsVTVYxOS7PAcUlmXshxC0/wSZK67hzMGG8Gwq/CpfqStnvQ==
+"@knocklabs/mgmt@0.46.0":
+  version "0.46.0"
+  resolved "https://registry.yarnpkg.com/@knocklabs/mgmt/-/mgmt-0.46.0.tgz#ed3c6dc1c9c3f5cb3cb85acfad52970479a7c9a8"
+  integrity sha512-aLsyh/WJBb8ux6h/3uFmVDtvecvEPWHqHD2/hBv5zdfsvVud6VufXls6OdcT5HQL9rCH2VucFFjsVEi8rgGa8Q==
 
 "@napi-rs/nice-android-arm-eabi@1.0.1":
   version "1.0.1"
