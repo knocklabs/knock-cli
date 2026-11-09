@@ -51,6 +51,15 @@ const render = (...events: AgentEvent[]): string => {
   return stripVTControlCharacters(output);
 };
 
+// Renders the events and returns the renderer, to inspect it afterwards.
+const renderAll = (...events: AgentEvent[]): AgentEventRenderer => {
+  const writes: string[] = [];
+  const renderer = new AgentEventRenderer((chunk) => writes.push(chunk));
+  for (const item of events) renderer.render(item);
+  renderer.stop();
+  return renderer;
+};
+
 const reasoning = (type: string, value: string, attrs = {}) =>
   event({ type: "reasoning", value: { type, value, ...attrs } });
 
@@ -330,6 +339,30 @@ describe("lib/helpers/agent-session", () => {
   });
 
   describe("AgentEventRenderer", () => {
+    describe("endsWithBlankLine", () => {
+      it("is true after a response", () => {
+        expect(renderAll(text("complete", "Hello")).endsWithBlankLine).to.equal(
+          true,
+        );
+      });
+
+      it("is false after a step that follows the response", () => {
+        const renderer = renderAll(
+          text("complete", "Hello"),
+          toolCall("call_1", "get_workflow"),
+          toolResponse("call_1", "get_workflow"),
+        );
+
+        expect(renderer.endsWithBlankLine).to.equal(false);
+      });
+
+      it("is false after unfinished text", () => {
+        expect(renderAll(text("delta", "Hel")).endsWithBlankLine).to.equal(
+          false,
+        );
+      });
+    });
+
     it("writes text as it arrives without repeating the snapshot", () => {
       expect(
         render(

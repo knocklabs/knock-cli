@@ -307,6 +307,7 @@ export class AgentEventRenderer {
   private getTerminalSize: () => TerminalSize;
   private printed = new Map<string, string>();
   private midLine = false;
+  private isAfterBlankLine = false;
 
   private runningSteps = new Map<string, RunningStep>();
   // Text blocks that have started streaming but haven't been completed.
@@ -326,6 +327,11 @@ export class AgentEventRenderer {
     this.write = write;
     this.live = live;
     this.getTerminalSize = getTerminalSize;
+  }
+
+  // Whether the last thing written was a blank line, as after a response.
+  get endsWithBlankLine(): boolean {
+    return this.isAfterBlankLine;
   }
 
   /*
@@ -417,6 +423,7 @@ export class AgentEventRenderer {
     if (!text) return;
 
     this.midLine = !text.endsWith("\n");
+    this.isAfterBlankLine = false;
     this.printed.set(id, printed + text);
     this.redraw(text);
   }
@@ -495,6 +502,7 @@ export class AgentEventRenderer {
   private writeLine(line: string): void {
     const newline = this.midLine ? "\n" : "";
     this.midLine = false;
+    this.isAfterBlankLine = line === "";
     this.redraw(`${newline}${line}\n`);
   }
 
