@@ -1016,6 +1016,16 @@ export default class ApiV1 {
     });
   }
 
+  // Runs a follow-up prompt in an existing session, which keeps its history.
+  async createAgentRun(
+    body: CreateAgentSessionBody,
+  ): Promise<AxiosResponse<CreateAgentSessionResp>> {
+    return this.client.post(`/agent/sessions/${body.id}/runs`, body, {
+      headers: { Prefer: "respond-async" },
+      timeout: AGENT_START_TIMEOUT_MS,
+    });
+  }
+
   async getAgentSessionEvents(
     sessionId: string,
     { offset, signal }: AgentSessionEventsOpts,

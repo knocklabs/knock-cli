@@ -9,6 +9,7 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import auth from "@/lib/auth";
+import * as CustomFlags from "@/lib/helpers/flag";
 import { UserConfig, UserConfigStore } from "@/lib/user-config";
 
 const API_ORIGIN = "https://control.knock.app";
@@ -113,6 +114,53 @@ const sseFrames = (events: unknown[], upToDate = true): string =>
 
 const api = () => nock(API_ORIGIN);
 
+const SESSION_ID = "3f2a6c1e-8b4d-4f7a-9c2e-5d1b0a7e6f43";
+const JOURNAL_END = "session:00000000000000000009";
+
+// An earlier run in the session, on a branch.
+const earlierRun = [
+  {
+    type: "prompt",
+    seq: 0,
+    version: 1,
+    storedEventId: "stored-0",
+    value: {
+      role: "user",
+      value: "Add a welcome workflow",
+      context: [{ type: "environment", value: "my-feature" }],
+      mode: "default",
+    },
+  },
+  { type: "runEnd", seq: 1, version: 1, storedEventId: "stored-1" },
+];
+
+let runBody: Record<string, any>;
+
+const mockJournal = (events: unknown[] = earlierRun) =>
+  api()
+    .get(`/agent/sessions/${SESSION_ID}/events`)
+    .query({ offset: "-1" })
+    .reply(200, events as nock.Body, {
+      "stream-next-offset": JOURNAL_END,
+      "stream-up-to-date": "true",
+    });
+
+const mockFollowUp = () => {
+  api().get("/v1/whoami").reply(200, { account_slug: "collab-io" });
+
+  api()
+    .post(`/agent/sessions/${SESSION_ID}/runs`, (body) => {
+      runBody = body;
+      return true;
+    })
+    .matchHeader("prefer", "respond-async")
+    .reply(202, (_uri, body: any) => ({
+      session_id: body.id,
+      run_id: body.run_id,
+      status: "accepted",
+    }));
+};
+
 let createBody: Record<string, any>;
 
 const mockStart = () => {
@@ -153,6 +201,7 @@ describe("commands/agent", () => {
   beforeEach(() => {
     nock.disableNetConnect();
     createBody = {};
+    runBody = {};
     sleep = sinon.stub(timers, "setTimeout").resolves();
   });
 
@@ -442,6 +491,302 @@ describe("commands/agent", () => {
       .catch(/--environment can't be empty/)
       .it("refuses an empty environment", () => {
         expect(createBody).to.eql({});
+      });
+  });
+
+  describe("given --session", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockJournal();
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command([
+        "agent",
+        "Now shorten the subject line",
+        "--session",
+        SESSION_ID,
+        "--response-only",
+      ])
+      .it("runs the prompt in that session", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+        expect(createBody).to.eql({});
+        expect(runBody.id).to.equal(SESSION_ID);
+        expect(runBody.run_id).to.match(UUID);
+        expect(runBody.prompt).to.equal("Now shorten the subject line");
+        expect(runBody.source).to.equal("api");
+        expect(ctx.stdout).to.equal("Done, added the step.\n");
+        expect(ctx.stderr).to.contain(`Continuing agent session ${SESSION_ID}`);
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockJournal();
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Hi", "--session", SESSION_ID, "--response-only"])
+      .it("stays in the environment of the session's last prompt", () => {
+        expect(runBody.context).to.eql([
+          { type: "environment", value: "my-feature" },
+        ]);
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockJournal([
+          earlierRun[0],
+          earlierRun[1],
+          {
+            ...earlierRun[0],
+            seq: 2,
+            value: { ...earlierRun[0].value, context: [] },
+          },
+          { ...earlierRun[1], seq: 3 },
+        ]);
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Hi", "--session", SESSION_ID, "--response-only"])
+      .it(
+        "leaves the environment to the account when the last prompt did",
+        () => {
+          expect(runBody.context).to.eql([]);
+        },
+      );
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockJournal();
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command([
+        "agent",
+        "Hi",
+        "--session",
+        SESSION_ID,
+        "--environment",
+        "staging",
+        "--response-only",
+      ])
+      .it("moves to an environment that's passed", () => {
+        expect(runBody.context).to.eql([
+          { type: "environment", value: "staging" },
+        ]);
+      });
+
+    const sandbox = sinon.createSandbox();
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        sandbox.replace(CustomFlags.branch, "default", async () => "other");
+        mockJournal();
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .finally(() => sandbox.restore())
+      .stdout()
+      .stderr()
+      .command(["agent", "Hi", "--session", SESSION_ID, "--response-only"])
+      .it("isn't moved by the branch in .knockbranch", () => {
+        expect(runBody.context).to.eql([
+          { type: "environment", value: "my-feature" },
+        ]);
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        sandbox.replace(CustomFlags.branch, "default", async () => "other");
+        mockJournal();
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .finally(() => sandbox.restore())
+      .stdout()
+      .stderr()
+      .command([
+        "agent",
+        "Hi",
+        "--session",
+        SESSION_ID,
+        "--environment",
+        "staging",
+        "--response-only",
+      ])
+      .it(
+        "doesn't refuse an environment over the branch in .knockbranch",
+        () => {
+          expect(runBody.context).to.eql([
+            { type: "environment", value: "staging" },
+          ]);
+        },
+      );
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockJournal();
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command([
+        "agent",
+        "Hi",
+        "--session",
+        `https://dashboard.knock.app/collab-io/agents/sessions/${SESSION_ID}?tab=1`,
+        "--response-only",
+      ])
+      .it("takes the session's dashboard URL", () => {
+        expect(runBody.id).to.equal(SESSION_ID);
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .command(["agent", "Hi", "--session", "../stop", "--response-only"])
+      .catch(/--session must be the ID of an agent session/)
+      .it("refuses a value that isn't a session ID");
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockJournal();
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Hi", "--session", SESSION_ID, "--json"])
+      .it("prints the result of the new run", (ctx) => {
+        const result = JSON.parse(ctx.stdout);
+
+        expect(result.session_id).to.equal(SESSION_ID);
+        expect(result.run_id).to.equal(runBody.run_id);
+        expect(result.status).to.equal("complete");
+        expect(result.text).to.equal("Done, added the step.");
+        expect(ctx.stderr).to.equal("");
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        api()
+          .get(`/agent/sessions/${SESSION_ID}/events`)
+          .query({ offset: "-1" })
+          .reply(200, earlierRun.slice(0, 1), {
+            "stream-next-offset": "session:00000000000000000001",
+          });
+        api()
+          .get(`/agent/sessions/${SESSION_ID}/events`)
+          .query({ offset: "session:00000000000000000001" })
+          .reply(200, earlierRun.slice(1), {
+            "stream-next-offset": JOURNAL_END,
+            "stream-up-to-date": "true",
+          });
+        mockFollowUp();
+        mockEvents(JOURNAL_END, allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Hi", "--session", SESSION_ID, "--response-only"])
+      .it("reads the whole journal before following the new run", (ctx) => {
+        expect(runBody.context).to.eql([
+          { type: "environment", value: "my-feature" },
+        ]);
+        expect(ctx.stdout).to.equal("Done, added the step.\n");
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        api()
+          .get(`/agent/sessions/${SESSION_ID}/events`)
+          .query({ offset: "-1" })
+          .reply(404, { error: "session not found" });
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Hi", "--session", SESSION_ID, "--response-only"])
+      .catch(/doesn't exist in this account, or has been archived/)
+      .it("explains a session that isn't there", () => {
+        expect(runBody).to.eql({});
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockJournal();
+        api().get("/v1/whoami").reply(200, { account_slug: "collab-io" });
+        api()
+          .post(`/agent/sessions/${SESSION_ID}/runs`)
+          .reply(409, { error: "session is already running" });
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Hi", "--session", SESSION_ID, "--response-only"])
+      .catch(/is still running\. Wait for it to finish, then follow up again/)
+      .it("explains a session that's busy");
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockJournal();
+        api().get("/v1/whoami").reply(200, { account_slug: "collab-io" });
+        api()
+          .post(`/agent/sessions/${SESSION_ID}/runs`)
+          .replyWithError("socket hang up");
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Hi", "--session", SESSION_ID, "--response-only"])
+      .catch(/Could not confirm that the prompt in agent session .* started/)
+      .it("can't say whether a dropped request started the run");
+  });
+
+  describe("given a run that ends", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockStart();
+        mockEvents("-1", allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Add an email step", "--response-only"])
+      .it("says how to follow up", (ctx) => {
+        expect(ctx.stderr).to.contain(
+          `‣ Follow up with: knock agent --session ${createBody.id} "<prompt>"`,
+        );
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockStart();
+        mockEvents("-1", [textDelta, runError]);
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Add an email step", "--response-only"])
+      .catch(/The agent run failed/)
+      .it("says how to follow up after a failed run too", (ctx) => {
+        expect(ctx.stderr).to.contain("Follow up with:");
       });
   });
 

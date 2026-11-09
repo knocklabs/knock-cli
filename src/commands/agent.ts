@@ -4,6 +4,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 
 import { Args, Flags, Interfaces } from "@oclif/core";
 
+import { CreateAgentSessionBody } from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import {
   AGENT_READ_TIMEOUT_MS,
@@ -28,6 +29,10 @@ import { viewAgentSessionUrl } from "@/lib/urls";
 
 // Reads from the start of the journal, per the Durable Streams protocol.
 const START_OFFSET = "-1";
+
+// A session's dashboard URL ends with its ID, so either can be passed.
+const SESSION_URL_ID = /\/agents\/sessions\/([^#/?]+)/;
+const SESSION_ID = /^[\w-]+$/;
 
 // Polling starts quick for short runs and slows down for long ones. Past about
 // 4 seconds Node drops the idle socket, so each poll would pay for a handshake.
@@ -70,6 +75,11 @@ type PromptResult = {
 
 type PromptOutcome = Pick<PromptResult, "status" | "error">;
 
+type AgentTarget = { environment?: string; branch?: string };
+
+// Where an existing session's journal ends, and where its last prompt ran.
+type SessionJournal = { offset: string; environment?: string };
+
 const SPINNER_LABELS: Record<PromptStatus, string | undefined> = {
   complete: undefined,
   error: "failed",
@@ -87,6 +97,29 @@ const toApiError = (status: number, data: unknown): ApiError => {
   const body = typeof data === "object" ? (data as AnyObj | null) : undefined;
   const message = formatAgentErrorMessage(status, body ?? undefined);
   return new ApiError(stripControlChars(message), status);
+};
+
+const notFoundError = (sessionId: string, data: unknown): ApiError => {
+  const body = typeof data === "object" ? (data as AnyObj | null) : undefined;
+
+  return body?.error === "session not found"
+    ? new ApiError(
+        `Agent session ${sessionId} doesn't exist in this account, or has been archived.`,
+        404,
+      )
+    : new ApiError(
+        "The Knock agent isn't enabled for this account. Please contact support to enable it.",
+        404,
+      );
+};
+
+// The environment or branch a prompt ran in, or undefined for the default.
+const promptEnvironment = (event: AgentEvent): string | undefined => {
+  const context: unknown = event.value?.context;
+  if (!Array.isArray(context)) return undefined;
+
+  const value = context.find((item) => item?.type === "environment")?.value;
+  return typeof value === "string" && value ? value : undefined;
 };
 
 const isAuthError = (error: unknown): boolean =>
@@ -116,18 +149,25 @@ export default class Agent extends BaseCommand<typeof Agent> {
 
   static description = `Starts a new agent session and shows what the agent is doing as it happens. The agent can read and change resources in your account.
 
+Pass --session with the ID of an earlier session to follow up in it. The agent keeps what it knows from that session, and works in the same environment or branch unless you pass --environment or --branch.
+
 Pass - as the prompt to read it from stdin. Put -- first if the prompt itself starts with a dash. Pass --response-only to print only the agent's response, once it finishes.`;
 
   static examples = [
     '<%= config.bin %> <%= command.id %> "Add an email step to the welcome workflow"',
     "cat prompt.txt | <%= config.bin %> <%= command.id %> -",
     '<%= config.bin %> <%= command.id %> "Add a new-user guide" --response-only --branch my-feature',
+    '<%= config.bin %> <%= command.id %> --session 3f2a6c1e-8b4d-4f7a-9c2e-5d1b0a7e6f43 "Now shorten the subject line"',
     '<%= config.bin %> <%= command.id %> -- "- Add an email step"',
   ];
 
   static flags = {
     environment: CustomFlags.environment,
     branch: CustomFlags.branch,
+    session: Flags.string({
+      summary:
+        "The ID of an agent session to follow up in, or its dashboard URL. Stays in the session's environment or branch unless --environment or --branch is passed.",
+    }),
     "response-only": Flags.boolean({
       summary:
         "Print only the agent's response, once it finishes, instead of its activity as it happens.",
@@ -153,12 +193,23 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
   static enableJsonFlag = true;
 
   async run(): Promise<PromptResult | void> {
-    this.validateTarget();
+    const followUpId = this.parseSessionFlag();
+    const target = this.resolveTarget(Boolean(followUpId));
 
     const prompt = await this.readPrompt();
-    const sessionId = randomUUID();
+
+    // Read before the run starts, so that only the new run's events are shown.
+    const journal = followUpId ? await this.readJournal(followUpId) : undefined;
+
+    const sessionId = followUpId ?? randomUUID();
     const runId = randomUUID();
     const sessionUrl = await this.buildSessionUrl(sessionId);
+
+    // Branches are environments to the agent. Each run falls back to the
+    // account's default environment when given none, so a follow-up names the
+    // one its session was in.
+    const envOrBranch =
+      target.branch ?? target.environment ?? journal?.environment;
 
     // Set up before the session starts, so that it can't be orphaned. A second
     // Ctrl-C falls through to the default handler and kills the process.
@@ -171,7 +222,13 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     for (const signal of STOP_SIGNALS) process.once(signal, onInterrupt);
 
     try {
-      await this.startSession(sessionId, runId, prompt);
+      await this.startRun({
+        id: sessionId,
+        runId,
+        prompt,
+        envOrBranch,
+        isFollowUp: Boolean(journal),
+      });
 
       const session = {
         session_id: sessionId,
@@ -179,11 +236,14 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
         session_url: sessionUrl,
       };
 
-      this.logToStderr(`‣ Started agent session ${sessionId}`);
+      this.logToStderr(
+        `‣ ${journal ? "Continuing" : "Started"} agent session ${sessionId}`,
+      );
       if (sessionUrl) this.logToStderr(indentString(sessionUrl, 4));
 
       const run = new AgentRun();
-      const outcome = await this.waitForRun(session, run, interrupt);
+      const offset = journal?.offset ?? START_OFFSET;
+      const outcome = await this.waitForRun(session, run, interrupt, offset);
 
       return this.finish({
         ...session,
@@ -220,9 +280,30 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     return !this.props.flags["response-only"] && !this.jsonEnabled();
   }
 
+  private parseSessionFlag(): string | undefined {
+    const value = this.props.flags.session?.trim();
+    if (value === undefined) return undefined;
+
+    const id = value.match(SESSION_URL_ID)?.[1] ?? value;
+
+    if (!SESSION_ID.test(id)) {
+      this.error(
+        "--session must be the ID of an agent session, or its dashboard URL.",
+      );
+    }
+
+    return id;
+  }
+
   // An agent that can change resources shouldn't guess what it's pointed at.
-  private validateTarget(): void {
-    const { environment, branch } = this.props.flags;
+  private resolveTarget(isFollowUp: boolean): AgentTarget {
+    const { environment } = this.props.flags;
+
+    // A follow-up stays where its session is unless told otherwise, so a branch
+    // that only comes from .knockbranch doesn't move it.
+    const isBranchFromFile = this.parseMetadata.flags.branch?.setFromDefault;
+    const branch =
+      isFollowUp && isBranchFromFile ? undefined : this.props.flags.branch;
 
     // For example, `--environment "$KNOCK_ENV"` with the variable unset.
     if (environment === "") {
@@ -235,6 +316,8 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
         "A branch can only be used with the development environment. Remove --environment, or run `knock branch exit` if the branch comes from .knockbranch.",
       );
     }
+
+    return { environment, branch };
   }
 
   private async readPrompt(): Promise<string> {
@@ -268,41 +351,88 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     );
   }
 
-  private async startSession(
-    id: string,
-    runId: string,
-    prompt: string,
-  ): Promise<void> {
-    const { environment, branch } = this.props.flags;
+  /*
+   * Reads an existing session's journal to the end. A follow-up shows events
+   * from there on, and runs where the last prompt ran.
+   */
+  private async readJournal(sessionId: string): Promise<SessionJournal> {
+    let offset = START_OFFSET;
+    let environment: string | undefined;
 
-    // Branches are environments to the agent, and it falls back to the
-    // account's default environment when given none.
-    const envOrBranch = branch ?? environment;
+    /* eslint-disable no-await-in-loop -- each read resumes where the last ended. */
+    for (;;) {
+      const resp = await this.apiV1
+        .getAgentSessionEvents(sessionId, { offset })
+        .catch((error: Error) =>
+          this.error(
+            `Could not read agent session ${sessionId}: ${error.message}`,
+          ),
+        );
 
-    const resp = await this.apiV1
-      .createAgentSession({
-        id,
-        run_id: runId,
-        prompt,
-        // There's no CLI invocation source. The api source fits best: it gets
-        // plain markdown output and no interactive tools. The mcp source would
-        // hide these sessions from the dashboard.
-        source: "api",
-        context: envOrBranch
-          ? [{ type: "environment", value: envOrBranch }]
-          : [],
-      })
-      .catch((error: Error) =>
-        this.error(
-          `Could not confirm that agent session ${id} started: ${error.message}`,
-        ),
-      );
+      if (resp.status === 404) this.error(notFoundError(sessionId, resp.data));
+      if (!isSuccessResp(resp)) this.error(toApiError(resp.status, resp.data));
 
-    if (resp.status === 404) {
+      const nextOffset = resp.headers["stream-next-offset"];
+
+      if (!Array.isArray(resp.data) || !nextOffset) {
+        this.error(unexpectedResponseError());
+      }
+
+      for (const event of resp.data) {
+        if (event?.type === "prompt") environment = promptEnvironment(event);
+      }
+
+      offset = nextOffset;
+
+      const isUpToDate = resp.headers["stream-up-to-date"] === "true";
+      if (isUpToDate || resp.data.length === 0) return { offset, environment };
+    }
+    /* eslint-enable no-await-in-loop */
+  }
+
+  private async startRun({
+    id,
+    runId,
+    prompt,
+    envOrBranch,
+    isFollowUp,
+  }: {
+    id: string;
+    runId: string;
+    prompt: string;
+    envOrBranch?: string;
+    isFollowUp: boolean;
+  }): Promise<void> {
+    const body: CreateAgentSessionBody = {
+      id,
+      run_id: runId,
+      prompt,
+      // There's no CLI invocation source. The api source fits best: it gets
+      // plain markdown output and no interactive tools. The mcp source would
+      // hide these sessions from the dashboard.
+      source: "api",
+      context: envOrBranch ? [{ type: "environment", value: envOrBranch }] : [],
+    };
+
+    const request = isFollowUp
+      ? this.apiV1.createAgentRun(body)
+      : this.apiV1.createAgentSession(body);
+
+    const resp = await request.catch((error: Error) =>
+      this.error(
+        isFollowUp
+          ? `Could not confirm that the prompt in agent session ${id} started: ${error.message}`
+          : `Could not confirm that agent session ${id} started: ${error.message}`,
+      ),
+    );
+
+    if (resp.status === 404) this.error(notFoundError(id, resp.data));
+
+    if (resp.status === 409) {
       this.error(
         new ApiError(
-          "The Knock agent isn't enabled for this account. Please contact support to enable it.",
-          404,
+          `Agent session ${id} is still running. Wait for it to finish, then follow up again.`,
+          409,
         ),
       );
     }
@@ -314,6 +444,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     session: Pick<PromptResult, "session_id" | "session_url">,
     run: AgentRun,
     interrupt: AbortController,
+    offset: string,
   ): Promise<PromptOutcome> {
     const { timeout } = this.props.flags;
 
@@ -332,7 +463,8 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     let failure: unknown;
 
     try {
-      await this.followRun(session.session_id, run, onEvent, signal);
+      const from = { sessionId: session.session_id, offset };
+      await this.followRun(from, run, onEvent, signal);
     } catch (error) {
       if (!signal.aborted) failure = error;
     }
@@ -406,6 +538,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
 
   private finish(result: PromptResult): PromptResult | void {
     const { status, error, text, modified_resources: resources } = result;
+    const { session_id: sessionId } = result;
 
     if (this.jsonEnabled()) {
       if (status === "interrupted") process.exitCode = EXIT_CODE_INTERRUPTED;
@@ -421,6 +554,13 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     }
 
     this.logModifiedResources(resources);
+
+    // Once a run has ended, the session can take another prompt.
+    if (status === "complete" || status === "error") {
+      this.logToStderr(
+        `‣ Follow up with: ${this.config.bin} ${this.id} --session ${sessionId} "<prompt>"`,
+      );
+    }
 
     if (status === "interrupted") {
       this.logToStderr(`‣ ${error}`);
@@ -444,14 +584,15 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
   }
 
   private async followRun(
-    sessionId: string,
+    from: { sessionId: string; offset: string },
     run: AgentRun,
     onEvent: (event: AgentEvent) => void,
     signal: AbortSignal,
   ): Promise<void> {
+    const { sessionId } = from;
     const startedAt = Date.now();
 
-    let offset = START_OFFSET;
+    let { offset } = from;
     let behind = false;
     let failures = 0;
 
