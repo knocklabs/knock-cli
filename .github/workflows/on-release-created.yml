@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Validate version match
         run: |
@@ -36,7 +38,11 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          persist-credentials: false
+      # setup-node v4 only caches when `cache` is set, and it isn't here.
+      - name: Set up Node # zizmor: ignore[cache-poisoning]
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24.22.1
       - run: yarn install --frozen-lockfile --ignore-scripts
@@ -52,9 +58,10 @@ jobs:
           echo "download_url=https://github.com/knocklabs/knock-cli/releases/download/${GITHUB_REF_NAME}/${FILENAME}" >> $GITHUB_OUTPUT
 
       - name: Upload tarball to the release
-        run: gh release upload ${GITHUB_REF_NAME} ./dist/${{ steps.tarball.outputs.filename }}
+        run: gh release upload "${GITHUB_REF_NAME}" "./dist/${TARBALL_FILENAME}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARBALL_FILENAME: ${{ steps.tarball.outputs.filename }}
 
       # Just to ensure the uploaded tarball is available.
       - run: sleep 10s
@@ -82,19 +89,28 @@ jobs:
   publish-npm:
     runs-on: ubuntu-latest
     needs: [publish-brew]
+    # npm's trusted publisher config does not check the branch or tag, so
+    # publishing is gated on this environment instead. Its deployment policy
+    # allows only the v* release tags, and the npm trusted publisher requires
+    # the same environment name.
+    environment: production-release
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          persist-credentials: false
+      # setup-node v4 only caches when `cache` is set, and it isn't here. No
+      # registry-url either: its placeholder token is what npm falls back to
+      # when the OIDC exchange fails, which hides the real error.
+      - name: Set up Node # zizmor: ignore[cache-poisoning]
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24.22.1
-          registry-url: "https://registry.npmjs.org"
-          scope: "@knocklabs"
       - run: yarn install --frozen-lockfile --ignore-scripts
-      - name: Update npm for trusted publishing
-        run: npm install --global npm@11
+      # Publishes through npm trusted publishing (OIDC). Node 24 ships npm 11,
+      # which trusted publishing needs.
       - run: npm publish --access public
 
   notify-release:
