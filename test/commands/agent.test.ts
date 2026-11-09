@@ -1045,7 +1045,9 @@ describe("commands/agent", () => {
       .it("leaves no spinner behind in a terminal", (ctx) => {
         const lastDraw = ctx.stdout.split("\u001B[0J").at(-1);
 
-        expect(lastDraw).to.contain("✓ upsert_workflow");
+        // Working shows until the run ends, and is erased with nothing after it.
+        expect(ctx.stdout).to.contain("Working");
+        expect(ctx.stdout).to.contain("✓ upsert_workflow");
         expect(lastDraw).not.to.match(/[⠋⠙⠸⠹]/);
       });
 

@@ -309,6 +309,9 @@ export class AgentEventRenderer {
   private midLine = false;
 
   private runningSteps = new Map<string, RunningStep>();
+  // Text blocks that have started streaming but haven't been completed.
+  private openText = new Set<string>();
+  private isRunning = false;
   private drawnLines = 0;
   private frame = 0;
   private timer?: NodeJS.Timeout;
@@ -326,10 +329,20 @@ export class AgentEventRenderer {
   }
 
   /*
+   * Shows that the agent is working whenever nothing else is, such as between
+   * a tool finishing and the agent's next output, until stopped.
+   */
+  start(): void {
+    this.isRunning = true;
+    this.redraw();
+  }
+
+  /*
    * Takes down any spinners. Call this when no more events will be rendered,
    * since steps still running at that point won't report back.
    */
   stop(): void {
+    this.isRunning = false;
     this.runningSteps.clear();
 
     const newline = this.midLine ? "\n" : "";
@@ -366,6 +379,13 @@ export class AgentEventRenderer {
 
   private renderText({ storedEventId, value }: AgentEvent): void {
     const printed = this.printed.get(storedEventId) ?? "";
+
+    // A delta can end a line, and the next one may be on its way.
+    if (value.discarded || value.type === "complete") {
+      this.openText.delete(storedEventId);
+    } else {
+      this.openText.add(storedEventId);
+    }
 
     if (value.discarded) {
       // It can't be taken back, so at least say it no longer counts.
@@ -503,7 +523,9 @@ export class AgentEventRenderer {
   private buildSpinnerLines(): string[] {
     const { columns, rows } = this.getTerminalSize();
 
-    const steps = [...this.runningSteps.values()];
+    const steps = this.isWaiting()
+      ? [{ name: "Working" }]
+      : [...this.runningSteps.values()];
     const maxLines = Math.max((rows || DEFAULT_ROWS) - 1, 1);
     const shown =
       steps.length > maxLines ? steps.slice(0, maxLines - 1) : steps;
@@ -523,8 +545,16 @@ export class AgentEventRenderer {
     return hidden > 0 ? [...lines, dim(`  + ${hidden} more\n`)] : lines;
   }
 
+  // Started, with nothing running and no text on its way.
+  private isWaiting(): boolean {
+    return (
+      this.isRunning && this.runningSteps.size === 0 && this.openText.size === 0
+    );
+  }
+
   private syncTimer(): void {
-    const shouldTick = this.live && this.runningSteps.size > 0;
+    const shouldTick =
+      this.live && (this.runningSteps.size > 0 || this.isWaiting());
 
     if (shouldTick && !this.timer) {
       this.timer = setInterval(() => {

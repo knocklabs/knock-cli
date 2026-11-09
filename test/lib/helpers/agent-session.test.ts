@@ -663,6 +663,84 @@ describe("lib/helpers/agent-session", () => {
         expect(plain().join("")).to.equal("Working on the fi\n");
       });
 
+      it("shows that it's working once started", () => {
+        renderer.start();
+
+        expect(plain()).to.eql(["⠋ Working\n"]);
+      });
+
+      it("shows that it's working between a tool and the next output", () => {
+        renderer.start();
+        renderer.render(toolCall("call_1", "read_file"));
+        renderer.render(
+          toolResponse("call_1", "read_file", { durationMs: 12 }),
+        );
+
+        expect(plain().slice(1)).to.eql([
+          "⠋ read_file\n",
+          "✓ read_file (12ms)\n⠋ Working\n",
+        ]);
+
+        renderer.render(text("delta", "Done"));
+
+        expect(writes.at(-1)).to.contain(eraseOne);
+        expect(stripVTControlCharacters(writes.at(-1) as string)).to.equal(
+          "Done",
+        );
+      });
+
+      it("shows that it's working after thinking", () => {
+        renderer.start();
+        renderer.render(reasoning("delta", "Let me think"));
+        renderer.render(reasoning("complete", "Let me think"));
+
+        expect(plain().at(-1)).to.equal("✓ Thought (0ms)\n⠋ Working\n");
+      });
+
+      it("animates the working spinner", () => {
+        renderer.start();
+        clock.tick(80);
+
+        expect(writes[1]).to.contain(eraseOne);
+        expect(stripVTControlCharacters(writes[1])).to.equal("⠙ Working\n");
+      });
+
+      it("doesn't show that it's working while text streams", () => {
+        renderer.start();
+        renderer.render(text("delta", "First line\n"));
+        const count = writes.length;
+
+        expect(plain().at(-1)).to.equal("First line\n");
+
+        clock.tick(1000);
+        expect(writes).to.have.length(count);
+
+        renderer.render(text("complete", "First line\nSecond"));
+        expect(plain().at(-1)).to.equal("\n\n⠋ Working\n");
+      });
+
+      it("doesn't show that it's working unless started", () => {
+        renderer.render(toolCall("call_1", "read_file"));
+        renderer.render(toolResponse("call_1", "read_file"));
+        const count = writes.length;
+
+        clock.tick(1000);
+
+        expect(plain().at(-1)).not.to.contain("Working");
+        expect(writes).to.have.length(count);
+      });
+
+      it("stops showing that it's working when stopped", () => {
+        renderer.start();
+        renderer.stop();
+        const count = writes.length;
+
+        clock.tick(1000);
+
+        expect(writes.at(-1)).to.equal(eraseOne);
+        expect(writes).to.have.length(count);
+      });
+
       it("clears spinners when stopped", () => {
         renderer.render(toolCall("call_1", "read_file"));
         renderer.stop();

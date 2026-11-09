@@ -214,10 +214,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     // Set up before the session starts, so that it can't be orphaned. A second
     // Ctrl-C falls through to the default handler and kills the process.
     const interrupt = new AbortController();
-    const onInterrupt = () => {
-      this.logToStderr(`‣ Stopping agent session ${sessionId}...`);
-      interrupt.abort();
-    };
+    const onInterrupt = () => interrupt.abort();
 
     for (const signal of STOP_SIGNALS) process.once(signal, onInterrupt);
 
@@ -459,6 +456,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     ]);
 
     if (showSpinner) spinner.start("‣ Running");
+    renderer?.start();
 
     let failure: unknown;
 
@@ -494,6 +492,8 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     }
 
     if (interrupt.signal.aborted) {
+      // Said once the spinners are down, so that redrawing them can't erase it.
+      this.logToStderr(`‣ Stopping agent session ${sessionId}...`);
       const stopped = await this.stopSession(sessionId);
 
       return {
