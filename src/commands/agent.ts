@@ -111,26 +111,26 @@ const pollIntervalMs = (elapsedMs: number): number =>
     MAX_POLL_INTERVAL_MS,
   );
 
-export default class Prompt extends BaseCommand<typeof Prompt> {
+export default class Agent extends BaseCommand<typeof Agent> {
   static summary = "Run a prompt with the Knock agent in your account.";
 
-  static description = `Starts a new agent session and waits for it to finish, then prints the agent's response. The agent can read and change resources in your account.
+  static description = `Starts a new agent session and shows what the agent is doing as it happens. The agent can read and change resources in your account.
 
-Pass - as the prompt to read it from stdin. Put -- first if the prompt itself starts with a dash. Pass --stream to follow what the agent is doing as it happens.`;
+Pass - as the prompt to read it from stdin. Put -- first if the prompt itself starts with a dash. Pass --response-only to print only the agent's response, once it finishes.`;
 
   static examples = [
     '<%= config.bin %> <%= command.id %> "Add an email step to the welcome workflow"',
     "cat prompt.txt | <%= config.bin %> <%= command.id %> -",
-    '<%= config.bin %> <%= command.id %> "Add a new-user guide" --stream --branch my-feature',
+    '<%= config.bin %> <%= command.id %> "Add a new-user guide" --response-only --branch my-feature',
     '<%= config.bin %> <%= command.id %> -- "- Add an email step"',
   ];
 
   static flags = {
     environment: CustomFlags.environment,
     branch: CustomFlags.branch,
-    stream: Flags.boolean({
+    "response-only": Flags.boolean({
       summary:
-        "Print the agent's activity as it happens. With --json, prints raw events as newline-delimited JSON, ending with the result.",
+        "Print only the agent's response, once it finishes, instead of its activity as it happens.",
     }),
     timeout: Flags.integer({
       summary:
@@ -182,10 +182,6 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
       this.logToStderr(`‣ Started agent session ${sessionId}`);
       if (sessionUrl) this.logToStderr(indentString(sessionUrl, 4));
 
-      if (this.isStreamingJson()) {
-        this.writeJsonLine({ type: "session", ...session });
-      }
-
       const run = new AgentRun();
       const outcome = await this.waitForRun(session, run, interrupt);
 
@@ -219,8 +215,9 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     return { error: { message: (err as Error).message } };
   }
 
-  private isStreamingJson(): boolean {
-    return Boolean(this.props.flags.stream) && this.jsonEnabled();
+  // With --json, the output is a single result once the run has finished.
+  private isStreaming(): boolean {
+    return !this.props.flags["response-only"] && !this.jsonEnabled();
   }
 
   // An agent that can change resources shouldn't guess what it's pointed at.
@@ -318,15 +315,12 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     run: AgentRun,
     interrupt: AbortController,
   ): Promise<PromptOutcome> {
-    const { stream, timeout } = this.props.flags;
+    const { timeout } = this.props.flags;
 
     const renderer = this.buildRenderer();
-    const showSpinner = !stream && !this.jsonEnabled();
+    const showSpinner = !this.isStreaming() && !this.jsonEnabled();
 
-    const onEvent = (event: AgentEvent) => {
-      if (renderer) renderer.render(event);
-      else if (stream) this.writeJsonLine(event);
-    };
+    const onEvent = (event: AgentEvent) => renderer?.render(event);
 
     const signal = AbortSignal.any([
       interrupt.signal,
@@ -417,13 +411,10 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
       if (status === "interrupted") process.exitCode = EXIT_CODE_INTERRUPTED;
       else if (status !== "complete") process.exitCode = EXIT_CODE_FAILED;
 
-      if (!this.props.flags.stream) return result;
-
-      this.writeJsonLine({ type: "result", ...result });
-      return;
+      return result;
     }
 
-    if (!this.props.flags.stream && text) {
+    if (!this.isStreaming() && text) {
       // Control characters only do anything in a terminal, and output sent to a
       // file or another program should stay exactly as the agent wrote it.
       this.log(process.stdout.isTTY ? stripControlChars(text) : text);
@@ -445,15 +436,11 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
   }
 
   private buildRenderer(): AgentEventRenderer | undefined {
-    if (!this.props.flags.stream || this.jsonEnabled()) return undefined;
+    if (!this.isStreaming()) return undefined;
 
     return new AgentEventRenderer((text) => process.stdout.write(text), {
       live: Boolean(process.stdout.isTTY) && process.env.TERM !== "dumb",
     });
-  }
-
-  private writeJsonLine(data: unknown): void {
-    process.stdout.write(`${JSON.stringify(data)}\n`);
   }
 
   private async followRun(
@@ -462,7 +449,6 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     onEvent: (event: AgentEvent) => void,
     signal: AbortSignal,
   ): Promise<void> {
-    const { stream } = this.props.flags;
     const startedAt = Date.now();
 
     let offset = START_OFFSET;
@@ -503,7 +489,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
         if (run.isTerminal || behind) continue;
 
         const now = Date.now();
-        const interval = stream
+        const interval = this.isStreaming()
           ? MIN_CONNECTION_MS
           : pollIntervalMs(now - startedAt);
         const wait = interval - (now - readStartedAt);
@@ -535,7 +521,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     offset: string,
     signal: AbortSignal,
   ): AsyncGenerator<AgentEventBatch> {
-    if (this.props.flags.stream) {
+    if (this.isStreaming()) {
       const resp = await this.apiV1.streamAgentSessionEvents(sessionId, {
         offset,
         signal,

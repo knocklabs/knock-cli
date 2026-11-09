@@ -145,7 +145,7 @@ const mockLiveEvents = (offset: string, body: string) =>
     .query({ offset, live: "sse" })
     .reply(200, body, { "content-type": "text/event-stream" });
 
-describe("commands/prompt", () => {
+describe("commands/agent", () => {
   const originalStdin = process.stdin;
   const originalIsTTY = process.stdout.isTTY;
   let sleep: sinon.SinonStub;
@@ -171,7 +171,7 @@ describe("commands/prompt", () => {
   describe("given no prompt arg", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["prompt"])
+      .command(["agent"])
       .exit(2)
       .it("exits with status 2");
   });
@@ -179,14 +179,14 @@ describe("commands/prompt", () => {
   describe("given a blank prompt", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["prompt", "   "])
+      .command(["agent", "   ", "--response-only"])
       .catch(/The prompt is empty/)
       .it("doesn't start a session", () => {
         expect(createBody).to.eql({});
       });
   });
 
-  describe("given a prompt", () => {
+  describe("given --response-only", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .do(() => {
@@ -195,7 +195,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("starts a session and prints the response", (ctx) => {
         expect(nock.isDone()).to.equal(true);
 
@@ -224,7 +224,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("polls from the last offset until the run ends", (ctx) => {
         expect(nock.isDone()).to.equal(true);
         expect(ctx.stdout).to.equal("Done, added the step.\n");
@@ -240,7 +240,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("keeps reading while behind the journal", () => {
         expect(nock.isDone()).to.equal(true);
         sinon.assert.notCalled(sleep);
@@ -255,7 +255,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("still runs when it can't build the session link", (ctx) => {
         expect(ctx.stdout).to.equal("Done, added the step.\n");
         expect(ctx.stderr).not.to.contain("dashboard.knock.app");
@@ -270,7 +270,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("still runs when the link request fails outright", (ctx) => {
         expect(ctx.stdout).to.equal("Done, added the step.\n");
       });
@@ -296,7 +296,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("removes them on a terminal", (ctx) => {
         expect(ctx.stdout).to.equal("Done]52;c;Y3VybA==[2A\n");
         expect(ctx.stderr).not.to.contain("\u001B");
@@ -311,7 +311,7 @@ describe("commands/prompt", () => {
       })
       .stdout({ stripColor: false })
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("keeps the response exact when piped", (ctx) => {
         expect(ctx.stdout).to.equal(`${hostile}\n`);
       });
@@ -333,7 +333,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "-"])
+      .command(["agent", "-", "--response-only"])
       .it("reads the prompt from stdin", () => {
         expect(createBody.prompt).to.equal("Add an email step");
       });
@@ -348,7 +348,7 @@ describe("commands/prompt", () => {
           value: stream,
         });
       })
-      .command(["prompt", "-"])
+      .command(["agent", "-", "--response-only"])
       .catch(/No prompt on stdin/)
       .it("refuses to wait on a terminal");
 
@@ -362,7 +362,7 @@ describe("commands/prompt", () => {
         });
         stream.end("line one\nline two\n");
       })
-      .command(["prompt"])
+      .command(["agent"])
       .exit(2)
       .it("only reads stdin when asked to");
   });
@@ -376,7 +376,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Hi", "--environment", "staging"])
+      .command(["agent", "Hi", "--environment", "staging", "--response-only"])
       .it("passes the environment as context", () => {
         expect(createBody.context).to.eql([
           { type: "environment", value: "staging" },
@@ -391,7 +391,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Hi", "--branch", "my-feature"])
+      .command(["agent", "Hi", "--branch", "my-feature", "--response-only"])
       .it("passes the branch as the environment", () => {
         expect(createBody.context).to.eql([
           { type: "environment", value: "my-feature" },
@@ -407,12 +407,13 @@ describe("commands/prompt", () => {
       .stdout()
       .stderr()
       .command([
-        "prompt",
+        "agent",
         "Hi",
         "--branch",
         "my-feature",
         "--environment",
         "development",
+        "--response-only",
       ])
       .it("allows a branch of the development environment", () => {
         expect(createBody.context).to.eql([
@@ -423,7 +424,7 @@ describe("commands/prompt", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .command([
-        "prompt",
+        "agent",
         "Hi",
         "--branch",
         "my-feature",
@@ -437,7 +438,7 @@ describe("commands/prompt", () => {
 
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["prompt", "Hi", "--environment", ""])
+      .command(["agent", "Hi", "--environment", "", "--response-only"])
       .catch(/--environment can't be empty/)
       .it("refuses an empty environment", () => {
         expect(createBody).to.eql({});
@@ -453,7 +454,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--json"])
+      .command(["agent", "Add an email step", "--json"])
       .it("prints the outcome of the run", (ctx) => {
         expect(JSON.parse(ctx.stdout)).to.eql({
           session_id: createBody.id,
@@ -483,7 +484,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--json"])
+      .command(["agent", "Add an email step", "--json"])
       .it(
         "exits non-zero with the session details when the run fails",
         (ctx) => {
@@ -497,6 +498,21 @@ describe("commands/prompt", () => {
       );
   });
 
+  describe("given --json and --response-only", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        mockStart();
+        mockEvents("-1", allEvents);
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "Add an email step", "--json", "--response-only"])
+      .it("prints the same result as --json alone", (ctx) => {
+        expect(JSON.parse(ctx.stdout).text).to.equal("Done, added the step.");
+      });
+  });
+
   describe("given a run that fails", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
@@ -506,7 +522,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/The agent run failed: The model is unavailable/)
       .it("still prints what the agent did first", (ctx) => {
         expect(ctx.stdout).to.equal("Done, added the step.\n");
@@ -522,7 +538,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--json", "--timeout", "1"])
+      .command(["agent", "Add an email step", "--json", "--timeout", "1"])
       .it("reports a timeout with what's happened so far", (ctx) => {
         const result = JSON.parse(ctx.stdout);
 
@@ -550,7 +566,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--json"])
+      .command(["agent", "Add an email step", "--json"])
       .it("reports an interrupt with its own exit code", (ctx) => {
         const result = JSON.parse(ctx.stdout);
 
@@ -569,7 +585,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--json"])
+      .command(["agent", "Add an email step", "--json"])
       .it("keeps the message of an error from before the session", (ctx) => {
         expect(JSON.parse(ctx.stdout)).to.eql({
           error: { message: "insufficient permissions" },
@@ -590,13 +606,13 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step"])
       .it("still prints the result", (ctx) => {
         expect(JSON.parse(ctx.stdout).text).to.equal("Done, added the step.");
       });
   });
 
-  describe("given --stream", () => {
+  describe("given a prompt", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
       .do(() => {
@@ -605,7 +621,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .it("renders the agent's activity", (ctx) => {
         expect(nock.isDone()).to.equal(true);
         expect(ctx.stdout).to.contain("Done, added the step.\n");
@@ -628,7 +644,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .it("resumes from the last offset when disconnected", (ctx) => {
         expect(nock.isDone()).to.equal(true);
         expect(ctx.stdout).to.contain("Done, added the step.\n");
@@ -648,7 +664,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .it("doesn't print anything twice after a dropped connection", (ctx) => {
         expect(nock.isDone()).to.equal(true);
         expect(ctx.stdout).to.contain("Done, added the step.\n");
@@ -665,7 +681,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .it("reconnects right away while behind the journal", () => {
         expect(nock.isDone()).to.equal(true);
         sinon.assert.notCalled(sleep);
@@ -680,7 +696,7 @@ describe("commands/prompt", () => {
       })
       .stdout({ stripColor: false })
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .it("leaves no spinner behind in a terminal", (ctx) => {
         const lastDraw = ctx.stdout.split("\u001B[0J").at(-1);
 
@@ -696,7 +712,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .catch(/The agent run failed: The model is unavailable/)
       .it("fails when the run fails");
 
@@ -708,7 +724,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .catch(/The agent run failed/)
       .it("ends the line before the error is printed", (ctx) => {
         expect(ctx.stdout).to.equal("Done\n");
@@ -725,63 +741,9 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .catch(/insufficient permissions/)
       .it("reads the error out of a streamed response");
-  });
-
-  describe("given --stream and --json", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .do(() => {
-        mockStart();
-        mockLiveEvents("-1", sseFrames(allEvents));
-      })
-      .stdout()
-      .stderr()
-      .command(["prompt", "Add an email step", "--stream", "--json"])
-      .it("prints newline-delimited json", (ctx) => {
-        const lines = ctx.stdout
-          .trim()
-          .split("\n")
-          .map((line) => JSON.parse(line));
-
-        expect(lines[0]).to.deep.include({
-          type: "session",
-          session_id: createBody.id,
-          run_id: createBody.run_id,
-        });
-        expect(lines.slice(1, -1)).to.eql(allEvents);
-        expect(lines.at(-1)).to.deep.include({
-          type: "result",
-          session_id: createBody.id,
-          status: "complete",
-          text: "Done, added the step.",
-        });
-      });
-
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .do(() => {
-        mockStart();
-        mockLiveEvents("-1", sseFrames([textDelta]));
-        api()
-          .get(eventsPath)
-          .query(true)
-          .reply(404, { error: "session not found" });
-      })
-      .stdout()
-      .stderr()
-      .command(["prompt", "Add an email step", "--stream", "--json"])
-      .it("keeps every line parseable when following fails", (ctx) => {
-        const lines = ctx.stdout.trim().split("\n");
-        const result = JSON.parse(lines.at(-1) as string);
-
-        expect(lines).to.have.length(3);
-        expect(result.type).to.equal("result");
-        expect(result.status).to.equal("lost");
-        expect(process.exitCode).to.equal(2);
-      });
   });
 
   describe("given the session can't be started", () => {
@@ -793,7 +755,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/isn't enabled for this account\. Please contact support/)
       .it("explains a 404");
 
@@ -807,7 +769,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/insufficient permissions/)
       .it("surfaces the api error");
 
@@ -819,7 +781,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/Could not confirm that agent session .* started: socket hang up/)
       .it("can't say whether a dropped request started it");
 
@@ -831,7 +793,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/Request failed with status 200/)
       .it("refuses a response that didn't accept the session");
   });
@@ -839,7 +801,7 @@ describe("commands/prompt", () => {
   describe("given an invalid --timeout", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
-      .command(["prompt", "Hi", "--timeout", "2147484"])
+      .command(["agent", "Hi", "--timeout", "2147484", "--response-only"])
       .exit(2)
       .it("rejects a value too long for a timer", () => {
         expect(createBody).to.eql({});
@@ -856,7 +818,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("retries server errors", (ctx) => {
         expect(ctx.stdout).to.equal("Done, added the step.\n");
       });
@@ -870,7 +832,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("retries dropped connections", (ctx) => {
         expect(ctx.stdout).to.equal("Done, added the step.\n");
       });
@@ -888,7 +850,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("rides out a long network change", (ctx) => {
         expect(ctx.stdout).to.equal("Done, added the step.\n");
       });
@@ -905,7 +867,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/which may still be running: the connection was interrupted/)
       .it("gives up eventually, without internal error text", () => {
         expect(nock.isDone()).to.equal(true);
@@ -924,7 +886,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/Received an unexpected response from Knock/)
       .it("retries, then reports, a response that isn't events", () => {
         expect(nock.isDone()).to.equal(true);
@@ -939,7 +901,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/Received an unexpected response from Knock/)
       .it("doesn't loop on a response with no offset", () => {
         expect(nock.isDone()).to.equal(true);
@@ -958,7 +920,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--stream"])
+      .command(["agent", "Add an email step"])
       .catch(/Received an unexpected response from Knock/)
       .it("reports a live response that isn't an event stream", () => {
         expect(nock.isDone()).to.equal(true);
@@ -972,7 +934,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/Could not process an event/)
       .it("doesn't retry an event it can't process", () => {
         expect(nock.isDone()).to.equal(true);
@@ -987,7 +949,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/use version 2, which this CLI can't read\. Upgrade the Knock CLI/)
       .it("says when it needs upgrading");
 
@@ -1002,7 +964,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch((error) => {
         expect(error.message).to.contain("may still be running");
         expect(error.message).to.contain("session not found");
@@ -1018,7 +980,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/Nope/)
       .it("doesn't retry a rejected service token");
   });
@@ -1067,7 +1029,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("refreshes the token and carries on", (ctx) => {
         sinon.assert.calledTwice(auth.refreshAccessToken as any);
         expect(nock.isDone()).to.equal(true);
@@ -1097,7 +1059,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("uses a token another command saved, instead of refreshing", () => {
         sinon.assert.calledOnce(auth.refreshAccessToken as any);
         expect(nock.isDone()).to.equal(true);
@@ -1129,7 +1091,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .it("survives a failed refresh without clearing the login", (ctx) => {
         expect(ctx.stdout).to.equal("Done, added the step.\n");
         sinon.assert.neverCalledWith(UserConfigStore.prototype.set as any, {
@@ -1154,7 +1116,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .catch(/Run `knock login` and try again/)
       .it("gives up on auth sooner, and says what to do");
 
@@ -1186,7 +1148,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .exit(130)
       .it("refreshes the token to stop the session", () => {
         expect(nock.isDone()).to.equal(true);
@@ -1204,7 +1166,13 @@ describe("commands/prompt", () => {
       .stub(KnockApiV1.prototype, "stopAgentSession", (stub) => stub.resolves())
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step", "--timeout", "1"])
+      .command([
+        "agent",
+        "Add an email step",
+        "--timeout",
+        "1",
+        "--response-only",
+      ])
       .catch((error) => {
         expect(error.message).to.contain("Timed out after 1s");
         expect(error.message).to.contain(createBody.id);
@@ -1236,7 +1204,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .exit(130)
       .it("stops the session", () => {
         expect(nock.isDone()).to.equal(true);
@@ -1260,7 +1228,7 @@ describe("commands/prompt", () => {
         })
         .stdout()
         .stderr()
-        .command(["prompt", "Add an email step"])
+        .command(["agent", "Add an email step", "--response-only"])
         .exit(130)
         .it(`stops the session on ${signal}`, () => {
           expect(nock.isDone()).to.equal(true);
@@ -1283,7 +1251,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .exit(130)
       .it("stops a session interrupted while starting", (ctx) => {
         expect(nock.isDone()).to.equal(true);
@@ -1308,7 +1276,7 @@ describe("commands/prompt", () => {
       })
       .stdout()
       .stderr()
-      .command(["prompt", "Add an email step"])
+      .command(["agent", "Add an email step", "--response-only"])
       .exit(130)
       .it("says when it couldn't stop the session", (ctx) => {
         expect(ctx.stderr).to.contain("Could not stop agent session");
