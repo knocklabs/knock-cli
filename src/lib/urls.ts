@@ -8,6 +8,12 @@ export const authSuccessUrl = (dashboardUrl: string): string =>
 export const authErrorUrl = (dashboardUrl: string, error: string): string =>
   `${dashboardUrl}/auth/oauth/cli?error=${error}`;
 
+export const viewAgentSessionUrl = (
+  dashboardUrl: string,
+  accountSlug: string,
+  sessionId: string,
+): string => `${dashboardUrl}/${accountSlug}/agents/sessions/${sessionId}`;
+
 export const viewWorkflowUrl = (
   dashboardUrl: string,
   accountSlug: string,

@@ -152,6 +152,46 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     }
   }
 
+  /*
+   * Long-running commands can outlive the access token they started with.
+   * Returns whether it's worth retrying, which isn't a promise of a good token.
+   *
+   * This differs from the refresh at startup. Other commands refresh and save a
+   * new token while this one runs, so what's in memory may be out of date: read
+   * the config again first, and use a newer token if there is one. The session
+   * also stays put if the refresh fails, since that could be a network blip.
+   */
+  protected async refreshApiClient(): Promise<boolean> {
+    if (this.sessionContext.type !== "oauth") return false;
+
+    try {
+      await this.configStore.load();
+
+      const session = this.configStore.get().userSession;
+
+      // The user logged out during the run.
+      if (!session) return false;
+
+      if (session.accessToken === this.sessionContext.session?.accessToken) {
+        const refreshedSession = await auth.refreshAccessToken({
+          authUrl: this.sessionContext.authOrigin,
+          clientId: session.clientId,
+          refreshToken: session.refreshToken,
+        });
+
+        await this.configStore.set({ userSession: refreshedSession });
+      }
+    } catch {
+      this.debug("Failed to refresh access token.");
+      return true;
+    }
+
+    this.sessionContext = this.buildSessionContext();
+    this.apiV1 = new KnockApiV1(this.sessionContext, this.config);
+
+    return true;
+  }
+
   private async refreshAccessTokenForSession(): Promise<void> {
     // Maybe refresh the access token?
     try {

@@ -1,6 +1,8 @@
 // This file is the Knock API client. It is allowed to be long.
 // Add resource methods on ApiV1 instead of splitting them out to satisfy a line limit.
 
+import type { Readable } from "node:stream";
+
 import KnockMgmt from "@knocklabs/mgmt";
 import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
@@ -18,6 +20,10 @@ import {
   putAssetBytes,
 } from "@/lib/assets";
 import { Props } from "@/lib/base-command";
+import {
+  AGENT_READ_TIMEOUT_MS,
+  type AgentEvent,
+} from "@/lib/helpers/agent-session";
 import { InputError } from "@/lib/helpers/error";
 import { AnyObj, prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
@@ -38,6 +44,9 @@ import * as Workflow from "@/lib/marshal/workflow";
 import { SessionContext } from "./types";
 
 const API_VERSION = "v1";
+
+const AGENT_START_TIMEOUT_MS = 30_000;
+const AGENT_STOP_TIMEOUT_MS = 10_000;
 
 /**
  * KnockMgmt client requires a service token, but we set the Authorization
@@ -991,6 +1000,51 @@ export default class ApiV1 {
     return created.data;
   }
 
+  // By resources: Agent sessions
+  //
+  // The agent API isn't part of the versioned public API, so these call the
+  // client directly instead of going through the `/v1` helpers below.
+
+  async createAgentSession(
+    body: CreateAgentSessionBody,
+  ): Promise<AxiosResponse<CreateAgentSessionResp>> {
+    // Ask for a 202 instead of a held-open response, so the run doesn't depend
+    // on this connection staying up. Events are read from the session journal.
+    return this.client.post("/agent/sessions", body, {
+      headers: { Prefer: "respond-async" },
+      timeout: AGENT_START_TIMEOUT_MS,
+    });
+  }
+
+  async getAgentSessionEvents(
+    sessionId: string,
+    { offset, signal }: AgentSessionEventsOpts,
+  ): Promise<AxiosResponse<AgentEvent[]>> {
+    return this.client.get(`/agent/sessions/${sessionId}/events`, {
+      params: { offset },
+      signal,
+      timeout: AGENT_READ_TIMEOUT_MS,
+    });
+  }
+
+  async streamAgentSessionEvents(
+    sessionId: string,
+    { offset, signal }: AgentSessionEventsOpts,
+  ): Promise<AxiosResponse<Readable>> {
+    return this.client.get(`/agent/sessions/${sessionId}/events`, {
+      params: { offset, live: "sse" },
+      responseType: "stream",
+      signal,
+      timeout: AGENT_READ_TIMEOUT_MS,
+    });
+  }
+
+  async stopAgentSession(sessionId: string): Promise<AxiosResponse> {
+    return this.client.post(`/agent/session/${sessionId}/stop`, undefined, {
+      timeout: AGENT_STOP_TIMEOUT_MS,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -1025,6 +1079,28 @@ export default class ApiV1 {
 }
 
 export type T = ApiV1;
+
+/*
+ * Agent API types:
+ */
+export type CreateAgentSessionBody = {
+  id: string;
+  run_id: string;
+  prompt: string;
+  source: "api";
+  context: { type: string; value: unknown }[];
+};
+
+export type CreateAgentSessionResp = {
+  session_id: string;
+  run_id: string;
+  status: "accepted";
+};
+
+type AgentSessionEventsOpts = {
+  offset: string;
+  signal?: AbortSignal;
+};
 
 /*
  * API v1 response types:
