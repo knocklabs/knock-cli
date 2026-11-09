@@ -351,13 +351,18 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
   /*
    * Reads an existing session's journal to the end. A follow-up shows events
    * from there on, and runs where the last prompt ran.
+   *
+   * The server returns the journal a page at a time, so this keeps reading
+   * until it says there's no more. An empty page also ends it, in case the
+   * server never says so.
    */
   private async readJournal(sessionId: string): Promise<SessionJournal> {
     let offset = START_OFFSET;
     let environment: string | undefined;
+    let hasMore: boolean;
 
     /* eslint-disable no-await-in-loop -- each read resumes where the last ended. */
-    for (;;) {
+    do {
       const resp = await this.apiV1
         .getAgentSessionEvents(sessionId, { offset })
         .catch((error: Error) =>
@@ -382,9 +387,11 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
       offset = nextOffset;
 
       const isUpToDate = resp.headers["stream-up-to-date"] === "true";
-      if (isUpToDate || resp.data.length === 0) return { offset, environment };
-    }
+      hasMore = !isUpToDate && resp.data.length > 0;
+    } while (hasMore);
     /* eslint-enable no-await-in-loop */
+
+    return { offset, environment };
   }
 
   private async startRun({
