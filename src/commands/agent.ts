@@ -2,10 +2,11 @@ import { randomUUID } from "node:crypto";
 import { text as readText } from "node:stream/consumers";
 import { setTimeout as sleep } from "node:timers/promises";
 
-import { Args, Flags, Interfaces } from "@oclif/core";
+import { Args, Errors, Flags, Interfaces, ux } from "@oclif/core";
 
 import { CreateAgentSessionBody } from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
+import { AgentPromptReader } from "@/lib/helpers/agent-prompt";
 import {
   AGENT_READ_TIMEOUT_MS,
   AgentEvent,
@@ -80,6 +81,32 @@ type AgentTarget = { environment?: string; branch?: string };
 // Where an existing session's journal ends, and where its last prompt ran.
 type SessionJournal = { offset: string; environment?: string };
 
+// Where to read a session's journal from, moved along as events are read.
+type JournalCursor = { sessionId: string; offset: string };
+
+type Turn = {
+  sessionId: string;
+  sessionUrl?: string;
+  prompt: string;
+  envOrBranch?: string;
+  isFollowUp: boolean;
+  offset: string;
+  interrupt: AbortController;
+  // Whether to say which session the prompt runs in.
+  announce?: boolean;
+};
+
+type TurnResult = {
+  result: PromptResult;
+  // Where the session's journal was read up to.
+  offset: string;
+  // Whether the agent's output ended with a blank line.
+  endsWithBlankLine: boolean;
+};
+
+const PROMPT_MARKER = "› ";
+const EXIT_COMMANDS = new Set(["/exit", "/quit"]);
+
 const SPINNER_LABELS: Record<PromptStatus, string | undefined> = {
   complete: undefined,
   error: "failed",
@@ -149,15 +176,19 @@ export default class Agent extends BaseCommand<typeof Agent> {
 
   static description = `Starts a new agent session and shows what the agent is doing as it happens. The agent can read and change resources in your account.
 
+Run it in a terminal without a prompt to chat with the agent: it waits for your next prompt each time it finishes. Press Esc or Ctrl-C to stop the agent mid-run, and Ctrl-D or /exit to quit.
+
 Pass --session with the ID of an earlier session to follow up in it. The agent keeps what it knows from that session, and works in the same environment or branch unless you pass --environment or --branch.
 
 Pass - as the prompt to read it from stdin. Put -- first if the prompt itself starts with a dash. Pass --response-only to print only the agent's response, once it finishes.`;
 
   static examples = [
     '<%= config.bin %> <%= command.id %> "Add an email step to the welcome workflow"',
+    "<%= config.bin %> <%= command.id %>",
     "cat prompt.txt | <%= config.bin %> <%= command.id %> -",
     '<%= config.bin %> <%= command.id %> "Add a new-user guide" --response-only --branch my-feature',
     '<%= config.bin %> <%= command.id %> --session 3f2a6c1e-8b4d-4f7a-9c2e-5d1b0a7e6f43 "Now shorten the subject line"',
+    "<%= config.bin %> <%= command.id %> --session 3f2a6c1e-8b4d-4f7a-9c2e-5d1b0a7e6f43",
     '<%= config.bin %> <%= command.id %> -- "- Add an email step"',
   ];
 
@@ -183,8 +214,8 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
 
   static args = {
     prompt: Args.string({
-      required: true,
-      description: "The prompt to run, or - to read it from stdin.",
+      description:
+        "The prompt to run, or - to read it from stdin. Leave it out in a terminal to chat with the agent.",
       // Otherwise oclif reads stdin itself and joins the lines of the prompt.
       ignoreStdin: true,
     }),
@@ -196,20 +227,19 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     const followUpId = this.parseSessionFlag();
     const target = this.resolveTarget(Boolean(followUpId));
 
+    if (this.props.args.prompt === undefined) {
+      return this.runInteractive(followUpId, target);
+    }
+
     const prompt = await this.readPrompt();
 
-    // Read before the run starts, so that only the new run's events are shown.
-    const journal = followUpId ? await this.readJournal(followUpId) : undefined;
-
     const sessionId = followUpId ?? randomUUID();
-    const runId = randomUUID();
-    const sessionUrl = await this.buildSessionUrl(sessionId);
 
-    // Branches are environments to the agent. Each run falls back to the
-    // account's default environment when given none, so a follow-up names the
-    // one its session was in.
-    const envOrBranch =
-      target.branch ?? target.environment ?? journal?.environment;
+    // Read before the run starts, so that only the new run's events are shown.
+    const [journal, sessionUrl] = await Promise.all([
+      followUpId ? this.readJournal(followUpId) : undefined,
+      this.buildSessionUrl(sessionId),
+    ]);
 
     // Set up before the session starts, so that it can't be orphaned. A second
     // Ctrl-C falls through to the default handler and kills the process.
@@ -219,36 +249,17 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     for (const signal of STOP_SIGNALS) process.once(signal, onInterrupt);
 
     try {
-      await this.startRun({
-        id: sessionId,
-        runId,
+      const { result } = await this.runTurn({
+        sessionId,
+        sessionUrl,
         prompt,
-        envOrBranch,
+        envOrBranch: this.resolveEnvOrBranch(target, journal),
         isFollowUp: Boolean(journal),
+        offset: journal?.offset ?? START_OFFSET,
+        interrupt,
       });
 
-      const session = {
-        session_id: sessionId,
-        run_id: runId,
-        session_url: sessionUrl,
-      };
-
-      this.logToStderr(
-        `‣ ${journal ? "Continuing" : "Started"} agent session ${sessionId}`,
-      );
-      if (sessionUrl) this.logToStderr(indentString(sessionUrl, 4));
-
-      const run = new AgentRun();
-      const offset = journal?.offset ?? START_OFFSET;
-      const outcome = await this.waitForRun(session, run, interrupt, offset);
-
-      return this.finish({
-        ...session,
-        ...outcome,
-        text: run.text,
-        tool_calls: run.toolCallList,
-        modified_resources: run.modifiedResources,
-      });
+      return this.finish(result);
     } finally {
       for (const signal of STOP_SIGNALS) process.off(signal, onInterrupt);
     }
@@ -270,6 +281,260 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
 
   protected toErrorJson(err: unknown): { error: { message: string } } {
     return { error: { message: (err as Error).message } };
+  }
+
+  /*
+   * Chats with the agent in one session: each prompt runs once the last run has
+   * ended. The session starts with the first prompt, so quitting before then
+   * leaves nothing behind.
+   */
+  private async runInteractive(
+    followUpId: string | undefined,
+    target: AgentTarget,
+  ): Promise<void> {
+    this.ensureCanChat();
+
+    const sessionId = followUpId ?? randomUUID();
+
+    const [journal, sessionUrl] = await Promise.all([
+      followUpId ? this.readJournal(followUpId) : undefined,
+      this.buildSessionUrl(sessionId),
+    ]);
+
+    const envOrBranch = this.resolveEnvOrBranch(target, journal);
+
+    let offset = journal?.offset ?? START_OFFSET;
+    let isStarted = Boolean(journal);
+    let isAnnounced = false;
+
+    this.logToStderr(
+      `‣ Chatting with the Knock agent in ${
+        envOrBranch ?? "your default environment"
+      }`,
+    );
+    this.logToStderr(
+      ux.colorize(
+        "gray",
+        "  Esc or Ctrl-C stops the agent · Ctrl-D or /exit quits · End a line with \\ for a new line",
+      ),
+    );
+
+    const reader = new AgentPromptReader(process.stdin, process.stdout);
+    const marker = ux.colorize("cyan", PROMPT_MARKER);
+
+    // Signals from outside, such as a closed terminal, end the chat, stopping
+    // the agent first if it's running. A second one kills the process.
+    const quit = new AbortController();
+    let interrupt: AbortController | undefined;
+
+    const onSignal = () => {
+      quit.abort();
+      interrupt?.abort();
+    };
+
+    const removeSignalHandlers = () => {
+      for (const signal of STOP_SIGNALS) process.off(signal, onSignal);
+    };
+
+    for (const signal of STOP_SIGNALS) process.once(signal, onSignal);
+
+    // Each prompt gets a blank line above it, unless one's already there.
+    let isGapNeeded = true;
+
+    /* eslint-disable no-await-in-loop -- each prompt waits for the last run. */
+    try {
+      while (!quit.signal.aborted) {
+        if (isGapNeeded) this.log("");
+
+        const prompt = (
+          await reader.read(marker, { signal: quit.signal })
+        )?.trim();
+
+        if (prompt === undefined || EXIT_COMMANDS.has(prompt)) break;
+
+        isGapNeeded = Boolean(prompt);
+        if (!prompt) continue;
+
+        const turnInterrupt = new AbortController();
+        interrupt = turnInterrupt;
+
+        const stopWatching = reader.watchForInterrupt((key) => {
+          // Ctrl-C again while stopping gives up on it and kills the process,
+          // as it does for a prompt passed as an argument.
+          if (turnInterrupt.signal.aborted && key === "ctrl-c") {
+            stopWatching();
+            removeSignalHandlers();
+            process.kill(process.pid, "SIGINT");
+            return;
+          }
+
+          turnInterrupt.abort();
+        });
+
+        try {
+          // Skips anything since the last run was followed, such as the end of
+          // a run that was stopped, so it isn't taken for the new run's.
+          if (isStarted) {
+            offset = (await this.readJournal(sessionId, offset)).offset;
+          }
+
+          if (turnInterrupt.signal.aborted) {
+            this.logToStderr("‣ Stopped before the prompt was sent.");
+            continue;
+          }
+
+          const turn = await this.runTurn({
+            sessionId,
+            sessionUrl,
+            prompt,
+            envOrBranch,
+            isFollowUp: isStarted,
+            offset,
+            interrupt: turnInterrupt,
+            announce: !isAnnounced,
+          });
+
+          isStarted = true;
+          isAnnounced = true;
+          offset = turn.offset;
+
+          const hasReported = this.reportTurn(turn.result);
+          isGapNeeded = hasReported || !turn.endsWithBlankLine;
+        } catch (error) {
+          if (error instanceof Errors.ExitError) throw error;
+          this.logFailure((error as Error).message);
+        } finally {
+          stopWatching();
+          interrupt = undefined;
+        }
+      }
+    } finally {
+      removeSignalHandlers();
+    }
+    /* eslint-enable no-await-in-loop */
+
+    this.logResumeHint(sessionId, isStarted);
+
+    if (quit.signal.aborted) this.exit(EXIT_CODE_INTERRUPTED);
+  }
+
+  private ensureCanChat(): void {
+    if (this.jsonEnabled() || this.props.flags["response-only"]) {
+      this.error(
+        "--json and --response-only need a prompt. Pass one as an argument, or - to read it from stdin.",
+      );
+    }
+
+    if (!process.stdin.isTTY || !process.stdout.isTTY) {
+      this.error(
+        "No prompt given. Pass one as an argument, or - to read it from stdin. Run without a prompt in a terminal to chat with the agent.",
+      );
+    }
+  }
+
+  private logResumeHint(sessionId: string, isStarted: boolean): void {
+    if (!isStarted) return;
+
+    this.logToStderr(
+      `‣ Pick up where you left off with: ${this.config.bin} ${this.id} --session ${sessionId}`,
+    );
+  }
+
+  /*
+   * What a run in interactive mode says once it ends, without ending the chat.
+   * Returns whether it said anything.
+   */
+  private reportTurn(result: PromptResult): boolean {
+    const { status, error, modified_resources: resources } = result;
+
+    this.logModifiedResources(resources);
+
+    if (status === "complete") return resources.length > 0;
+
+    const message = error ?? "";
+
+    if (status === "interrupted") {
+      this.logToStderr(`‣ ${stripControlChars(message)}`);
+    } else {
+      this.logFailure(
+        status === "error" ? `The agent run failed: ${message}` : message,
+      );
+    }
+
+    return true;
+  }
+
+  private logFailure(message: string): void {
+    this.logToStderr(
+      `${ux.colorize("red", "✗")} ${stripControlChars(message)}`,
+    );
+  }
+
+  // Branches are environments to the agent. Each run falls back to the
+  // account's default environment when given none, so a follow-up names the one
+  // its session was in.
+  private resolveEnvOrBranch(
+    target: AgentTarget,
+    journal?: SessionJournal,
+  ): string | undefined {
+    return target.branch ?? target.environment ?? journal?.environment;
+  }
+
+  /*
+   * Runs a prompt in a session and follows it to the end. Returns the outcome,
+   * and the offset the session's journal was read up to.
+   */
+  private async runTurn({
+    sessionId,
+    sessionUrl,
+    prompt,
+    envOrBranch,
+    isFollowUp,
+    offset,
+    interrupt,
+    announce = true,
+  }: Turn): Promise<TurnResult> {
+    const runId = randomUUID();
+
+    await this.startRun({
+      id: sessionId,
+      runId,
+      prompt,
+      envOrBranch,
+      isFollowUp,
+    });
+
+    const session = {
+      session_id: sessionId,
+      run_id: runId,
+      session_url: sessionUrl,
+    };
+
+    if (announce) {
+      this.logToStderr(
+        `‣ ${isFollowUp ? "Continuing" : "Started"} agent session ${sessionId}`,
+      );
+      if (sessionUrl) this.logToStderr(indentString(sessionUrl, 4));
+    }
+
+    const run = new AgentRun();
+    const cursor = { sessionId, offset };
+    const { outcome, endsWithBlankLine } = await this.waitForRun(
+      session,
+      run,
+      interrupt,
+      cursor,
+    );
+
+    const result = {
+      ...session,
+      ...outcome,
+      text: run.text,
+      tool_calls: run.toolCallList,
+      modified_resources: run.modifiedResources,
+    };
+
+    return { result, offset: cursor.offset, endsWithBlankLine };
   }
 
   // With --json, the output is a single result once the run has finished.
@@ -318,7 +583,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
   }
 
   private async readPrompt(): Promise<string> {
-    const { prompt } = this.props.args;
+    const { prompt = "" } = this.props.args;
 
     const text = prompt === "-" ? await this.readStdin() : prompt;
     if (!text.trim()) this.error("The prompt is empty.");
@@ -349,15 +614,19 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
   }
 
   /*
-   * Reads an existing session's journal to the end. A follow-up shows events
-   * from there on, and runs where the last prompt ran.
+   * Reads an existing session's journal to the end, from the start unless
+   * given an offset. A follow-up shows events from there on, and runs where the
+   * last prompt ran.
    *
    * The server returns the journal a page at a time, so this keeps reading
    * until it says there's no more. An empty page also ends it, in case the
    * server never says so.
    */
-  private async readJournal(sessionId: string): Promise<SessionJournal> {
-    let offset = START_OFFSET;
+  private async readJournal(
+    sessionId: string,
+    from = START_OFFSET,
+  ): Promise<SessionJournal> {
+    let offset = from;
     let environment: string | undefined;
     let hasMore: boolean;
 
@@ -448,8 +717,8 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     session: Pick<PromptResult, "session_id" | "session_url">,
     run: AgentRun,
     interrupt: AbortController,
-    offset: string,
-  ): Promise<PromptOutcome> {
+    cursor: JournalCursor,
+  ): Promise<{ outcome: PromptOutcome; endsWithBlankLine: boolean }> {
     const { timeout } = this.props.flags;
 
     const renderer = this.buildRenderer();
@@ -468,8 +737,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
     let failure: unknown;
 
     try {
-      const from = { sessionId: session.session_id, offset };
-      await this.followRun(from, run, onEvent, signal);
+      await this.followRun(cursor, run, onEvent, signal);
     } catch (error) {
       if (!signal.aborted) failure = error;
     }
@@ -480,7 +748,10 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
 
     if (showSpinner) spinner.stop(SPINNER_LABELS[outcome.status]);
 
-    return outcome;
+    return {
+      outcome,
+      endsWithBlankLine: renderer?.endsWithBlankLine ?? false,
+    };
   }
 
   private async resolveOutcome(
@@ -591,15 +862,14 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
   }
 
   private async followRun(
-    from: { sessionId: string; offset: string },
+    cursor: JournalCursor,
     run: AgentRun,
     onEvent: (event: AgentEvent) => void,
     signal: AbortSignal,
   ): Promise<void> {
-    const { sessionId } = from;
+    const { sessionId } = cursor;
     const startedAt = Date.now();
 
-    let { offset } = from;
     let behind = false;
     let failures = 0;
 
@@ -615,7 +885,7 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
           : new AgentEventError(`Could not process an event: ${error}`);
       }
 
-      offset = batch.nextOffset;
+      cursor.offset = batch.nextOffset;
       behind = !batch.upToDate && batch.events.length > 0;
       failures = 0;
     };
@@ -626,6 +896,8 @@ Pass - as the prompt to read it from stdin. Put -- first if the prompt itself st
       behind = false;
 
       try {
+        const { offset } = cursor;
+
         for await (const batch of this.readEvents(sessionId, offset, signal)) {
           applyBatch(batch);
 

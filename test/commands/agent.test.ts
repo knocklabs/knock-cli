@@ -9,6 +9,7 @@ import * as sinon from "sinon";
 import { factory } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import auth from "@/lib/auth";
+import { AgentPromptReader, InterruptKey } from "@/lib/helpers/agent-prompt";
 import * as CustomFlags from "@/lib/helpers/flag";
 import { UserConfig, UserConfigStore } from "@/lib/user-config";
 
@@ -192,6 +193,33 @@ const mockLiveEvents = (offset: string, body: string) =>
     .get(eventsPath)
     .query({ offset, live: "sse" })
     .reply(200, body, { "content-type": "text/event-stream" });
+
+const isLive = (query: Record<string, any>) => query.live === "sse";
+
+const mockStop = () =>
+  api()
+    .post(/^\/agent\/session\/[\da-f-]+\/stop$/)
+    .reply(200, { ok: true });
+
+const mockCatchUp = () =>
+  api()
+    .get(eventsPath)
+    .query((query) => !isLive(query))
+    .reply(200, [], journalHeaders());
+
+const mockNextRun = (events: unknown[] = allEvents) => {
+  api()
+    .post(/^\/agent\/sessions\/[\da-f-]+\/runs$/, (body) => {
+      runBody = body;
+      return true;
+    })
+    .reply(202, {});
+
+  api()
+    .get(eventsPath)
+    .query(isLive)
+    .reply(200, sseFrames(events), { "content-type": "text/event-stream" });
+};
 
 describe("commands/agent", () => {
   const originalStdin = process.stdin;
@@ -1630,5 +1658,293 @@ describe("commands/agent", () => {
         expect(ctx.stderr).to.contain("may still be running");
         expect(ctx.stderr).to.contain("update workflow welcome");
       });
+  });
+
+  describe("given no prompt in a terminal", () => {
+    let read: sinon.SinonStub | undefined;
+    let watch: sinon.SinonStub | undefined;
+    let pressKey: (key: InterruptKey) => void;
+
+    // Types each prompt in turn, then quits.
+    const useTerminal = (prompts: string[]) => {
+      Object.defineProperty(process, "stdin", {
+        configurable: true,
+        value: { isTTY: true },
+      });
+      process.stdout.isTTY = true;
+
+      read = sinon.stub(AgentPromptReader.prototype, "read");
+      for (const [i, prompt] of prompts.entries()) {
+        read.onCall(i).resolves(prompt);
+      }
+
+      read.resolves();
+
+      watch = sinon
+        .stub(AgentPromptReader.prototype, "watchForInterrupt")
+        .callsFake((onInterrupt) => {
+          pressKey = onInterrupt;
+          return sinon.stub();
+        });
+    };
+
+    afterEach(() => {
+      read?.restore();
+      watch?.restore();
+      read = undefined;
+      watch = undefined;
+    });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Add an email step", "Now shorten the subject line"]);
+        mockStart();
+        mockLiveEvents("-1", sseFrames(allEvents));
+        mockCatchUp();
+        mockNextRun();
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "--environment", "staging"])
+      .it("runs each prompt in the same session", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+
+        expect(createBody.prompt).to.equal("Add an email step");
+        expect(runBody.prompt).to.equal("Now shorten the subject line");
+        expect(runBody.id).to.equal(createBody.id);
+        expect(runBody.run_id).not.to.equal(createBody.run_id);
+
+        const context = [{ type: "environment", value: "staging" }];
+        expect(createBody.context).to.eql(context);
+        expect(runBody.context).to.eql(context);
+
+        expect(ctx.stdout.match(/added the step/g)).to.have.length(2);
+        expect(ctx.stderr).to.contain(
+          "Chatting with the Knock agent in staging",
+        );
+        expect(ctx.stderr.match(/Started agent session/g)).to.have.length(1);
+        expect(ctx.stderr).to.contain(
+          `Pick up where you left off with: knock agent --session ${createBody.id}`,
+        );
+        expect(read?.callCount).to.equal(3);
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["   ", "/exit"]);
+        api().get("/v1/whoami").reply(200, { account_slug: "collab-io" });
+      })
+      .stdout()
+      .stderr()
+      .command(["agent"])
+      .it("quits without starting a session", (ctx) => {
+        expect(createBody).to.eql({});
+        expect(read?.callCount).to.equal(2);
+        expect(ctx.stderr).not.to.contain("Pick up where you left off");
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Add an email step", "Try again"]);
+        mockStart();
+        api()
+          .get(eventsPath)
+          .query({ offset: "-1", live: "sse" })
+          .reply(() => {
+            pressKey("escape");
+            return [
+              200,
+              sseFrames([textDelta], false),
+              { "content-type": "text/event-stream" },
+            ];
+          });
+        mockStop();
+        mockCatchUp();
+        mockNextRun();
+      })
+      .stdout()
+      .stderr()
+      .command(["agent"])
+      .it("stops the agent and waits for the next prompt", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+        expect(ctx.stderr).to.contain("Stopped agent session");
+        expect(runBody.prompt).to.equal("Try again");
+        expect(process.exitCode).to.equal(undefined);
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Add an email step"]);
+        sinon.stub(process, "kill");
+        mockStart();
+        api()
+          .get(eventsPath)
+          .query({ offset: "-1", live: "sse" })
+          .reply(() => {
+            pressKey("ctrl-c");
+            pressKey("ctrl-c");
+            return [200, "", { "content-type": "text/event-stream" }];
+          });
+        mockStop();
+      })
+      .finally(() => (process.kill as sinon.SinonStub).restore?.())
+      .stdout()
+      .stderr()
+      .command(["agent"])
+      .it("gives up on stopping at a second Ctrl-C", () => {
+        sinon.assert.calledOnceWithExactly(
+          process.kill as sinon.SinonStub,
+          process.pid,
+          "SIGINT",
+        );
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Add an email step", "Try again"]);
+        mockStart();
+        mockLiveEvents("-1", sseFrames([textDelta, runError]));
+        mockCatchUp();
+        mockNextRun();
+      })
+      .stdout()
+      .stderr()
+      .command(["agent"])
+      .it("carries on after a failed run", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+        expect(ctx.stderr).to.contain(
+          "The agent run failed: The model is unavailable",
+        );
+        expect(runBody.prompt).to.equal("Try again");
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Add an email step", "Try again"]);
+        api().post("/agent/sessions").reply(500, {});
+        mockStart();
+        mockLiveEvents("-1", sseFrames(allEvents));
+      })
+      .stdout()
+      .stderr()
+      .command(["agent"])
+      .it("starts the session with the next prompt if one fails", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+        expect(ctx.stderr).to.contain("An internal server error occurred");
+        expect(createBody.prompt).to.equal("Try again");
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Add an email step", "Never sent"]);
+        mockStart();
+        api()
+          .get(eventsPath)
+          .query({ offset: "-1", live: "sse" })
+          .reply(() => {
+            process.emit("SIGTERM");
+            return [200, "", { "content-type": "text/event-stream" }];
+          });
+        mockStop();
+      })
+      .stdout()
+      .stderr()
+      .command(["agent"])
+      .exit(130)
+      .it("stops the agent and quits on SIGTERM", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+        expect(read?.callCount).to.equal(1);
+        expect(ctx.stderr).to.contain("Pick up where you left off");
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Now shorten the subject line"]);
+        mockJournal();
+        mockFollowUp();
+        api()
+          .get(`/agent/sessions/${SESSION_ID}/events`)
+          .query({ offset: JOURNAL_END })
+          .reply(200, [], {
+            "stream-next-offset": JOURNAL_END,
+            "stream-up-to-date": "true",
+          });
+        mockLiveEvents(JOURNAL_END, sseFrames(allEvents));
+      })
+      .stdout()
+      .stderr()
+      .command(["agent", "--session", SESSION_ID])
+      .it("continues the session given with --session", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+        expect(runBody.prompt).to.equal("Now shorten the subject line");
+        expect(runBody.context).to.eql([
+          { type: "environment", value: "my-feature" },
+        ]);
+        expect(ctx.stderr).to.contain(
+          "Chatting with the Knock agent in my-feature",
+        );
+        expect(ctx.stderr).to.contain(`Continuing agent session ${SESSION_ID}`);
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Add an email step", "Never mind"]);
+        mockStart();
+        mockLiveEvents("-1", sseFrames(allEvents));
+        api()
+          .get(eventsPath)
+          .query((query) => !isLive(query))
+          .reply(() => {
+            pressKey("escape");
+            return [200, [], journalHeaders()];
+          });
+      })
+      .stdout()
+      .stderr()
+      .command(["agent"])
+      .it("doesn't send a prompt stopped before it started", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+        expect(runBody).to.eql({});
+        expect(ctx.stderr).to.contain("Stopped before the prompt was sent");
+        expect(read?.callCount).to.equal(3);
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => {
+        useTerminal(["Add an email step"]);
+        // The real reader stops reading when the signal comes in.
+        read?.onCall(1).callsFake(async () => {
+          process.emit("SIGTERM");
+        });
+        mockStart();
+        mockLiveEvents("-1", sseFrames(allEvents));
+      })
+      .stdout()
+      .stderr()
+      .command(["agent"])
+      .exit(130)
+      .it("quits on SIGTERM while waiting for a prompt", (ctx) => {
+        expect(nock.isDone()).to.equal(true);
+        expect(read?.callCount).to.equal(2);
+        expect(read?.secondCall.args[1].signal.aborted).to.equal(true);
+        expect(ctx.stderr).to.contain("Pick up where you left off");
+      });
+
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .do(() => useTerminal([]))
+      .command(["agent", "--response-only"])
+      .catch(/--json and --response-only need a prompt/)
+      .it("needs a prompt for --response-only");
   });
 });
