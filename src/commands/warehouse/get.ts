@@ -11,9 +11,6 @@ import { spinner } from "@/lib/helpers/ux";
 export default class WarehouseGet extends BaseCommand<typeof WarehouseGet> {
   static summary = "Display a single warehouse connected to your account.";
 
-  // Hidden until warehouse syncs are generally available.
-  static hidden = true;
-
   static flags = {
     environment: CustomFlags.environment,
   };
