@@ -118,12 +118,10 @@
         "description": "Manage variables."
       },
       "warehouse": {
-        "description": "Manage warehouses.",
-        "hidden": true
+        "description": "Manage warehouses."
       },
       "warehouse-sync": {
-        "description": "Manage warehouse syncs.",
-        "hidden": true
+        "description": "Manage warehouse syncs."
       },
       "workflow": {
         "description": "Manage notification workflows."

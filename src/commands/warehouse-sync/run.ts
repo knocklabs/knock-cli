@@ -12,9 +12,6 @@ export default class WarehouseSyncRun extends BaseCommand<
   static summary =
     "Run a published warehouse sync now, instead of waiting for its schedule.";
 
-  // Hidden until warehouse syncs are generally available.
-  static hidden = true;
-
   static flags = {
     environment: CustomFlags.environment,
   };

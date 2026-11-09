@@ -15,9 +15,6 @@ export default class WarehouseSyncGet extends BaseCommand<
 > {
   static summary = "Display a single warehouse sync from an environment.";
 
-  // Hidden until warehouse syncs are generally available.
-  static hidden = true;
-
   static flags = {
     environment: CustomFlags.environment,
     "hide-uncommitted-changes": Flags.boolean({

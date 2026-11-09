@@ -18,9 +18,6 @@ export default class WarehouseSyncValidate extends BaseCommand<
   static summary =
     "Validate one or more warehouse syncs from a local file system.";
 
-  // Hidden until warehouse syncs are generally available.
-  static hidden = true;
-
   static flags = {
     environment: CustomFlags.environment,
     all: Flags.boolean({
