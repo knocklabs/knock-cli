@@ -63,6 +63,10 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   protected sessionContext!: SessionContext;
   protected configStore!: UserConfigStore;
   protected projectConfig?: ProjectConfig;
+  // Says which flags were typed and which came from a default.
+  protected parseMetadata!: {
+    flags: Record<string, { setFromDefault?: boolean } | undefined>;
+  };
 
   protected requiresAuth = true;
   protected static verifyFeatureEnabled?: "translations";
@@ -79,8 +83,9 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     this.projectConfig = await findAndReadProjectConfig();
 
     // 3. Parse flags and args, must come after the user config load.
-    const { args, flags } = await this.parse(this.ctor);
+    const { args, flags, metadata } = await this.parse(this.ctor);
     this.props = { args: args as TArgs<T>, flags: flags as TFlags<T> };
+    this.parseMetadata = metadata;
 
     // 4. Build the initial session context.
     this.sessionContext = this.buildSessionContext();
