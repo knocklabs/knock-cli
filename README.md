@@ -18,7 +18,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/1.6.1 linux-x64 node-v22.23.4
+@knocklabs/cli/1.6.1 linux-x64 node-v24.22.2
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
@@ -712,7 +712,7 @@ _See code: [src/commands/environment/list.ts](https://github.com/knocklabs/knock
 
 ## `knock goal archive GOALKEY`
 
-Archive a goal across all environments.
+Archive a goal in the current environment.
 
 ```
 USAGE
@@ -727,10 +727,10 @@ FLAGS
   --service-token=<value>  The service token to authenticate with.
 
 DESCRIPTION
-  Archive a goal across all environments.
+  Archive a goal in the current environment.
 
 
-  Archives a goal across all environments. The API refuses the archive if any
+  Archives a goal in the current environment. The API refuses the archive if any
   workflow, guide, or broadcast is still attached to the goal.
 ```
 
