@@ -18,7 +18,7 @@ $ npm install -g @knocklabs/cli
 $ knock COMMAND
 running command...
 $ knock (--version)
-@knocklabs/cli/1.6.1 linux-x64 node-v24.22.2
+@knocklabs/cli/1.6.1 linux-x64 node-v22.23.4
 $ knock --help [COMMAND]
 USAGE
   $ knock COMMAND
