@@ -6,10 +6,10 @@ import * as CustomFlags from "@/lib/helpers/flag";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 
 export default class GoalArchive extends BaseCommand<typeof GoalArchive> {
-  static summary = "Archive a goal across all environments.";
+  static summary = "Archive a goal in the current environment.";
 
   static description = `
-Archives a goal across all environments. The API refuses the archive if any
+Archives a goal in the current environment. The API refuses the archive if any
 workflow, guide, or broadcast is still attached to the goal.
 `;
 
@@ -31,9 +31,14 @@ workflow, guide, or broadcast is still attached to the goal.
     const { args, flags } = this.props;
     const { goalKey } = args;
 
+    // The API archives the given environment, or the account default when
+    // --environment is omitted. Name that environment in the prompt and result.
+    const environment =
+      flags.environment ?? (await this.apiV1.getDefaultEnvironmentSlug());
+
     if (!flags.force) {
       const confirmed = await promptToConfirm(
-        `WARNING: Archiving goal \`${goalKey}\` will affect ALL environments.\n` +
+        `WARNING: Archiving goal \`${goalKey}\` in the \`${environment}\` environment.\n` +
           `This action cannot be undone. Continue?`,
       );
       if (!confirmed) {
@@ -52,7 +57,7 @@ workflow, guide, or broadcast is still attached to the goal.
       spinner.stop();
 
       this.log(
-        `‣ Successfully archived goal \`${goalKey}\` across all environments.`,
+        `‣ Successfully archived goal \`${goalKey}\` in the \`${environment}\` environment.`,
       );
     } catch (error) {
       spinner.stop();
