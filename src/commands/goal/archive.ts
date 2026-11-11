@@ -31,9 +31,14 @@ workflow, guide, or broadcast is still attached to the goal.
     const { args, flags } = this.props;
     const { goalKey } = args;
 
+    // The API archives the given environment, or the account default when
+    // --environment is omitted. Name that environment in the prompt and result.
+    const environment =
+      flags.environment ?? (await this.apiV1.getDefaultEnvironmentSlug());
+
     if (!flags.force) {
       const confirmed = await promptToConfirm(
-        `WARNING: Archiving goal \`${goalKey}\` in the current environment.\n` +
+        `WARNING: Archiving goal \`${goalKey}\` in the \`${environment}\` environment.\n` +
           `This action cannot be undone. Continue?`,
       );
       if (!confirmed) {
@@ -52,7 +57,7 @@ workflow, guide, or broadcast is still attached to the goal.
       spinner.stop();
 
       this.log(
-        `‣ Successfully archived goal \`${goalKey}\` in the current environment.`,
+        `‣ Successfully archived goal \`${goalKey}\` in the \`${environment}\` environment.`,
       );
     } catch (error) {
       spinner.stop();
