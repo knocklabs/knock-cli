@@ -174,6 +174,27 @@ describe("commands/pull", () => {
       );
   });
 
+  describe("with broadcasts in the environment", () => {
+    setupWithListStubs([], [], [], [], [], [])
+      .stub(KnockApiV1.prototype, "listBroadcasts", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: {
+              entries: [factory.broadcast()],
+              page_info: factory.pageInfo(),
+            },
+          }),
+        ),
+      )
+      .stdout()
+      .command(["pull", "--knock-dir", "."])
+      .it("does not pull broadcasts", () => {
+        sinon.assert.notCalled(KnockApiV1.prototype.listBroadcasts as any);
+        expect(fs.pathExistsSync(path.resolve(sandboxDir, "broadcasts"))).to.be
+          .false;
+      });
+  });
+
   describe("with environment flag", () => {
     setupWithListStubs(
       [{ key: "messages" }, { key: "transactional" }],
