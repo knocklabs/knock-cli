@@ -5,10 +5,22 @@ import * as fs from "fs-extra";
 import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
+import { stdinValuePrompt } from "@/commands/variable/set";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 
 const currCwd = process.cwd();
+const originalStdinIsTTY = Object.getOwnPropertyDescriptor(
+  process.stdin,
+  "isTTY",
+);
+
+const setStdinIsTTY = (value: boolean): void => {
+  Object.defineProperty(process.stdin, "isTTY", {
+    configurable: true,
+    value,
+  });
+};
 
 describe("commands/variable/set", () => {
   beforeEach(() => {
@@ -19,6 +31,9 @@ describe("commands/variable/set", () => {
   afterEach(() => {
     process.chdir(currCwd);
     fs.removeSync(sandboxDir);
+    if (originalStdinIsTTY) {
+      Object.defineProperty(process.stdin, "isTTY", originalStdinIsTTY);
+    }
   });
 
   test
@@ -101,6 +116,7 @@ describe("commands/variable/set", () => {
 
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(fs, "readFileSync", (stub) => stub.returns("piped-default"))
     .stub(KnockApiV1.prototype, "getVariable", (stub) =>
       stub.resolves(
         factory.resp({
@@ -134,6 +150,7 @@ describe("commands/variable/set", () => {
     .loadConfig()
     .do(() => process.chdir(sandboxDir))
     .stdout()
+    .stderr()
     .command([
       "variable set",
       "stripe_api_key",
@@ -149,12 +166,14 @@ describe("commands/variable/set", () => {
         "stripe_api_key",
         {
           type: "secret",
+          value: "piped-default",
           environment_values: {
             production: "",
             development: "from-file-secret",
           },
         },
       );
+      expect(ctx.stderr).to.not.contain("Enter a value");
       expect(ctx.stdout).to.not.contain("sk_live_super_secret");
       expect(ctx.stdout).to.not.contain("sk_prod_super_secret");
       expect(ctx.stdout).to.not.contain("from-file-secret");
@@ -276,5 +295,155 @@ describe("commands/variable/set", () => {
       );
       expect(JSON.parse(ctx.stdout).value_set).to.equal(false);
       expect(ctx.stdout).to.not.contain("sk_live_super_secret");
+    });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .do(() => setStdinIsTTY(false))
+    .stub(fs, "readFileSync", (stub) => stub.returns("piped-public"))
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({ status: 404, data: { message: "not found" } }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "upsertVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "app_name",
+            type: "public",
+            value: "piped-public",
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-01T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stdout()
+    .stderr()
+    .command(["variable set", "app_name", "--type", "public"])
+    .it(
+      "reads a pipe when no value flag is passed and does not prompt",
+      (ctx) => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
+          "app_name",
+          { type: "public", value: "piped-public" },
+        );
+        expect(ctx.stderr).to.not.contain(stdinValuePrompt("app_name"));
+        expect(ctx.stdout).to.not.contain(stdinValuePrompt("app_name"));
+      },
+    );
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .do(() => setStdinIsTTY(true))
+    .stub(fs, "readFileSync", (stub) => stub.returns("typed-public"))
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({ status: 404, data: { message: "not found" } }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "upsertVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "app_name",
+            type: "public",
+            value: "typed-public",
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-01T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stdout()
+    .stderr()
+    .command(["variable set", "app_name", "--type", "public"])
+    .it("prompts on stderr before reading a terminal", (ctx) => {
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
+        "app_name",
+        { type: "public", value: "typed-public" },
+      );
+      expect(ctx.stderr).to.contain(stdinValuePrompt("app_name"));
+      expect(ctx.stdout).to.not.contain("Enter a value");
+    });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .do(() => setStdinIsTTY(true))
+    .stub(fs, "readFileSync", (stub) => stub.returns("explicit-stdin"))
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({ status: 404, data: { message: "not found" } }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "upsertVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "app_name",
+            type: "public",
+            value: "explicit-stdin",
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-01T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stderr()
+    .command(["variable set", "app_name", "--type", "public", "--value-stdin"])
+    .it("does not prompt when --value-stdin is passed", (ctx) => {
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
+        "app_name",
+        { type: "public", value: "explicit-stdin" },
+      );
+      expect(ctx.stderr).to.not.contain("Enter a value");
+    });
+
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .do(() => setStdinIsTTY(false))
+    .stub(fs, "readFileSync", (stub) => stub.returns("from-stdin-secret"))
+    .stub(KnockApiV1.prototype, "getVariable", (stub) =>
+      stub.resolves(
+        factory.resp({ status: 404, data: { message: "not found" } }),
+      ),
+    )
+    .stub(KnockApiV1.prototype, "upsertVariable", (stub) =>
+      stub.resolves(
+        factory.resp({
+          data: {
+            key: "stripe_api_key",
+            type: "secret",
+            value: null,
+            inserted_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-01T00:00:00Z",
+          },
+        }),
+      ),
+    )
+    .loadConfig()
+    .do(() => process.chdir(sandboxDir))
+    .stdout()
+    .stderr()
+    .command(["variable set", "stripe_api_key", "--type", "secret", "--json"])
+    .it("reads a secret from a pipe instead of the command line", (ctx) => {
+      sinon.assert.calledWith(
+        KnockApiV1.prototype.upsertVariable as sinon.SinonStub,
+        "stripe_api_key",
+        { type: "secret", value: "from-stdin-secret" },
+      );
+      expect(ctx.stderr).to.not.contain(stdinValuePrompt("stripe_api_key"));
+      expect(ctx.stdout).to.not.contain("from-stdin-secret");
+      expect(JSON.parse(ctx.stdout).value_set).to.equal(true);
     });
 });
