@@ -339,17 +339,33 @@ type NewWorkflowAttrs = {
   steps?: StepTag[] | undefined;
 };
 
-const scaffoldWorkflowDirBundle = (
-  attrs: NewWorkflowAttrs,
+export const groupChannelsByType = (
+  channels: Channel[],
+): Record<Channel["type"], Channel[]> =>
+  // eslint-disable-next-line unicorn/no-array-reduce
+  channels.reduce(
+    (acc, channel) => ({
+      ...acc,
+      [channel.type]: [...(acc[channel.type] || []), channel],
+    }),
+    {} as Record<Channel["type"], Channel[]>,
+  );
+
+/*
+ * Scaffolds step data for the given step tags, along with a directory bundle
+ * fragment holding any extracted template files. Shared by resources that
+ * have workflow-style steps (workflows and broadcasts).
+ */
+export const scaffoldSteps = (
+  stepTags: StepTag[],
   channelsByType: Record<Channel["type"], Channel[]>,
-): WorkflowDirBundle => {
+): [WorkflowStepData[], WorkflowDirBundle] => {
   // A map of 1-based counters to track the number of each step tag seen, used
   // for formatting step refs.
   const stepCountByTag = assign({}, ...STEP_TAGS.map((tag) => ({ [tag]: 0 })));
 
-  // Scaffold workflow steps data based on given step tags.
   const [scaffoldedSteps = [], bundleFragments = []] = zip(
-    ...(attrs.steps || []).map((tag) => {
+    ...stepTags.map((tag) => {
       const stepCount = ++stepCountByTag[tag];
 
       switch (tag) {
@@ -370,10 +386,25 @@ const scaffoldWorkflowDirBundle = (
     }),
   );
 
+  return [
+    scaffoldedSteps as WorkflowStepData[],
+    assign({}, ...bundleFragments) as WorkflowDirBundle,
+  ];
+};
+
+const scaffoldWorkflowDirBundle = (
+  attrs: NewWorkflowAttrs,
+  channelsByType: Record<Channel["type"], Channel[]>,
+): WorkflowDirBundle => {
+  const [steps, bundleFragment] = scaffoldSteps(
+    attrs.steps || [],
+    channelsByType,
+  );
+
   // Build a workflow directory bundle with scaffolded steps data, plus other
   // workflow attributes.
-  const workflowJson = { ...attrs, steps: scaffoldedSteps };
-  return assign({ [WORKFLOW_JSON]: workflowJson }, ...bundleFragments);
+  const workflowJson = { ...attrs, steps };
+  return assign({ [WORKFLOW_JSON]: workflowJson }, bundleFragment);
 };
 
 export const generateWorkflowDir = async (

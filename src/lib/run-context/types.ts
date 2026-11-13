@@ -27,7 +27,8 @@ export type ResourceType =
   | "goal"
   | "reusable_request"
   | "reusable_step"
-  | "warehouse_sync";
+  | "warehouse_sync"
+  | "broadcast";
 
 type ResourceDirContextBase = DirContext & {
   type: ResourceType;
@@ -78,6 +79,10 @@ export type WarehouseSyncDirContext = ResourceDirContextBase & {
   type: "warehouse_sync";
 };
 
+export type BroadcastDirContext = ResourceDirContextBase & {
+  type: "broadcast";
+};
+
 export type ResourceDirContext =
   | AudienceDirContext
   | WorkflowDirContext
@@ -89,7 +94,8 @@ export type ResourceDirContext =
   | GoalDirContext
   | ReusableRequestDirContext
   | ReusableStepDirContext
-  | WarehouseSyncDirContext;
+  | WarehouseSyncDirContext
+  | BroadcastDirContext;
 
 export type ResourceTarget = {
   commandId: string;

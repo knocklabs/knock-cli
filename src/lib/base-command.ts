@@ -113,6 +113,17 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     this.runContext = await RunContext.load(this.id);
   }
 
+  // oclif serializes the error object as-is in --json mode, and an Error's
+  // `message` is not enumerable, so it is dropped. Include it explicitly so
+  // scripts can see why a command failed.
+  protected toErrorJson(err: unknown): unknown {
+    if (err instanceof Error) {
+      return { error: { ...err, message: err.message } };
+    }
+
+    return super.toErrorJson(err);
+  }
+
   private buildSessionContext(): SessionContext {
     const userConfig = this.configStore.get();
     const session = userConfig.userSession;

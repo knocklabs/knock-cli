@@ -28,6 +28,7 @@ import { InputError } from "@/lib/helpers/error";
 import { AnyObj, prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import * as Broadcast from "@/lib/marshal/broadcast";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
@@ -524,6 +525,101 @@ export default class ApiV1 {
     return this.put(`/message_types/${messageType.key}/validate`, data, {
       params,
     });
+  }
+
+  // By resources: Broadcasts
+
+  async listBroadcasts<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListBroadcastResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/broadcasts", { params });
+  }
+
+  async getBroadcast<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetBroadcastResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+    });
+
+    return this.get(`/broadcasts/${args.broadcastKey}`, { params });
+  }
+
+  async upsertBroadcast<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    broadcast: Broadcast.BroadcastInput,
+  ): Promise<AxiosResponse<UpsertBroadcastResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+    });
+    const data = { broadcast };
+
+    return this.put(`/broadcasts/${broadcast.key}`, data, { params });
+  }
+
+  async validateBroadcast(
+    { flags }: Props,
+    broadcast: Broadcast.BroadcastInput,
+  ): Promise<AxiosResponse<ValidateBroadcastResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const data = { broadcast };
+
+    return this.put(`/broadcasts/${broadcast.key}/validate`, data, {
+      params,
+    });
+  }
+
+  async sendBroadcast({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<SendBroadcastResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const data = prune({
+      send_at: flags["send-at"],
+    });
+
+    return this.put(`/broadcasts/${args.broadcastKey}/send`, data, {
+      params,
+    });
+  }
+
+  async runBroadcast({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<RunBroadcastResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const settings = prune({
+      sandbox_mode: flags["sandbox-mode"],
+      skip_delay: flags["skip-delay"],
+    });
+    const data = prune({
+      recipient: { id: flags.recipient },
+      tenant: flags.tenant,
+      ...(Object.keys(settings).length > 0 ? { settings } : {}),
+    });
+
+    return this.put(`/broadcasts/${args.broadcastKey}/run`, data, { params });
   }
 
   // By resources: Guides
@@ -1285,6 +1381,33 @@ export type GetSchemaResp = {
 
 export type UpsertSchemaResp = {
   schema?: Schema.SchemaData;
+  errors?: InputError[];
+};
+
+export type ListBroadcastResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Broadcast.BroadcastData<A>>;
+
+export type GetBroadcastResp<A extends MaybeWithAnnotation = unknown> =
+  Broadcast.BroadcastData<A>;
+
+export type UpsertBroadcastResp<A extends MaybeWithAnnotation = unknown> = {
+  broadcast?: Broadcast.BroadcastData<A>;
+  errors?: InputError[];
+};
+
+export type ValidateBroadcastResp = {
+  broadcast?: Broadcast.BroadcastData;
+  errors?: InputError[];
+};
+
+export type SendBroadcastResp = {
+  broadcast?: Broadcast.BroadcastData;
+  errors?: InputError[];
+};
+
+export type RunBroadcastResp = {
+  broadcast_run_id?: string;
+  request_id?: string;
   errors?: InputError[];
 };
 

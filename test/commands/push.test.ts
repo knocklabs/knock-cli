@@ -7,6 +7,7 @@ import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
 import AudienceValidate from "@/commands/audience/validate";
+import BroadcastValidate from "@/commands/broadcast/validate";
 import GuideValidate from "@/commands/guide/validate";
 import EmailLayoutValidate from "@/commands/layout/validate";
 import MessageTypeValidate from "@/commands/message-type/validate";
@@ -15,6 +16,7 @@ import TranslationValidate from "@/commands/translation/validate";
 import WorkflowValidate from "@/commands/workflow/validate";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
+import { BROADCAST_JSON } from "@/lib/marshal/broadcast";
 import { EmailLayoutData, LAYOUT_JSON } from "@/lib/marshal/email-layout";
 import { GUIDE_JSON, GuideData } from "@/lib/marshal/guide";
 import { MESSAGE_TYPE_JSON, MessageTypeData } from "@/lib/marshal/message-type";
@@ -302,6 +304,57 @@ describe("commands/push", () => {
               );
             },
           );
+      });
+
+      describe("and a non-empty broadcasts directory", () => {
+        let broadcastValidateAllStub: sinon.SinonStub;
+        let upsertBroadcastStub: sinon.SinonStub;
+        let upsertLayoutStub: sinon.SinonStub;
+
+        beforeEach(() => {
+          broadcastValidateAllStub = sinon
+            .stub(BroadcastValidate, "validateAll")
+            .resolves([]);
+          upsertBroadcastStub = sinon.stub(
+            KnockApiV1.prototype,
+            "upsertBroadcast",
+          );
+
+          sinon.stub(EmailLayoutValidate, "validateAll").resolves([]);
+          upsertLayoutStub = sinon
+            .stub(KnockApiV1.prototype, "upsertEmailLayout")
+            .resolves(
+              factory.resp({ data: { email_layout: mockEmailLayoutData } }),
+            );
+
+          fs.outputJsonSync(
+            path.resolve(
+              sandboxDir,
+              "broadcasts",
+              "spring-sale",
+              BROADCAST_JSON,
+            ),
+            { name: "Spring sale" },
+          );
+          fs.outputJsonSync(
+            path.resolve(sandboxDir, "layouts", "messages", LAYOUT_JSON),
+            { name: "Messages" },
+          );
+
+          process.chdir(sandboxDir);
+        });
+
+        afterEach(() => {
+          sinon.restore();
+        });
+
+        test
+          .command(["push", "--knock-dir", "."])
+          .it("pushes other resources but never broadcasts", () => {
+            sinon.assert.calledOnce(upsertLayoutStub);
+            sinon.assert.notCalled(broadcastValidateAllStub);
+            sinon.assert.notCalled(upsertBroadcastStub);
+          });
       });
 
       describe("and a non-empty partials directory", () => {

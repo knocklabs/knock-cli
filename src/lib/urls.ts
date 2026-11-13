@@ -79,3 +79,11 @@ export const viewGoalUrl = (
   goalKey: string,
 ): string =>
   `${dashboardUrl}/${accountSlug}/${envOrBranchSlug.toLowerCase()}/goals/${goalKey}`;
+
+export const viewBroadcastUrl = (
+  dashboardUrl: string,
+  accountSlug: string,
+  envOrBranchSlug: string,
+  broadcastKey: string,
+): string =>
+  `${dashboardUrl}/${accountSlug}/${envOrBranchSlug.toLowerCase()}/broadcasts/${broadcastKey}`;

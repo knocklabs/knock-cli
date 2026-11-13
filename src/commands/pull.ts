@@ -12,7 +12,7 @@ import {
   ALL_RESOURCE_TYPES,
   buildBulkPullArgs,
   BulkPullFlags,
-  NonHiddenResourceType,
+  BulkResourceType,
   RESOURCE_DIR_FLAGS,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
@@ -76,7 +76,7 @@ export default class Pull extends BaseCommand<typeof Pull> {
 }
 
 const runResourcePullCommand = async (
-  resourceType: NonHiddenResourceType,
+  resourceType: BulkResourceType,
   targetDirCtx: DirContext,
   flags: BulkPullFlags,
 ): Promise<void> => {
