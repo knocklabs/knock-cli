@@ -101,7 +101,9 @@ describe("commands/broadcast/send", () => {
       ])
       .it("errors without sending the broadcast", (ctx) => {
         // In JSON mode oclif prints the error as JSON instead of throwing.
-        expect(JSON.parse(ctx.stdout)).to.have.property("error");
+        expect(JSON.parse(ctx.stdout).error.message).to.match(
+          /--force flag is required with --json/,
+        );
         sinon.assert.notCalled(KnockApiV1.prototype.sendBroadcast as any);
       });
   });

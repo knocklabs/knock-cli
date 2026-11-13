@@ -3,10 +3,24 @@ import * as path from "node:path";
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
 
+import { factory } from "@/../test/support";
+import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { BROADCAST_JSON } from "@/lib/marshal/broadcast";
 
 const currCwd = process.cwd();
+
+const channels = [
+  factory.channel({ key: "postmark", type: "email" }),
+  factory.channel({ key: "knock-in-app-feed", type: "in_app_feed" }),
+];
+
+const setupWithStub = (stubChannels = channels) =>
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "listAllChannels", (stub) =>
+      stub.resolves(stubChannels),
+    );
 
 describe("commands/broadcast/new", () => {
   beforeEach(() => {
@@ -21,8 +35,7 @@ describe("commands/broadcast/new", () => {
   });
 
   describe("given name and key flags with --force", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    setupWithStub()
       .stdout()
       .command([
         "broadcast new",
@@ -30,9 +43,11 @@ describe("commands/broadcast/new", () => {
         "My New Broadcast",
         "--key",
         "my-new-broadcast",
+        "--steps",
+        "email",
         "--force",
       ])
-      .it("creates a broadcast directory with broadcast.json", () => {
+      .it("creates a broadcast directory with a scaffolded email step", () => {
         const broadcastPath = path.resolve(
           sandboxDir,
           "my-new-broadcast",
@@ -45,19 +60,123 @@ describe("commands/broadcast/new", () => {
         expect(content.name).to.equal("My New Broadcast");
         expect(content.status).to.equal(undefined);
         expect(content.settings.is_commercial).to.equal(undefined);
-        expect(content.steps).to.eql([]);
+        expect(content.steps).to.eql([
+          {
+            ref: "email_1",
+            type: "channel",
+            channel_key: "postmark",
+            template: {
+              settings: { layout_key: "default" },
+              subject: "You've got mail!",
+              "html_body@": "email_1/html_body.html",
+            },
+          },
+        ]);
+
+        const htmlBodyPath = path.resolve(
+          sandboxDir,
+          "my-new-broadcast",
+          "email_1",
+          "html_body.html",
+        );
+        expect(fs.readFileSync(htmlBodyPath, "utf8")).to.contain(
+          "{{ recipient.name }}",
+        );
       });
   });
 
+  describe("given multiple channel steps", () => {
+    setupWithStub()
+      .stdout()
+      .command([
+        "broadcast new",
+        "--name",
+        "Multi",
+        "--key",
+        "multi",
+        "--steps",
+        "email,in-app-feed",
+        "--force",
+      ])
+      .it("scaffolds one step per channel type", () => {
+        const content = fs.readJsonSync(
+          path.resolve(sandboxDir, "multi", BROADCAST_JSON),
+        );
+        expect(content.steps.map((s: any) => [s.ref, s.channel_key])).to.eql([
+          ["email_1", "postmark"],
+          ["in_app_feed_1", "knock-in-app-feed"],
+        ]);
+      });
+  });
+
+  describe("given a step type that is not a broadcast channel step", () => {
+    for (const steps of ["delay", "in_app_guide", "sms"]) {
+      setupWithStub()
+        .command([
+          "broadcast new",
+          "--name",
+          "My New Broadcast",
+          "--key",
+          "my-new-broadcast",
+          "--steps",
+          steps,
+          "--force",
+        ])
+        .catch((error) =>
+          expect(error.message).to.match(
+            /^Invalid --steps .*Invalid step type/,
+          ),
+        )
+        .it(`throws an error for --steps ${steps}`, () => {
+          expect(
+            fs.pathExistsSync(path.resolve(sandboxDir, "my-new-broadcast")),
+          ).to.equal(false);
+        });
+    }
+  });
+
+  describe("given an empty --steps flag", () => {
+    setupWithStub()
+      .command([
+        "broadcast new",
+        "--name",
+        "My New Broadcast",
+        "--key",
+        "my-new-broadcast",
+        "--steps",
+        "",
+        "--force",
+      ])
+      .catch(/at least one channel step is required/)
+      .it("throws an error");
+  });
+
+  describe("given an account with no messaging channels", () => {
+    setupWithStub([])
+      .command([
+        "broadcast new",
+        "--name",
+        "My New Broadcast",
+        "--key",
+        "my-new-broadcast",
+        "--steps",
+        "email",
+        "--force",
+      ])
+      .catch(/no email, in-app feed, SMS, push, or chat channels/)
+      .it("throws an error");
+  });
+
   describe("given an invalid broadcast key, with uppercase chars", () => {
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    setupWithStub()
       .command([
         "broadcast new",
         "--name",
         "My New Broadcast",
         "--key",
         "My-New-Broadcast",
+        "--steps",
+        "email",
         "--force",
       ])
       .catch((error) =>
@@ -78,14 +197,15 @@ describe("commands/broadcast/new", () => {
       process.chdir(broadcastDir);
     });
 
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    setupWithStub()
       .command([
         "broadcast new",
         "--name",
         "My New Broadcast",
         "--key",
         "my-new-broadcast",
+        "--steps",
+        "email",
         "--force",
       ])
       .catch(
@@ -106,8 +226,7 @@ describe("commands/broadcast/new", () => {
       process.chdir(sandboxDir);
     });
 
-    test
-      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    setupWithStub()
       .stdout()
       .command([
         "broadcast new",
@@ -115,6 +234,8 @@ describe("commands/broadcast/new", () => {
         "Overwrite",
         "--key",
         "my-broadcast",
+        "--steps",
+        "email",
         "--force",
       ])
       .it("overwrites the existing broadcast directory", () => {
