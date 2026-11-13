@@ -2,21 +2,13 @@ import * as path from "node:path";
 
 import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
-import { hasIn, set } from "lodash";
 
-import { formatErrors, JsonDataError, SourceError } from "@/lib/helpers/error";
+import { formatErrors, SourceError } from "@/lib/helpers/error";
 import { ParseJsonResult, readJson } from "@/lib/helpers/json";
+import { AnyObj, omitDeep } from "@/lib/helpers/object.isomorphic";
 import {
-  AnyObj,
-  getLastFound,
-  mapValuesDeep,
-  ObjPath,
-  omitDeep,
-} from "@/lib/helpers/object.isomorphic";
-import { FILEPATH_MARKED_RE } from "@/lib/marshal/shared/const.isomorphic";
-import {
-  readExtractedFileSync,
-  validateExtractedFilePath,
+  joinExtractedFiles,
+  JoinExtractedFilesResult,
 } from "@/lib/marshal/shared/helpers";
 import { WorkflowDirContext } from "@/lib/run-context";
 
@@ -30,140 +22,6 @@ import { WORKFLOW_JSON } from "./processor.isomorphic";
 // Hydrated workflow directory context with its content.
 export type WorkflowDirData = WorkflowDirContext & {
   content: AnyObj;
-};
-
-// For now we support up to two levels of content extraction in workflow.json.
-// (e.g. workflow.json, then visual_blocks.json)
-const MAX_EXTRACTION_LEVEL = 2;
-
-/*
- * Given a workflow json object, compiles all referenced extracted files from it
- * and returns the updated object with the extracted content joined and inlined.
- *
- * Important things to keep in mind:
- * 1. There can be multiple places in workflow json where content extraction
- *    happens.
- * 2. There can be multiple levels of content extraction happening, currently
- *    at a maximum of 2 levels. For example, workflow.json links to
- *    visual_blocks.json, and in return visual_blocks.json links to a markdown
- *    file for its block content. Any referenced extracted paths should be
- *    expressed *as a relative path to the file it is referenced in*.
- *
- * The way this function works and handles above two points, is by:
- * 1. Traversing the entire given workflow json node from root to leaf and
- *    discovering extracted paths, without knowing about any specific fields
- *    extracted.
- * 2. Whenever it discovers an extracted path, it reads the linked file and
- *    inlines the content into the node. If the inlined content itself contains
- *    extracted paths, then it "rebase"s the file paths to be relative to the
- *    location of the workflow json.
- * 3. This traversal takes place for the maximum levels of content extraction
- *    supported (currently 2 levels).
- *
- * Note, this function is meant to be PRIVATE and MUTATES the workflow json obj.
- *
- * TODO: Include links to docs in the error message when ready.
- */
-type JoinExtractedFilesResult = [AnyObj, JsonDataError[]];
-type JoinedFilePaths = Record<string, string>;
-
-const joinExtractedFiles = async (
-  workflowDirCtx: WorkflowDirContext,
-  workflowJson: AnyObj,
-): Promise<JoinExtractedFilesResult> => {
-  // Tracks any errors encountered during traversal. Mutated in place.
-  const errors: JsonDataError[] = [];
-
-  // Tracks each new valid extracted file path seen (rebased to be relative to
-  // workflow.json) in the workflow json node. Mutated in place, and used
-  // to validate the uniqueness of an extracted path encountered.
-  const uniqueFilePaths = {};
-
-  // Tracks each extracted file path (rebased) that gets inlined with its object
-  // path location, per each traversal iteration. Mutated in place, and used for
-  // rebasing an extracted path to be relative to the location of the workflow
-  // json file.
-  const joinedFilePathsPerLevel: JoinedFilePaths[] = [];
-
-  for (const [idx] of Array.from({ length: MAX_EXTRACTION_LEVEL }).entries()) {
-    const currJoinedFilePaths: JoinedFilePaths = {};
-    const prevJoinedFilePaths = joinedFilePathsPerLevel[idx - 1] || {};
-
-    mapValuesDeep(workflowJson, (value, key, parts) => {
-      // If not marked with the @ suffix, there's nothing to do.
-      if (!FILEPATH_MARKED_RE.test(key)) return;
-
-      const objPathToFieldStr = ObjPath.stringify(parts);
-      const inlinObjPathStr = objPathToFieldStr.replace(FILEPATH_MARKED_RE, "");
-
-      // If there is inlined content present already, then nothing more to do.
-      if (hasIn(workflowJson, inlinObjPathStr)) return;
-
-      // Check if the extracted path found at the current field path belongs to
-      // a node whose parent or grandparent has been previously joined earlier
-      // in the tree. If so, rebase the extracted path to be a relative path to
-      // the workflow json.
-      const lastFound = getLastFound(prevJoinedFilePaths, parts);
-      const prevJoinedFilePath =
-        typeof lastFound === "string" ? lastFound : undefined;
-
-      const rebasedFilePath = prevJoinedFilePath
-        ? path.join(path.dirname(prevJoinedFilePath), value)
-        : value;
-
-      const invalidFilePathError = validateExtractedFilePath(
-        rebasedFilePath,
-        path.resolve(workflowDirCtx.abspath, WORKFLOW_JSON),
-        uniqueFilePaths,
-        objPathToFieldStr,
-      );
-      if (invalidFilePathError) {
-        errors.push(invalidFilePathError);
-
-        // Wipe the invalid file path in the node so the final workflow json
-        // object ends up with only valid file paths, this way workflow writer
-        // can see only valid file paths and use those when pulling. Also set
-        // the inlined field path in workflow object with empty content so we
-        // know we've looked at this extracted file path.
-        set(workflowJson, objPathToFieldStr, undefined);
-        set(workflowJson, inlinObjPathStr, undefined);
-
-        return;
-      }
-
-      // By this point we have a valid extracted file path, so attempt to read
-      // the file at the file path.
-      const [content, readExtractedFileError] = readExtractedFileSync(
-        rebasedFilePath,
-        workflowDirCtx,
-        objPathToFieldStr,
-      );
-      if (readExtractedFileError) {
-        errors.push(readExtractedFileError);
-
-        // Replace the extracted file path with the rebased one, and set the
-        // inlined field path in workflow object with empty content, so we know
-        // we do not need to try inlining again.
-        set(workflowJson, objPathToFieldStr, rebasedFilePath);
-        set(workflowJson, inlinObjPathStr, undefined);
-
-        return;
-      }
-
-      // Inline the file content and replace the extracted file path with a
-      // rebased one.
-      set(workflowJson, objPathToFieldStr, rebasedFilePath);
-      set(workflowJson, inlinObjPathStr, content);
-
-      // Track joined file paths from the current join level.
-      set(currJoinedFilePaths, inlinObjPathStr, rebasedFilePath);
-    });
-
-    // Finally save all the joined file paths from this traversal iteration.
-    joinedFilePathsPerLevel[idx] = currJoinedFilePaths;
-  }
-
-  return [workflowJson, errors];
 };
 
 /*
@@ -196,7 +54,7 @@ export const readWorkflowDir = async (
   workflowJson = omitDeep(workflowJson, ["__readonly"]);
 
   return withExtractedFiles
-    ? joinExtractedFiles(workflowDirCtx, workflowJson)
+    ? joinExtractedFiles(workflowDirCtx, workflowJson, WORKFLOW_JSON)
     : [workflowJson, []];
 };
 

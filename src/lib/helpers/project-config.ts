@@ -127,6 +127,7 @@ export const ResourceDirectoriesByType: Record<
   translation: "translations",
   goal: "goals",
   warehouse_sync: "warehouse-syncs",
+  broadcast: "broadcasts",
 } as const;
 
 type ValidResourceType = Exclude<ResourceType, "reusable_step">;
