@@ -60,7 +60,7 @@ export const isWorkflowDir = async (dirPath: string): Promise<boolean> =>
 /*
  * Returns a formatted string of workflow categories or tags.
  */
-type FormatListOpts = {
+export type FormatListOpts = {
   truncateAfter?: number;
   emptyDisplay?: string;
 };
@@ -78,13 +78,13 @@ export const formatTags = (
   opts: FormatListOpts = {},
 ): string => formatStringList(workflow.tags, opts);
 
-const formatStringList = (
+export const formatStringList = (
   items: string[] | undefined,
   opts: FormatListOpts = {},
 ): string => {
   const { truncateAfter: limit, emptyDisplay = "" } = opts;
 
-  if (!items) return emptyDisplay;
+  if (!items || items.length === 0) return emptyDisplay;
 
   const count = items.length;
   if (!limit || limit >= count) return items.join(", ");

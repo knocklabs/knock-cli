@@ -31,40 +31,30 @@ export default class BroadcastGet extends BaseCommand<typeof BroadcastGet> {
   static enableJsonFlag = true;
 
   async run(): Promise<ApiV1.GetBroadcastResp | void> {
+    const { flags } = this.props;
+
     spinner.start("‣ Loading");
 
-    const { broadcast, whoami } = await this.loadBroadcast();
+    // The account slug is only needed for the dashboard link, so skip the
+    // whoami request when returning JSON.
+    const [broadcastResp, whoamiResp] = await Promise.all([
+      this.apiV1.getBroadcast(this.props),
+      flags.json ? undefined : this.apiV1.whoami(),
+    ]);
+
+    if (!isSuccessResp(broadcastResp)) {
+      ux.error(new ApiError(formatErrorRespMessage(broadcastResp)));
+    }
+
+    if (whoamiResp && !isSuccessResp(whoamiResp)) {
+      ux.error(new ApiError(formatErrorRespMessage(whoamiResp)));
+    }
 
     spinner.stop();
 
-    const { flags } = this.props;
-    if (flags.json) return broadcast;
+    if (flags.json || !whoamiResp) return broadcastResp.data;
 
-    await this.render(broadcast, whoami);
-  }
-
-  private async loadBroadcast(): Promise<{
-    broadcast: ApiV1.GetBroadcastResp;
-    whoami: ApiV1.WhoamiResp;
-  }> {
-    const broadcastResp = await this.apiV1.getBroadcast(this.props);
-
-    if (!isSuccessResp(broadcastResp)) {
-      const message = formatErrorRespMessage(broadcastResp);
-      ux.error(new ApiError(message));
-    }
-
-    const whoamiResp = await this.apiV1.whoami();
-
-    if (!isSuccessResp(whoamiResp)) {
-      const message = formatErrorRespMessage(whoamiResp);
-      ux.error(new ApiError(message));
-    }
-
-    return {
-      broadcast: broadcastResp.data,
-      whoami: whoamiResp.data,
-    };
+    await this.render(broadcastResp.data, whoamiResp.data);
   }
 
   async render(

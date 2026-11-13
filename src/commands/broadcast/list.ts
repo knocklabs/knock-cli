@@ -32,7 +32,7 @@ export default class BroadcastList extends BaseCommand<typeof BroadcastList> {
     const { flags } = this.props;
     if (flags.json) return resp.data;
 
-    this.render(resp.data);
+    return this.render(resp.data);
   }
 
   async request(

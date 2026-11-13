@@ -42,7 +42,9 @@ generate messages without sending them to downstream providers.
     }),
   };
 
-  async run(): Promise<void> {
+  static enableJsonFlag = true;
+
+  async run(): Promise<ApiV1.RunBroadcastResp | void> {
     const { args, flags } = this.props;
 
     const resp = await withSpinner<ApiV1.RunBroadcastResp>(
@@ -50,12 +52,17 @@ generate messages without sending them to downstream providers.
       { action: "‣ Running" },
     );
 
+    if (flags.json) return resp.data;
+
     const scope = formatCommandScope(flags);
     this.log(
       `‣ Successfully ran \`${args.broadcastKey}\` broadcast in ${scope}`,
     );
-    this.log(
-      indentString(`Broadcast run id: ${resp.data.broadcast_run_id}`, 4),
-    );
+
+    if (resp.data.broadcast_run_id) {
+      this.log(
+        indentString(`Broadcast run id: ${resp.data.broadcast_run_id}`, 4),
+      );
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { test } from "@oclif/test";
+import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
@@ -59,6 +59,50 @@ describe("commands/broadcast/send", () => {
       ])
       .it("calls sendBroadcast without prompting for confirmation", () => {
         sinon.assert.calledOnce(KnockApiV1.prototype.sendBroadcast as any);
+      });
+  });
+
+  describe("given --json and --force flags", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "sendBroadcast", (stub) =>
+        stub.resolves(
+          factory.resp({
+            data: { broadcast: factory.broadcast({ status: "sent" }) },
+          }),
+        ),
+      )
+      .stdout()
+      .command([
+        "broadcast send",
+        "my-broadcast",
+        "--environment",
+        "development",
+        "--force",
+        "--json",
+      ])
+      .it("prints the send response as JSON", (ctx) => {
+        const output = JSON.parse(ctx.stdout);
+        expect(output.broadcast.status).to.equal("sent");
+      });
+  });
+
+  describe("given --json without --force", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "sendBroadcast", (stub) => stub.resolves())
+      .stdout()
+      .command([
+        "broadcast send",
+        "my-broadcast",
+        "--environment",
+        "development",
+        "--json",
+      ])
+      .it("errors without sending the broadcast", (ctx) => {
+        // In JSON mode oclif prints the error as JSON instead of throwing.
+        expect(JSON.parse(ctx.stdout)).to.have.property("error");
+        sinon.assert.notCalled(KnockApiV1.prototype.sendBroadcast as any);
       });
   });
 

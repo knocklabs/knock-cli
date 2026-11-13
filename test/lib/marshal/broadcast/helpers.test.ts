@@ -20,6 +20,16 @@ describe("lib/marshal/broadcast/helpers", () => {
       });
     });
 
+    describe("given a broadcast with an empty categories list", () => {
+      it("returns the empty display string", () => {
+        const broadcast = factory.broadcast({ categories: [] });
+
+        expect(formatCategories(broadcast, { emptyDisplay: "-" })).to.equal(
+          "-",
+        );
+      });
+    });
+
     describe("given a broadcast with categories without truncating", () => {
       it("returns a string of categories joined by commas", () => {
         const broadcast = factory.broadcast({ categories: ["a", "b", "c"] });

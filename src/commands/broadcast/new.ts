@@ -8,11 +8,7 @@ import { resolveResourceDir } from "@/lib/helpers/project-config";
 import { slugify } from "@/lib/helpers/string";
 import { promptToConfirm } from "@/lib/helpers/ux";
 import * as Broadcast from "@/lib/marshal/broadcast";
-import {
-  BroadcastDirContext,
-  ensureResourceDirForTarget,
-  ResourceTarget,
-} from "@/lib/run-context";
+import { BroadcastDirContext } from "@/lib/run-context";
 
 export default class BroadcastNew extends BaseCommand<typeof BroadcastNew> {
   static summary = "Create a new broadcast with a minimal configuration.";
@@ -106,42 +102,25 @@ export default class BroadcastNew extends BaseCommand<typeof BroadcastNew> {
     this.log(`‣ Successfully created broadcast \`${key}\``);
   }
 
+  // `run` errors before this when invoked inside any resource directory, so
+  // the broadcast directory always resolves from the project config.
   async getBroadcastDirContext(
-    broadcastKey?: string,
+    broadcastKey: string,
   ): Promise<BroadcastDirContext> {
-    const { resourceDir, cwd: runCwd } = this.runContext;
-
-    if (resourceDir) {
-      const target: ResourceTarget = {
-        commandId: this.id ?? "broadcast:new",
-        type: "broadcast",
-        key: broadcastKey,
-      };
-
-      return ensureResourceDirForTarget(
-        resourceDir,
-        target,
-      ) as BroadcastDirContext;
-    }
-
     const dirCtx = await resolveResourceDir(
       this.projectConfig,
       "broadcast",
-      runCwd,
+      this.runContext.cwd,
     );
 
-    if (broadcastKey) {
-      const dirPath = path.resolve(dirCtx.abspath, broadcastKey);
-      const exists = await Broadcast.isBroadcastDir(dirPath);
+    const dirPath = path.resolve(dirCtx.abspath, broadcastKey);
+    const exists = await Broadcast.isBroadcastDir(dirPath);
 
-      return {
-        type: "broadcast",
-        key: broadcastKey,
-        abspath: dirPath,
-        exists,
-      };
-    }
-
-    return this.error("Missing 1 required arg:\nbroadcastKey");
+    return {
+      type: "broadcast",
+      key: broadcastKey,
+      abspath: dirPath,
+      exists,
+    };
   }
 }

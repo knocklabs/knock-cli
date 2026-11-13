@@ -2,7 +2,6 @@ import * as path from "node:path";
 
 import { ux } from "@oclif/core";
 import * as fs from "fs-extra";
-import { take } from "lodash";
 
 import { DirContext } from "@/lib/helpers/fs";
 import {
@@ -10,6 +9,10 @@ import {
   resolveResourceDir,
 } from "@/lib/helpers/project-config";
 import { checkSlugifiedFormat } from "@/lib/helpers/string";
+import {
+  FormatListOpts,
+  formatStringList,
+} from "@/lib/marshal/workflow/helpers";
 import { BroadcastDirContext, RunContext } from "@/lib/run-context";
 
 import { BROADCAST_JSON } from "./processor.isomorphic";
@@ -39,25 +42,10 @@ export const lsBroadcastJson = async (
 export const isBroadcastDir = async (dirPath: string): Promise<boolean> =>
   Boolean(await lsBroadcastJson(dirPath));
 
-type FormatCategoriesOpts = {
-  truncateAfter?: number;
-  emptyDisplay?: string;
-};
-
 export const formatCategories = (
   broadcast: BroadcastData,
-  opts: FormatCategoriesOpts = {},
-): string => {
-  const { categories } = broadcast;
-  const { truncateAfter: limit, emptyDisplay = "" } = opts;
-
-  if (!categories) return emptyDisplay;
-
-  const count = categories.length;
-  if (!limit || limit >= count) return categories.join(", ");
-
-  return take(categories, limit).join(", ") + ` (+ ${count - limit} more)`;
-};
+  opts: FormatListOpts = {},
+): string => formatStringList(broadcast.categories, opts);
 
 export const formatStatus = (broadcast: BroadcastData): string =>
   broadcast.status;

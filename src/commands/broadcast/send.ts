@@ -36,8 +36,18 @@ Sends a broadcast immediately or schedules it for a future time. Use the
     }),
   };
 
-  async run(): Promise<void> {
+  static enableJsonFlag = true;
+
+  async run(): Promise<ApiV1.SendBroadcastResp | void> {
     const { args, flags } = this.props;
+
+    // A confirmation prompt would corrupt machine-readable output, but sending
+    // is not reversible, so require an explicit --force instead of skipping it.
+    if (flags.json && !flags.force) {
+      return this.error(
+        "The --force flag is required with --json to skip the confirmation prompt",
+      );
+    }
 
     const action = flags["send-at"] ? "Schedule" : "Send";
     const scope = formatCommandScope(flags);
@@ -46,10 +56,12 @@ Sends a broadcast immediately or schedules it for a future time. Use the
     if (!input) return;
 
     const actioning = flags["send-at"] ? "Scheduling" : "Sending";
-    await withSpinner<ApiV1.SendBroadcastResp>(
+    const resp = await withSpinner<ApiV1.SendBroadcastResp>(
       () => this.apiV1.sendBroadcast(this.props),
       { action: `‣ ${actioning}` },
     );
+
+    if (flags.json) return resp.data;
 
     const actioned = flags["send-at"] ? "scheduled" : "sent";
     this.log(

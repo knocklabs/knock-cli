@@ -1,4 +1,4 @@
-import { test } from "@oclif/test";
+import { expect, test } from "@oclif/test";
 import { isEqual } from "lodash";
 import * as sinon from "sinon";
 
@@ -57,6 +57,24 @@ describe("commands/broadcast/run", () => {
               }),
           ),
         );
+      });
+  });
+
+  describe("given a --json flag", () => {
+    setupWithStub()
+      .stdout()
+      .command([
+        "broadcast run",
+        "welcome-broadcast",
+        "--recipient",
+        "user-1",
+        "--json",
+      ])
+      .it("prints the run response as JSON", (ctx) => {
+        expect(JSON.parse(ctx.stdout)).to.deep.equal({
+          broadcast_run_id: "run-123",
+          request_id: "req-123",
+        });
       });
   });
 
