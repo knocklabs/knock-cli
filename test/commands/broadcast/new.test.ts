@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { expect, test } from "@oclif/test";
 import * as fs from "fs-extra";
 
-import { factory } from "@/../test/support";
+import { factory, xpath } from "@/../test/support";
 import KnockApiV1 from "@/lib/api-v1";
 import { sandboxDir } from "@/lib/helpers/const";
 import { BROADCAST_JSON } from "@/lib/marshal/broadcast";
@@ -68,7 +68,7 @@ describe("commands/broadcast/new", () => {
             template: {
               settings: { layout_key: "default" },
               subject: "You've got mail!",
-              "html_body@": "email_1/html_body.html",
+              "html_body@": xpath("email_1/html_body.html"),
             },
           },
         ]);
