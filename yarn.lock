@@ -785,10 +785,10 @@
   resolved "https://registry.yarnpkg.com/@keyv/serialize/-/serialize-1.1.1.tgz#0c01dd3a3483882af7cf3878d4e71d505c81fc4a"
   integrity sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==
 
-"@knocklabs/jsonlint@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@knocklabs/jsonlint/-/jsonlint-2.0.3.tgz#a90122aa9a6a76b0be3f5152183cc0adaf120f97"
-  integrity sha512-d5k+n80WugsrcfB/cyxaUPMjTvh188bUETmqCUXEJaoD6dy4xAFF001WWsJgKeHbRGKduPGoH7s7KpNxqsewag==
+"@knocklabs/jsonlint@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@knocklabs/jsonlint/-/jsonlint-2.0.4.tgz#9d884ceb689f234149a02fd1eb4f9a117484ca7f"
+  integrity sha512-aNsbuRzcZyNeX+Sf1f1KH+jHuzB+bQCy24qwZtOyNR+QwkrNIVvAZKtlW/caX9v9M8toQjXtxMDATI41Xy99jg==
   dependencies:
     ajv "8.20.0"
     ajv-draft-04 "1.0.0"
