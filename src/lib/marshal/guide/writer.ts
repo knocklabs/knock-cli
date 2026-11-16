@@ -65,10 +65,12 @@ export const writeGuideDirFromBundle = async (
   guideDirBundle: GuideDirBundle,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (guideDirCtx.exists) {
       await fs.copy(guideDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await fs.emptyDir(guideDirCtx.abspath);
     }
 
@@ -87,11 +89,11 @@ export const writeGuideDirFromBundle = async (
     await Promise.all(promises);
   } catch (error) {
     // In case of any error, wipe the target directory that is likely in a bad
-    // state then restore the backup if one existed before.
-    if (guideDirCtx.exists) {
+    // state then restore the backup, but only if the backup completed.
+    if (guideDirCtx.exists && backedUp) {
       await fs.emptyDir(guideDirCtx.abspath);
       await fs.copy(backupDirPath, guideDirCtx.abspath);
-    } else {
+    } else if (!guideDirCtx.exists) {
       await fs.remove(guideDirCtx.abspath);
     }
 
@@ -145,12 +147,14 @@ export const writeGuidesIndexDir = async (
   options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     // If the index directory already exists, back it up in the temp sandbox
     // before wiping it clean.
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await pruneGuidesIndexDir(indexDirCtx, remoteGuides);
     }
 
@@ -172,11 +176,11 @@ export const writeGuidesIndexDir = async (
   } catch (error) {
     console.log(error);
     // In case of any error, wipe the index directory that is likely in a bad
-    // state then restore the backup if one existed before.
-    if (indexDirCtx.exists) {
+    // state then restore the backup, but only if the backup completed.
+    if (indexDirCtx.exists && backedUp) {
       await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
-    } else {
+    } else if (!indexDirCtx.exists) {
       await fs.remove(indexDirCtx.abspath);
     }
 

@@ -60,10 +60,12 @@ export const writeWarehouseSyncsIndexDir = async (
   remoteWarehouseSyncs: WarehouseSyncData[],
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await pruneWarehouseSyncsIndexDir(indexDirCtx, remoteWarehouseSyncs);
     }
 
@@ -82,10 +84,10 @@ export const writeWarehouseSyncsIndexDir = async (
 
     await Promise.all(promises);
   } catch (error) {
-    if (indexDirCtx.exists) {
+    if (indexDirCtx.exists && backedUp) {
       await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
-    } else {
+    } else if (!indexDirCtx.exists) {
       await fs.remove(indexDirCtx.abspath);
     }
 

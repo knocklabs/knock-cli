@@ -36,10 +36,12 @@ const writeReusableRequestDirFromBundle = async (
   reusableRequestDirBundle: ReusableRequestDirBundle,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (reusableRequestDirCtx.exists) {
       await fs.copy(reusableRequestDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await fs.emptyDir(reusableRequestDirCtx.abspath);
     }
 
@@ -54,10 +56,10 @@ const writeReusableRequestDirFromBundle = async (
     );
     await Promise.all(promises);
   } catch (error) {
-    if (reusableRequestDirCtx.exists) {
+    if (reusableRequestDirCtx.exists && backedUp) {
       await fs.emptyDir(reusableRequestDirCtx.abspath);
       await fs.copy(backupDirPath, reusableRequestDirCtx.abspath);
-    } else {
+    } else if (!reusableRequestDirCtx.exists) {
       await fs.remove(reusableRequestDirCtx.abspath);
     }
 
@@ -107,10 +109,12 @@ export const writeReusableRequestsIndexDir = async (
   remoteReusableRequests: ReusableRequestData<WithAnnotation>[],
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await pruneReusableRequestsIndexDir(indexDirCtx, remoteReusableRequests);
     }
 
@@ -139,10 +143,10 @@ export const writeReusableRequestsIndexDir = async (
 
     await Promise.all(writePromises);
   } catch (error) {
-    if (indexDirCtx.exists) {
+    if (indexDirCtx.exists && backedUp) {
       await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
-    } else {
+    } else if (!indexDirCtx.exists) {
       await fs.remove(indexDirCtx.abspath);
     }
 

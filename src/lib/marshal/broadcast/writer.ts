@@ -49,10 +49,12 @@ export const writeBroadcastDirFromBundle = async (
   broadcastDirBundle: BroadcastDirBundle,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (broadcastDirCtx.exists) {
       await fs.copy(broadcastDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await fs.emptyDir(broadcastDirCtx.abspath);
     }
 
@@ -70,10 +72,10 @@ export const writeBroadcastDirFromBundle = async (
     );
     await Promise.all(promises);
   } catch (error) {
-    if (broadcastDirCtx.exists) {
+    if (broadcastDirCtx.exists && backedUp) {
       await fs.emptyDir(broadcastDirCtx.abspath);
       await fs.copy(backupDirPath, broadcastDirCtx.abspath);
-    } else {
+    } else if (!broadcastDirCtx.exists) {
       await fs.remove(broadcastDirCtx.abspath);
     }
 
@@ -115,10 +117,12 @@ export const writeBroadcastsIndexDir = async (
   options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await pruneBroadcastsIndexDir(indexDirCtx, remoteBroadcasts);
     }
 
@@ -144,10 +148,10 @@ export const writeBroadcastsIndexDir = async (
 
     await Promise.all(writeBroadcastDirPromises);
   } catch (error) {
-    if (indexDirCtx.exists) {
+    if (indexDirCtx.exists && backedUp) {
       await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
-    } else {
+    } else if (!indexDirCtx.exists) {
       await fs.remove(indexDirCtx.abspath);
     }
 

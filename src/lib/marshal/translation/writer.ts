@@ -57,14 +57,14 @@ export const writeTranslationFiles = async (
   options?: WriteTranslationFileOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
-  let backupComplete = false;
+  let backedUp = false;
 
   try {
     // If the index directory already exists, back it up in the temp sandbox
     // before wiping it clean.
     if (targetDirCtx.exists) {
       await fs.copy(targetDirCtx.abspath, backupDirPath);
-      backupComplete = true;
+      backedUp = true;
       await fs.emptyDir(targetDirCtx.abspath);
     }
 
@@ -95,7 +95,7 @@ export const writeTranslationFiles = async (
     await Promise.all(writeTranslationDirPromises);
   } catch (error) {
     // Only restore a completed backup; a failed copy leaves the original intact.
-    if (backupComplete) {
+    if (targetDirCtx.exists && backedUp) {
       await fs.emptyDir(targetDirCtx.abspath);
       await fs.copy(backupDirPath, targetDirCtx.abspath);
     } else if (!targetDirCtx.exists) {
