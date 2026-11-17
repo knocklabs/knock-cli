@@ -78,6 +78,9 @@ export const isSoftFailableBulkError = (error: unknown): boolean => {
   return false;
 };
 
+// Error while processing an agent session event, as opposed to reading it.
+export class AgentEventError extends CustomError {}
+
 // Error to indicate a syntax error in json and where.
 export class JsonSyntaxError extends CustomError {}
 

@@ -79,6 +79,45 @@ describe("commands/commit/list", () => {
       });
   });
 
+  describe("given promote filter and time range flags", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+      .stub(KnockApiV1.prototype, "listCommits", (stub) =>
+        stub.resolves(emptyCommitListResp),
+      )
+      .stdout()
+      .command([
+        "commit list",
+        "--environment",
+        "production",
+        "--promote-group-id",
+        "group-id",
+        "--promoted-from-environment",
+        "staging",
+        "--since",
+        "2026-01-01T00:00:00Z",
+        "--until",
+        "2026-01-31T00:00:00Z",
+      ])
+      .it("calls apiV1 listCommits with correct props", () => {
+        sinon.assert.calledWith(
+          KnockApiV1.prototype.listCommits as any,
+          sinon.match(
+            ({ args, flags }) =>
+              isEqual(args, {}) &&
+              isEqual(flags, {
+                "service-token": "valid-token",
+                environment: "production",
+                "promote-group-id": "group-id",
+                "promoted-from-environment": "staging",
+                since: "2026-01-01T00:00:00Z",
+                until: "2026-01-31T00:00:00Z",
+              }),
+          ),
+        );
+      });
+  });
+
   describe("given a branch flag", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

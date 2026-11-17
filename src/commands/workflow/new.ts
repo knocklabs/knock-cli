@@ -11,6 +11,7 @@ import { slugify } from "@/lib/helpers/string";
 import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 import * as Workflow from "@/lib/marshal/workflow";
 import {
+  groupChannelsByType,
   parseStepsInput,
   StepTag,
   StepTagChoices,
@@ -276,17 +277,6 @@ export default class WorkflowNew extends BaseCommand<typeof WorkflowNew> {
 
   async listAllChannelsByType(): Promise<Record<Channel["type"], Channel[]>> {
     const channels = await this.apiV1.listAllChannels();
-
-    // Group channels by type
-    // eslint-disable-next-line unicorn/no-array-reduce
-    const channelsByType = channels.reduce(
-      (acc, channel) => ({
-        ...acc,
-        [channel.type]: [...(acc[channel.type] || []), channel],
-      }),
-      {} as Record<Channel["type"], Channel[]>,
-    );
-
-    return channelsByType;
+    return groupChannelsByType(channels);
   }
 }

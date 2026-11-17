@@ -14,9 +14,6 @@ export default class WarehouseSyncRuns extends BaseCommand<
 > {
   static summary = "Display the most recent runs of a warehouse sync.";
 
-  // Hidden until warehouse syncs are generally available.
-  static hidden = true;
-
   static flags = {
     environment: CustomFlags.environment,
   };

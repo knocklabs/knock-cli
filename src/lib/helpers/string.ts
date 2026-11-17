@@ -78,3 +78,14 @@ export const indentString = (
  */
 export const slugify = (input: string): string =>
   input.toLowerCase().trim().replace(/\s+/g, "-");
+
+/*
+ * Removes control characters, keeping newlines and tabs, so that text from an
+ * untrusted source can't drive the terminal it's printed to. With the escape
+ * character gone, what's left of an escape sequence is harmless text.
+ *
+ * Works a character at a time, so it's safe to use on pieces of a stream: a
+ * sequence split across two pieces can't come back together.
+ */
+export const stripControlChars = (text: string): string =>
+  text.replace(/(?![\t\n])\p{Cc}/gu, "");

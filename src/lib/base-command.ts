@@ -63,6 +63,10 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   protected sessionContext!: SessionContext;
   protected configStore!: UserConfigStore;
   protected projectConfig?: ProjectConfig;
+  // Says which flags were typed and which came from a default.
+  protected parseMetadata!: {
+    flags: Record<string, { setFromDefault?: boolean } | undefined>;
+  };
 
   protected requiresAuth = true;
   protected static verifyFeatureEnabled?: "translations";
@@ -79,8 +83,9 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
     this.projectConfig = await findAndReadProjectConfig();
 
     // 3. Parse flags and args, must come after the user config load.
-    const { args, flags } = await this.parse(this.ctor);
+    const { args, flags, metadata } = await this.parse(this.ctor);
     this.props = { args: args as TArgs<T>, flags: flags as TFlags<T> };
+    this.parseMetadata = metadata;
 
     // 4. Build the initial session context.
     this.sessionContext = this.buildSessionContext();
@@ -106,6 +111,17 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
 
     // 9. Load the run context of the invoked command.
     this.runContext = await RunContext.load(this.id);
+  }
+
+  // oclif serializes the error object as-is in --json mode, and an Error's
+  // `message` is not enumerable, so it is dropped. Include it explicitly so
+  // scripts can see why a command failed.
+  protected toErrorJson(err: unknown): unknown {
+    if (err instanceof Error) {
+      return { error: { ...err, message: err.message } };
+    }
+
+    return super.toErrorJson(err);
   }
 
   private buildSessionContext(): SessionContext {
@@ -150,6 +166,46 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
         this.exit(0);
       }
     }
+  }
+
+  /*
+   * Long-running commands can outlive the access token they started with.
+   * Returns whether it's worth retrying, which isn't a promise of a good token.
+   *
+   * This differs from the refresh at startup. Other commands refresh and save a
+   * new token while this one runs, so what's in memory may be out of date: read
+   * the config again first, and use a newer token if there is one. The session
+   * also stays put if the refresh fails, since that could be a network blip.
+   */
+  protected async refreshApiClient(): Promise<boolean> {
+    if (this.sessionContext.type !== "oauth") return false;
+
+    try {
+      await this.configStore.load();
+
+      const session = this.configStore.get().userSession;
+
+      // The user logged out during the run.
+      if (!session) return false;
+
+      if (session.accessToken === this.sessionContext.session?.accessToken) {
+        const refreshedSession = await auth.refreshAccessToken({
+          authUrl: this.sessionContext.authOrigin,
+          clientId: session.clientId,
+          refreshToken: session.refreshToken,
+        });
+
+        await this.configStore.set({ userSession: refreshedSession });
+      }
+    } catch {
+      this.debug("Failed to refresh access token.");
+      return true;
+    }
+
+    this.sessionContext = this.buildSessionContext();
+    this.apiV1 = new KnockApiV1(this.sessionContext, this.config);
+
+    return true;
   }
 
   private async refreshAccessTokenForSession(): Promise<void> {

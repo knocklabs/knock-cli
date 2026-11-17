@@ -403,6 +403,10 @@ describe("lib/api-v1", () => {
       const flags = {
         environment: "development",
         promoted: true,
+        "promote-group-id": "group-id",
+        "promoted-from-environment": "staging",
+        since: "2026-01-01T00:00:00Z",
+        until: "2026-01-31T00:00:00Z",
         after: "foo",
         limit: 3,
         ...factory.gFlags(),
@@ -412,6 +416,10 @@ describe("lib/api-v1", () => {
       const params = {
         environment: "development",
         promoted: true,
+        promote_group_id: "group-id",
+        promoted_from_environment: "staging",
+        since: "2026-01-01T00:00:00Z",
+        until: "2026-01-31T00:00:00Z",
         after: "foo",
         limit: 3,
       };

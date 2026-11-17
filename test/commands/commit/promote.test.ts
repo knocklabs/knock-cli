@@ -16,13 +16,34 @@ const setupWithStub = () =>
       stub.onFirstCall().resolves({ input: "y" }),
     );
 
+const promoteGroup = {
+  id: "promote-group-id",
+  commit_count: 2,
+  created_at: "2026-01-01T00:00:00Z",
+  source: "development",
+  source_type: "environment",
+  to_environment: "staging",
+};
+
+const setupWithStubPromoteAll = (promote_group: unknown) =>
+  test
+    .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
+    .stub(KnockApiV1.prototype, "promoteAllChanges", (stub) =>
+      stub.resolves(
+        factory.resp({ data: { result: "success", promote_group } }),
+      ),
+    );
+
 const setupWithStubPromoteCommit = () =>
   test
     .env({ KNOCK_SERVICE_TOKEN: "valid-token" })
     .stub(KnockApiV1.prototype, "promoteOneChange", (stub) =>
       stub.resolves(
         factory.resp({
-          data: { commit: factory.commit({ id: "example-id" }) },
+          data: {
+            commit: factory.commit({ id: "example-id" }),
+            promote_group: promoteGroup,
+          },
         }),
       ),
     )
@@ -71,6 +92,22 @@ describe("commands/commit/promote", () => {
           ),
         );
       });
+
+    setupWithStubPromoteAll(promoteGroup)
+      .stdout()
+      .command(["commit promote", "--to", "staging", "--force"])
+      .it("prints the promote group id", (ctx) => {
+        expect(ctx.stdout).to.contain("Successfully promoted all changes");
+        expect(ctx.stdout).to.contain("Promote group id: promote-group-id");
+      });
+
+    setupWithStubPromoteAll(null)
+      .stdout()
+      .command(["commit promote", "--to", "staging", "--force"])
+      .it("omits the promote group id when nothing was promoted", (ctx) => {
+        expect(ctx.stdout).to.contain("Successfully promoted all changes");
+        expect(ctx.stdout).to.not.contain("Promote group id");
+      });
   });
 
   describe("given an `only` commit ID flag", () => {
@@ -87,6 +124,14 @@ describe("commands/commit/promote", () => {
             }),
           ),
         );
+      });
+
+    setupWithStubPromoteCommit()
+      .stdout()
+      .command(["commit promote", "--only", "example-id", "--force"])
+      .it("prints the commit id and promote group id", (ctx) => {
+        expect(ctx.stdout).to.contain("Commit id: example-id");
+        expect(ctx.stdout).to.contain("Promote group id: promote-group-id");
       });
   });
 });

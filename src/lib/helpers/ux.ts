@@ -22,7 +22,7 @@ export const spinner = {
   start(action: string): void {
     if (!isTestEnv) ux.action.start(action);
   },
-  stop(): void {
-    ux.action.stop();
+  stop(message?: string): void {
+    ux.action.stop(message);
   },
 };

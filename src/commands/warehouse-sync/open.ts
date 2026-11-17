@@ -12,9 +12,6 @@ export default class WarehouseSyncOpen extends BaseCommand<
 > {
   static summary = "Open a warehouse sync in the Knock dashboard.";
 
-  // Hidden until warehouse syncs are generally available.
-  static hidden = true;
-
   static flags = {
     environment: CustomFlags.environment,
   };

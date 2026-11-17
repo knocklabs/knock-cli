@@ -2,7 +2,7 @@ import { ux } from "@oclif/core";
 
 import { isSoftFailableBulkError } from "@/lib/helpers/error";
 import {
-  NonHiddenResourceType,
+  BulkResourceType,
   RESOURCE_CLI_CAPABILITIES,
   RESOURCE_SUBDIRS,
 } from "@/lib/resources";
@@ -20,7 +20,7 @@ import {
  * @returns Resolves when the command succeeds or a soft-failable error is skipped
  */
 export const runBulkResourceCommand = async (
-  resourceType: NonHiddenResourceType,
+  resourceType: BulkResourceType,
   run: () => Promise<unknown>,
 ): Promise<void> => {
   const exitCodeBefore = process.exitCode;

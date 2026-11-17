@@ -22,9 +22,6 @@ export default class WarehouseSyncPush extends BaseCommand<
     "Push leaves a sync's schedule as it is, and a sync that push creates " +
     "starts with the default schedule.";
 
-  // Hidden until warehouse syncs are generally available.
-  static hidden = true;
-
   static flags = {
     environment: CustomFlags.environment,
     all: Flags.boolean({

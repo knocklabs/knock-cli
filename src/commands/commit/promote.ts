@@ -1,3 +1,4 @@
+import type { PromoteGroup } from "@knocklabs/mgmt/resources/commits";
 import { Flags } from "@oclif/core";
 
 import * as ApiV1 from "@/lib/api-v1";
@@ -65,7 +66,7 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
       return this.error(new ApiError(message));
     }
 
-    const { commit } = resp.data;
+    const { commit, promote_group: promoteGroup } = resp.data;
 
     this.log(
       `‣ Successfully promoted the commit \`${flags.only}\` into \`${
@@ -73,6 +74,7 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
       }\` environment`,
     );
     this.log(indentString(`Commit id: ${commit!.id}`, 4));
+    this.logPromoteGroupId(promoteGroup);
   }
 
   async promoteAllChanges(): Promise<void> {
@@ -84,12 +86,20 @@ export default class CommitPromote extends BaseCommand<typeof CommitPromote> {
     const input = flags.force || (await promptToConfirm(prompt));
     if (!input) return;
 
-    await withSpinner<ApiV1.PromoteAllChangesResp>(() =>
+    const resp = await withSpinner<ApiV1.PromoteAllChangesResp>(() =>
       this.apiV1.promoteAllChanges(this.props),
     );
 
     this.log(
       `‣ Successfully promoted all changes to \`${flags.to}\` environment`,
     );
+    this.logPromoteGroupId(resp.data.promote_group);
+  }
+
+  // A promote that copied no commits has no promote group.
+  private logPromoteGroupId(promoteGroup?: PromoteGroup | null): void {
+    if (!promoteGroup) return;
+
+    this.log(indentString(`Promote group id: ${promoteGroup.id}`, 4));
   }
 }

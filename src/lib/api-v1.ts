@@ -1,10 +1,12 @@
 // This file is the Knock API client. It is allowed to be long.
 // Add resource methods on ApiV1 instead of splitting them out to satisfy a line limit.
 
+import type { Readable } from "node:stream";
+
 import KnockMgmt from "@knocklabs/mgmt";
 import type { Branch } from "@knocklabs/mgmt/resources/branches";
 import { Channel } from "@knocklabs/mgmt/resources/channels";
-import type { Commit } from "@knocklabs/mgmt/resources/commits";
+import type { Commit, PromoteGroup } from "@knocklabs/mgmt/resources/commits";
 import { Environment } from "@knocklabs/mgmt/resources/environments";
 import { MessageTypeListParams } from "@knocklabs/mgmt/resources/message-types";
 import { Config } from "@oclif/core";
@@ -18,11 +20,16 @@ import {
   putAssetBytes,
 } from "@/lib/assets";
 import { Props } from "@/lib/base-command";
+import {
+  AGENT_READ_TIMEOUT_MS,
+  type AgentEvent,
+} from "@/lib/helpers/agent-session";
 import { InputError } from "@/lib/helpers/error";
 import { ProofOfWorkSolution } from "@/lib/helpers/headless-account";
 import { AnyObj, prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
+import * as Broadcast from "@/lib/marshal/broadcast";
 import * as EmailLayout from "@/lib/marshal/email-layout";
 import * as Guide from "@/lib/marshal/guide";
 import * as MessageType from "@/lib/marshal/message-type";
@@ -39,6 +46,9 @@ import * as Workflow from "@/lib/marshal/workflow";
 import { SessionContext } from "./types";
 
 const API_VERSION = "v1";
+
+const AGENT_START_TIMEOUT_MS = 30_000;
+const AGENT_STOP_TIMEOUT_MS = 10_000;
 
 /**
  * KnockMgmt client requires a service token, but we set the Authorization
@@ -199,6 +209,10 @@ export default class ApiV1 {
       promoted: flags.promoted,
       resource_type: flags["resource-type"],
       resource_id: flags["resource-id"],
+      promote_group_id: flags["promote-group-id"],
+      promoted_from_environment: flags["promoted-from-environment"],
+      since: flags.since,
+      until: flags.until,
       ...toPageParams(flags),
     });
 
@@ -512,6 +526,101 @@ export default class ApiV1 {
     return this.put(`/message_types/${messageType.key}/validate`, data, {
       params,
     });
+  }
+
+  // By resources: Broadcasts
+
+  async listBroadcasts<A extends MaybeWithAnnotation>({
+    flags,
+  }: Props): Promise<AxiosResponse<ListBroadcastResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+      ...toPageParams(flags),
+    });
+
+    return this.get("/broadcasts", { params });
+  }
+
+  async getBroadcast<A extends MaybeWithAnnotation>({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<GetBroadcastResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+    });
+
+    return this.get(`/broadcasts/${args.broadcastKey}`, { params });
+  }
+
+  async upsertBroadcast<A extends MaybeWithAnnotation>(
+    { flags }: Props,
+    broadcast: Broadcast.BroadcastInput,
+  ): Promise<AxiosResponse<UpsertBroadcastResp<A>>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+      annotate: flags.annotate,
+    });
+    const data = { broadcast };
+
+    return this.put(`/broadcasts/${broadcast.key}`, data, { params });
+  }
+
+  async validateBroadcast(
+    { flags }: Props,
+    broadcast: Broadcast.BroadcastInput,
+  ): Promise<AxiosResponse<ValidateBroadcastResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const data = { broadcast };
+
+    return this.put(`/broadcasts/${broadcast.key}/validate`, data, {
+      params,
+    });
+  }
+
+  async sendBroadcast({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<SendBroadcastResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const data = prune({
+      send_at: flags["send-at"],
+    });
+
+    return this.put(`/broadcasts/${args.broadcastKey}/send`, data, {
+      params,
+    });
+  }
+
+  async runBroadcast({
+    args,
+    flags,
+  }: Props): Promise<AxiosResponse<RunBroadcastResp>> {
+    const params = prune({
+      environment: flags.environment,
+      branch: flags.branch,
+    });
+    const settings = prune({
+      sandbox_mode: flags["sandbox-mode"],
+      skip_delay: flags["skip-delay"],
+    });
+    const data = prune({
+      recipient: { id: flags.recipient },
+      tenant: flags.tenant,
+      ...(Object.keys(settings).length > 0 ? { settings } : {}),
+    });
+
+    return this.put(`/broadcasts/${args.broadcastKey}/run`, data, { params });
   }
 
   // By resources: Guides
@@ -1025,6 +1134,61 @@ export default class ApiV1 {
     return created.data;
   }
 
+  // By resources: Agent sessions
+  //
+  // The agent API isn't part of the versioned public API, so these call the
+  // client directly instead of going through the `/v1` helpers below.
+
+  async createAgentSession(
+    body: CreateAgentSessionBody,
+  ): Promise<AxiosResponse<CreateAgentSessionResp>> {
+    // Ask for a 202 instead of a held-open response, so the run doesn't depend
+    // on this connection staying up. Events are read from the session journal.
+    return this.client.post("/agent/sessions", body, {
+      headers: { Prefer: "respond-async" },
+      timeout: AGENT_START_TIMEOUT_MS,
+    });
+  }
+
+  // Runs a follow-up prompt in an existing session, which keeps its history.
+  async createAgentRun(
+    body: CreateAgentSessionBody,
+  ): Promise<AxiosResponse<CreateAgentSessionResp>> {
+    return this.client.post(`/agent/sessions/${body.id}/runs`, body, {
+      headers: { Prefer: "respond-async" },
+      timeout: AGENT_START_TIMEOUT_MS,
+    });
+  }
+
+  async getAgentSessionEvents(
+    sessionId: string,
+    { offset, signal }: AgentSessionEventsOpts,
+  ): Promise<AxiosResponse<AgentEvent[]>> {
+    return this.client.get(`/agent/sessions/${sessionId}/events`, {
+      params: { offset },
+      signal,
+      timeout: AGENT_READ_TIMEOUT_MS,
+    });
+  }
+
+  async streamAgentSessionEvents(
+    sessionId: string,
+    { offset, signal }: AgentSessionEventsOpts,
+  ): Promise<AxiosResponse<Readable>> {
+    return this.client.get(`/agent/sessions/${sessionId}/events`, {
+      params: { offset, live: "sse" },
+      responseType: "stream",
+      signal,
+      timeout: AGENT_READ_TIMEOUT_MS,
+    });
+  }
+
+  async stopAgentSession(sessionId: string): Promise<AxiosResponse> {
+    return this.client.post(`/agent/session/${sessionId}/stop`, undefined, {
+      timeout: AGENT_STOP_TIMEOUT_MS,
+    });
+  }
+
   // By methods:
 
   async get(
@@ -1059,6 +1223,28 @@ export default class ApiV1 {
 }
 
 export type T = ApiV1;
+
+/*
+ * Agent API types:
+ */
+export type CreateAgentSessionBody = {
+  id: string;
+  run_id: string;
+  prompt: string;
+  source: "api";
+  context: { type: string; value: unknown }[];
+};
+
+export type CreateAgentSessionResp = {
+  session_id: string;
+  run_id: string;
+  status: "accepted";
+};
+
+type AgentSessionEventsOpts = {
+  offset: string;
+  signal?: AbortSignal;
+};
 
 /*
  * API v1 response types:
@@ -1144,11 +1330,14 @@ export type CommitAllChangesResp = {
 
 export type PromoteAllChangesResp = {
   result?: "success";
+  // Null when there were no changes to promote.
+  promote_group?: PromoteGroup | null;
   errors?: InputError[];
 };
 
 export type PromoteOneChangeResp = {
   commit?: Commit;
+  promote_group?: PromoteGroup;
   errors?: InputError[];
 };
 
@@ -1230,6 +1419,33 @@ export type GetSchemaResp = {
 
 export type UpsertSchemaResp = {
   schema?: Schema.SchemaData;
+  errors?: InputError[];
+};
+
+export type ListBroadcastResp<A extends MaybeWithAnnotation = unknown> =
+  PaginatedResp<Broadcast.BroadcastData<A>>;
+
+export type GetBroadcastResp<A extends MaybeWithAnnotation = unknown> =
+  Broadcast.BroadcastData<A>;
+
+export type UpsertBroadcastResp<A extends MaybeWithAnnotation = unknown> = {
+  broadcast?: Broadcast.BroadcastData<A>;
+  errors?: InputError[];
+};
+
+export type ValidateBroadcastResp = {
+  broadcast?: Broadcast.BroadcastData;
+  errors?: InputError[];
+};
+
+export type SendBroadcastResp = {
+  broadcast?: Broadcast.BroadcastData;
+  errors?: InputError[];
+};
+
+export type RunBroadcastResp = {
+  broadcast_run_id?: string;
+  request_id?: string;
   errors?: InputError[];
 };
 

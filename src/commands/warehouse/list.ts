@@ -16,9 +16,6 @@ import { withSpinner } from "@/lib/helpers/request";
 export default class WarehouseList extends BaseCommand<typeof WarehouseList> {
   static summary = "Display all warehouses connected to your account.";
 
-  // Hidden until warehouse syncs are generally available.
-  static hidden = true;
-
   static flags = {
     environment: CustomFlags.environment,
     ...pageFlags,
