@@ -173,11 +173,17 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   }
 
   // An error's message isn't enumerable, so it would otherwise be left out of
-  // the output of a command run with --json.
+  // the output of a command run with --json. Errors that serialize themselves,
+  // like axios's, keep doing so, since their other fields can be circular.
   protected toErrorJson(err: unknown): { error: unknown } {
     if (!(err instanceof Error)) return { error: err };
 
-    return { error: { ...err, message: err.message } };
+    const fields =
+      "toJSON" in err && typeof err.toJSON === "function"
+        ? err.toJSON()
+        : { ...err };
+
+    return { error: { ...fields, message: err.message } };
   }
 
   // Base flags are inherited by any command that extends BaseCommand.

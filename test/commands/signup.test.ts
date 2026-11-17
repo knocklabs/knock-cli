@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 import { expect, test } from "@oclif/test";
 import enquirer from "enquirer";
 import nock from "nock";
@@ -5,7 +7,7 @@ import * as sinon from "sinon";
 
 import { factory } from "@/../test/support";
 import auth from "@/lib/auth";
-import { timer } from "@/lib/helpers/headless-account";
+import { hasLeadingZeroBits, timer } from "@/lib/helpers/headless-account";
 import { DEFAULT_API_URL } from "@/lib/urls";
 import { UserConfigStore } from "@/lib/user-config";
 
@@ -29,6 +31,35 @@ const mockStatus = (status: string) =>
   })
     .get("/v1/headless_accounts/status")
     .reply(200, { status, expires_at: EXPIRES_AT });
+
+const challengeFor = (difficulty: number, algorithm = "sha256") => ({
+  challenge: `challenge-${difficulty}-${algorithm}`,
+  difficulty,
+  algorithm,
+  expires_at: "2026-10-29T12:05:00.000Z",
+});
+
+const refuse = (code: string, challenge: Record<string, unknown>) =>
+  nock(DEFAULT_API_URL)
+    .post("/v1/headless_accounts")
+    .reply(400, { code, message: "Solve the challenge", challenge });
+
+// Checks a nonce the way the server does. nock tries each matcher against
+// every request, including ones without a body.
+const solves = (
+  body: any,
+  { challenge, difficulty }: { challenge: string; difficulty: number },
+) => {
+  const nonce = body?.proof_of_work?.nonce;
+  if (body?.proof_of_work?.challenge !== challenge) return false;
+
+  const digest = crypto
+    .createHash("sha256")
+    .update(`${challenge}:${nonce}`)
+    .digest();
+
+  return hasLeadingZeroBits(digest, difficulty);
+};
 
 describe("commands/signup", () => {
   beforeEach(() => {
@@ -342,7 +373,7 @@ describe("commands/signup", () => {
             );
         })
         .command(["signup", "--force"])
-        .catch(/Too many requests Try again in 120 seconds\./)
+        .catch(/Too many requests Try again in 2 minutes\./)
         .it("says when to try again");
     });
 
@@ -361,7 +392,128 @@ describe("commands/signup", () => {
         .command(["signup", "--force", "--json"])
         .it("includes the message in the output", (ctx) => {
           expect(JSON.parse(ctx.stdout).error.message).to.equal(
-            "Too many requests Try again in 120 seconds.",
+            "Too many requests Try again in 2 minutes.",
+          );
+        });
+    });
+
+    describe("given knock asks for proof of work", () => {
+      test
+        .stdout()
+        .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
+        .do(() => {
+          const challenge = challengeFor(10);
+          nock(DEFAULT_API_URL, { badheaders: ["authorization"] })
+            .post("/v1/headless_accounts", (body) => !body?.proof_of_work)
+            .reply(400, {
+              code: "proof_of_work_required",
+              message: "Solve the challenge",
+              challenge,
+            });
+          nock(DEFAULT_API_URL, { badheaders: ["authorization"] })
+            .post("/v1/headless_accounts", (body) => solves(body, challenge))
+            .reply(201, created);
+          mockStatus("unclaimed");
+        })
+        .command(["signup", "--force", "--json"])
+        .it("solves the challenge and sends the solution", (ctx) => {
+          expect(nock.isDone()).to.equal(true);
+          expect(JSON.parse(ctx.stdout)).to.include({ token: TOKEN });
+        });
+
+      test
+        .stdout()
+        .stub(UserConfigStore.prototype, "set", (stub) => stub.resolves())
+        .do(() => {
+          const first = challengeFor(4);
+          const second = challengeFor(12);
+          refuse("proof_of_work_required", first);
+          nock(DEFAULT_API_URL)
+            .post("/v1/headless_accounts", (body) => solves(body, first))
+            .reply(400, {
+              code: "proof_of_work_invalid",
+              message: "The proof-of-work solution is wrong",
+              challenge: second,
+            });
+          nock(DEFAULT_API_URL)
+            .post("/v1/headless_accounts", (body) => solves(body, second))
+            .reply(201, created);
+          mockStatus("unclaimed");
+        })
+        .command(["signup", "--force", "--json"])
+        .it("solves the new challenge when a solution is refused", (ctx) => {
+          expect(nock.isDone()).to.equal(true);
+          expect(JSON.parse(ctx.stdout)).to.include({ token: TOKEN });
+        });
+
+      test
+        .do(() => {
+          refuse("proof_of_work_required", challengeFor(1));
+          nock(DEFAULT_API_URL)
+            .post("/v1/headless_accounts")
+            .times(3)
+            .reply(400, {
+              code: "proof_of_work_invalid",
+              message: "The proof-of-work solution is wrong",
+              challenge: challengeFor(1),
+            });
+        })
+        .command(["signup", "--force"])
+        .catch((error) => {
+          expect(error.message).to.contain(
+            "The proof-of-work solution is wrong",
+          );
+          expect(nock.isDone()).to.equal(true);
+        })
+        .it("gives up after three solutions are refused");
+
+      test
+        .do(() => {
+          refuse("proof_of_work_required", challengeFor(8, "argon2id"));
+          mockCreate();
+        })
+        .command(["signup", "--force"])
+        .catch((error) => {
+          expect(error.message).to.contain("(argon2id)");
+          expect(error.message).to.contain("Update the Knock CLI");
+          expect(nock.pendingMocks()).to.have.length(1);
+        })
+        .it("says to update the cli for an algorithm it doesn't know");
+    });
+
+    describe("given too many accounts are waiting to be claimed", () => {
+      test
+        .do(() => {
+          nock(DEFAULT_API_URL).post("/v1/headless_accounts").reply(
+            429,
+            {
+              code: "headless_account_limit_reached",
+              message:
+                "Too many headless accounts are waiting to be claimed. Claim one or wait for one to expire, then try again.",
+            },
+            { "retry-after": "18000" },
+          );
+        })
+        .command(["signup", "--force"])
+        .catch((error) => {
+          expect(error.message).to.contain("Try again in 5 hours.");
+          expect(error.message).to.contain("knock headless claim --email");
+        })
+        .it("says when to try again, and how to claim one");
+    });
+
+    describe("given the api can't be reached with --json", () => {
+      test
+        .stdout()
+        .do(() => {
+          nock(DEFAULT_API_URL)
+            .post("/v1/headless_accounts")
+            .replyWithError("connect ECONNREFUSED");
+        })
+        .command(["signup", "--force", "--json"])
+        .it("prints the error instead of failing to serialize it", (ctx) => {
+          expect(JSON.parse(ctx.stdout).error.message).to.contain(
+            "ECONNREFUSED",
           );
         });
     });
@@ -379,7 +531,7 @@ describe("commands/signup", () => {
           );
         })
         .command(["signup", "--force"])
-        .catch(/temporarily unavailable\. Try again in 60 seconds\./)
+        .catch(/temporarily unavailable\. Try again in 1 minute\./)
         .it("says when to try again");
     });
   });

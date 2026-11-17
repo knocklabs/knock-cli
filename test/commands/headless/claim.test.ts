@@ -165,7 +165,7 @@ describe("commands/headless/claim", () => {
           );
       })
       .command(["headless claim", "--email", EMAIL])
-      .catch(/Try again in 300 seconds\./)
+      .catch(/Try again in 5 minutes\./)
       .it("says when to try again");
   });
 

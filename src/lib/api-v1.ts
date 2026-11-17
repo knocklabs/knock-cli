@@ -19,6 +19,7 @@ import {
 } from "@/lib/assets";
 import { Props } from "@/lib/base-command";
 import { InputError } from "@/lib/helpers/error";
+import { ProofOfWorkSolution } from "@/lib/helpers/headless-account";
 import { AnyObj, prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
@@ -722,10 +723,12 @@ export default class ApiV1 {
 
   // Creating a headless account takes no authentication, so don't send the
   // credentials of whichever session the command happens to be running in.
-  async createHeadlessAccount(): Promise<
-    AxiosResponse<CreateHeadlessAccountResp>
-  > {
-    return this.post("/headless_accounts", undefined, {
+  async createHeadlessAccount(
+    proofOfWork?: ProofOfWorkSolution,
+  ): Promise<AxiosResponse<CreateHeadlessAccountResp>> {
+    const data = proofOfWork ? { proof_of_work: proofOfWork } : undefined;
+
+    return this.post("/headless_accounts", data, {
       headers: { Authorization: null, "x-knock-client-id": null },
     });
   }

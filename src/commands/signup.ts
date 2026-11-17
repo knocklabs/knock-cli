@@ -1,11 +1,16 @@
 import { Flags, ux } from "@oclif/core";
+import { AxiosResponse } from "axios";
 
-import { HeadlessAccountStatus } from "@/lib/api-v1";
+import { CreateHeadlessAccountResp, HeadlessAccountStatus } from "@/lib/api-v1";
 import BaseCommand from "@/lib/base-command";
 import { ApiError } from "@/lib/helpers/error";
 import {
   formatHeadlessAccountError,
+  proofOfWorkChallenge,
+  ProofOfWorkSolution,
+  solveProofOfWork,
   timer,
+  UnsupportedChallengeError,
 } from "@/lib/helpers/headless-account";
 import { isSuccessResp } from "@/lib/helpers/request";
 import { indentString } from "@/lib/helpers/string";
@@ -13,6 +18,7 @@ import { promptToConfirm, spinner } from "@/lib/helpers/ux";
 
 const READY_POLL_INTERVAL_MS = 5000;
 const READY_MAX_POLLS = 24;
+const MAX_PROOF_OF_WORK_ATTEMPTS = 3;
 
 const CONFIRM_PROMPT =
   "This will provision a new, temporary Knock account, which is deleted after 24 hours unless a person claims it.\nContinue?";
@@ -81,7 +87,7 @@ export default class Signup extends BaseCommand<typeof Signup> {
   private async createAccount(): Promise<HeadlessAccount> {
     spinner.start("‣ Creating a headless account");
 
-    const resp = await this.apiV1.createHeadlessAccount();
+    const resp = await this.requestAccount();
 
     if (!isSuccessResp(resp)) {
       ux.error(new ApiError(formatHeadlessAccountError(resp)));
@@ -109,6 +115,41 @@ export default class Signup extends BaseCommand<typeof Signup> {
     this.render(result, unsavedReason);
 
     return result;
+  }
+
+  /*
+   * Knock can ask for a solved proof-of-work challenge before it creates an
+   * account. It refuses the request with a challenge to solve, so asking first
+   * costs nothing while proof of work is off. A refused solution comes back
+   * with a new challenge, for example when the difficulty went up meanwhile.
+   */
+  private async requestAccount(): Promise<
+    AxiosResponse<CreateHeadlessAccountResp>
+  > {
+    let solution: ProofOfWorkSolution | undefined;
+
+    for (let attempt = 0; ; attempt++) {
+      // eslint-disable-next-line no-await-in-loop
+      const resp = await this.apiV1.createHeadlessAccount(solution);
+
+      const challenge = proofOfWorkChallenge(resp);
+      if (!challenge || attempt === MAX_PROOF_OF_WORK_ATTEMPTS) return resp;
+
+      spinner.start("‣ Solving a proof-of-work challenge");
+
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        solution = await solveProofOfWork(challenge);
+      } catch (error) {
+        if (error instanceof UnsupportedChallengeError) {
+          return this.error(error.message);
+        }
+
+        throw error;
+      }
+
+      spinner.start("‣ Creating a headless account");
+    }
   }
 
   /*
