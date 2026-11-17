@@ -102,6 +102,22 @@ describe("commands/headless/status", () => {
       .it("says which token to use");
   });
 
+  describe("given the api can't be reached with --json", () => {
+    test
+      .env({ KNOCK_SERVICE_TOKEN: "knock_st_secret" })
+      .stdout()
+      .do(() => {
+        nock(DEFAULT_API_URL)
+          .get("/v1/headless_accounts/status")
+          .replyWithError("connect ECONNREFUSED");
+      })
+      .command(["headless status", "--json"])
+      .it("says why without printing the token", (ctx) => {
+        expect(JSON.parse(ctx.stdout).error.message).to.contain("ECONNREFUSED");
+        expect(ctx.stdout).to.not.contain("knock_st_secret");
+      });
+  });
+
   describe("given it's polled too quickly", () => {
     test
       .env({ KNOCK_SERVICE_TOKEN: "valid-token" })

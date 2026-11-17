@@ -1,4 +1,5 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
+import { isAxiosError } from "axios";
 
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
@@ -116,7 +117,16 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   // oclif serializes the error object as-is in --json mode, and an Error's
   // `message` is not enumerable, so it is dropped. Include it explicitly so
   // scripts can see why a command failed.
+  //
+  // An axios error, such as a connection failure, carries its request, which
+  // is circular, and its config, which holds the Authorization header. Keep
+  // only what describes the failure.
   protected toErrorJson(err: unknown): unknown {
+    if (isAxiosError(err)) {
+      const { name, code, message, response } = err;
+      return { error: { name, code, status: response?.status, message } };
+    }
+
     if (err instanceof Error) {
       return { error: { ...err, message: err.message } };
     }
@@ -226,20 +236,6 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
       this.debug("Failed to refresh access token, clearing session.");
       await this.configStore.set({ userSession: undefined });
     }
-  }
-
-  // An error's message isn't enumerable, so it would otherwise be left out of
-  // the output of a command run with --json. Errors that serialize themselves,
-  // like axios's, keep doing so, since their other fields can be circular.
-  protected toErrorJson(err: unknown): { error: unknown } {
-    if (!(err instanceof Error)) return { error: err };
-
-    const fields =
-      "toJSON" in err && typeof err.toJSON === "function"
-        ? err.toJSON()
-        : { ...err };
-
-    return { error: { ...fields, message: err.message } };
   }
 
   // Base flags are inherited by any command that extends BaseCommand.
