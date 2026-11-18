@@ -1022,6 +1022,14 @@ export default class ApiV1 {
     );
   }
 
+  // Feedback is account-wide. This call does not send environment or branch.
+
+  async createFeedback(
+    body: CreateFeedbackBody,
+  ): Promise<AxiosResponse<CreateFeedbackResp>> {
+    return this.post("/feedback", body);
+  }
+
   // Assets are account-wide. These calls do not send environment or branch.
 
   async requestAssetUpload(input: {
@@ -1225,6 +1233,20 @@ export type WhoamiResp = {
   user_name?: string | null;
   user_email?: string | null;
   account_features?: AccountFeatures;
+};
+
+export type CreateFeedbackBody = {
+  message: string;
+  context?: Record<string, string>;
+};
+
+export type Feedback = {
+  id: string;
+  created_at: string;
+};
+
+export type CreateFeedbackResp = {
+  feedback: Feedback;
 };
 
 export type ListWorkflowResp<A extends MaybeWithAnnotation = unknown> =
