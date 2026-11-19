@@ -65,10 +65,12 @@ const writeAudienceDirFromBundle = async (
   audienceDirBundle: AudienceDirBundle,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (audienceDirCtx.exists) {
       await fs.copy(audienceDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await fs.emptyDir(audienceDirCtx.abspath);
     }
 
@@ -84,11 +86,11 @@ const writeAudienceDirFromBundle = async (
     await Promise.all(promises);
   } catch (error) {
     // In case of any error, wipe the target directory that is likely in a bad
-    // state then restore the backup if one existed before.
-    if (audienceDirCtx.exists) {
+    // state then restore the backup, but only if the backup completed.
+    if (audienceDirCtx.exists && backedUp) {
       await fs.emptyDir(audienceDirCtx.abspath);
       await fs.copy(backupDirPath, audienceDirCtx.abspath);
-    } else {
+    } else if (!audienceDirCtx.exists) {
       await fs.remove(audienceDirCtx.abspath);
     }
 
@@ -142,12 +144,14 @@ export const writeAudiencesIndexDir = async (
   options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     // If the index directory already exists, back it up in the temp sandbox
     // before wiping it clean.
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await pruneAudiencesIndexDir(indexDirCtx, remoteAudiences);
     }
 
@@ -170,11 +174,11 @@ export const writeAudiencesIndexDir = async (
     await Promise.all(writeAudienceDirPromises);
   } catch (error) {
     // In case of any error, wipe the index directory that is likely in a bad
-    // state then restore the backup if one existed before.
-    if (indexDirCtx.exists) {
+    // state then restore the backup, but only if the backup completed.
+    if (indexDirCtx.exists && backedUp) {
       await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
-    } else {
+    } else if (!indexDirCtx.exists) {
       await fs.remove(indexDirCtx.abspath);
     }
 

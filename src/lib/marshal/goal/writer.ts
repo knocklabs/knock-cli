@@ -47,10 +47,12 @@ const writeGoalDirFromBundle = async (
   goalDirBundle: GoalDirBundle,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (goalDirCtx.exists) {
       await fs.copy(goalDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await fs.emptyDir(goalDirCtx.abspath);
     }
 
@@ -65,10 +67,10 @@ const writeGoalDirFromBundle = async (
     );
     await Promise.all(promises);
   } catch (error) {
-    if (goalDirCtx.exists) {
+    if (goalDirCtx.exists && backedUp) {
       await fs.emptyDir(goalDirCtx.abspath);
       await fs.copy(backupDirPath, goalDirCtx.abspath);
-    } else {
+    } else if (!goalDirCtx.exists) {
       await fs.remove(goalDirCtx.abspath);
     }
 
@@ -110,10 +112,12 @@ export const writeGoalsIndexDir = async (
   options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await pruneGoalsIndexDir(indexDirCtx, remoteGoals);
     }
 
@@ -132,10 +136,10 @@ export const writeGoalsIndexDir = async (
 
     await Promise.all(writeGoalDirPromises);
   } catch (error) {
-    if (indexDirCtx.exists) {
+    if (indexDirCtx.exists && backedUp) {
       await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
-    } else {
+    } else if (!indexDirCtx.exists) {
       await fs.remove(indexDirCtx.abspath);
     }
 
