@@ -25,6 +25,7 @@ import {
   type AgentEvent,
 } from "@/lib/helpers/agent-session";
 import { InputError } from "@/lib/helpers/error";
+import { ProofOfWorkSolution } from "@/lib/helpers/headless-account";
 import { AnyObj, prune } from "@/lib/helpers/object.isomorphic";
 import { PaginatedResp, toPageParams } from "@/lib/helpers/page";
 import { formatErrorRespMessage, isSuccessResp } from "@/lib/helpers/request";
@@ -827,6 +828,43 @@ export default class ApiV1 {
     return defaultEnvironment.slug;
   }
 
+  // By resources: Headless accounts
+
+  // Creating a headless account takes no authentication, so don't send the
+  // credentials of whichever session the command happens to be running in.
+  async createHeadlessAccount(
+    proofOfWork?: ProofOfWorkSolution,
+  ): Promise<AxiosResponse<CreateHeadlessAccountResp>> {
+    const data = proofOfWork ? { proof_of_work: proofOfWork } : undefined;
+
+    return this.post("/headless_accounts", data, {
+      headers: { Authorization: null, "x-knock-client-id": null },
+    });
+  }
+
+  // Signing up passes the new token, since this client was built from the
+  // session the command started with. Otherwise, uses that session.
+  async getHeadlessAccountStatus(
+    token?: string,
+  ): Promise<AxiosResponse<GetHeadlessAccountStatusResp>> {
+    const config = token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "x-knock-client-id": null,
+          },
+        }
+      : undefined;
+
+    return this.get("/headless_accounts/status", config);
+  }
+
+  async claimHeadlessAccount(
+    email: string,
+  ): Promise<AxiosResponse<ClaimHeadlessAccountResp>> {
+    return this.post("/headless_accounts/claim", { email });
+  }
+
   // By resources: Warehouses and warehouse syncs
 
   async listWarehouses({
@@ -1434,6 +1472,29 @@ export type RunBroadcastResp = {
 };
 
 export type ListBranchResp = PaginatedResp<Branch>;
+
+export type HeadlessAccountStatus =
+  | "provisioning"
+  | "unclaimed"
+  | "claimed"
+  | "expired";
+
+export type CreateHeadlessAccountResp = {
+  token: string;
+  status: "provisioning";
+  expires_at: string;
+};
+
+export type GetHeadlessAccountStatusResp = {
+  status: HeadlessAccountStatus;
+  expires_at: string | null;
+};
+
+export type ClaimHeadlessAccountResp = {
+  claim_url: string;
+  user_code: string;
+  expires_at: string;
+};
 
 export type ListWarehouseResp = PaginatedResp<WarehouseSync.WarehouseData>;
 

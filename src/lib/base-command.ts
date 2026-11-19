@@ -1,4 +1,5 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
+import { isAxiosError } from "axios";
 
 import { AnyObj } from "@/lib/helpers/object.isomorphic";
 
@@ -116,7 +117,16 @@ abstract class BaseCommand<T extends typeof Command> extends Command {
   // oclif serializes the error object as-is in --json mode, and an Error's
   // `message` is not enumerable, so it is dropped. Include it explicitly so
   // scripts can see why a command failed.
+  //
+  // An axios error, such as a connection failure, carries its request, which
+  // is circular, and its config, which holds the Authorization header. Keep
+  // only what describes the failure.
   protected toErrorJson(err: unknown): unknown {
+    if (isAxiosError(err)) {
+      const { name, code, message, response } = err;
+      return { error: { name, code, status: response?.status, message } };
+    }
+
     if (err instanceof Error) {
       return { error: { ...err, message: err.message } };
     }
