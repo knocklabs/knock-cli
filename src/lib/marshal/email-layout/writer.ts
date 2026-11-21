@@ -64,10 +64,12 @@ const writeEmailLayoutDirFromBundle = async (
   emailLayoutDirBundle: EmailLayoutDirBundle,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (emailLayoutDirCtx.exists) {
       await fs.copy(emailLayoutDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await fs.emptyDir(emailLayoutDirCtx.abspath);
     }
 
@@ -83,11 +85,11 @@ const writeEmailLayoutDirFromBundle = async (
     await Promise.all(promises);
   } catch (error) {
     // In case of any error, wipe the target directory that is likely in a bad
-    // state then restore the backup if one existed before.
-    if (emailLayoutDirCtx.exists) {
+    // state then restore the backup, but only if the backup completed.
+    if (emailLayoutDirCtx.exists && backedUp) {
       await fs.emptyDir(emailLayoutDirCtx.abspath);
       await fs.copy(backupDirPath, emailLayoutDirCtx.abspath);
-    } else {
+    } else if (!emailLayoutDirCtx.exists) {
       await fs.remove(emailLayoutDirCtx.abspath);
     }
 
@@ -108,10 +110,12 @@ export const writeEmailLayoutIndexDir = async (
   options?: WriteOpts,
 ): Promise<void> => {
   const backupDirPath = path.resolve(sandboxDir, uniqueId("backup"));
+  let backedUp = false;
 
   try {
     if (indexDirCtx.exists) {
       await fs.copy(indexDirCtx.abspath, backupDirPath);
+      backedUp = true;
       await pruneLayoutsIndexDir(indexDirCtx, remoteEmailLayouts);
     }
 
@@ -141,10 +145,10 @@ export const writeEmailLayoutIndexDir = async (
 
     await Promise.all(writeEmailLayoutDirPromises);
   } catch (error) {
-    if (indexDirCtx.exists) {
+    if (indexDirCtx.exists && backedUp) {
       await fs.emptyDir(indexDirCtx.abspath);
       await fs.copy(backupDirPath, indexDirCtx.abspath);
-    } else {
+    } else if (!indexDirCtx.exists) {
       await fs.remove(indexDirCtx.abspath);
     }
 
