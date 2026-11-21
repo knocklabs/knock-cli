@@ -102,6 +102,9 @@
       "guide": {
         "description": "Manage in-app guides."
       },
+      "headless": {
+        "description": "Manage headless accounts."
+      },
       "message-type": {
         "description": "Manage message types for guides."
       },
