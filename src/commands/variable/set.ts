@@ -21,6 +21,9 @@ import {
 const SECRET_ARGV_ERROR =
   "Refusing to read a secret from the command line. Use --value-stdin or --value-file.";
 
+export const stdinValuePrompt = (key: string): string =>
+  `Enter a value for \`${key}\`. End with Ctrl-D.\n`;
+
 export default class VariableSet extends BaseCommand<typeof VariableSet> {
   static summary = "Create or update a variable.";
 
@@ -37,7 +40,7 @@ export default class VariableSet extends BaseCommand<typeof VariableSet> {
     }),
     "value-stdin": Flags.boolean({
       summary:
-        "Read the default value from stdin until EOF. The bytes are not trimmed.",
+        "Read the default value from stdin until EOF. The bytes are not trimmed. This is the default when no value flag is passed; a terminal prints a prompt on stderr first.",
     }),
     "unset-value": Flags.boolean({
       summary: "Clear the default value.",
@@ -124,12 +127,7 @@ export default class VariableSet extends BaseCommand<typeof VariableSet> {
     this.rejectSecretArgv(type, flags.value, flags["environment-value"]);
 
     const environmentValues = await this.environmentValues();
-    let value: string | undefined;
-    if (flags["unset-value"]) value = "";
-    else if (flags.value !== undefined) value = flags.value;
-    else if (flags["value-file"]) {
-      value = await fs.readFile(flags["value-file"], "utf8");
-    } else if (flags["value-stdin"]) value = fs.readFileSync(0, "utf8");
+    const value = await this.resolveValue(valueSources.length);
 
     if (!remote && value === undefined) {
       this.error("A value is required to create a variable.");
@@ -158,6 +156,31 @@ export default class VariableSet extends BaseCommand<typeof VariableSet> {
     const detail = describeSet(type, body);
     const suffix = detail ? ` (${detail})` : "";
     this.log(`‣ Set ${type} variable \`${args.key}\`${suffix}.`);
+  }
+
+  private async resolveValue(
+    valueSourceCount: number,
+  ): Promise<string | undefined> {
+    const { flags } = this.props;
+    if (flags["unset-value"]) return "";
+    if (flags.value !== undefined) return flags.value;
+    if (flags["value-file"]) {
+      return fs.readFile(flags["value-file"], "utf8");
+    }
+
+    if (flags["value-stdin"] || valueSourceCount === 0) {
+      return this.readStdinValue(valueSourceCount === 0);
+    }
+
+    return undefined;
+  }
+
+  private readStdinValue(promptOnTerminal: boolean): string {
+    if (promptOnTerminal && process.stdin.isTTY) {
+      process.stderr.write(stdinValuePrompt(this.props.args.key));
+    }
+
+    return fs.readFileSync(0, "utf8");
   }
 
   private resolveType(
